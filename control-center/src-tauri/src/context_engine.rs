@@ -286,7 +286,18 @@ pub fn get_scoped_agent_context_snapshot(
     };
 
     let snapshot = format!(
-        "### SHARED PROJECT BRAIN CONTEXT\n\n\
+        "### AGENT CONTEXT SNAPSHOT\n\n\
+         **SOURCE OF TRUTH HIERARCHY (Resolve conflicts in this order):**\n\
+         1. User explicit instruction in chat\n\
+         2. Safety/policy rules\n\
+         3. Current Kanban card\n\
+         4. Agent contract\n\
+         5. Project/workspace settings\n\
+         6. Decision log\n\
+         7. Artifact registry/filesystem\n\
+         8. Recent workspace events\n\
+         9. Chat history\n\
+         10. Long-term memory\n\n\
          #### WORKSPACE & OBJECTIVE:\n{}\
          - Shared Global Goal: {}\n\n\
          #### ACTIVE CREW & STATUSES:\n{}\n\

@@ -15,6 +15,11 @@ mod models_manager;
 mod backend_runtime;
 mod board_services;
 mod org_services;
+mod agent_identity;
+mod agent_contracts;
+mod agent_state_machine;
+mod agent_work_router;
+mod agent_runtime_kernel;
 
 use storage::DbState;
 use tauri::Manager;
