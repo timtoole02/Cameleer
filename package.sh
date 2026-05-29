@@ -3,8 +3,8 @@ set -e
 
 echo "📦 Starting Native macOS App Bundle Packaging..."
 
-APP_NAME="Cameleer Engine"
-APP_DIR="Cameleer Engine.app"
+APP_NAME="Cameleer"
+APP_DIR="Cameleer.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
@@ -86,13 +86,8 @@ fi
 # 6. Copy compiled release binaries
 echo "🦀 Copying compiled Rust binaries to application bundle..."
 RELEASE_BIN="target/release/cameleer"
-GLOBAL_BIN="/Volumes/SSK Drive/Cameleer/cargo-targets/global/release/cameleer"
 
-if [ -f "$GLOBAL_BIN" ]; then
-    cp "$GLOBAL_BIN" "$MACOS_DIR/cameleer"
-    chmod +x "$MACOS_DIR/cameleer"
-    echo "✅ Production master binary installed from global target cache!"
-elif [ -f "$RELEASE_BIN" ]; then
+if [ -f "$RELEASE_BIN" ]; then
     cp "$RELEASE_BIN" "$MACOS_DIR/cameleer"
     chmod +x "$MACOS_DIR/cameleer"
     echo "✅ Production master binary installed from local target!"
@@ -102,14 +97,9 @@ else
 fi
 
 CAMELID_BIN="target/release/camelid"
-GLOBAL_CAMELID_BIN="/Volumes/SSK Drive/Cameleer/cargo-targets/global/release/camelid"
 ALT_CAMELID_BIN="camelid/target/release/camelid"
 
-if [ -f "$GLOBAL_CAMELID_BIN" ]; then
-    cp "$GLOBAL_CAMELID_BIN" "$MACOS_DIR/camelid"
-    chmod +x "$MACOS_DIR/camelid"
-    echo "✅ Camelid local inference binary installed from global target cache!"
-elif [ -f "$CAMELID_BIN" ]; then
+if [ -f "$CAMELID_BIN" ]; then
     cp "$CAMELID_BIN" "$MACOS_DIR/camelid"
     chmod +x "$MACOS_DIR/camelid"
     echo "✅ Camelid local inference binary installed from local target!"
@@ -124,6 +114,6 @@ fi
 
 # 7. Copy App bundle to Desktop
 echo "🚚 Copying finished app bundle to Desktop..."
-rm -rf "/Users/timtoole/Desktop/Cameleer Engine.app"
-cp -R "Cameleer Engine.app" "/Users/timtoole/Desktop/"
-echo "✨ Native macOS app deployed to '/Users/timtoole/Desktop/Cameleer Engine.app'!"
+rm -rf "/Users/timtoole/Desktop/Cameleer.app"
+cp -R "Cameleer.app" "/Users/timtoole/Desktop/"
+echo "✨ Native macOS app deployed to '/Users/timtoole/Desktop/Cameleer.app'!"

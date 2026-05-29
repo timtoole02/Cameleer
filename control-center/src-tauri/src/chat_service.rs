@@ -354,6 +354,55 @@ pub async fn trigger_agent_reply(
                         payload: serde_json::json!({ "status": "error" }),
                     },
                 );
+
+                // Insert a friendly system-level error message into the chat so the user is not left with silence
+                let error_content = format!(
+                    "⚠️ **[SYSTEM ERROR]:** Failed to generate response from model provider `{}` (model: `{}`).\n\n\
+                    **Error Details:**\n\
+                    ```\n\
+                    {}\n\
+                    ```\n\n\
+                    **Common Troubleshooting Steps:**\n\
+                    1. **Activate a Local GGUF Model:** Go to the **Models** tab, download a recommended model (such as *Llama 3.2 1B Instruct*), and click **Activate Global** to load it.\n\
+                    2. **Check Supervisor Status:** Go to the **System** tab to verify that the Camelid backend service is running and healthy on port `8181`.\n\
+                    3. **API Keys / Endpoint:** If you are using external APIs (Ollama, OpenAI, Anthropic), make sure your API keys or endpoint URLs are correct in the Settings.",
+                    provider, model_name, e
+                );
+
+                let error_msg = {
+                    let _ = conn.execute(
+                        "INSERT INTO messages (session_id, role, sender_id, content) \
+                         VALUES (?1, 'assistant', ?2, ?3)",
+                        params![session_id, agent_id, error_content],
+                    );
+                    
+                    let reply_id = conn.last_insert_rowid() as i32;
+                    let timestamp: String = conn.query_row(
+                        "SELECT timestamp FROM messages WHERE id = ?1",
+                        [reply_id],
+                        |row| row.get(0),
+                    ).unwrap_or_default();
+
+                    DbMessage {
+                        id: Some(reply_id),
+                        session_id: session_id.clone(),
+                        role: "assistant".to_string(),
+                        sender_id: Some(agent_id.clone()),
+                        content: error_content,
+                        timestamp,
+                    }
+                };
+
+                emit_event(
+                    &app_handle,
+                    AppEvent {
+                        event_type: "message".to_string(),
+                        agent_id: Some(agent_id.clone()),
+                        task_id: None,
+                        payload: serde_json::to_value(&error_msg).unwrap_or(serde_json::Value::Null),
+                    },
+                );
+
                 return Err(e);
             }
         };
