@@ -168,3 +168,33 @@ pub fn transition_agent_state(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_valid_transitions() {
+        assert!(is_transition_allowed(&AgentState::Idle, &AgentState::Assigned));
+        assert!(is_transition_allowed(&AgentState::Assigned, &AgentState::Working));
+        assert!(is_transition_allowed(&AgentState::Working, &AgentState::Validating));
+        assert!(is_transition_allowed(&AgentState::Validating, &AgentState::Working));
+        assert!(is_transition_allowed(&AgentState::Working, &AgentState::Idle));
+        assert!(is_transition_allowed(&AgentState::Recovering, &AgentState::Working));
+        assert!(is_transition_allowed(&AgentState::Working, &AgentState::Stopped));
+    }
+
+    #[test]
+    fn test_invalid_transitions() {
+        assert!(!is_transition_allowed(&AgentState::Idle, &AgentState::Validating));
+        assert!(!is_transition_allowed(&AgentState::Validating, &AgentState::Assigned));
+        assert!(!is_transition_allowed(&AgentState::Idle, &AgentState::Completed));
+    }
+
+    #[test]
+    fn test_from_str() {
+        assert_eq!(AgentState::from_str("idle"), AgentState::Idle);
+        assert_eq!(AgentState::from_str("working"), AgentState::Working);
+        assert_eq!(AgentState::from_str("invalid_state"), AgentState::Idle);
+    }
+}

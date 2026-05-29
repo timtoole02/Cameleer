@@ -49,3 +49,66 @@ pub fn detect_file_collisions(conn: &Connection, file_path: &str) -> Result<Vec<
 
     Ok(conflicting_agents)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    fn setup_test_db() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute(
+            "CREATE TABLE kanban_cards (
+                id TEXT PRIMARY KEY,
+                blocked_by TEXT,
+                assigned_agent_id TEXT,
+                status TEXT,
+                required_files TEXT
+            )",
+            [],
+        ).unwrap();
+        conn
+    }
+
+    #[test]
+    fn test_detect_circular_dependencies() {
+        let conn = setup_test_db();
+        
+        // Setup circular chain: A -> B -> C -> A
+        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('A', 'B')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('B', 'C')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('C', 'A')", []).unwrap();
+        
+        let has_cycle = detect_circular_dependencies(&conn, "A").unwrap();
+        assert!(has_cycle, "Should detect A -> B -> C -> A circular dependency");
+    }
+
+    #[test]
+    fn test_no_circular_dependency() {
+        let conn = setup_test_db();
+        
+        // Setup linear chain: A -> B -> C
+        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('A', 'B')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('B', 'C')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('C', NULL)", []).unwrap();
+        
+        let has_cycle = detect_circular_dependencies(&conn, "A").unwrap();
+        assert!(!has_cycle, "Should NOT detect circular dependency in linear chain");
+    }
+
+    #[test]
+    fn test_detect_file_collisions() {
+        let conn = setup_test_db();
+        
+        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('1', 'agent_x', 'In Progress', '[\"main.rs\", \"utils.rs\"]')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('2', 'agent_y', 'In Progress', '[\"utils.rs\"]')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('3', 'agent_z', 'Ready', '[\"utils.rs\"]')", []).unwrap();
+        
+        let collisions = detect_file_collisions(&conn, "utils.rs").unwrap();
+        
+        assert_eq!(collisions.len(), 2, "Should find 2 conflicting agents");
+        assert!(collisions.contains(&"agent_x".to_string()));
+        assert!(collisions.contains(&"agent_y".to_string()));
+        assert!(!collisions.contains(&"agent_z".to_string()), "agent_z is not 'In Progress'");
+    }
+}
