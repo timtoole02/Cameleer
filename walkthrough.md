@@ -211,3 +211,76 @@ Completely replaced the right sidebar inspector with a high-fidelity, dual-tabbe
 *   **Manual Decision Logger**: Includes a premium inline input field enabling the active user to manually record system/architectural choices on the fly, instantly publishing events to the crew's context stream.
 *   **Agent Profile Tab**: Retains quick profile inspection and retirement actions for selected agents.
 
+---
+
+## ⚡ Phase 17: Mission Builder Dashboard & Crew Autopilot Automation Suite
+
+We have built a premium, secure, and extremely powerful **Mission Builder & Crew Autopilot Suite** in Cameleer. This turns the application from an agent chat application into a commercial-grade, turn-key **Local AI Workforce Platform** backed by a robust relational SQLite schema.
+
+```mermaid
+graph TD
+    User([User Outcome Goal]) --> |"Input & Select Pack"| MB[Mission Builder Engine]
+    MB --> |"SQLite Draft Preview"| PE[Interactive Preview Editor]
+    PE --> |"Edit & Approve"| DB[(SQLite Storage)]
+    DB --> |"Spawn"| Crew[Provisioned Crew & Contracts]
+    DB --> |"Spawn"| Cards[Kanban Board Cards]
+    
+    Cards --> |"Work Progress"| AP{Autopilot Controller}
+    AP --> |"Off Scope"| Manual[Manual Triggers Only]
+    AP --> |"Card Scope"| CAuto[Complete Card & Stop]
+    AP --> |"Agent Scope"| AAuto[Continuous Agent Card Pull]
+    AP --> |"Mission Scope"| MAuto[Full Dependency Handoffs]
+    
+    Cards --> |"Complete Card"| WR[Work Receipt Compiler]
+    WR --> |"Touched Files, Audit Logs, Evidence"| Ledger[(Work Receipts Ledger)]
+```
+
+### 1. Unified Outcome-to-Mission Planner Dashboard
+The dashboard introduces a dedicated **Missions** tab giving users high-fidelity command over crew and task automation without losing manual control:
+*   **Outcome Prompt Input**: Type any high-level objective (e.g. *"Build an interactive Snake game in React with modern glassmorphic styling and sound effects"*).
+*   **Mission Packs Registry**: Click on 6 pre-configured turnkey templates to kickstart standard workflows immediately:
+    1.  **Build Small App**: Proposes a full software product crew (Product Manager, Coder, QA Engineer) and a progressive 4-phase backlog.
+    2.  **Fix Existing Repo**: Provisions a Debugging Specialist and QA Analyst to diagnose, write tests, and resolve repository errors.
+    3.  **Documentation Pass**: Spawns Technical Writers to analyze directories and generate beautiful reference sheets.
+    4.  **QA Sprint**: Deploys automated testers and security auditors to write unit tests, run linters, and verify stability.
+    5.  **Open Source Launch**: Sets up a release team to bundle distribution packages, compose licensing, and write readmes.
+    6.  **Local AI Runtime Benchmark**: Spawns Performance Engineers to profile GGUF speeds, prompt processing latencies, and optimize parameters.
+*   **Draft Preview Inspector**: Generates a side-by-side editable plan *before* any database changes occur. Users can inspect the proposed crew, adjust individual LLM models, rename roles, edit/delete cards, customize priorities, and toggle safety profiles in real time.
+
+### 2. Relational SQLite Schema Layer
+The automation suite is fully integrated into Cameleer's fast SQLite storage engine, maintaining 100% relational integrity across 10 tables:
+*   `custom_mission_packs`: Tracks pre-built templates and user-saved custom crews/backlogs.
+*   `mission_previews`, `mission_preview_agents`, `mission_preview_cards`, `mission_preview_dependencies`: Safely stores temporary draft preview plans so users can inspect and edit their sprints without cluttering the active board.
+*   `mission_agent_contracts`: Establishes explicit boundaries, whitelists, and permissions for each spawned agent.
+*   `mission_work_receipts`: Automatically captures touched files, commands executed, and user verification evidence.
+*   `autopilot_settings`: Persists active workspace safety parameters, network overrides, and coordination scopes.
+*   `mission_recommendations`: Feeds the recommendation engine with live tips and blockers.
+*   `mission_audit_events`: Stores full, timestamped audit events of the autopilot and mission workflow.
+
+### 3. Crew Autopilot Scope Controls & Guardrails
+The optional Autopilot engine implements strict crew orchestrations and security sandboxes across four progressive scopes:
+*   🔴 **Off**: Default manual control. Sibling agents work only when the user explicitly triggers them.
+*   🟡 **Card**: An agent performs work only on their single, actively assigned card and stops, prompting the user for approval.
+*   🟢 **Agent**: The agent continues pulling their next assigned cards from the backlog automatically, executing tasks inside the shell sandbox without manual prompts.
+*   🔮 **Mission (Full Autopilot)**: The system automatically coordinates dependent cards, schedules tasks across different agents, resolves handoffs, manages review gates, and updates the board autonomously.
+
+### 4. Smart Task Decomposition
+When a user has a large, high-level task, they can hit **"Break into child cards"** directly inside the Kanban card detail overlay. The task decomposer:
+*   Analyzes the active goal type and parent task description.
+*   Generates a fine-grained, progressive list of child cards.
+*   Associates preferred roles, required directories, and smart acceptance criteria for each subtask.
+*   Renders a review checklist in the frontend UI, allowing the user to select, edit, and approve individual subtasks before spawning them on the Kanban board.
+
+### 5. Agent Contracts & Work Receipts Ledger
+To ensure predictability, transparency, and safety:
+*   **Agent Contracts**: Every agent is bound to a strict contract whitelisting their directory path limits, binary access privileges, requirement review gates, and safety profiles. This is displayed directly inside the Kanban card detail pane.
+*   **Work Receipts**: When a card is marked Done, the system compiles a cryptographic-style work receipt containing:
+    - 📁 *Touched Files*: Live diffs and modified paths in the workspace.
+    - 🐚 *Commands Executed*: Full shell logs, exit codes, and output streams.
+    - 🧩 *Evidence & Validation*: User validation comments and proof of correctness.
+    - *Ledger Enforcement*: The UI displays the compiled receipt inside all completed Kanban cards. No card can be moved to **Done** without an audited work receipt attached.
+
+### 6. Security Audit Event Logger & Recommendations Timeline
+*   **Recommendations Engine**: Fully integrated with the workspace timeline. It continuously analyzes the SQLite state to generate high-priority recommendations: prompting the user to decompose large cards, alerting them of missing card acceptance criteria, or notifying them of missing QA dependencies.
+*   **Audit Logger Console**: Streams live events (e.g. *"[AUTOPILOT] Assigned task-234 to agent-coder"*, *"[SECURITY] Denied binary command execution 'rm -rf'"*) inside a high-fidelity terminal component in the Missions tab, keeping users fully in control of their automated workforce.
+

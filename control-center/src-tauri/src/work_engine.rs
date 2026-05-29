@@ -213,5 +213,45 @@ pub fn get_work_engine_suggestions(
         }
     }
 
+    // 6. Query from mission_recommendations
+    if let Ok(mut stmt) = conn.prepare("SELECT id, recommendation_type, content, action_target FROM mission_recommendations WHERE status = 'active'") {
+        if let Ok(mission_recs) = stmt.query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, Option<String>>(3)?,
+            ))
+        }) {
+            for rec in mission_recs {
+                if let Ok((id, rec_type, content, target)) = rec {
+                    let label = match rec_type.as_str() {
+                        "decompose" => Some("Break into subtasks".to_string()),
+                        "agent_missing" => Some("Assign Agent".to_string()),
+                        _ => Some("Dismiss".to_string()),
+                    };
+
+                    let command = match rec_type.as_str() {
+                        "decompose" => Some(format!("decompose_task:{}", target.clone().unwrap_or_default())),
+                        "agent_missing" => Some(format!("assign_agent:{}", target.clone().unwrap_or_default())),
+                        _ => Some(format!("dismiss_rec:{}", id)),
+                    };
+
+                    suggestions.push(WorkSuggestion {
+                        id: format!("mission-rec-{}", id),
+                        title: "Crew Recommendation".to_string(),
+                        description: content,
+                        severity: "info".to_string(),
+                        suggestion_type: rec_type,
+                        action_label: label,
+                        action_command: command,
+                        related_agent_id: None,
+                        related_task_id: target,
+                    });
+                }
+            }
+        }
+    }
+
     Ok(suggestions)
 }

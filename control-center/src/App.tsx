@@ -131,7 +131,7 @@ interface SubtaskProposal {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models" | "missions">("dashboard");
   const [suggestions, setSuggestions] = useState<WorkSuggestion[]>([]);
   const [templates, setTemplates] = useState<TemplateInfo[]>([]);
   const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("software_engineer");
@@ -168,6 +168,168 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedKanbanTask, setSelectedKanbanTask] = useState<Task | null>(null);
+  
+  // Mission Builder, Contracts, Receipts, and Autopilot React State Hooks
+  const [outcomeGoal, setOutcomeGoal] = useState("");
+  const [selectedMissionPack, setSelectedMissionPack] = useState("build_small_app");
+  const [missionPreview, setMissionPreview] = useState<any | null>(null);
+  const [missionPacks, setMissionPacks] = useState<any[]>([]);
+  const [customPackName, setCustomPackName] = useState("");
+  const [autopilotEnabled, setAutopilotEnabled] = useState(false);
+  const [autopilotScope, setAutopilotScope] = useState("off");
+  const [approvalRequirements, setApprovalRequirements] = useState("moderate");
+  const [networkPermissions, setNetworkPermissions] = useState("none");
+  const [doneApprovalRules, setDoneApprovalRules] = useState("reviewer_or_user");
+  const [missionAuditEvents, setMissionAuditEvents] = useState<any[]>([]);
+  const [activeContract, setActiveContract] = useState<any | null>(null);
+  const [activeReceipt, setActiveReceipt] = useState<any | null>(null);
+
+  // Hook: Load Agent Contracts & Work Receipts dynamically on Kanban Selection
+  useEffect(() => {
+    if (selectedKanbanTask) {
+      const agentId = selectedKanbanTask.assigned_agent_id || selectedKanbanTask.owner_id;
+      if (agentId) {
+        invoke("get_agent_contract", { agentId })
+          .then((res: any) => setActiveContract(res))
+          .catch((err) => console.error("Error loading agent contract:", err));
+      } else {
+        setActiveContract(null);
+      }
+
+      if (selectedKanbanTask.status === "done") {
+        invoke("get_work_receipt", { cardId: selectedKanbanTask.id })
+          .then((res: any) => setActiveReceipt(res))
+          .catch((err) => console.error("Error loading work receipt:", err));
+      } else {
+        setActiveReceipt(null);
+      }
+    } else {
+      setActiveContract(null);
+      setActiveReceipt(null);
+    }
+  }, [selectedKanbanTask]);
+
+  // Loader: Dynamic Mission Packs, Autopilot Settings & Audit Events
+  const loadMissionData = async () => {
+    try {
+      const packs = await invoke<any[]>("list_mission_packs");
+      setMissionPacks(packs);
+
+      const auto = await invoke<any>("get_autopilot_settings", { workspaceId: "default" });
+      setAutopilotEnabled(auto.autopilot_enabled);
+      setAutopilotScope(auto.autopilot_scope);
+      setApprovalRequirements(auto.approval_requirements);
+      setNetworkPermissions(auto.network_permissions);
+      setDoneApprovalRules(auto.done_approval_rules);
+
+      const audits = await invoke<any[]>("get_mission_audit_events", { workspaceId: "default" });
+      setMissionAuditEvents(audits);
+    } catch (e) {
+      console.error("Error loading mission configurations:", e);
+    }
+  };
+
+  useEffect(() => {
+    loadMissionData();
+  }, []);
+
+  // API Call: Propose Mission preview
+  const handleGenerateProposal = async () => {
+    if (!outcomeGoal.trim()) {
+      alert("Please specify your outcome goal first!");
+      return;
+    }
+    try {
+      const preview = await invoke<any>("generate_mission_preview", {
+        workspaceId: "default",
+        userGoal: outcomeGoal,
+        missionType: selectedMissionPack
+      });
+      setMissionPreview(preview);
+      loadMissionData();
+      loadSuggestions();
+    } catch (e) {
+      alert("Failed to generate mission preview: " + e);
+    }
+  };
+
+  // API Call: Apply draft proposed crew and board
+  const handleApplyMission = async () => {
+    if (!missionPreview) return;
+    try {
+      await invoke("apply_mission_preview", { previewId: missionPreview.preview_id });
+      alert("🚀 Mission applied successfully! Real agents, cards, and contracts have been provisioned on the board.");
+      setMissionPreview(null);
+      setOutcomeGoal("");
+      
+      // Reload Kanban, Crew list and suggestions
+      const freshTasks = await invoke<Task[]>("get_tasks");
+      setTasks(freshTasks);
+      const freshAgents = await invoke<Agent[]>("get_agents");
+      setAgents(freshAgents);
+      loadMissionData();
+      loadSuggestions();
+    } catch (e) {
+      alert("Failed to apply mission: " + e);
+    }
+  };
+
+  // API Call: Discard draft proposal
+  const handleDiscardMission = async () => {
+    if (!missionPreview) return;
+    try {
+      await invoke("discard_mission_preview", { previewId: missionPreview.preview_id });
+      setMissionPreview(null);
+      alert("Proposal discarded.");
+    } catch (e) {
+      alert("Failed to discard proposal: " + e);
+    }
+  };
+
+  // API Call: Save current proposal settings as reusable Custom Mission Pack
+  const handleSaveCustomPack = async () => {
+    if (!missionPreview || !customPackName.trim()) {
+      alert("Please specify a custom pack name!");
+      return;
+    }
+    try {
+      await invoke("save_mission_pack_from_preview", {
+        previewId: missionPreview.preview_id,
+        name: customPackName
+      });
+      alert(`💾 Custom Mission Pack '${customPackName}' saved successfully!`);
+      setCustomPackName("");
+      loadMissionData();
+    } catch (e) {
+      alert("Failed to save custom pack: " + e);
+    }
+  };
+
+  // API Call: Update Autopilot state, scope, safety requirements, and rules
+  const handleUpdateAutopilotSettings = async (enabled: boolean, scope: string, reqs: string, net: string, rules: string) => {
+    try {
+      const payload = {
+        workspace_id: "default",
+        autopilot_enabled: enabled,
+        autopilot_scope: scope,
+        approval_requirements: reqs,
+        command_permissions_override: [],
+        file_permissions_override: [],
+        network_permissions: net,
+        done_approval_rules: rules
+      };
+      await invoke("update_autopilot_settings", { settings: payload });
+      setAutopilotEnabled(enabled);
+      setAutopilotScope(scope);
+      setApprovalRequirements(reqs);
+      setNetworkPermissions(net);
+      setDoneApprovalRules(rules);
+      loadMissionData();
+    } catch (e) {
+      alert("Failed to update autopilot configurations: " + e);
+    }
+  };
+
   const [detailCommentText, setDetailCommentText] = useState("");
   const [blockerText, setBlockerText] = useState("");
   const [blockedByTaskId, setBlockedByTaskId] = useState("");
@@ -1216,6 +1378,12 @@ function App() {
               Kanban Board
             </button>
             <button
+              className={`panel-tab ${activeTab === "missions" ? "active" : ""}`}
+              onClick={() => setActiveTab("missions")}
+            >
+              Missions
+            </button>
+            <button
               className={`panel-tab ${activeTab === "agents" ? "active" : ""}`}
               onClick={() => setActiveTab("agents")}
             >
@@ -1862,6 +2030,414 @@ function App() {
                 <code>{selectedArtifactContent || "// Select a workspace file from the left column to view its live contents."}</code>
               </pre>
             </div>
+          </div>
+        ) : activeTab === "missions" ? (
+          /* Crew Autonomy & Mission Builder Portal */
+          <div className="missions-container" style={{ flex: 1, display: "flex", height: "100%", overflow: "hidden" }}>
+            
+            {/* Left Column: Outcome Planner & Autopilot Settings */}
+            <div className="missions-planner-sidebar" style={{ width: "420px", borderRight: "1px solid var(--border-color)", background: "rgba(0,0,0,0.18)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-color)", background: "rgba(0,0,0,0.08)" }}>
+                <h3 style={{ margin: 0, fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", color: "var(--accent-primary)", letterSpacing: "0.5px" }}>
+                  🎯 Workspace Outcome Planner
+                </h3>
+              </div>
+              
+              <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "24px" }}>
+                
+                {/* Section 1: Outcome Goal */}
+                <div className="card-glass" style={{ padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.01)" }}>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "8px" }}>
+                    Select Accelerating Mission Pack
+                  </label>
+                  <select
+                    value={selectedMissionPack}
+                    onChange={(e) => setSelectedMissionPack(e.target.value)}
+                    style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "rgba(0,0,0,0.4)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.82rem", marginBottom: "12px" }}
+                  >
+                    {missionPacks.map((pack) => (
+                      <option key={pack.mission_pack_id} value={pack.mission_pack_id}>
+                        {pack.name} ({pack.category})
+                      </option>
+                    ))}
+                  </select>
+
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "8px" }}>
+                    Describe Desired Outcome / Goal
+                  </label>
+                  <textarea
+                    value={outcomeGoal}
+                    onChange={(e) => setOutcomeGoal(e.target.value)}
+                    placeholder="E.g., Build a Tetris game in HTML/TS with keyboard controls, collision checks, score metrics, and manual..."
+                    style={{ width: "100%", height: "90px", padding: "10px", borderRadius: "8px", background: "rgba(0,0,0,0.4)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.82rem", lineHeight: 1.4, resize: "none", marginBottom: "16px", fontFamily: "inherit" }}
+                  />
+
+                  <button
+                    onClick={handleGenerateProposal}
+                    className="btn-primary"
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)", border: "none", color: "#06080c", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", boxShadow: "0 0 15px rgba(0,242,254,0.15)" }}
+                  >
+                    ✦ Propose Crew & Workboard
+                  </button>
+                </div>
+
+                {/* Section 2: Autopilot Scope & Dashboard widgets */}
+                <div className="card-glass" style={{ padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.01)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                    <h4 style={{ margin: 0, fontSize: "0.8rem", fontWeight: 700, color: "var(--text-main)", textTransform: "uppercase" }}>
+                      🚀 Autopilot Controls
+                    </h4>
+                    <span style={{ fontSize: "0.68rem", color: autopilotEnabled ? "#10b981" : "var(--text-muted)", background: autopilotEnabled ? "rgba(16,185,129,0.08)" : "rgba(255,255,255,0.04)", padding: "2px 8px", borderRadius: "6px", fontWeight: "bold" }}>
+                      {autopilotEnabled ? "Active" : "Off"}
+                    </span>
+                  </div>
+
+                  <label style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "0.82rem", cursor: "pointer", marginBottom: "14px" }}>
+                    <input
+                      type="checkbox"
+                      checked={autopilotEnabled}
+                      onChange={(e) => handleUpdateAutopilotSettings(e.target.checked, autopilotScope, approvalRequirements, networkPermissions, doneApprovalRules)}
+                      style={{ width: "16px", height: "16px", accentColor: "var(--accent-primary)" }}
+                    />
+                    <span>Enable Workspace Autopilot Autonomy</span>
+                  </label>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>Autopilot Scope</label>
+                      <select
+                        value={autopilotScope}
+                        onChange={(e) => handleUpdateAutopilotSettings(autopilotEnabled, e.target.value, approvalRequirements, networkPermissions, doneApprovalRules)}
+                        style={{ width: "100%", padding: "8px", borderRadius: "6px", background: "rgba(0,0,0,0.4)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.78rem" }}
+                      >
+                        <option value="off">Off (Manual starts only)</option>
+                        <option value="card">Card Autopilot (Current card only)</option>
+                        <option value="agent">Agent Autopilot (Assigned cards queue)</option>
+                        <option value="mission">Mission Autopilot (Full board coordination)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>Approval Safety Profile</label>
+                      <select
+                        value={approvalRequirements}
+                        onChange={(e) => handleUpdateAutopilotSettings(autopilotEnabled, autopilotScope, e.target.value, networkPermissions, doneApprovalRules)}
+                        style={{ width: "100%", padding: "8px", borderRadius: "6px", background: "rgba(0,0,0,0.4)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.78rem" }}
+                      >
+                        <option value="strict">Strict (Review all file changes & runs)</option>
+                        <option value="moderate">Moderate (Freely read, ask on writes)</option>
+                        <option value="none">None (Headless run sandbox)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>Network Boundaries</label>
+                      <select
+                        value={networkPermissions}
+                        onChange={(e) => handleUpdateAutopilotSettings(autopilotEnabled, autopilotScope, approvalRequirements, e.target.value, doneApprovalRules)}
+                        style={{ width: "100%", padding: "8px", borderRadius: "6px", background: "rgba(0,0,0,0.4)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.78rem" }}
+                      >
+                        <option value="none">No External Calls (Sandboxed)</option>
+                        <option value="whitelist">Whitelisted addresses only</option>
+                        <option value="all">Unconstrained network access</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 3: Audited Events Terminal Logs */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <h4 style={{ margin: 0, fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)" }}>
+                    🛡️ Autopilot Security Audit Log
+                  </h4>
+                  <div style={{ flex: 1, minHeight: "150px", padding: "12px", borderRadius: "10px", background: "rgba(0,0,0,0.5)", border: "1px solid var(--border-color)", overflowY: "auto", fontFamily: "var(--font-mono)", fontSize: "0.74rem", lineHeight: 1.4, color: "var(--text-muted)" }}>
+                    {missionAuditEvents.length === 0 ? (
+                      <div style={{ color: "var(--text-muted)" }}>// No audit events logged yet. Active sandboxes will output records here.</div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        {missionAuditEvents.map((ev) => (
+                          <div key={ev.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.02)", paddingBottom: "4px" }}>
+                            <span style={{ color: "var(--accent-secondary)" }}>[{ev.timestamp.split(" ")[1] || ev.timestamp}]</span>{" "}
+                            <span style={{ color: "var(--accent-primary)", fontWeight: "bold" }}>{ev.event_type.toUpperCase()}</span>{" "}
+                            <span style={{ color: "var(--text-main)" }}>{ev.payload}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Right Column: Mission Preview Inspector */}
+            <div className="missions-proposal-body" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ padding: "16px 28px", borderBottom: "1px solid var(--border-color)", background: "rgba(0,0,0,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: "1.0rem", fontWeight: 700, color: "var(--text-main)" }}>
+                    {missionPreview ? missionPreview.mission_title : "No Active Proposal"}
+                  </h2>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                    {missionPreview ? `Workspace goal proposal blueprint. Draft generated at ${new Date(parseInt(missionPreview.generated_at) * 1000).toLocaleTimeString()}` : "Formulate a mission goal on the left side to compile a crew and card hierarchy proposal."}
+                  </p>
+                </div>
+                {missionPreview && (
+                  <span style={{ fontSize: "0.7rem", color: "var(--accent-primary)", border: "1px solid rgba(0,242,254,0.3)", background: "rgba(0,242,254,0.06)", padding: "2px 8px", borderRadius: "6px", fontWeight: "bold", textTransform: "uppercase" }}>
+                    Preview: {missionPreview.status}
+                  </span>
+                )}
+              </div>
+
+              {/* Preview Body */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "28px", display: "flex", flexDirection: "column", gap: "28px" }}>
+                {!missionPreview ? (
+                  /* Empty state */
+                  <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100%", gap: "16px", color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: "3.5rem" }}>🤖</div>
+                    <div style={{ fontSize: "0.95rem", fontWeight: 500, color: "var(--text-main)" }}>Cameleer Intelligent Workspace Architect</div>
+                    <div style={{ fontSize: "0.82rem", maxWidth: "420px", textAlign: "center", lineHeight: 1.4 }}>
+                      Enter your desired project goal (e.g., game developers, repository bug fixes, document sweeps) on the outcome planner. Nothing is created on your workspace until you approve the compiled blueprint!
+                    </div>
+                  </div>
+                ) : (
+                  /* Preview active state */
+                  <>
+                    {/* Risks and Assumptions banner */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                      <div style={{ background: "rgba(245,158,11,0.03)", border: "1px solid rgba(245,158,11,0.15)", borderRadius: "10px", padding: "12px 16px" }}>
+                        <h4 style={{ margin: "0 0 6px 0", fontSize: "0.76rem", fontWeight: 700, textTransform: "uppercase", color: "#f59e0b" }}>⚠️ Identified Constraints & Risks</h4>
+                        <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+                          {missionPreview.risks.map((r: string, idx: number) => <li key={idx}>{r}</li>)}
+                        </ul>
+                      </div>
+                      <div style={{ background: "rgba(79,172,254,0.03)", border: "1px solid rgba(79,172,254,0.15)", borderRadius: "10px", padding: "12px 16px" }}>
+                        <h4 style={{ margin: "0 0 6px 0", fontSize: "0.76rem", fontWeight: 700, textTransform: "uppercase", color: "var(--accent-secondary)" }}>✦ Key Architecture Assumptions</h4>
+                        <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+                          {missionPreview.assumptions.map((a: string, idx: number) => <li key={idx}>{a}</li>)}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Proposed Team */}
+                    <div>
+                      <h3 style={{ fontSize: "0.9rem", fontWeight: 700, textTransform: "uppercase", color: "var(--accent-primary)", letterSpacing: "0.5px", marginBottom: "12px" }}>
+                        👥 Proposed Specialized Agent Crew
+                      </h3>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+                        {missionPreview.proposed_agents.map((agent: any, idx: number) => (
+                          <div key={idx} className="card-glass" style={{ padding: "16px", borderRadius: "12px", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "12px", background: "rgba(255,255,255,0.01)" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <input
+                                value={agent.name}
+                                onChange={(e) => {
+                                  const updated = [...missionPreview.proposed_agents];
+                                  updated[idx].name = e.target.value;
+                                  setMissionPreview({ ...missionPreview, proposed_agents: updated });
+                                }}
+                                style={{ fontSize: "0.85rem", fontWeight: "bold", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "var(--text-main)", padding: "2px 4px", width: "130px" }}
+                              />
+                              <button
+                                onClick={() => {
+                                  const updated = missionPreview.proposed_agents.filter((_: any, i: number) => i !== idx);
+                                  setMissionPreview({ ...missionPreview, proposed_agents: updated });
+                                }}
+                                style={{ background: "none", border: "none", color: "var(--color-blocked)", fontSize: "0.85rem", cursor: "pointer" }}
+                              >
+                                Remove
+                              </button>
+                            </div>
+
+                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                              <strong>Role:</strong> {agent.role}
+                            </div>
+
+                            <div>
+                              <label style={{ display: "block", fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "4px" }}>Inference Model</label>
+                              <input
+                                value={agent.suggested_model}
+                                onChange={(e) => {
+                                  const updated = [...missionPreview.proposed_agents];
+                                  updated[idx].suggested_model = e.target.value;
+                                  setMissionPreview({ ...missionPreview, proposed_agents: updated });
+                                }}
+                                style={{ width: "100%", padding: "6px", borderRadius: "6px", background: "rgba(0,0,0,0.3)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.75rem" }}
+                              />
+                            </div>
+
+                            <div>
+                              <label style={{ display: "block", fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "4px" }}>Allowed Tools Scope</label>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                                {agent.allowed_tools.map((t: string, tid: number) => (
+                                  <span key={tid} style={{ fontSize: "0.66rem", background: "rgba(124, 77, 255, 0.08)", color: "var(--accent-primary)", padding: "2px 6px", borderRadius: "4px" }}>
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", padding: "8px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.03)", lineClamp: 2, overflow: "hidden" }}>
+                              <strong>Rationale:</strong> {agent.rationale || "Seeded template profile."}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Proposed Cards */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                        <h3 style={{ margin: 0, fontSize: "0.9rem", fontWeight: 700, textTransform: "uppercase", color: "var(--accent-primary)", letterSpacing: "0.5px" }}>
+                          📋 Proposed Kanban Cards Checklist
+                        </h3>
+                        <button
+                          onClick={() => {
+                            const newCard = {
+                              id: `custom-card-${Date.now()}`,
+                              title: "New Custom Task",
+                              description: "A customized task card for this sprint.",
+                              suggested_agent_role: "Software Engineer",
+                              suggested_agent_id: "",
+                              priority: "medium",
+                              status: "backlog",
+                              acceptance_criteria: ["Deliverables completed and validated."],
+                              required_files: [],
+                              related_files: [],
+                              dependencies: [],
+                              evidence_gate: "",
+                              review_required: false
+                            };
+                            setMissionPreview({ ...missionPreview, proposed_cards: [...missionPreview.proposed_cards, newCard] });
+                          }}
+                          className="btn-primary"
+                          style={{ padding: "6px 12px", fontSize: "0.76rem", borderRadius: "6px", background: "rgba(0,242,254,0.08)", color: "var(--accent-primary)", border: "1px solid rgba(0,242,254,0.2)" }}
+                        >
+                          + Add Custom Card
+                        </button>
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                        {missionPreview.proposed_cards.map((card: any, idx: number) => (
+                          <div key={card.id} className="card-glass" style={{ padding: "16px 20px", borderRadius: "12px", border: "1px solid var(--border-color)", display: "grid", gridTemplateColumns: "1fr 220px 80px", gap: "20px", alignItems: "center", background: "rgba(255,255,255,0.01)" }}>
+                            
+                            {/* Card Content Edit */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                              <input
+                                value={card.title}
+                                onChange={(e) => {
+                                  const updated = [...missionPreview.proposed_cards];
+                                  updated[idx].title = e.target.value;
+                                  setMissionPreview({ ...missionPreview, proposed_cards: updated });
+                                }}
+                                style={{ fontSize: "0.86rem", fontWeight: "bold", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "var(--text-main)", padding: "2px 4px", width: "100%" }}
+                              />
+                              <input
+                                value={card.description}
+                                onChange={(e) => {
+                                  const updated = [...missionPreview.proposed_cards];
+                                  updated[idx].description = e.target.value;
+                                  setMissionPreview({ ...missionPreview, proposed_cards: updated });
+                                }}
+                                style={{ fontSize: "0.78rem", background: "none", border: "none", color: "var(--text-muted)", padding: "2px 4px", width: "100%" }}
+                              />
+                              <div style={{ fontSize: "0.7rem", color: "var(--accent-secondary)", opacity: 0.8 }}>
+                                <strong>Criteria:</strong> {card.acceptance_criteria.join(", ")}
+                              </div>
+                            </div>
+
+                            {/* Card Attributes */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                              <div>
+                                <label style={{ display: "block", fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "2px" }}>Assigned Owner Role</label>
+                                <select
+                                  value={card.suggested_agent_role}
+                                  onChange={(e) => {
+                                    const updated = [...missionPreview.proposed_cards];
+                                    updated[idx].suggested_agent_role = e.target.value;
+                                    setMissionPreview({ ...missionPreview, proposed_cards: updated });
+                                  }}
+                                  style={{ width: "100%", padding: "4px 8px", borderRadius: "4px", background: "rgba(0,0,0,0.3)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.72rem" }}
+                                >
+                                  {missionPreview.proposed_agents.map((ag: any) => (
+                                    <option key={ag.role} value={ag.role}>{ag.role} ({ag.name})</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label style={{ display: "block", fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "2px" }}>Priority</label>
+                                <select
+                                  value={card.priority}
+                                  onChange={(e) => {
+                                    const updated = [...missionPreview.proposed_cards];
+                                    updated[idx].priority = e.target.value;
+                                    setMissionPreview({ ...missionPreview, proposed_cards: updated });
+                                  }}
+                                  style={{ width: "100%", padding: "4px 8px", borderRadius: "4px", background: "rgba(0,0,0,0.3)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.72rem" }}
+                                >
+                                  <option value="high">High</option>
+                                  <option value="medium">Medium</option>
+                                  <option value="low">Low</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {/* Card Removal */}
+                            <button
+                              onClick={() => {
+                                const updated = missionPreview.proposed_cards.filter((c: any) => c.id !== card.id);
+                                setMissionPreview({ ...missionPreview, proposed_cards: updated });
+                              }}
+                              style={{ background: "none", border: "none", color: "var(--color-blocked)", fontSize: "0.8rem", cursor: "pointer", alignSelf: "center" }}
+                            >
+                              Delete
+                            </button>
+
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Preview Apply Footer Action panel */}
+                    <div className="card-glass" style={{ padding: "20px", borderRadius: "12px", border: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", background: "rgba(255,255,255,0.01)" }}>
+                      <div style={{ display: "flex", gap: "12px" }}>
+                        <button
+                          onClick={handleApplyMission}
+                          className="btn-primary"
+                          style={{ padding: "10px 20px", borderRadius: "8px", background: "linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)", border: "none", color: "#06080c", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}
+                        >
+                          🚀 Approve & Launch Sprint
+                        </button>
+                        <button
+                          onClick={handleDiscardMission}
+                          className="btn-secondary"
+                          style={{ padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.82rem", cursor: "pointer" }}
+                        >
+                          🚫 Discard Proposal
+                        </button>
+                      </div>
+
+                      {/* Save As custom pack */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <input
+                          value={customPackName}
+                          onChange={(e) => setCustomPackName(e.target.value)}
+                          placeholder="Pack Name (e.g. Tetris Sprint)"
+                          style={{ padding: "8px 12px", borderRadius: "6px", background: "rgba(0,0,0,0.4)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: "0.78rem" }}
+                        />
+                        <button
+                          onClick={handleSaveCustomPack}
+                          className="btn-primary"
+                          style={{ padding: "8px 14px", borderRadius: "6px", background: "rgba(124, 77, 255, 0.15)", color: "var(--accent-primary)", border: "1px solid rgba(124, 77, 255, 0.3)", fontSize: "0.78rem", cursor: "pointer" }}
+                        >
+                          💾 Save Pack
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
           </div>
         ) : activeTab === "agents" ? (
           /* Crew Control Page */
@@ -3467,6 +4043,61 @@ function App() {
                   }
                   return null;
                 })()}
+
+                {/* Bounded Agent Contract */}
+                {activeContract && (
+                  <div style={{ marginTop: "20px", background: "rgba(124, 77, 255, 0.04)", border: "1px solid rgba(124, 77, 255, 0.15)", padding: "16px", borderRadius: "12px" }}>
+                    <h4 style={{ fontSize: "0.82rem", textTransform: "uppercase", color: "var(--accent-primary)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      🛡️ Bounded Agent Contract ({activeContract.role})
+                    </h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+                      <div><strong>Responsibilities:</strong>
+                        <ul style={{ margin: "4px 0 0 16px", padding: 0 }}>
+                          {activeContract.responsibilities.map((r: string, idx: number) => <li key={idx}>{r}</li>)}
+                        </ul>
+                      </div>
+                      <div><strong>Allowed Tools:</strong> {activeContract.allowed_actions.join(", ") || "None"}</div>
+                      <div><strong>Definition of Done:</strong> {activeContract.done_definition.join(", ") || "None"}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Validated Work Receipt */}
+                {activeReceipt && (
+                  <div style={{ marginTop: "20px", background: "rgba(16, 185, 129, 0.04)", border: "1px solid rgba(16, 185, 129, 0.15)", padding: "16px", borderRadius: "12px" }}>
+                    <h4 style={{ fontSize: "0.82rem", textTransform: "uppercase", color: "#10b981", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      📄 Validated Work Receipt Evidence
+                    </h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+                      <div><strong>Summary:</strong> {activeReceipt.summary}</div>
+                      <div><strong>Files Created:</strong> {activeReceipt.files_created.join(", ") || "None"}</div>
+                      <div><strong>Files Modified:</strong> {activeReceipt.files_modified.join(", ") || "None"}</div>
+                      <div><strong>Commands Executed:</strong> {activeReceipt.commands_run.join(", ") || "None"}</div>
+                      <div><strong>Tests Run:</strong> {activeReceipt.tests_run.join(", ") || "None"}</div>
+                      <div><strong>Validation Status:</strong> <span style={{ color: "#10b981", fontWeight: "bold" }}>{activeReceipt.validation_status.toUpperCase()}</span></div>
+                      <div><strong>Completed At:</strong> {new Date(parseInt(activeReceipt.completed_at) * 1000).toLocaleString()}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Task Decomposition Trigger */}
+                {selectedKanbanTask.status !== "done" && (
+                  <div style={{ marginTop: "20px", borderTop: "1px solid var(--border-color)", paddingTop: "15px" }}>
+                    <h4 style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "10px" }}>
+                      ⚡ Smart Card Actions
+                    </h4>
+                    <button
+                      onClick={() => {
+                        handleDecompose(selectedKanbanTask.id);
+                        setSelectedKanbanTask(null);
+                      }}
+                      className="btn-primary"
+                      style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(0, 242, 254, 0.1)", border: "1px solid rgba(0, 242, 254, 0.3)", padding: "8px 12px", borderRadius: "8px", color: "var(--accent-primary)", fontSize: "0.78rem", cursor: "pointer", transition: "all 0.2s ease" }}
+                    >
+                      📋 Break into child cards...
+                    </button>
+                  </div>
+                )}
 
                 {/* Tabs for Timeline and Comments */}
                 <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "20px" }}>

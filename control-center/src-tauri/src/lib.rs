@@ -10,6 +10,7 @@ mod agent_templates;
 mod checkpoint_store;
 mod work_engine;
 mod command_guard;
+mod mission_builder;
 
 use storage::DbState;
 use tauri::Manager;
@@ -100,7 +101,21 @@ pub fn run() {
             checkpoint_store::get_latest_checkpoint,
             work_engine::get_work_engine_suggestions,
             command_guard::get_pending_command_approval,
-            command_guard::resolve_command_approval
+            command_guard::resolve_command_approval,
+            mission_builder::list_mission_packs,
+            mission_builder::generate_mission_preview,
+            mission_builder::edit_mission_preview,
+            mission_builder::apply_mission_preview,
+            mission_builder::discard_mission_preview,
+            mission_builder::save_mission_pack_from_preview,
+            mission_builder::get_autopilot_settings,
+            mission_builder::update_autopilot_settings,
+            mission_builder::get_mission_recommendations,
+            mission_builder::dismiss_recommendation,
+            mission_builder::get_agent_contract,
+            mission_builder::get_mission_audit_events,
+            mission_builder::get_work_receipt,
+            mission_builder::generate_work_receipt
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
