@@ -1,0 +1,78 @@
+{
+  "health": {
+    "ok": true,
+    "engine": "camelid",
+    "loaded_now": true,
+    "generation_ready": true,
+    "active_model_id": "mistral-7b-instruct-v0.3-q8_0-current-head-e50de923bd62"
+  },
+  "completion": {
+    "model": "mistral-7b-instruct-v0.3-q8_0-current-head-e50de923bd62",
+    "usage": {
+      "prompt_tokens": 3,
+      "completion_tokens": 1,
+      "total_tokens": 4
+    },
+    "choice": {
+      "index": 0,
+      "text": ",",
+      "finish_reason": "length"
+    },
+    "prompt_token_ids": [
+      1,
+      7080,
+      29477
+    ],
+    "generated_token_ids": [
+      29493
+    ],
+    "timings_ms": {
+      "tokenize": 2,
+      "weight_load": 0,
+      "weight_cache_hit": true,
+      "generate": 39017,
+      "forward_total": 38927.278,
+      "layers_total": 38537.329,
+      "logits": 389.885
+    }
+  },
+  "chat_completion": {
+    "model": "mistral-7b-instruct-v0.3-q8_0-current-head-e50de923bd62",
+    "usage": {
+      "prompt_tokens": 7,
+      "completion_tokens": 1,
+      "total_tokens": 8
+    },
+    "choice": {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": " Hello"
+      },
+      "finish_reason": "length"
+    },
+    "prompt_token_ids": [
+      1,
+      3,
+      29473,
+      7080,
+      29477,
+      29473,
+      4
+    ],
+    "generated_token_ids": [
+      23325
+    ],
+    "timings_ms": {
+      "tokenize": 3,
+      "weight_load": 0,
+      "weight_cache_hit": true,
+      "generate": 39479,
+      "forward_total": 39474.944,
+      "layers_total": 39084.971,
+      "logits": 389.858
+    }
+  },
+  "sampled_backend_rss_kib_after_smoke": 182096,
+  "note": "API smoke was run against the release backend already serving the exact Mistral row; RSS is a post-smoke ps sample, not a peak-profiler claim."
+}

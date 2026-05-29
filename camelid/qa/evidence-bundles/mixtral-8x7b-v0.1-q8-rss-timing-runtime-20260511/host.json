@@ -1,0 +1,15 @@
+{
+  "uname": "Linux 6.17.0-1013-aws x86_64",
+  "cpu": [
+    "Architecture:                            x86_64",
+    "CPU(s):                                  16",
+    "Model name:                              Intel(R) Xeon(R) Platinum 8488C"
+  ],
+  "meminfo": [
+    "MemTotal:       129801568 kB",
+    "MemAvailable:   127871856 kB",
+    "SwapTotal:             0 kB",
+    "SwapFree:              0 kB"
+  ],
+  "note": "Host identity, IPs, usernames, and private paths intentionally omitted."
+}

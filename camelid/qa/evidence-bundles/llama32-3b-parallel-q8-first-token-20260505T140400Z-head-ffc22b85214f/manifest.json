@@ -1,0 +1,145 @@
+{
+  "schema": "camelid.public_llama32_3b_parallel_q8_first_token_perf_evidence.v1",
+  "generated_utc": "2026-05-05T14:04:00Z",
+  "published_utc": "2026-05-05T15:56:00Z",
+  "git_head": "ffc22b85214f",
+  "current_public_head_when_published": "81a45c42aa6ede719dc170bc2f55fc50d6d08c54",
+  "source_head_is_ancestor_of_current_public_head": true,
+  "validation_lane": "approved_ubuntu_validation_lane_reopened_isolated_archive",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "scope": "Exact Llama 3.2 3B Instruct Q8_0 opt-in parallel Q8 first-token runtime direction probe only.",
+  "row_id": "llama32_3b_instruct_q8_0",
+  "display_name": "Llama 3.2 3B Instruct Q8_0",
+  "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+  "model_sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+  "method": {
+    "script": "scripts/bench-unique-chat.mjs",
+    "endpoint": "/v1/chat/completions",
+    "warmup": 1,
+    "repeats": 1,
+    "max_tokens": 1,
+    "parallel_env": "BACKENDINFERENCE_PARALLEL_LINEAR=<off|on>; BACKENDINFERENCE_PARALLEL_LINEAR_MIN_OUTPUTS=1024; RAYON_NUM_THREADS=16",
+    "note": "Small-sample first-token comparison of default serial file-backed Q8 path versus opt-in chunk-parallel output-row partitioning. Measured run used a hot weight cache after one warmup."
+  },
+  "code_validation": [
+    "cargo fmt --all -- --check",
+    "node --check scripts/bench-q8-hotpath-bundle.mjs",
+    "node --check scripts/bench-unique-chat.mjs",
+    "cargo test -q q8_0_block_reader_linear_matches_q8_path_with_parallel_chunks --lib",
+    "cargo test -q q8_0_file_backed_accumulate_matches_q8_block_dot_across_chunks --lib",
+    "cargo build --release"
+  ],
+  "runs": [
+    {
+      "parallel_linear": "off",
+      "repeats": 1,
+      "warmup": 1,
+      "max_tokens": 1,
+      "measured_count": 1,
+      "avg_prompt_token_count": 18,
+      "all_weight_cache_hit": true,
+      "any_prompt_cache_hit": false,
+      "avg_wall_ms": 14298.31,
+      "avg_generate_ms": 13960,
+      "avg_layers_ms": 13847.54,
+      "avg_logits_ms": 105.95,
+      "avg_attention_projection_ms": 3468.43,
+      "avg_attention_context_ms": 12.19,
+      "avg_ffn_total_ms": 10326.48,
+      "avg_generate_ms_per_prompt_token": 775.56,
+      "memory_samples": [
+        {
+          "label": "before_model_load",
+          "rss_mib": 6.3,
+          "vsz_mib": 1064.59
+        },
+        {
+          "label": "after_model_load",
+          "rss_mib": 91.83,
+          "vsz_mib": 1145.11
+        },
+        {
+          "label": "after_first_generated_token",
+          "rss_mib": 278.51,
+          "vsz_mib": 1337.11
+        },
+        {
+          "label": "after_2_generated_tokens_total",
+          "rss_mib": 283.57,
+          "vsz_mib": 1337.11
+        }
+      ],
+      "max_backend_rss_mib": 283.57
+    },
+    {
+      "parallel_linear": "on",
+      "repeats": 1,
+      "warmup": 1,
+      "max_tokens": 1,
+      "measured_count": 1,
+      "avg_prompt_token_count": 18,
+      "all_weight_cache_hit": true,
+      "any_prompt_cache_hit": false,
+      "avg_wall_ms": 12509.83,
+      "avg_generate_ms": 12200,
+      "avg_layers_ms": 12110.67,
+      "avg_logits_ms": 81.75,
+      "avg_attention_projection_ms": 3121.79,
+      "avg_attention_context_ms": 18.93,
+      "avg_ffn_total_ms": 8912.14,
+      "avg_generate_ms_per_prompt_token": 677.78,
+      "memory_samples": [
+        {
+          "label": "before_model_load",
+          "rss_mib": 6.21,
+          "vsz_mib": 1064.59
+        },
+        {
+          "label": "after_model_load",
+          "rss_mib": 91.75,
+          "vsz_mib": 1145.11
+        },
+        {
+          "label": "after_first_generated_token",
+          "rss_mib": 278.73,
+          "vsz_mib": 2393.42
+        },
+        {
+          "label": "after_2_generated_tokens_total",
+          "rss_mib": 282.97,
+          "vsz_mib": 2393.42
+        }
+      ],
+      "max_backend_rss_mib": 282.97
+    }
+  ],
+  "comparison": {
+    "generate_ms_off_to_on": [
+      13960,
+      12200
+    ],
+    "generate_ms_delta_pct": -12.61,
+    "layers_ms_off_to_on": [
+      13847.54,
+      12110.67
+    ],
+    "layers_ms_delta_pct": -12.54,
+    "logits_ms_off_to_on": [
+      105.95,
+      81.75
+    ],
+    "logits_ms_delta_pct": -22.84,
+    "ffn_total_ms_off_to_on": [
+      10326.48,
+      8912.14
+    ],
+    "ffn_total_ms_delta_pct": -13.7,
+    "max_backend_rss_mib_off_to_on": [
+      283.57,
+      282.97
+    ]
+  },
+  "passed": true,
+  "green_row_box": "Llama 3.2 3B Instruct Q8_0 \u2192 performance lane \u2192 opt-in parallel Q8 first-token runtime direction sub-box",
+  "claim_boundary": "Closes only the exact 3B opt-in parallel Q8 first-token runtime direction sub-box. It does not promote broad/full Llama-family support, neighboring rows, arbitrary/Jinja template support, model-native/larger context, production-throughput support, or portability."
+}

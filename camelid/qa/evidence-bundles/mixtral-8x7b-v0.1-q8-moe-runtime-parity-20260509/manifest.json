@@ -1,0 +1,170 @@
+{
+  "schema": "camelid.evidence.mixtral_moe_runtime_parity.v1",
+  "target_row": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+  "model_file": "mixtral-8x7b-instruct-v0.1-q8_0.gguf",
+  "model_sha256": "c48f9680d5aa60703ed0fd38e29fc6556b3490f8f6c9919a31c9da7996039f81",
+  "branch": "mixtral-exact-row-20260509",
+  "source_head_before_commit": "ce18d7c Add initial Mixtral MoE routing path",
+  "status": "bounded_runtime_and_one_prompt_parity_passed",
+  "support_boundary": "Evidence proves a bounded 1-token runtime smoke and one deterministic Mistral-instruct prompt parity check for the exact Mixtral Q8_0 row only. It does not claim broader Mixtral support, frontend support, long-context support, multi-prompt parity, or production readiness.",
+  "implementation_summary": [
+    "CPU materialization estimator treats lazy/file-backed Q8_0 rank-3 MoE expert tensors like rank-2 lazy Q8 linears so the safety guard reflects actual runtime materialization.",
+    "Loaded-weight validation now requires Mixtral router and rank-3 gate/up/down expert shapes when MoE metadata is present.",
+    "Mixtral router top-k now slices using the produced router logits width, fixing the full-model router panic seen during first smoke."
+  ],
+  "full_model_metadata": {
+    "file_size_bytes": 49626319776,
+    "tensor_count": 323,
+    "general.architecture": "llama",
+    "llama.embedding_length": 4096,
+    "llama.block_count": 32,
+    "llama.feed_forward_length": 14336,
+    "llama.attention.head_count": 32,
+    "llama.attention.head_count_kv": 8,
+    "llama.expert_count": 8,
+    "llama.expert_used_count": 2
+  },
+  "runtime_smoke": {
+    "endpoint": "/v1/completions",
+    "prompt": "Hello",
+    "max_tokens": 1,
+    "temperature": 0,
+    "top_k": 1,
+    "prompt_token_ids": [
+      1,
+      16230
+    ],
+    "generated_token_ids": [
+      28725
+    ],
+    "text": ",",
+    "server_rss_kib_after_smoke": 104764,
+    "timings_ms_summary": {
+      "tokenize": 5,
+      "weight_load": 3,
+      "weight_cache_hit": false,
+      "prompt_cache_hit": false,
+      "generate": 6983,
+      "forward_total": 6981.423,
+      "layers_total": 6946.465,
+      "logits": 34.906,
+      "prompt_token_count": 2,
+      "prefill_token_count": 1,
+      "first_token_evaluated": true
+    }
+  },
+  "one_prompt_parity": {
+    "render_mode": "mistral_instruct",
+    "expected_prompt": "<s>[INST] Hello [/INST]",
+    "reference_prompt_token_count": 9,
+    "reference_context": 512,
+    "prompt_tokens_match": true,
+    "generated_tokens_match": true,
+    "generated_text_match": true,
+    "backend_prompt_tokens": [
+      1,
+      28792,
+      16289,
+      28793,
+      22557,
+      733,
+      28748,
+      16289,
+      28793
+    ],
+    "reference_prompt_tokens": [
+      1,
+      28792,
+      16289,
+      28793,
+      22557,
+      733,
+      28748,
+      16289,
+      28793
+    ],
+    "backend_generated_tokens": [
+      22557
+    ],
+    "llama_generated_tokens": [
+      22557
+    ],
+    "backend_text": " Hello",
+    "llama_text": " Hello",
+    "first_generated_token_logit_comparison": {
+      "backend_token_id": 22557,
+      "llama_token_id": 22557,
+      "token_ids_match": true,
+      "backend_margin_llama_minus_backend": 0,
+      "llama_margin_llama_minus_backend": 0,
+      "margin_disagreement": 0,
+      "backend_rows": [
+        {
+          "token_id": 22557,
+          "logit": 32.353268,
+          "probability": 0.99792683,
+          "rank": 1,
+          "selected": true,
+          "text": " Hello"
+        },
+        {
+          "token_id": 22557,
+          "logit": 32.353268,
+          "probability": 0.99792683,
+          "rank": 1,
+          "selected": true,
+          "text": " Hello"
+        }
+      ],
+      "llama_rows": [
+        {
+          "id": 22557,
+          "token": " Hello",
+          "bytes": [
+            32,
+            72,
+            101,
+            108,
+            108,
+            111
+          ],
+          "logprob": -0.0009977428708225489
+        },
+        {
+          "id": 22557,
+          "token": " Hello",
+          "bytes": [
+            32,
+            72,
+            101,
+            108,
+            108,
+            111
+          ],
+          "logprob": -0.0009977428708225489
+        }
+      ]
+    },
+    "llama_memory_observation": "llama.cpp reference run reported CPU_Mapped model buffer 47193.83 MiB and AMX model buffer 1668.44 MiB in stderr; command time max RSS was 50195188 KiB.",
+    "elapsed_wall_clock": "0:32.13"
+  },
+  "validation_commands": [
+    "cargo fmt",
+    "cargo check",
+    "cargo test --lib mixtral_moe_ffn_routes_top_k_experts -- --nocapture",
+    "cargo test --test model_binding -- --nocapture",
+    "cargo test --test api_vertical_slice capabilities_report_support_contract_and_planned_lanes -- --nocapture",
+    "cargo test --test tokenizer mixtral -- --nocapture",
+    "cargo build --release",
+    "scripts/check-public-scrub.sh",
+    "node scripts/chat-parity-mistral.mjs --backend <camelid-api> --llama-url <llama-server> --model <exact-mixtral-q8-gguf> --model-id mixtral-smoke --llama-server <llama-server-bin> --llama-tokenize <llama-tokenize-bin> --start-llama-server --message Hello --max-tokens 1 --wait-ms 1800000 --require-prompt-match --require-generated-match --diagnostics-out <artifact>"
+  ],
+  "raw_artifacts_not_committed": [
+    "target/mixtral-smoke-20260509/completion-hello-1tok-v4.json",
+    "target/mixtral-parity-20260509/hello-1tok.json",
+    "target/mixtral-parity-20260509/hello-1tok.stdout",
+    "target/mixtral-parity-20260509/hello-1tok.stderr",
+    "target/mixtral-parity-20260509/hello-1tok.time"
+  ],
+  "generated_utc": "2026-05-09T21:10:40Z"
+}

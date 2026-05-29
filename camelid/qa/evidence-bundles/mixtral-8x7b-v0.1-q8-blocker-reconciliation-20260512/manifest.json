@@ -1,0 +1,27 @@
+{
+  "schema": "camelid.mixtral_blocker_reconciliation.v1",
+  "created_utc": "2026-05-12T08:01:00Z",
+  "source_head": "bc7af7335b9b527aedd429d70e899bd727612c40",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+  "current_status": "active_validation_partial_runtime",
+  "support_label": "unsupported_bounded_one_token_runtime_only",
+  "support_boundary": "Mixtral remains unsupported/blocked beyond bounded one-token backend MoE runtime evidence; no broad Mixtral, frontend/API/WebUI, long-context, production, neighboring-row, or full-support claim is made.",
+  "supersedes": [
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-backend-parity-refresh-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-api-smoke-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-webui-readiness-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-rss-timing-runtime-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-manifest-checksum-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-promotion-sync-20260511"
+  ],
+  "blocker_evidence": [
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-gate9a-50tok-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-longgen-continuation-20260511"
+  ],
+  "local_only_review": {
+    "remote_validation": "not_attempted; Ubuntu validation lane paused/offline",
+    "artifact_reviewed": true,
+    "runtime_rerun": "blocked_without_explicit_validation_host_reactivation"
+  },
+  "finding": "Short-prompt/early-token Mixtral evidence does not close support: Gate 9A diverges at generated token index 9 on Hello before 50 tokens, and the continuation probe records partial_failure plus a hung backend call. Public/API/frontend support surfaces must stay fail-closed for Mixtral."
+}

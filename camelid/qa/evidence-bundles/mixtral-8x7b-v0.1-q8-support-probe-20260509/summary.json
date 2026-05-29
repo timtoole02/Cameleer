@@ -1,0 +1,118 @@
+[
+  {
+    "prompt": "Hello",
+    "code": 0,
+    "backend": [
+      22557,
+      28808,
+      1602,
+      541,
+      315
+    ],
+    "llama": [
+      22557,
+      28808,
+      1602,
+      541,
+      315
+    ],
+    "backend_text": " Hello! How can I",
+    "llama_text": " Hello! How can I"
+  },
+  {
+    "prompt": "What is 2+2?",
+    "code": 0,
+    "backend": [
+      415,
+      2648,
+      302,
+      28705,
+      28750
+    ],
+    "llama": [
+      415,
+      2648,
+      302,
+      28705,
+      28750
+    ],
+    "backend_text": " The sum of 2",
+    "llama_text": " The sum of 2"
+  },
+  {
+    "prompt": "Name a color.",
+    "code": 0,
+    "backend": [
+      8836,
+      28723,
+      13,
+      13,
+      27955
+    ],
+    "llama": [
+      8836,
+      28723,
+      13,
+      13,
+      27955
+    ],
+    "backend_text": " Blue.\n\nHowever",
+    "llama_text": " Blue.\n\nHowever"
+  },
+  {
+    "prompt": "Say yes.",
+    "code": 0,
+    "backend": [
+      5592,
+      28723,
+      2
+    ],
+    "llama": [
+      5592,
+      28723,
+      2
+    ],
+    "backend_text": " Yes.",
+    "llama_text": " Yes."
+  },
+  {
+    "prompt": "Count to three.",
+    "code": 0,
+    "backend": [
+      28705,
+      28740,
+      28723,
+      12875,
+      28725
+    ],
+    "llama": [
+      28705,
+      28740,
+      28725,
+      28705,
+      28750
+    ],
+    "backend_text": " 1. Sure,",
+    "llama_text": " 1, 2"
+  },
+  {
+    "prompt": "Write OK.",
+    "code": 0,
+    "backend": [
+      12206,
+      28723,
+      1691,
+      736,
+      2424
+    ],
+    "llama": [
+      12206,
+      28723,
+      1691,
+      736,
+      2424
+    ],
+    "backend_text": " OK. Is there anything",
+    "llama_text": " OK. Is there anything"
+  }
+]

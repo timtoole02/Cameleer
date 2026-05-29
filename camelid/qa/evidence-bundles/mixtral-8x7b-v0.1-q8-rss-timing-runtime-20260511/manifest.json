@@ -1,0 +1,18 @@
+{
+  "bundle": "mixtral-8x7b-v0.1-q8-rss-timing-runtime-20260511",
+  "created_utc": "2026-05-12T00:06:52Z",
+  "scope": "Mixtral-8x7B-Instruct-v0.1.Q8_0 exact-row RSS/timing/runtime evidence",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+  "model_id": "mixtral-8x7b-v0.1-q8-runtime-gate6",
+  "all_passed": true,
+  "files": [
+    "chat_5_tokens.json",
+    "completion_1_token.json",
+    "health_after.json",
+    "host.json",
+    "load.json",
+    "rss_samples.json",
+    "summary.json",
+    "unload.json"
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "row_id": "tinyllama_1_1b_chat_q8_0",
+  "display_name": "TinyLlama 1.1B Chat Q8_0",
+  "public_status": "supported_current_gate",
+  "model_file": "tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+  "model_id": "tinyllama-q8",
+  "model_path_env": "${CAMELID_MODEL_DIR:?set CAMELID_MODEL_DIR to the GGUF directory}/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+  "expected_model_sha256": "a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59",
+  "template_family": "tinyllama_marker",
+  "compatibility_row": "tinyllama_1_1b_chat_q8_0",
+  "expected_compatibility_status": "supported_current_gate",
+  "expect_contract_supported": true,
+  "expect_webui_chat": "enabled",
+  "row_root": "qa/evidence-bundles/four-row-current-head-20260503T061958Z-head-34b954498a03/tinyllama_1_1b_chat_q8_0",
+  "carry_forward_bundle": "qa/evidence-bundles/four-row-public-20260503T024327Z/tinyllama_1_1b_chat_q8_0.bundle.json",
+  "notes": [
+    "Current public support is already a real TinyLlama gate, but this row still needs the same durable current-head bundle shape as the three Llama rows.",
+    "The Llama-3-specific template/context packs do not apply unchanged here; keep TinyLlama evidence exact-row and marker-template scoped."
+  ],
+  "blockers": [
+    "Fresh current-head API/WebUI/perf artifacts are still needed in a durable target/full-support root.",
+    "Do not imply support for adjacent TinyLlama quantizations or other families."
+  ],
+  "tracks": [
+    {
+      "index": 1,
+      "id": "compact-parity",
+      "kind": "parity",
+      "status": "ready_to_run",
+      "description": "Refresh bounded TinyLlama hello parity on current head.",
+      "pack_path": "qa/prompt-packs/tinyllama-hello-5tok.json",
+      "carry_forward_artifacts": [],
+      "notes": [],
+      "command_file": "qa/evidence-bundles/four-row-current-head-20260503T061958Z-head-34b954498a03/tinyllama_1_1b_chat_q8_0/commands/01-compact-parity.sh"
+    },
+    {
+      "index": 2,
+      "id": "broader-parity",
+      "kind": "parity",
+      "status": "carry_forward_only",
+      "description": "Preserve the existing five-prompt/50-token TinyLlama gate while a fresh current-head rerun is scheduled.",
+      "pack_path": null,
+      "carry_forward_artifacts": [
+        "target/edge-prompt-audit-fixed-20260428T1530/short.json",
+        "target/edge-prompt-audit-fixed-20260428T1530/trailing-spaces.json",
+        "target/edge-prompt-audit-fixed-20260428T1530/special-chars.json",
+        "target/edge-prompt-audit-fixed-20260428T1530/longer.json",
+        "target/edge-prompt-dequant-default-20260428T1604/multiline-long-default-50.json"
+      ],
+      "notes": [],
+      "command_file": "qa/evidence-bundles/four-row-current-head-20260503T061958Z-head-34b954498a03/tinyllama_1_1b_chat_q8_0/commands/02-broader-parity.sh"
+    },
+    {
+      "index": 3,
+      "id": "chat-template-shapes",
+      "kind": "template",
+      "status": "ready_to_run",
+      "description": "Run the exact-row TinyLlama marker-template shape pack.",
+      "pack_path": "qa/prompt-packs/tinyllama-chat-template-shapes.json",
+      "carry_forward_artifacts": [],
+      "notes": [],
+      "command_file": "qa/evidence-bundles/four-row-current-head-20260503T061958Z-head-34b954498a03/tinyllama_1_1b_chat_q8_0/commands/03-chat-template-shapes.sh"
+    },
+    {
+      "index": 4,
+      "id": "context-512",
+      "kind": "context",
+      "status": "ready_to_run",
+      "description": "Run the bounded TinyLlama 512-context pack and preserve success or failure durably.",
+      "pack_path": "qa/prompt-packs/tinyllama-context-512-smoke.json",
+      "carry_forward_artifacts": [],
+      "notes": [],
+      "command_file": "qa/evidence-bundles/four-row-current-head-20260503T061958Z-head-34b954498a03/tinyllama_1_1b_chat_q8_0/commands/04-context-512.sh"
+    },
+    {
+      "index": 5,
+      "id": "api-webui-smoke",
+      "kind": "api_webui",
+      "status": "ready_to_run",
+      "description": "Refresh current-head TinyLlama load/completions/chat/frontend smoke.",
+      "pack_path": null,
+      "carry_forward_artifacts": [],
+      "notes": [],
+      "command_file": "qa/evidence-bundles/four-row-current-head-20260503T061958Z-head-34b954498a03/tinyllama_1_1b_chat_q8_0/commands/05-api-webui-smoke.sh"
+    },
+    {
+      "index": 6,
+      "id": "perf-rss-portability",
+      "kind": "perf",
+      "status": "ready_to_run",
+      "description": "Capture host facts plus RSS after load/1tok/5tok/API-WebUI smoke.",
+      "pack_path": null,
+      "carry_forward_artifacts": [],
+      "notes": [],
+      "command_file": "qa/evidence-bundles/four-row-current-head-20260503T061958Z-head-34b954498a03/tinyllama_1_1b_chat_q8_0/commands/06-perf-rss-portability.sh"
+    }
+  ]
+}

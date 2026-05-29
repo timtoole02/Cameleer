@@ -1,0 +1,4 @@
+cd frontend && npm run smoke:model-state
+cd frontend && npm run smoke:integration
+cd frontend && npm run smoke:ui
+cd frontend && npm run build

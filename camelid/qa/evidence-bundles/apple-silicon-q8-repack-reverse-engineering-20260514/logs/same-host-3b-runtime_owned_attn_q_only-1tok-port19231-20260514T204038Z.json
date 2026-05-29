@@ -1,0 +1,249 @@
+{
+  "schema": "camelid.same_host_llama3_benchmark.v1",
+  "generated_utc": "2026-05-14T20:40:48.118Z",
+  "model": {
+    "row_id": "llama32_3b_instruct_q8_0",
+    "model_path": "<local-llama-3.2-3b-instruct-q8_0.gguf>",
+    "model_id": "llama32-3b-q8-repack-re",
+    "render_mode": "compact"
+  },
+  "method": {
+    "warmup": 0,
+    "repeats": 1,
+    "max_tokens": 1,
+    "expected_marker": "CMLD-BENCH",
+    "require_marker": false,
+    "benchmark_messages": [
+      {
+        "role": "system",
+        "content": "You are Camelid benchmark mode. Reply with concise factual text only."
+      },
+      {
+        "role": "user",
+        "content": "Give a short three-line summary of why exact-row parity matters for local inference, and end the last line with the marker CMLD-BENCH."
+      }
+    ],
+    "estimated_prompt_tokens": 89,
+    "llama_context": 512,
+    "threads": 8,
+    "commands": {
+      "harness": "node scripts/bench-llama3-same-host.mjs --model '<local-llama-3.2-3b-instruct-q8_0.gguf>' --model-id llama32-3b-q8-repack-re --row-id llama32_3b_instruct_q8_0 --max-tokens 1 --warmup 0 --repeats 1 --threads 8 --out <camelid-repo>/qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/logs/same-host-3b-runtime_owned_attn_q_only-1tok-port19231-20260514T204038Z.json",
+      "camelid_serve": "<camelid-repo>/target/release/camelid serve --addr 127.0.0.1:19231",
+      "llama_server": "<llama-cpp-repo>/build-cpu-mac-q8/bin/llama-server --host 127.0.0.1 --port 19233 -m '<local-llama-3.2-3b-instruct-q8_0.gguf>' -ngl 0 -c 512 --no-warmup -t 8",
+      "camelid_load_request": "POST http://127.0.0.1:19231/api/models/load {\"path\":\"<local-llama-3.2-3b-instruct-q8_0.gguf>\",\"id\":\"llama32-3b-q8-repack-re\"}",
+      "camelid_measure_request": "POST http://127.0.0.1:19231/v1/chat/completions stream=true max_tokens=1 temperature=0",
+      "llama_cpp_measure_request": "POST http://127.0.0.1:19233/completion stream=true n_predict=1 temperature=0 cache_prompt=false"
+    },
+    "outputs": {
+      "stdout": [
+        "camelid_ttft_ms=<mean first non-empty streamed content chunk over measured runs>",
+        "camelid_decode_tok_s=<mean estimated streamed chunks per second after first content>",
+        "camelid_ms_tok=<mean estimated milliseconds per streamed content chunk after first content>",
+        "llama_cpp_ttft_ms=<same metric for llama.cpp>",
+        "llama_cpp_decode_tok_s=<same metric for llama.cpp>",
+        "llama_cpp_ms_tok=<same metric for llama.cpp>",
+        "json_out=<absolute path when --out is set>"
+      ],
+      "json": "Full machine-readable report at --out, schema camelid.same_host_llama3_benchmark.v1.",
+      "guardrail": "marker_presence=CMLD-BENCH; pass/fail is recorded under guardrails and can be enforced with --require-marker"
+    },
+    "bounded_metrics": [
+      "first_byte_ms: first network byte from each streaming response",
+      "first_event_ms: first parsed SSE event",
+      "first_content_ms / TTFT: first non-empty streamed content chunk",
+      "total_elapsed_ms: full streaming response wall time",
+      "completion_tokens_estimate: count of non-empty streamed content chunks, not tokenizer-ground-truth tokens",
+      "decode_tok_per_s and ms_per_token_after_first: derived from completion_tokens_estimate after first content",
+      "marker_presence: exact expected marker observed in measured output text, optionally enforced with --require-marker",
+      "resource_snapshots: host memory/load/storage snapshots before start, before measured runs, and after measured runs"
+    ],
+    "evidence_context": {
+      "repository": {
+        "head": "6a12d6d6863f389b8b2a4ce897cea3c1bab372c2",
+        "branch": "main",
+        "status_short": "M src/inference.rs\n M src/tensor/mod.rs\n M tests/tensor_store.rs\n?? qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/"
+      },
+      "host_class": {
+        "os_type": "Darwin",
+        "platform": "darwin",
+        "release": "25.5.0",
+        "arch": "arm64",
+        "cpu_model": "Apple M4",
+        "cpu_count": 10,
+        "total_memory_gib": 16
+      },
+      "binaries": {
+        "camelid": {
+          "path": "<camelid-repo>/target/release/camelid",
+          "exists": true,
+          "size_bytes": 7126192,
+          "sha256": "dd0e0a0fdb1ccc38bea93212ede221a79db5ff3daf0ab2268fc29437dfa3e75a"
+        },
+        "llama_server": {
+          "path": "<llama-cpp-repo>/build-cpu-mac-q8/bin/llama-server",
+          "exists": true,
+          "size_bytes": 7871280,
+          "sha256": "7fd219af2db80adb5675fdad451d4ac7e68596838207cb7fcc80aca5a7fcd660"
+        },
+        "node": "v22.22.2"
+      },
+      "model_artifact": {
+        "path": "<local-llama-3.2-3b-instruct-q8_0.gguf>",
+        "exists": true,
+        "size_bytes": 3421899296,
+        "sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921"
+      },
+      "privacy_note": "Host name, user name, and home-relative local paths are intentionally not recorded; scrub full artifacts before publication if absolute paths appear in commands."
+    },
+    "resource_snapshots": {
+      "pre_start": {
+        "label": "pre_start",
+        "captured_utc": "2026-05-14T20:40:40.611Z",
+        "loadavg_1m_5m_15m": [
+          7.6,
+          4.28,
+          3.28
+        ],
+        "memory": {
+          "total_gib": 16,
+          "free_gib": 3.63,
+          "process_rss_mib": 82.48
+        },
+        "linux_meminfo": null,
+        "storage": {
+          "path": "<camelid-repo>",
+          "total_gib": 228.27,
+          "available_gib": 22.48,
+          "used_pct": 90.15
+        }
+      },
+      "before_measured_runs": {
+        "label": "before_measured_runs",
+        "captured_utc": "2026-05-14T20:40:42.582Z",
+        "loadavg_1m_5m_15m": [
+          7.6,
+          4.28,
+          3.28
+        ],
+        "memory": {
+          "total_gib": 16,
+          "free_gib": 0.24,
+          "process_rss_mib": 144.23
+        },
+        "linux_meminfo": null,
+        "storage": {
+          "path": "<camelid-repo>",
+          "total_gib": 228.27,
+          "available_gib": 22.48,
+          "used_pct": 90.15
+        }
+      },
+      "after_measured_runs": {
+        "label": "after_measured_runs",
+        "captured_utc": "2026-05-14T20:40:48.117Z",
+        "loadavg_1m_5m_15m": [
+          7.38,
+          4.34,
+          3.31
+        ],
+        "memory": {
+          "total_gib": 16,
+          "free_gib": 0.15,
+          "process_rss_mib": 34.14
+        },
+        "linux_meminfo": null,
+        "storage": {
+          "path": "<camelid-repo>",
+          "total_gib": 228.27,
+          "available_gib": 22.48,
+          "used_pct": 90.15
+        }
+      }
+    },
+    "note": "Same-host comparison using streaming requests to Camelid /v1/chat/completions and llama.cpp /completion. TTFT is first non-empty streamed content chunk; token throughput is estimated from streamed content chunks, not tokenizer-ground-truth completion tokens."
+  },
+  "camelid": {
+    "base_url": "http://127.0.0.1:19231",
+    "warmups": [],
+    "runs": [
+      {
+        "label": "camelid-measure-1",
+        "text": "Exact",
+        "first_byte_ms": 4554.61,
+        "first_event_ms": 4555.05,
+        "first_content_ms": 4555.23,
+        "total_elapsed_ms": 4555.27,
+        "completion_tokens_estimate": 1,
+        "chunk_count": 1,
+        "decode_tok_per_s": 21798.37,
+        "ms_per_token_after_first": 0.05
+      }
+    ],
+    "summary": {
+      "count": 1,
+      "avg_first_byte_ms": 4554.61,
+      "avg_first_event_ms": 4555.05,
+      "avg_ttft_ms": 4555.23,
+      "avg_total_elapsed_ms": 4555.27,
+      "avg_decode_tok_per_s": 21798.37,
+      "avg_ms_per_token_after_first": 0.05,
+      "avg_completion_tokens_estimate": 1
+    }
+  },
+  "llama_cpp": {
+    "base_url": "http://127.0.0.1:19233",
+    "warmups": [],
+    "runs": [
+      {
+        "label": "llama-measure-1",
+        "text": "Exact",
+        "first_byte_ms": 979.2,
+        "first_event_ms": 979.21,
+        "first_content_ms": 979.23,
+        "total_elapsed_ms": 979.4,
+        "completion_tokens_estimate": 1,
+        "chunk_count": 1,
+        "decode_tok_per_s": 6099.12,
+        "ms_per_token_after_first": 0.16
+      }
+    ],
+    "summary": {
+      "count": 1,
+      "avg_first_byte_ms": 979.2,
+      "avg_first_event_ms": 979.21,
+      "avg_ttft_ms": 979.23,
+      "avg_total_elapsed_ms": 979.4,
+      "avg_decode_tok_per_s": 6099.12,
+      "avg_ms_per_token_after_first": 0.16,
+      "avg_completion_tokens_estimate": 1
+    },
+    "binary": "<llama-cpp-repo>/build-cpu-mac-q8/bin/llama-server"
+  },
+  "comparison": {
+    "ttft_delta_pct_vs_llama_cpp": 365.18,
+    "total_elapsed_delta_pct_vs_llama_cpp": 365.11,
+    "decode_tok_per_s_delta_pct_vs_llama_cpp": 257.4,
+    "ms_per_token_after_first_delta_pct_vs_llama_cpp": -68.75
+  },
+  "guardrails": {
+    "expected_marker": "CMLD-BENCH",
+    "require_marker": false,
+    "marker_presence": {
+      "camelid": [
+        {
+          "label": "camelid-measure-1",
+          "contains_expected_marker": false
+        }
+      ],
+      "llama_cpp": [
+        {
+          "label": "llama-measure-1",
+          "contains_expected_marker": false
+        }
+      ]
+    },
+    "passed": false,
+    "note": "Marker presence is recorded for deterministic-output hygiene but is not enforced unless --require-marker is set."
+  },
+  "claim_boundary": "Same-host benchmark snapshot only for exact row llama32_3b_instruct_q8_0 with the provided GGUF, prompt, max-token budget, host, binaries, and thread settings. It is bounded timing evidence only: it does not widen support, portability, production-throughput, model-native/larger-context, neighboring-row, broad Llama-family, 1B, or Mixtral claims unless a separate row-specific evidence bundle records those exact conditions."
+}

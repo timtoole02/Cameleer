@@ -1,0 +1,21 @@
+{
+  "artifact": "mixtral-8x7b-v0.1-q8-support-probe-20260509",
+  "created_at": "2026-05-09T23:00:00Z",
+  "branch": "mixtral-exact-row-20260509",
+  "commit": "149848c15c017adad349330eca07b2d6ebc39f4d",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+  "model_sha256": "c48f9680d5aa60703ed0fd38e29fc6556b3490f8f6c9919a31c9da7996039f81",
+  "probe": "six short Mistral-instruct prompts at max_tokens=5 against llama.cpp",
+  "passed_prompts": [
+    "Hello",
+    "What is 2+2?",
+    "Name a color.",
+    "Say yes.",
+    "Write OK."
+  ],
+  "failed_prompts": [
+    "Count to three."
+  ],
+  "known_blocker": "Count to three. diverges at generated step 2: Camelid chooses dot then Sure, while llama.cpp full decode chooses comma then 2. Previous step-logit evidence shows this is a near-tie and fresh llama.cpp forced-prefill after the same prefix also prefers dot.",
+  "support_boundary": "bounded backend exact-row MoE runtime evidence only; no broad Mixtral, frontend, long-context, production, neighboring-row, or full-support claim"
+}

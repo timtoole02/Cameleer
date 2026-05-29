@@ -1,0 +1,7 @@
+generated_utc=20260505T084931Z
+git_head=15bfc41d15d5aaf4b8b0244bc38989a2d096f922
+origin_main=15bfc41d15d5aaf4b8b0244bc38989a2d096f922
+checkout_status=0
+model=$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf
+api_base=http://127.0.0.1:8397
+frontend_url=http://127.0.0.1:4397

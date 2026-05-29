@@ -1,0 +1,10 @@
+{
+  "id": "longer",
+  "note": "Longer natural-language instruction within the 50-token budget.",
+  "message": "In two short sentences, explain why deterministic token parity matters for a local GGUF inference backend under a strict support contract.",
+  "messages": null,
+  "max_tokens": 50,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 50
+}

@@ -1,0 +1,1844 @@
+{
+  "backend": "http://127.0.0.1:8281",
+  "llama_server": "http://127.0.0.1:8283",
+  "model": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+  "model_id": "tinyllama-q8",
+  "message": "Reply with the word camelid and preserve this prompt's trailing spaces.",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Reply with the word camelid and preserve this prompt's trailing spaces."
+    }
+  ],
+  "render_mode": "tinyllama-marker",
+  "expected_prompt": "<|user|>\nReply with the word camelid and preserve this prompt's trailing spaces.</s>\n<|assistant|>\n",
+  "expected_prompt_char_count": 99,
+  "reference_prompt_token_count": 34,
+  "reference_context": 512,
+  "prompt_tokens_match": true,
+  "generated_tokens_match": true,
+  "generated_text_match": true,
+  "first_generated_token_diff_index": -1,
+  "first_generated_token_logit_comparison": {
+    "backend_token_id": 29907,
+    "llama_token_id": 29907,
+    "token_ids_match": true,
+    "backend_margin_llama_minus_backend": 0,
+    "llama_margin_llama_minus_backend": 0,
+    "margin_disagreement": 0,
+    "backend_rows": [
+      {
+        "token_id": 29907,
+        "logit": 15.098518,
+        "probability": 0.23051734,
+        "rank": 1,
+        "selected": true,
+        "text": "C"
+      },
+      {
+        "token_id": 29907,
+        "logit": 15.098518,
+        "probability": 0.23051734,
+        "rank": 1,
+        "selected": true,
+        "text": "C"
+      }
+    ],
+    "llama_rows": [
+      {
+        "id": 29907,
+        "token": "C",
+        "bytes": [
+          67
+        ],
+        "logprob": -1.5857422351837158
+      },
+      {
+        "id": 29907,
+        "token": "C",
+        "bytes": [
+          67
+        ],
+        "logprob": -1.5857422351837158
+      }
+    ]
+  },
+  "first_generated_text_diff_index": -1,
+  "backend_prompt_tokens": [
+    1,
+    529,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    5612,
+    368,
+    411,
+    278,
+    1734,
+    2996,
+    492,
+    29881,
+    322,
+    19905,
+    445,
+    9508,
+    29915,
+    29879,
+    25053,
+    8162,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13
+  ],
+  "reference_prompt_tokens": [
+    1,
+    529,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    5612,
+    368,
+    411,
+    278,
+    1734,
+    2996,
+    492,
+    29881,
+    322,
+    19905,
+    445,
+    9508,
+    29915,
+    29879,
+    25053,
+    8162,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13
+  ],
+  "backend_generated_tokens": [
+    29907,
+    420,
+    492,
+    333,
+    2
+  ],
+  "llama_generated_tokens": [
+    29907,
+    420,
+    492,
+    333,
+    2
+  ],
+  "llama_top_logprobs": [
+    {
+      "id": 29907,
+      "token": "C",
+      "bytes": [
+        67
+      ],
+      "logprob": -1.5857422351837158
+    },
+    {
+      "id": 13504,
+      "token": "Pres",
+      "bytes": [
+        80,
+        114,
+        101,
+        115
+      ],
+      "logprob": -1.909439206123352
+    },
+    {
+      "id": 5612,
+      "token": "Rep",
+      "bytes": [
+        82,
+        101,
+        112
+      ],
+      "logprob": -2.5311148166656494
+    },
+    {
+      "id": 1576,
+      "token": "The",
+      "bytes": [
+        84,
+        104,
+        101
+      ],
+      "logprob": -3.160081148147583
+    },
+    {
+      "id": 29908,
+      "token": "\"",
+      "bytes": [
+        34
+      ],
+      "logprob": -3.6985294818878174
+    },
+    {
+      "id": 27796,
+      "token": "Come",
+      "bytes": [
+        67,
+        111,
+        109,
+        101
+      ],
+      "logprob": -3.7881920337677
+    },
+    {
+      "id": 1762,
+      "token": "To",
+      "bytes": [
+        84,
+        111
+      ],
+      "logprob": -4.024652481079102
+    },
+    {
+      "id": 797,
+      "token": "In",
+      "bytes": [
+        73,
+        110
+      ],
+      "logprob": -4.244564056396484
+    },
+    {
+      "id": 1184,
+      "token": "Pro",
+      "bytes": [
+        80,
+        114,
+        111
+      ],
+      "logprob": -4.376185417175293
+    },
+    {
+      "id": 29909,
+      "token": "A",
+      "bytes": [
+        65
+      ],
+      "logprob": -4.376519680023193
+    },
+    {
+      "id": 29931,
+      "token": "L",
+      "bytes": [
+        76
+      ],
+      "logprob": -4.520000457763672
+    },
+    {
+      "id": 29943,
+      "token": "F",
+      "bytes": [
+        70
+      ],
+      "logprob": -4.568443298339844
+    },
+    {
+      "id": 1523,
+      "token": "Com",
+      "bytes": [
+        67,
+        111,
+        109
+      ],
+      "logprob": -4.57119083404541
+    },
+    {
+      "id": 29902,
+      "token": "I",
+      "bytes": [
+        73
+      ],
+      "logprob": -4.574361801147461
+    },
+    {
+      "id": 29925,
+      "token": "P",
+      "bytes": [
+        80
+      ],
+      "logprob": -4.5956573486328125
+    },
+    {
+      "id": 5894,
+      "token": "Per",
+      "bytes": [
+        80,
+        101,
+        114
+      ],
+      "logprob": -4.793042182922363
+    },
+    {
+      "id": 29903,
+      "token": "S",
+      "bytes": [
+        83
+      ],
+      "logprob": -4.810025691986084
+    },
+    {
+      "id": 29911,
+      "token": "T",
+      "bytes": [
+        84
+      ],
+      "logprob": -4.8168134689331055
+    },
+    {
+      "id": 6565,
+      "token": "Ver",
+      "bytes": [
+        86,
+        101,
+        114
+      ],
+      "logprob": -4.821372032165527
+    },
+    {
+      "id": 29923,
+      "token": "E",
+      "bytes": [
+        69
+      ],
+      "logprob": -4.930739879608154
+    },
+    {
+      "id": 420,
+      "token": "ame",
+      "bytes": [
+        97,
+        109,
+        101
+      ],
+      "logprob": -1.2319096326828003
+    },
+    {
+      "id": 398,
+      "token": "um",
+      "bytes": [
+        117,
+        109
+      ],
+      "logprob": -2.362445831298828
+    },
+    {
+      "id": 2576,
+      "token": "lim",
+      "bytes": [
+        108,
+        105,
+        109
+      ],
+      "logprob": -3.8767929077148438
+    },
+    {
+      "id": 331,
+      "token": "em",
+      "bytes": [
+        101,
+        109
+      ],
+      "logprob": -3.8772971630096436
+    },
+    {
+      "id": 555,
+      "token": "orm",
+      "bytes": [
+        111,
+        114,
+        109
+      ],
+      "logprob": -3.973385810852051
+    },
+    {
+      "id": 283,
+      "token": "ou",
+      "bytes": [
+        111,
+        117
+      ],
+      "logprob": -4.12360954284668
+    },
+    {
+      "id": 280,
+      "token": "le",
+      "bytes": [
+        108,
+        101
+      ],
+      "logprob": -4.304577827453613
+    },
+    {
+      "id": 29872,
+      "token": "e",
+      "bytes": [
+        101
+      ],
+      "logprob": -4.3928375244140625
+    },
+    {
+      "id": 549,
+      "token": "ong",
+      "bytes": [
+        111,
+        110,
+        103
+      ],
+      "logprob": -4.464390754699707
+    },
+    {
+      "id": 473,
+      "token": "our",
+      "bytes": [
+        111,
+        117,
+        114
+      ],
+      "logprob": -4.566692352294922
+    },
+    {
+      "id": 4212,
+      "token": "alled",
+      "bytes": [
+        97,
+        108,
+        108,
+        101,
+        100
+      ],
+      "logprob": -4.586729049682617
+    },
+    {
+      "id": 13190,
+      "token": "laimed",
+      "bytes": [
+        108,
+        97,
+        105,
+        109,
+        101,
+        100
+      ],
+      "logprob": -4.6565351486206055
+    },
+    {
+      "id": 397,
+      "token": "od",
+      "bytes": [
+        111,
+        100
+      ],
+      "logprob": -4.711947441101074
+    },
+    {
+      "id": 4183,
+      "token": "amer",
+      "bytes": [
+        97,
+        109,
+        101,
+        114
+      ],
+      "logprob": -4.83399772644043
+    },
+    {
+      "id": 1148,
+      "token": "oh",
+      "bytes": [
+        111,
+        104
+      ],
+      "logprob": -4.8481950759887695
+    },
+    {
+      "id": 29884,
+      "token": "u",
+      "bytes": [
+        117
+      ],
+      "logprob": -4.901410102844238
+    },
+    {
+      "id": 582,
+      "token": "ru",
+      "bytes": [
+        114,
+        117
+      ],
+      "logprob": -4.994269371032715
+    },
+    {
+      "id": 1117,
+      "token": "amb",
+      "bytes": [
+        97,
+        109,
+        98
+      ],
+      "logprob": -5.018583297729492
+    },
+    {
+      "id": 1507,
+      "token": "ool",
+      "bytes": [
+        111,
+        111,
+        108
+      ],
+      "logprob": -5.040410995483398
+    },
+    {
+      "id": 13946,
+      "token": "ertain",
+      "bytes": [
+        101,
+        114,
+        116,
+        97,
+        105,
+        110
+      ],
+      "logprob": -5.083001136779785
+    },
+    {
+      "id": 492,
+      "token": "li",
+      "bytes": [
+        108,
+        105
+      ],
+      "logprob": -0.4849642515182495
+    },
+    {
+      "id": 29880,
+      "token": "l",
+      "bytes": [
+        108
+      ],
+      "logprob": -2.446749687194824
+    },
+    {
+      "id": 280,
+      "token": "le",
+      "bytes": [
+        108,
+        101
+      ],
+      "logprob": -2.757613182067871
+    },
+    {
+      "id": 839,
+      "token": "led",
+      "bytes": [
+        108,
+        101,
+        100
+      ],
+      "logprob": -3.072092056274414
+    },
+    {
+      "id": 506,
+      "token": "lic",
+      "bytes": [
+        108,
+        105,
+        99
+      ],
+      "logprob": -4.061026573181152
+    },
+    {
+      "id": 23443,
+      "token": "lis",
+      "bytes": [
+        108,
+        105,
+        115
+      ],
+      "logprob": -4.389116287231445
+    },
+    {
+      "id": 16301,
+      "token": "lei",
+      "bytes": [
+        108,
+        101,
+        105
+      ],
+      "logprob": -4.684024810791016
+    },
+    {
+      "id": 3473,
+      "token": "lig",
+      "bytes": [
+        108,
+        105,
+        103
+      ],
+      "logprob": -5.109029769897461
+    },
+    {
+      "id": 1982,
+      "token": "lib",
+      "bytes": [
+        108,
+        105,
+        98
+      ],
+      "logprob": -5.15384578704834
+    },
+    {
+      "id": 29899,
+      "token": "-",
+      "bytes": [
+        45
+      ],
+      "logprob": -5.230469703674316
+    },
+    {
+      "id": 29877,
+      "token": "o",
+      "bytes": [
+        111
+      ],
+      "logprob": -5.236462593078613
+    },
+    {
+      "id": 3197,
+      "token": "lie",
+      "bytes": [
+        108,
+        105,
+        101
+      ],
+      "logprob": -5.325283050537109
+    },
+    {
+      "id": 19646,
+      "token": "lius",
+      "bytes": [
+        108,
+        105,
+        117,
+        115
+      ],
+      "logprob": -5.331271171569824
+    },
+    {
+      "id": 4456,
+      "token": "lia",
+      "bytes": [
+        108,
+        105,
+        97
+      ],
+      "logprob": -5.611911773681641
+    },
+    {
+      "id": 19411,
+      "token": "lit",
+      "bytes": [
+        108,
+        105,
+        116
+      ],
+      "logprob": -5.641582489013672
+    },
+    {
+      "id": 1674,
+      "token": "lish",
+      "bytes": [
+        108,
+        105,
+        115,
+        104
+      ],
+      "logprob": -5.760951995849609
+    },
+    {
+      "id": 2576,
+      "token": "lim",
+      "bytes": [
+        108,
+        105,
+        109
+      ],
+      "logprob": -5.878639221191406
+    },
+    {
+      "id": 3466,
+      "token": "lip",
+      "bytes": [
+        108,
+        105,
+        112
+      ],
+      "logprob": -5.891692161560059
+    },
+    {
+      "id": 29966,
+      "token": "<",
+      "bytes": [
+        60
+      ],
+      "logprob": -6.007508277893066
+    },
+    {
+      "id": 368,
+      "token": "ly",
+      "bytes": [
+        108,
+        121
+      ],
+      "logprob": -6.041847229003906
+    },
+    {
+      "id": 333,
+      "token": "id",
+      "bytes": [
+        105,
+        100
+      ],
+      "logprob": -0.49738869071006775
+    },
+    {
+      "id": 328,
+      "token": "ad",
+      "bytes": [
+        97,
+        100
+      ],
+      "logprob": -3.6378371715545654
+    },
+    {
+      "id": 4841,
+      "token": "ids",
+      "bytes": [
+        105,
+        100,
+        115
+      ],
+      "logprob": -3.7026898860931396
+    },
+    {
+      "id": 3898,
+      "token": "idae",
+      "bytes": [
+        105,
+        100,
+        97,
+        101
+      ],
+      "logprob": -3.82763934135437
+    },
+    {
+      "id": 839,
+      "token": "led",
+      "bytes": [
+        108,
+        101,
+        100
+      ],
+      "logprob": -3.963367223739624
+    },
+    {
+      "id": 8819,
+      "token": "idi",
+      "bytes": [
+        105,
+        100,
+        105
+      ],
+      "logprob": -4.068681716918945
+    },
+    {
+      "id": 311,
+      "token": "de",
+      "bytes": [
+        100,
+        101
+      ],
+      "logprob": -4.07265567779541
+    },
+    {
+      "id": 397,
+      "token": "od",
+      "bytes": [
+        111,
+        100
+      ],
+      "logprob": -4.07689094543457
+    },
+    {
+      "id": 1458,
+      "token": "ida",
+      "bytes": [
+        105,
+        100,
+        97
+      ],
+      "logprob": -4.206786155700684
+    },
+    {
+      "id": 30189,
+      "token": "ð",
+      "bytes": [
+        195,
+        176
+      ],
+      "logprob": -4.535882949829102
+    },
+    {
+      "id": 29875,
+      "token": "i",
+      "bytes": [
+        105
+      ],
+      "logprob": -4.665107727050781
+    },
+    {
+      "id": 680,
+      "token": "ide",
+      "bytes": [
+        105,
+        100,
+        101
+      ],
+      "logprob": -4.871219635009766
+    },
+    {
+      "id": 29899,
+      "token": "-",
+      "bytes": [
+        45
+      ],
+      "logprob": -5.001345634460449
+    },
+    {
+      "id": 29966,
+      "token": "<",
+      "bytes": [
+        60
+      ],
+      "logprob": -5.016950607299805
+    },
+    {
+      "id": 375,
+      "token": "us",
+      "bytes": [
+        117,
+        115
+      ],
+      "logprob": -5.229921340942383
+    },
+    {
+      "id": 13,
+      "token": "\n",
+      "bytes": [
+        10
+      ],
+      "logprob": -5.260108947753906
+    },
+    {
+      "id": 287,
+      "token": "ed",
+      "bytes": [
+        101,
+        100
+      ],
+      "logprob": -5.326170921325684
+    },
+    {
+      "id": 30064,
+      "token": "·",
+      "bytes": [
+        194,
+        183
+      ],
+      "logprob": -5.328039169311523
+    },
+    {
+      "id": 2310,
+      "token": "dem",
+      "bytes": [
+        100,
+        101,
+        109
+      ],
+      "logprob": -5.40651798248291
+    },
+    {
+      "id": 29916,
+      "token": "x",
+      "bytes": [
+        120
+      ],
+      "logprob": -5.517117500305176
+    },
+    {
+      "id": 2,
+      "token": "",
+      "bytes": [],
+      "logprob": -0.31439724564552307
+    },
+    {
+      "id": 13,
+      "token": "\n",
+      "bytes": [
+        10
+      ],
+      "logprob": -1.7480138540267944
+    },
+    {
+      "id": 313,
+      "token": " (",
+      "bytes": [
+        32,
+        40
+      ],
+      "logprob": -3.894402027130127
+    },
+    {
+      "id": 29892,
+      "token": ",",
+      "bytes": [
+        44
+      ],
+      "logprob": -4.569749355316162
+    },
+    {
+      "id": 529,
+      "token": " <",
+      "bytes": [
+        32,
+        60
+      ],
+      "logprob": -4.716572284698486
+    },
+    {
+      "id": 29889,
+      "token": ".",
+      "bytes": [
+        46
+      ],
+      "logprob": -5.397284984588623
+    },
+    {
+      "id": 338,
+      "token": " is",
+      "bytes": [
+        32,
+        105,
+        115
+      ],
+      "logprob": -5.400430202484131
+    },
+    {
+      "id": 448,
+      "token": " -",
+      "bytes": [
+        32,
+        45
+      ],
+      "logprob": -5.799307346343994
+    },
+    {
+      "id": 29901,
+      "token": ":",
+      "bytes": [
+        58
+      ],
+      "logprob": -6.222042560577393
+    },
+    {
+      "id": 471,
+      "token": " was",
+      "bytes": [
+        32,
+        119,
+        97,
+        115
+      ],
+      "logprob": -6.241650581359863
+    },
+    {
+      "id": 29871,
+      "token": " ",
+      "bytes": [
+        32
+      ],
+      "logprob": -6.432040691375732
+    },
+    {
+      "id": 368,
+      "token": "ly",
+      "bytes": [
+        108,
+        121
+      ],
+      "logprob": -6.507440090179443
+    },
+    {
+      "id": 847,
+      "token": " /",
+      "bytes": [
+        32,
+        47
+      ],
+      "logprob": -6.957261085510254
+    },
+    {
+      "id": 1974,
+      "token": "ium",
+      "bytes": [
+        105,
+        117,
+        109
+      ],
+      "logprob": -7.416280746459961
+    },
+    {
+      "id": 322,
+      "token": " and",
+      "bytes": [
+        32,
+        97,
+        110,
+        100
+      ],
+      "logprob": -7.678705215454102
+    },
+    {
+      "id": 353,
+      "token": " =",
+      "bytes": [
+        32,
+        61
+      ],
+      "logprob": -7.704041004180908
+    },
+    {
+      "id": 29991,
+      "token": "!",
+      "bytes": [
+        33
+      ],
+      "logprob": -7.849839210510254
+    },
+    {
+      "id": 9423,
+      "token": " (_",
+      "bytes": [
+        32,
+        40,
+        95
+      ],
+      "logprob": -8.152846336364746
+    },
+    {
+      "id": 398,
+      "token": "um",
+      "bytes": [
+        117,
+        109
+      ],
+      "logprob": -8.1844482421875
+    },
+    {
+      "id": 426,
+      "token": " {",
+      "bytes": [
+        32,
+        123
+      ],
+      "logprob": -8.30143928527832
+    }
+  ],
+  "backend_diagnostic_token_ids": [
+    29907,
+    420,
+    492,
+    333,
+    2,
+    13504,
+    5612,
+    1576,
+    29908,
+    27796,
+    1762,
+    797,
+    1184,
+    29909,
+    29931,
+    29943
+  ],
+  "backend_text": "Cameliid",
+  "llama_text": "Cameliid",
+  "backend_usage": {
+    "prompt_tokens": 34,
+    "completion_tokens": 5,
+    "total_tokens": 39
+  },
+  "llama_usage": {
+    "cache_n": 0,
+    "prompt_n": 34,
+    "prompt_ms": 92.808,
+    "prompt_per_token_ms": 2.7296470588235295,
+    "prompt_per_second": 366.34772864408234,
+    "predicted_n": 5,
+    "predicted_ms": 65.963,
+    "predicted_per_token_ms": 13.192599999999999,
+    "predicted_per_second": 75.80006973606417
+  },
+  "backendinference": {
+    "prompt_token_ids": [
+      1,
+      529,
+      29989,
+      1792,
+      29989,
+      29958,
+      13,
+      5612,
+      368,
+      411,
+      278,
+      1734,
+      2996,
+      492,
+      29881,
+      322,
+      19905,
+      445,
+      9508,
+      29915,
+      29879,
+      25053,
+      8162,
+      29889,
+      2,
+      29871,
+      13,
+      29966,
+      29989,
+      465,
+      22137,
+      29989,
+      29958,
+      13
+    ],
+    "generated_token_ids": [
+      29907,
+      420,
+      492,
+      333,
+      2
+    ],
+    "dense_metadata": {
+      "embedding_length": 2048,
+      "attention_head_count": 32,
+      "attention_head_count_kv": 4,
+      "head_dim": 64,
+      "rope_dimension_count": 64,
+      "rope_freq_base": 10000,
+      "rope_pairing": "adjacent_even_odd",
+      "rope_direction": "forward",
+      "rope_position_mode": "zero_based",
+      "gqa_head_mapping": "grouped",
+      "attention_score_scale": "head_dim",
+      "linear_accumulation": "f32",
+      "ffn_gate_up_order": "gate_up",
+      "rms_norm_epsilon": 0.00001,
+      "rms_norm_effective_epsilon": 0.00001,
+      "square_linear_diagnostic_layout": "transposed",
+      "rectangular_linear_diagnostic_layout": "auto",
+      "token_embedding_shape": [
+        32000,
+        2048
+      ],
+      "output_shape": [
+        2048,
+        32000
+      ],
+      "output_is_tied_embedding": false,
+      "output_projection_layout": "input_output",
+      "output_projection_diagnostic_layout": "token_major",
+      "zero_attention_delta": "none",
+      "zero_ffn_delta": "none",
+      "projection_orientations": {
+        "attention_q": {
+          "shape": [
+            2048,
+            2048
+          ],
+          "input_width": 2048,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "attention_k": {
+          "shape": [
+            2048,
+            256
+          ],
+          "input_width": 2048,
+          "output_width": 256,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_v": {
+          "shape": [
+            2048,
+            256
+          ],
+          "input_width": 2048,
+          "output_width": 256,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_output": {
+          "shape": [
+            2048,
+            2048
+          ],
+          "input_width": 2048,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "ffn_gate": {
+          "shape": [
+            2048,
+            5632
+          ],
+          "input_width": 2048,
+          "output_width": 5632,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_up": {
+          "shape": [
+            2048,
+            5632
+          ],
+          "input_width": 2048,
+          "output_width": 5632,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_down": {
+          "shape": [
+            5632,
+            2048
+          ],
+          "input_width": 5632,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        }
+      }
+    },
+    "top_logits": [
+      {
+        "token_id": 29907,
+        "logit": 15.098518,
+        "probability": 0.23051734,
+        "rank": 1,
+        "selected": true,
+        "text": "C"
+      },
+      {
+        "token_id": 13504,
+        "logit": 14.560333,
+        "probability": 0.13457759,
+        "rank": 2,
+        "selected": true,
+        "text": "Pres"
+      },
+      {
+        "token_id": 5612,
+        "logit": 13.975158,
+        "probability": 0.074960805,
+        "rank": 3,
+        "selected": true,
+        "text": "Rep"
+      },
+      {
+        "token_id": 1576,
+        "logit": 13.422446,
+        "probability": 0.043131515,
+        "rank": 4,
+        "selected": true,
+        "text": "The"
+      },
+      {
+        "token_id": 27796,
+        "logit": 12.854705,
+        "probability": 0.024447123,
+        "rank": 5,
+        "selected": true,
+        "text": "Come"
+      },
+      {
+        "token_id": 29908,
+        "logit": 12.801169,
+        "probability": 0.023172751,
+        "rank": 6,
+        "selected": true,
+        "text": "\""
+      },
+      {
+        "token_id": 1762,
+        "logit": 12.458622,
+        "probability": 0.016451715,
+        "rank": 7,
+        "selected": true,
+        "text": "To"
+      },
+      {
+        "token_id": 797,
+        "logit": 12.256808,
+        "probability": 0.013445117,
+        "rank": 8,
+        "selected": true,
+        "text": "In"
+      },
+      {
+        "token_id": 420,
+        "logit": 3.2556846,
+        "probability": 0.0000016573963,
+        "rank": 2790,
+        "selected": true,
+        "text": "ame"
+      },
+      {
+        "token_id": 492,
+        "logit": 5.0256715,
+        "probability": 0.000009730195,
+        "rank": 1263,
+        "selected": true,
+        "text": "li"
+      },
+      {
+        "token_id": 333,
+        "logit": 3.9574943,
+        "probability": 0.0000033436324,
+        "rank": 2027,
+        "selected": true,
+        "text": "id"
+      },
+      {
+        "token_id": 2,
+        "logit": 5.5766544,
+        "probability": 0.000016881484,
+        "rank": 985,
+        "selected": true,
+        "text": ""
+      },
+      {
+        "token_id": 1184,
+        "logit": 12.167923,
+        "probability": 0.012301617,
+        "rank": 11,
+        "selected": true,
+        "text": "Pro"
+      },
+      {
+        "token_id": 29909,
+        "logit": 12.2213745,
+        "probability": 0.012977048,
+        "rank": 9,
+        "selected": true,
+        "text": "A"
+      },
+      {
+        "token_id": 29931,
+        "logit": 12.081205,
+        "probability": 0.011279794,
+        "rank": 12,
+        "selected": true,
+        "text": "L"
+      },
+      {
+        "token_id": 29943,
+        "logit": 11.964659,
+        "probability": 0.010038889,
+        "rank": 13,
+        "selected": true,
+        "text": "F"
+      }
+    ],
+    "output_projection": [],
+    "timings_ms": {
+      "tokenize": 22,
+      "weight_load": 0,
+      "weight_cache_hit": false,
+      "prompt_cache_hit": false,
+      "session_create": 0,
+      "generate": 9625,
+      "generation": {
+        "forward_total": 9623.442,
+        "embedding": 0.2,
+        "layers_total": 9539.846,
+        "final_norm": 0.022,
+        "logits": 83.305,
+        "sample": 0.275
+      },
+      "layers": [
+        {
+          "layer_index": 0,
+          "total": 438.282,
+          "attention_norm": 0.098,
+          "attention_q": 42.461,
+          "attention_k": 5.679,
+          "attention_v": 5.334,
+          "attention_rope": 0.636,
+          "kv_cache_write": 1.104,
+          "attention_context": 1.175,
+          "attention_output": 45.057,
+          "attention_residual": 0.06,
+          "ffn_norm": 0.089,
+          "ffn_gate": 111.908,
+          "ffn_up": 110.932,
+          "ffn_activation": 0.539,
+          "ffn_down": 112.487,
+          "ffn_residual": 0.055
+        },
+        {
+          "layer_index": 1,
+          "total": 433.939,
+          "attention_norm": 0.098,
+          "attention_q": 41.304,
+          "attention_k": 5.683,
+          "attention_v": 5.402,
+          "attention_rope": 0.619,
+          "kv_cache_write": 0.12,
+          "attention_context": 1.16,
+          "attention_output": 40.911,
+          "attention_residual": 0.052,
+          "ffn_norm": 0.085,
+          "ffn_gate": 112.098,
+          "ffn_up": 112.132,
+          "ffn_activation": 0.515,
+          "ffn_down": 113.074,
+          "ffn_residual": 0.055
+        },
+        {
+          "layer_index": 2,
+          "total": 434.609,
+          "attention_norm": 0.114,
+          "attention_q": 41.561,
+          "attention_k": 5.618,
+          "attention_v": 5.437,
+          "attention_rope": 0.625,
+          "kv_cache_write": 0.115,
+          "attention_context": 1.168,
+          "attention_output": 41.26,
+          "attention_residual": 0.042,
+          "ffn_norm": 0.086,
+          "ffn_gate": 111.523,
+          "ffn_up": 112.302,
+          "ffn_activation": 0.545,
+          "ffn_down": 113.514,
+          "ffn_residual": 0.066
+        },
+        {
+          "layer_index": 3,
+          "total": 433.35,
+          "attention_norm": 0.117,
+          "attention_q": 41.405,
+          "attention_k": 5.63,
+          "attention_v": 5.366,
+          "attention_rope": 0.626,
+          "kv_cache_write": 0.116,
+          "attention_context": 1.14,
+          "attention_output": 41.285,
+          "attention_residual": 0.04,
+          "ffn_norm": 0.089,
+          "ffn_gate": 111.755,
+          "ffn_up": 111.679,
+          "ffn_activation": 0.507,
+          "ffn_down": 112.917,
+          "ffn_residual": 0.053
+        },
+        {
+          "layer_index": 4,
+          "total": 433.388,
+          "attention_norm": 0.115,
+          "attention_q": 41.592,
+          "attention_k": 5.606,
+          "attention_v": 5.359,
+          "attention_rope": 0.632,
+          "kv_cache_write": 0.128,
+          "attention_context": 1.186,
+          "attention_output": 41.532,
+          "attention_residual": 0.041,
+          "ffn_norm": 0.088,
+          "ffn_gate": 112.432,
+          "ffn_up": 111.198,
+          "ffn_activation": 0.522,
+          "ffn_down": 112.284,
+          "ffn_residual": 0.051
+        },
+        {
+          "layer_index": 5,
+          "total": 431.98,
+          "attention_norm": 0.108,
+          "attention_q": 41.235,
+          "attention_k": 5.587,
+          "attention_v": 5.396,
+          "attention_rope": 0.639,
+          "kv_cache_write": 0.115,
+          "attention_context": 1.15,
+          "attention_output": 40.873,
+          "attention_residual": 0.04,
+          "ffn_norm": 0.081,
+          "ffn_gate": 111.727,
+          "ffn_up": 111.569,
+          "ffn_activation": 0.509,
+          "ffn_down": 112.266,
+          "ffn_residual": 0.046
+        },
+        {
+          "layer_index": 6,
+          "total": 433.278,
+          "attention_norm": 0.111,
+          "attention_q": 41.608,
+          "attention_k": 5.633,
+          "attention_v": 5.308,
+          "attention_rope": 0.601,
+          "kv_cache_write": 0.115,
+          "attention_context": 1.152,
+          "attention_output": 41.2,
+          "attention_residual": 0.042,
+          "ffn_norm": 0.086,
+          "ffn_gate": 111.925,
+          "ffn_up": 112.006,
+          "ffn_activation": 0.513,
+          "ffn_down": 112.296,
+          "ffn_residual": 0.055
+        },
+        {
+          "layer_index": 7,
+          "total": 433.388,
+          "attention_norm": 0.112,
+          "attention_q": 41.361,
+          "attention_k": 5.635,
+          "attention_v": 5.363,
+          "attention_rope": 0.642,
+          "kv_cache_write": 0.125,
+          "attention_context": 1.191,
+          "attention_output": 41.198,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.086,
+          "ffn_gate": 111.94,
+          "ffn_up": 111.917,
+          "ffn_activation": 0.516,
+          "ffn_down": 112.573,
+          "ffn_residual": 0.051
+        },
+        {
+          "layer_index": 8,
+          "total": 435.187,
+          "attention_norm": 0.107,
+          "attention_q": 41.709,
+          "attention_k": 5.625,
+          "attention_v": 5.377,
+          "attention_rope": 0.629,
+          "kv_cache_write": 0.119,
+          "attention_context": 1.163,
+          "attention_output": 41.209,
+          "attention_residual": 0.038,
+          "ffn_norm": 0.082,
+          "ffn_gate": 111.387,
+          "ffn_up": 112.616,
+          "ffn_activation": 0.521,
+          "ffn_down": 113.919,
+          "ffn_residual": 0.05
+        },
+        {
+          "layer_index": 9,
+          "total": 432.681,
+          "attention_norm": 0.1,
+          "attention_q": 41.387,
+          "attention_k": 5.695,
+          "attention_v": 5.44,
+          "attention_rope": 0.628,
+          "kv_cache_write": 0.116,
+          "attention_context": 1.191,
+          "attention_output": 41.264,
+          "attention_residual": 0.045,
+          "ffn_norm": 0.095,
+          "ffn_gate": 111.441,
+          "ffn_up": 111.585,
+          "ffn_activation": 0.526,
+          "ffn_down": 112.492,
+          "ffn_residual": 0.053
+        },
+        {
+          "layer_index": 10,
+          "total": 432.558,
+          "attention_norm": 0.114,
+          "attention_q": 41.384,
+          "attention_k": 5.621,
+          "attention_v": 5.433,
+          "attention_rope": 0.627,
+          "kv_cache_write": 0.125,
+          "attention_context": 1.183,
+          "attention_output": 40.826,
+          "attention_residual": 0.038,
+          "ffn_norm": 0.084,
+          "ffn_gate": 111.3,
+          "ffn_up": 111.629,
+          "ffn_activation": 0.512,
+          "ffn_down": 112.986,
+          "ffn_residual": 0.051
+        },
+        {
+          "layer_index": 11,
+          "total": 432.549,
+          "attention_norm": 0.123,
+          "attention_q": 41.436,
+          "attention_k": 5.625,
+          "attention_v": 5.45,
+          "attention_rope": 0.623,
+          "kv_cache_write": 0.114,
+          "attention_context": 1.154,
+          "attention_output": 41.471,
+          "attention_residual": 0.041,
+          "ffn_norm": 0.078,
+          "ffn_gate": 111.479,
+          "ffn_up": 111.514,
+          "ffn_activation": 0.509,
+          "ffn_down": 112.246,
+          "ffn_residual": 0.049
+        },
+        {
+          "layer_index": 12,
+          "total": 433.926,
+          "attention_norm": 0.114,
+          "attention_q": 41.394,
+          "attention_k": 5.644,
+          "attention_v": 5.398,
+          "attention_rope": 0.603,
+          "kv_cache_write": 0.114,
+          "attention_context": 1.166,
+          "attention_output": 41.409,
+          "attention_residual": 0.043,
+          "ffn_norm": 0.084,
+          "ffn_gate": 111.806,
+          "ffn_up": 112.39,
+          "ffn_activation": 0.532,
+          "ffn_down": 112.486,
+          "ffn_residual": 0.061
+        },
+        {
+          "layer_index": 13,
+          "total": 432.398,
+          "attention_norm": 0.123,
+          "attention_q": 41.613,
+          "attention_k": 5.605,
+          "attention_v": 5.311,
+          "attention_rope": 0.613,
+          "kv_cache_write": 0.115,
+          "attention_context": 1.156,
+          "attention_output": 41.131,
+          "attention_residual": 0.04,
+          "ffn_norm": 0.083,
+          "ffn_gate": 111.722,
+          "ffn_up": 111.495,
+          "ffn_activation": 0.531,
+          "ffn_down": 112.195,
+          "ffn_residual": 0.047
+        },
+        {
+          "layer_index": 14,
+          "total": 431.823,
+          "attention_norm": 0.109,
+          "attention_q": 41.186,
+          "attention_k": 5.674,
+          "attention_v": 5.374,
+          "attention_rope": 0.609,
+          "kv_cache_write": 0.113,
+          "attention_context": 1.175,
+          "attention_output": 40.867,
+          "attention_residual": 0.039,
+          "ffn_norm": 0.083,
+          "ffn_gate": 111.407,
+          "ffn_up": 111.67,
+          "ffn_activation": 0.559,
+          "ffn_down": 112.293,
+          "ffn_residual": 0.048
+        },
+        {
+          "layer_index": 15,
+          "total": 432.911,
+          "attention_norm": 0.122,
+          "attention_q": 41.617,
+          "attention_k": 5.589,
+          "attention_v": 5.322,
+          "attention_rope": 0.6,
+          "kv_cache_write": 0.114,
+          "attention_context": 1.193,
+          "attention_output": 41.195,
+          "attention_residual": 0.04,
+          "ffn_norm": 0.082,
+          "ffn_gate": 111.259,
+          "ffn_up": 111.941,
+          "ffn_activation": 0.518,
+          "ffn_down": 112.64,
+          "ffn_residual": 0.047
+        },
+        {
+          "layer_index": 16,
+          "total": 434.546,
+          "attention_norm": 0.111,
+          "attention_q": 41.602,
+          "attention_k": 5.69,
+          "attention_v": 5.418,
+          "attention_rope": 0.618,
+          "kv_cache_write": 0.139,
+          "attention_context": 1.225,
+          "attention_output": 41.204,
+          "attention_residual": 0.04,
+          "ffn_norm": 0.082,
+          "ffn_gate": 113.082,
+          "ffn_up": 111.625,
+          "ffn_activation": 0.537,
+          "ffn_down": 112.5,
+          "ffn_residual": 0.048
+        },
+        {
+          "layer_index": 17,
+          "total": 432.504,
+          "attention_norm": 0.103,
+          "attention_q": 41.298,
+          "attention_k": 5.575,
+          "attention_v": 5.381,
+          "attention_rope": 0.616,
+          "kv_cache_write": 0.114,
+          "attention_context": 1.15,
+          "attention_output": 41.075,
+          "attention_residual": 0.038,
+          "ffn_norm": 0.079,
+          "ffn_gate": 111.496,
+          "ffn_up": 111.49,
+          "ffn_activation": 0.503,
+          "ffn_down": 112.897,
+          "ffn_residual": 0.058
+        },
+        {
+          "layer_index": 18,
+          "total": 431.562,
+          "attention_norm": 0.105,
+          "attention_q": 41.277,
+          "attention_k": 5.614,
+          "attention_v": 5.403,
+          "attention_rope": 0.609,
+          "kv_cache_write": 0.114,
+          "attention_context": 1.159,
+          "attention_output": 41.078,
+          "attention_residual": 0.039,
+          "ffn_norm": 0.082,
+          "ffn_gate": 111.268,
+          "ffn_up": 111.344,
+          "ffn_activation": 0.51,
+          "ffn_down": 112.272,
+          "ffn_residual": 0.046
+        },
+        {
+          "layer_index": 19,
+          "total": 433.446,
+          "attention_norm": 0.105,
+          "attention_q": 41.756,
+          "attention_k": 5.546,
+          "attention_v": 5.344,
+          "attention_rope": 0.599,
+          "kv_cache_write": 0.114,
+          "attention_context": 1.168,
+          "attention_output": 41.32,
+          "attention_residual": 0.04,
+          "ffn_norm": 0.091,
+          "ffn_gate": 111.903,
+          "ffn_up": 111.596,
+          "ffn_activation": 0.508,
+          "ffn_down": 112.685,
+          "ffn_residual": 0.049
+        },
+        {
+          "layer_index": 20,
+          "total": 432.71,
+          "attention_norm": 0.108,
+          "attention_q": 41.586,
+          "attention_k": 5.685,
+          "attention_v": 5.365,
+          "attention_rope": 0.609,
+          "kv_cache_write": 0.116,
+          "attention_context": 1.159,
+          "attention_output": 41.306,
+          "attention_residual": 0.04,
+          "ffn_norm": 0.081,
+          "ffn_gate": 112.011,
+          "ffn_up": 111.354,
+          "ffn_activation": 0.516,
+          "ffn_down": 112.108,
+          "ffn_residual": 0.046
+        },
+        {
+          "layer_index": 21,
+          "total": 434.092,
+          "attention_norm": 0.112,
+          "attention_q": 41.338,
+          "attention_k": 5.603,
+          "attention_v": 5.303,
+          "attention_rope": 0.593,
+          "kv_cache_write": 0.113,
+          "attention_context": 1.151,
+          "attention_output": 41.194,
+          "attention_residual": 0.038,
+          "ffn_norm": 0.085,
+          "ffn_gate": 112.208,
+          "ffn_up": 112.332,
+          "ffn_activation": 0.523,
+          "ffn_down": 112.832,
+          "ffn_residual": 0.056
+        }
+      ]
+    }
+  }
+}

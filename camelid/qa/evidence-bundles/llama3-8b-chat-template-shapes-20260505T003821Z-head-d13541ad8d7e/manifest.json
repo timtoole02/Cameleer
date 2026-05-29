@@ -1,0 +1,96 @@
+{
+  "schema": "camelid.public_8b_chat_template_shapes_evidence.v1",
+  "generated_utc": "2026-05-05T00:38:21Z",
+  "git_head": "d13541ad8d7e87426cddd0d0a13e292f39c73f31",
+  "origin_main": "d13541ad8d7e87426cddd0d0a13e292f39c73f31",
+  "checkout_clean": true,
+  "validation_lane": "approved_ubuntu_validation_lane_reopened_clean_public_checkout",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "scope": "Exact Llama 3 8B Instruct Q8_0 compact chat-template-shapes prompt pack only.",
+  "model": {
+    "row_id": "llama3_8b_instruct_q8_0",
+    "file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "model_id": "llama3-8b-q8",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+  },
+  "pack": {
+    "id": "llama3-chat-template-shapes-v1",
+    "path": "qa/prompt-packs/llama3-chat-template-shapes.json",
+    "description": "Bounded Llama 3 Instruct compact-header chat-template shape coverage.",
+    "prompt_count": 4,
+    "default_max_tokens": 5,
+    "default_render_mode": "compact",
+    "target_context_window": null
+  },
+  "toolchain": {
+    "os": "Ubuntu 24.04 AWS x86_64 validation lane",
+    "node": "v18.19.1",
+    "cargo": "cargo 1.87.0 (99624be96 2025-05-06)",
+    "build_command": "./scripts/with-rustup-cargo.sh build --release --bin backendinference"
+  },
+  "wait_ms": 600000,
+  "run_exit_code": 0,
+  "passed": true,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "prompts": [
+    {
+      "id": "single-system-user",
+      "render_mode": "compact",
+      "max_tokens": 5,
+      "target_context_window": null,
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 26,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "multi-turn-user-assistant-user",
+      "render_mode": "compact",
+      "max_tokens": 5,
+      "target_context_window": null,
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 28,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "assistant-final-no-generation-header",
+      "render_mode": "compact",
+      "max_tokens": 1,
+      "target_context_window": null,
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 18,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "multiline-whitespace-preservation",
+      "render_mode": "compact",
+      "max_tokens": 5,
+      "target_context_window": null,
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 33,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    }
+  ],
+  "claim_boundary": "Does not promote broad Llama-family support, neighboring sizes, other quantizations, larger context buckets, arbitrary GGUF chat-template execution, or performance portability. Full-support promotion still requires normalized broader/current-head parity, stronger memory/performance, portability, broader context evidence, and docs/API/frontend synchronization."
+}

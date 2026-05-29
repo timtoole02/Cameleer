@@ -1,0 +1,136 @@
+{
+  "schema": "camelid.llama3_8b_context_1024_2048_current_head_public_evidence.v1",
+  "generated_utc": "2026-05-07T19:10:37Z",
+  "git_head": "bb8b616a09d6cdde00d157a586722b1688e87eff",
+  "checkout_clean": true,
+  "passed": true,
+  "model": {
+    "id": "meta-llama3-8b-q8",
+    "row_id": "llama3_8b_instruct_q8_0",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+  },
+  "pack": {
+    "ids": [
+      "llama3-context-1024-smoke-v1",
+      "llama3-context-2048-smoke-v1"
+    ],
+    "source_prompt_packs": [
+      "qa/prompt-packs/llama3-context-1024-smoke.json",
+      "qa/prompt-packs/llama3-context-2048-smoke.json"
+    ],
+    "max_tokens": 5
+  },
+  "source_prompt_packs": [
+    "qa/prompt-packs/llama3-context-1024-smoke.json",
+    "qa/prompt-packs/llama3-context-2048-smoke.json"
+  ],
+  "prompt_packs": [
+    "llama3-context-1024-smoke-v1",
+    "llama3-context-2048-smoke-v1"
+  ],
+  "rows": [
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "prompt_id": "roughly-1024-token-recall",
+      "context_window": 1024,
+      "reference_context": 1024,
+      "reference_prompt_token_count": 881,
+      "max_tokens": 5,
+      "passed": true,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_text": "CMLD-102",
+      "llama_text": "CMLD-102",
+      "generated_text": "CMLD-102",
+      "backend_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "llama_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "max_resident_set_kib": 922252,
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+      "raw_artifact": "qa/evidence-bundles/llama3-8b-context-1024-2048-current-head-20260507T185917Z-head-bb8b616a09d6/pack-1024/meta-llama3-8b-q8-current-head-bb8b616a09d6-roughly-1024-token-recall/report.json",
+      "q8_file_reads": {
+        "read_calls": 3210,
+        "read_bytes": 54703408384,
+        "cache_hits": 0,
+        "cache_hit_bytes": 0,
+        "cache_misses": 0,
+        "cache_miss_bytes": 0,
+        "cache_inserts": 0,
+        "cache_insert_bytes": 0,
+        "cache_evictions": 0,
+        "cache_evicted_bytes": 0,
+        "cache_merges": 0,
+        "cache_merged_bytes": 0,
+        "cache_entries": 0,
+        "cache_bytes": 0,
+        "cache_capacity_bytes": 0
+      }
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "prompt_id": "roughly-2048-token-recall",
+      "context_window": 2048,
+      "reference_context": 2048,
+      "reference_prompt_token_count": 1910,
+      "max_tokens": 5,
+      "passed": true,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_text": "CMLD-204",
+      "llama_text": "CMLD-204",
+      "generated_text": "CMLD-204",
+      "backend_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "llama_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "max_resident_set_kib": 1582312,
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+      "raw_artifact": "qa/evidence-bundles/llama3-8b-context-1024-2048-current-head-20260507T185917Z-head-bb8b616a09d6/pack-2048/meta-llama3-8b-q8-current-head-bb8b616a09d6-roughly-2048-token-recall/report.json",
+      "q8_file_reads": {
+        "read_calls": 4879,
+        "read_bytes": 69538945536,
+        "cache_hits": 0,
+        "cache_hit_bytes": 0,
+        "cache_misses": 0,
+        "cache_miss_bytes": 0,
+        "cache_inserts": 0,
+        "cache_insert_bytes": 0,
+        "cache_evictions": 0,
+        "cache_evicted_bytes": 0,
+        "cache_merges": 0,
+        "cache_merged_bytes": 0,
+        "cache_entries": 0,
+        "cache_bytes": 0,
+        "cache_capacity_bytes": 0
+      }
+    }
+  ],
+  "claim_boundary": "Promotes only exact llama3_8b_instruct_q8_0 bounded 1024/2048 prompt packs at this git head; does not promote model-native/larger context, arbitrary templates, neighboring rows, broad 8B, full Llama-family support, portability, or production throughput."
+}

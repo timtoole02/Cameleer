@@ -1,0 +1,2 @@
+    PID   RSS    VSZ COMMAND
+ 747274  6456 1090416 ./target/release/backendinference serve --addr 127.0.0.1:8351

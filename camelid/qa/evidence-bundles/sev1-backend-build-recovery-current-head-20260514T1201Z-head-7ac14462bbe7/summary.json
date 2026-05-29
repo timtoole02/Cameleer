@@ -1,0 +1,37 @@
+{
+  "schema": "camelid.sev1.backend_build_recovery_current_head.v1",
+  "generated_utc": "2026-05-14T12:16:20.555Z",
+  "host": "<validation-host>",
+  "base_head": "7ac14462bbe76bacabd51d11f2370e580163291e",
+  "disk_cleanup": {
+    "action": "removed Ubuntu temp/cache files and cargo target artifacts via cargo clean; preserved model cache because it is required for Llama/Mixtral validation",
+    "before": "/dev/root 193G used 103G avail 91G use 54%",
+    "after_cargo_clean": "/dev/root 193G used 102G avail 92G use 53%",
+    "final": "Filesystem     Type  Size  Used Avail Use% Mounted on\n/dev/root      ext4  193G  104G   89G  54% /"
+  },
+  "build_recovery": {
+    "failing_command": "cargo build --release",
+    "failing_context": "repo rust-toolchain.toml pinned channel 1.87.0 while Cargo.lock is version 4",
+    "observed_failure": "error: failed to parse lock file ... lock file version 4 requires -Znext-lockfile-bump",
+    "root_cause": "toolchain pin was too old for the current lockfile; installed stable/1.95.0 parses Cargo.lock v4",
+    "fix": "changed rust-toolchain.toml channel from 1.87.0 to 1.95.0",
+    "verified_command": "cargo build --release",
+    "verified_exit": "0"
+  },
+  "tests": {
+    "cargo_test_all_targets_exit": "0",
+    "bench_llama3_same_host_unit_exit": "0",
+    "public_evidence_claims_exit": "0",
+    "throughput_blocker_checksum_exit": "0"
+  },
+  "model_lanes": {
+    "llama32_1b_metadata_jinja_4096_8192": "qa/evidence-bundles/sev1-llama32-1b-metadata-jinja-4096-8192-current-head-20260514T113325Z-head-7ac14462bbe7/lane-summary.json",
+    "mixtral_8x7b_q8_runtime": "qa/evidence-bundles/sev1-mixtral-8x7b-q8-nontoy-current-head-20260514T114731Z-head-7ac14462bbe7/summary.json",
+    "throughput_support_path": "repeatable harness exists at scripts/bench-llama3-same-host.mjs and unit test scripts/test-bench-llama3-same-host.mjs passes; production-throughput support remains fail-closed by public evidence claim check and supported-row throughput blocker checksum evidence"
+  },
+  "known_blockers": {
+    "mixtral_full_support": "blocked_not_promoted: Gate 9A 50-token parity diverges at generated token index 9 for prompt Hello/template <s>[INST] Hello [/INST]; backend token 1691 vs llama.cpp token 1047 after first 9 generated tokens; longgen continuation also records backend HTTP hang on prompt What is 2+2? max_tokens=128 after llama reference completed.",
+    "next_fix": "instrument Mixtral first divergent decode step logits/MoE routing/attention cache at generated index 9, then rerun Gate 9A 50/128/256 ladder before any support promotion"
+  },
+  "result": "build_recovered_tests_pass_model_runtime_evidence_recorded_mixtral_full_support_blocked"
+}

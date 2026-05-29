@@ -1,0 +1,7 @@
+schema=camelid.same_host_llama3_benchmark_plan.v1
+row_id=llama32_1b_instruct_q8_0
+harness_command=node scripts/bench-llama3-same-host.mjs --model <repo>/qa/reference-models/llama32-1b-q8.gguf --model-id llama32-1b-q8-plan --row-id llama32_1b_instruct_q8_0 --max-tokens 8 --warmup 0 --repeats 2 --unique-prompt --require-marker --expected-marker CMLD-BENCH
+camelid_serve=<repo>/target/release/camelid serve --addr 127.0.0.1:8181
+llama_server=<repo>/target/reference/llama.cpp/build/bin/llama-server --host 127.0.0.1 --port 8183 -m <repo>/qa/reference-models/llama32-1b-q8.gguf -ngl 0 -c 512 --no-warmup
+outputs=stdout,json,guardrail,lifecycle
+claim_boundary=Same-host benchmark snapshot only for exact row llama32_1b_instruct_q8_0 with the provided GGUF, prompt, max-token budget, host, binaries, and thread settings. It is bounded timing evidence only: it does not widen support, portability, production-throughput, model-native/larger-context, neighboring-row, broad Llama-family, 1B, or Mixtral claims unless a separate row-specific evidence bundle records those exact conditions.

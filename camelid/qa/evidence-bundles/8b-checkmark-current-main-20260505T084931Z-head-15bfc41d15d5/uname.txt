@@ -1,0 +1,1 @@
+Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux

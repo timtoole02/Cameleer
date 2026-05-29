@@ -1,0 +1,15 @@
+Supported-row arbitrary/Jinja template blocker proof:
+- Runtime prompt rendering is a recognizer/subset path, not a general Jinja interpreter.
+- The supported renderers are TinyLlama marker, Llama 3 compact header, Mistral instruct, plus an opt-in guarded Llama 3 metadata subset under CAMELID_METADATA_CHAT_TEMPLATE=metadata.
+- Guardrail test arbitrary_jinja_template_is_not_executed_as_supported_renderer proves an arbitrary Jinja loop/expression template is not executed and falls back to role-colon rendering.
+- API support targets assert every current supported row carries an explicit full-support blocker for arbitrary/Jinja template coverage, preventing a silent frontend/API promotion.
+
+Supported-row production-throughput blocker proof:
+- Current performance fields remain bounded evidence labels: measured, bounded_unique_chat_perf_rss_validated, and bounded_ubuntu_backend_memory_gate_plus_lazy_q8_hotpath_costs.
+- API guardrail asserts no current supported row exposes a production_throughput performance label and every current supported row carries a production/throughput blocker in full_support_blockers.
+- Existing row artifacts remain bounded memory/perf, first-token direction, or measurement-only hot-path evidence; none is a production throughput claim.
+
+Shortest path to clear these blockers:
+1. Add a real template execution path or validated per-row metadata-template renderer broad enough for the target row, with llama.cpp prompt-token parity for the agreed template pack and fail-closed unsupported-template behavior.
+2. Add a production-throughput harness with fixed host class, exact GGUF SHA, prompt/output budgets, concurrency/warmup policy, p50/p95 or per-run latency/tokens-per-second, RSS/swap/page-in/storage pressure, and deterministic parity guardrails.
+3. Publish scrubbed row-specific manifests/SHA256SUMS and synchronize /api/capabilities, frontend readiness copy, README, COMPATIBILITY, and STATUS in the same promotion commit.

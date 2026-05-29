@@ -1,0 +1,1 @@
+Repository privacy grep over the new bundle for canonical-host IP, local home paths, private hostnames, and SSH key paths; the literal sensitive patterns are intentionally not recorded here.

@@ -1,0 +1,116 @@
+   Compiling camelid v0.1.0 (/tmp/camelid-ubuntu-x86-q8-20260514T2221Z)
+    Finished `release` profile [optimized] target(s) in 13.05s
+     Running unittests src/lib.rs (target/release/deps/camelid-4124ba76c099c483)
+
+running 2 tests
+test inference::tests::x86_q8_avx2_kernel_matches_scalar_dot ... ok
+test inference::tests::x86_q8_avx2_packed_rows4_i8_matches_scalar_dot ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 212 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/release/deps/camelid-fd4fb7d3bf8d5c5b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s
+
+     Running tests/api_vertical_slice.rs (target/release/deps/api_vertical_slice-fbfa2a897fb25a13)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 59 filtered out; finished in 0.00s
+
+     Running tests/gguf_metadata.rs (target/release/deps/gguf_metadata-a602f1ecbe6fa9b5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/inference_session.rs (target/release/deps/inference_session-ee65e4384a9a1430)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.00s
+
+     Running tests/model_binding.rs (target/release/deps/model_binding-09b3b3a4dd96d3b3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s
+
+     Running tests/tensor_primitives.rs (target/release/deps/tensor_primitives-558265b8176ce4d5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+     Running tests/tensor_store.rs (target/release/deps/tensor_store-d77041ff11e0e476)
+
+running 2 tests
+test x86_q8_repack_loads_attn_q_as_packed_runtime_without_row_major_duplicate ... ok
+test x86_q8_repack_loads_ffn_gate_as_transposed_packed_runtime_without_row_major_duplicate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+     Running tests/tokenizer.rs (target/release/deps/tokenizer-316e67a5780bbc16)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 24 filtered out; finished in 0.00s
+
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running unittests src/lib.rs (target/release/deps/camelid-4124ba76c099c483)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 214 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/release/deps/camelid-fd4fb7d3bf8d5c5b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s
+
+     Running tests/api_vertical_slice.rs (target/release/deps/api_vertical_slice-fbfa2a897fb25a13)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 59 filtered out; finished in 0.00s
+
+     Running tests/gguf_metadata.rs (target/release/deps/gguf_metadata-a602f1ecbe6fa9b5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/inference_session.rs (target/release/deps/inference_session-ee65e4384a9a1430)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.00s
+
+     Running tests/model_binding.rs (target/release/deps/model_binding-09b3b3a4dd96d3b3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s
+
+     Running tests/tensor_primitives.rs (target/release/deps/tensor_primitives-558265b8176ce4d5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+     Running tests/tensor_store.rs (target/release/deps/tensor_store-d77041ff11e0e476)
+
+running 2 tests
+test x86_q8_repack_loads_attn_q_as_packed_runtime_without_row_major_duplicate ... ok
+test x86_q8_repack_loads_ffn_gate_as_transposed_packed_runtime_without_row_major_duplicate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+     Running tests/tokenizer.rs (target/release/deps/tokenizer-316e67a5780bbc16)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 24 filtered out; finished in 0.00s

@@ -1,0 +1,1 @@
+-rw-rw-r-- 1 ubuntu ubuntu 47G May  6 22:51 <validation-host-home>/models/mixtral/mixtral-8x7b-instruct-v0.1.Q8_0.gguf

@@ -1,0 +1,11 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "llama32-3b-q8-current-e9f926e",
+      "object": "model",
+      "created": 0,
+      "owned_by": "camelid"
+    }
+  ]
+}

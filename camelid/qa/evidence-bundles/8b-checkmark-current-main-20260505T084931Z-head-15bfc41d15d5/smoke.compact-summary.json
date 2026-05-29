@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "error": null,
+  "steps": {
+    "health_before": true,
+    "load": true,
+    "current_model": true,
+    "v1_models": true,
+    "capabilities": true,
+    "v1_completions": true,
+    "v1_chat_completions": true,
+    "generation_timings": true,
+    "health_after": true,
+    "frontend_smoke": true
+  }
+}

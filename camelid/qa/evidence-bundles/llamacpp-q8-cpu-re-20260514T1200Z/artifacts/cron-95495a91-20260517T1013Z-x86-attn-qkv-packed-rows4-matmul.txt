@@ -1,0 +1,422 @@
+# Ubuntu x86_64 Q8 attention Q/K/V packed-rows4 matmul slice
+date_utc: 2026-05-17T10:13Z
+camelid_workdir: <local-camelid-worktree>
+camelid_head: 0ebbcba8357f2bd102b7fd5c3237240c94ddfaaf
+camelid_branch: ubuntu-x86-q8-f23-plus-qkv-consumers
+
+## llama.cpp inspection
+llamacpp_head: 3e037f313c2c4cfce897d9be8f43954283a61de1
+### q8_0 / vec-dot / CPU type traits
+ggml/include/ggml.h:398:        GGML_TYPE_Q8_0    = 8,
+ggml/src/ggml-cann/acl_tensor.cpp:44:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/aclnn_ops.cpp:1992:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/aclnn_ops.cpp:2230:    } else if (type == GGML_TYPE_Q8_0) {
+ggml/src/ggml-cann/aclnn_ops.cpp:2370:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/aclnn_ops.cpp:3672:        (type == GGML_TYPE_Q8_0) ? 1.0f :
+ggml/src/ggml-cann/aclnn_ops.cpp:3849:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:1083:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:1108:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:1128:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:2445:                    case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:2462:                case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:2482:                    case GGML_TYPE_Q8_0:
+ggml/src/ggml-cpu/amx/amx.cpp:168:            case GGML_TYPE_Q8_0:
+ggml/src/ggml-cpu/amx/common.h:110:        (type == GGML_TYPE_Q8_0) ||
+ggml/src/ggml-cpu/amx/mmq.cpp:113:            case GGML_TYPE_Q8_0: {                                                     \
+ggml/src/ggml-cpu/arch-fallback.h:12:#define ggml_vec_dot_q4_0_q8_0_generic ggml_vec_dot_q4_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:14:#define ggml_vec_dot_q5_0_q8_0_generic ggml_vec_dot_q5_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:16:#define ggml_vec_dot_q8_0_q8_0_generic ggml_vec_dot_q8_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:17:#define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:18:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:19:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:34:#define ggml_vec_dot_iq4_nl_q8_0_generic ggml_vec_dot_iq4_nl_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:85:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:115:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:116:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:163:#define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:164:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:165:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:205:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:245:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:246:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:306:#define ggml_vec_dot_iq4_nl_q8_0_generic ggml_vec_dot_iq4_nl_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:308:#define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:309:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:310:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch/arm/quants.c:1076:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/loongarch/quants.c:943:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/loongarch/quants.c:986:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/powerpc/quants.c:495:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/powerpc/quants.c:560:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/riscv/quants.c:435:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/riscv/quants.c:479:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/s390/quants.c:655:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/s390/quants.c:701:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/wasm/quants.c:544:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/wasm/quants.c:608:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/x86/quants.c:1170:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/ggml-cpu.c:227:        .vec_dot_type             = GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/ggml-cpu.c:233:        .vec_dot_type             = GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/ggml-cpu.c:253:        .vec_dot_type             = GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/ggml-cpu.c:262:    [GGML_TYPE_Q8_0] = {
+ggml/src/ggml-cpu/ggml-cpu.c:264:        .vec_dot                  = ggml_vec_dot_q8_0_q8_0,
+ggml/src/ggml-cpu/ggml-cpu.c:265:        .vec_dot_type             = GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/ggml-cpu.c:280:        .vec_dot_type             = GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/ggml-cpu.c:286:        .vec_dot_type             = GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/ggml-cpu.c:373:        .vec_dot_type             = GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/kleidiai/kernels.cpp:751:        /* .rhs_type           = */ GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/kleidiai/kernels.cpp:806:        /* .rhs_type           = */ GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/kleidiai/kernels.cpp:861:        /* .rhs_type           = */ GGML_TYPE_Q8_0,
+ggml/src/ggml-cpu/kleidiai/kernels.cpp:889:        if (tensor->src[0]->type == GGML_TYPE_Q8_0) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:453:        if (op->src[0]->type == GGML_TYPE_Q4_0 || op->src[0]->type == GGML_TYPE_Q8_0) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:541:            if (dst->src[0]->type == GGML_TYPE_Q4_0 || dst->src[0]->type == GGML_TYPE_Q8_0) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:547:            if (dst->src[0]->type == GGML_TYPE_Q4_0 || dst->src[0]->type == GGML_TYPE_Q8_0) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:706:        GGML_ASSERT(dst->src[0]->type == GGML_TYPE_Q4_0 || dst->src[0]->type == GGML_TYPE_Q8_0);
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:957:                                              slot_rhs_type == GGML_TYPE_Q8_0 ? QK8_0 : 0;
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1021:                                                 slot_rhs_type == GGML_TYPE_Q8_0 ? 0 : 0;
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1081:                                                         slot_rhs_type == GGML_TYPE_Q8_0 ? 0 : 0;
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1083:                                                          slot_rhs_type == GGML_TYPE_Q8_0 ? 0 : 0;
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1114:        GGML_ASSERT(dst->src[0]->type == GGML_TYPE_Q4_0 || dst->src[0]->type == GGML_TYPE_Q8_0);
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1124:        const bool want_q8 = src0->type == GGML_TYPE_Q8_0;
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1174:        } else if (rhs_type == GGML_TYPE_Q8_0) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1207:        GGML_ASSERT(tensor->type == GGML_TYPE_Q4_0 || tensor->type == GGML_TYPE_Q8_0);
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1225:        const bool want_q8 = tensor->type == GGML_TYPE_Q8_0;
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1294:            const size_t block_len = rhs_type == GGML_TYPE_Q8_0 ? QK8_0 :
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1312:            } else if (rhs_type == GGML_TYPE_Q8_0) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1393:    if (tensor->type != GGML_TYPE_Q4_0 && tensor->type != GGML_TYPE_Q8_0) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1404:    const bool want_q8 = tensor->type == GGML_TYPE_Q8_0;
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1426:                                 rhs_type == GGML_TYPE_Q8_0 ? QK8_0 : 0;
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1449:            (op->src[0]->type == GGML_TYPE_Q4_0 || op->src[0]->type == GGML_TYPE_Q8_0) &&
+### tinyBLAS / MUL_MAT / scheduling
+examples/diffusion/README.md:24:Choose one of the following scheduling methods:
+examples/diffusion/README.md:26:**Timestep-based scheduling:**
+examples/diffusion/README.md:27:- `--diffusion-eps`: Epsilon value for timestep scheduling (e.g., 0.001)
+examples/diffusion/README.md:29:**Block-based scheduling:**
+examples/diffusion/README.md:30:- `--diffusion-block-length`: Block size for block-based scheduling (e.g., 32)
+examples/diffusion/diffusion-cli.cpp:195:        diff_params.schedule = DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED;
+examples/diffusion/diffusion-cli.cpp:198:        diff_params.schedule     = DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED;
+examples/diffusion/diffusion-cli.cpp:224:    const char * sched_names[] = {
+examples/diffusion/diffusion-cli.cpp:230:    const char * sched_name =
+examples/diffusion/diffusion-cli.cpp:231:        (diff_params.schedule >= 0 && diff_params.schedule <= 1) ? sched_names[diff_params.schedule] : "UNKNOWN";
+examples/diffusion/diffusion-cli.cpp:237:    LOG_INF("diffusion_params: - %-25s enum             = %d (%s)\n", "schedule", diff_params.schedule, sched_name);
+examples/diffusion/diffusion-cli.cpp:239:    if (diff_params.schedule == DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED) {
+examples/diffusion/diffusion-cli.cpp:243:    if (diff_params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:52:                                        diffusion_transfer_schedule  schedule,
+examples/diffusion/diffusion.cpp:55:    switch (schedule) {
+examples/diffusion/diffusion.cpp:164:    if (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:178:        int32_t block_start = (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) ? n_input + block_num * params.block_length : 0;
+examples/diffusion/diffusion.cpp:179:        int32_t block_end   = (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) ?
+examples/diffusion/diffusion.cpp:184:        if (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:273:                    if (params.schedule != DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED || (i >= block_start && i < block_end)) {
+examples/diffusion/diffusion.cpp:289:                    step, steps_per_block, mask_positions.size(), params.schedule, params.eps, num_transfer_tokens);
+examples/diffusion/diffusion.cpp:343:                    step, steps_per_block, mask_positions.size(), params.schedule, params.eps, num_transfer_tokens);
+examples/diffusion/diffusion.h:15:// Unified transfer scheduling methods
+examples/diffusion/diffusion.h:16:enum diffusion_transfer_schedule {
+examples/diffusion/diffusion.h:41:    diffusion_transfer_schedule schedule  = DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED;
+examples/diffusion/diffusion.h:44:    float   eps              = 0.;     // Timestep scheduling
+examples/diffusion/diffusion.h:45:    int32_t block_length     = 0;      // Block size (for block scheduling)
+examples/eval-callback/README.md:53:ggml_debug:                   wqkv-0 = (f32)    MUL_MAT(blk.0.attn_qkv.weight{2560, 7680, 1, 1}, attn_norm-0{2560, 1, 1, 1}}) = {7680, 1, 1, 1}
+examples/eval-callback/eval-callback.cpp:53:    // pass the callback to the backend scheduler
+ggml/src/ggml-backend-meta.cpp:845:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-backend-meta.cpp:846:            case GGML_OP_MUL_MAT_ID: {
+ggml/src/ggml-backend.cpp:750:// scheduler
+ggml/src/ggml-backend.cpp:764:struct ggml_backend_sched_split {
+ggml/src/ggml-backend.cpp:774:struct ggml_backend_sched {
+ggml/src/ggml-backend.cpp:775:    bool is_reset; // true if the scheduler has been reset since the last graph split
+ggml/src/ggml-backend.cpp:799:    struct ggml_backend_sched_split * splits;
+ggml/src/ggml-backend.cpp:813:    ggml_backend_sched_eval_callback callback_eval;
+ggml/src/ggml-backend.cpp:830:#define hash_id(tensor) ggml_hash_find_or_insert(&sched->hash_set, tensor)
+ggml/src/ggml-backend.cpp:831:#define tensor_backend_id(tensor) sched->hv_tensor_backend_ids[hash_id(tensor)]
+ggml/src/ggml-backend.cpp:832:#define tensor_id_copy(id, backend_id, copy_id) sched->hv_tensor_copies[(id) * sched->n_backends * sched->n_copies + (backend_id) * sched->n_copies + (copy_id)]
+ggml/src/ggml-backend.cpp:836:static int ggml_backend_sched_backend_id(ggml_backend_sched_t sched, ggml_backend_t backend) {
+ggml/src/ggml-backend.cpp:837:    for (int i = 0; i < sched->n_backends; i++) {
+ggml/src/ggml-backend.cpp:838:        if (sched->backends[i] == backend) {
+ggml/src/ggml-backend.cpp:845:static int ggml_backend_sched_backend_from_buffer(ggml_backend_sched_t sched, const struct ggml_tensor * tensor, const struct ggml_tensor * op) {
+ggml/src/ggml-backend.cpp:852:    for (int i = 0; i < sched->n_backends; i++) {
+ggml/src/ggml-backend.cpp:853:        if (ggml_backend_supports_buft(sched->backends[i], buffer->buft) &&
+ggml/src/ggml-backend.cpp:854:            ggml_backend_supports_op(sched->backends[i], op)) {
+ggml/src/ggml-backend.cpp:878:static int ggml_backend_sched_backend_id_from_cur(ggml_backend_sched_t sched, struct ggml_tensor * tensor) {
+ggml/src/ggml-backend.cpp:880:    int cur_backend_id = ggml_backend_sched_backend_from_buffer(sched, tensor, tensor);
+ggml/src/ggml-backend.cpp:888:        cur_backend_id = ggml_backend_sched_backend_from_buffer(sched, tensor->view_src, tensor);
+ggml/src/ggml-backend.cpp:903:        cur_backend_id = sched->n_backends - 1; // last backend (assumed CPU)
+ggml/src/ggml-backend.cpp:917:            int src_backend_id = ggml_backend_sched_backend_from_buffer(sched, src, tensor);
+ggml/src/ggml-backend.cpp:919:            if (sched->op_offload && src_backend_id == sched->n_backends - 1 && ggml_backend_buffer_is_host(src->buffer)) {
+ggml/src/ggml-backend.cpp:921:                    if (ggml_backend_supports_op(sched->backends[b], tensor) && ggml_backend_offload_op(sched->backends[b], tensor)) {
+ggml/src/ggml-backend.cpp:945:static void ggml_backend_sched_print_assignments(ggml_backend_sched_t sched, struct ggml_cgraph * graph) {
+ggml/src/ggml-backend.cpp:948:        if (cur_split < sched->n_splits && i == sched->splits[cur_split].i_start) {
+ggml/src/ggml-backend.cpp:949:            ggml_backend_t split_backend = sched->backends[sched->splits[cur_split].backend_id];
+ggml/src/ggml-backend.cpp:951:                sched->splits[cur_split].n_inputs);
+ggml/src/ggml-backend.cpp:952:            for (int j = 0; j < sched->splits[cur_split].n_inputs; j++) {
+ggml/src/ggml-backend.cpp:956:                GGML_LOG_DEBUG("[%s (%5.5s)] ", sched->splits[cur_split].inputs[j]->name,
+ggml/src/ggml-backend.cpp:957:                    fmt_size(ggml_nbytes(sched->splits[cur_split].inputs[j])));
+ggml/src/ggml-backend.cpp:966:        if (sched->debug > 1) {
+ggml/src/ggml-backend.cpp:967:            ggml_backend_t tensor_backend = ggml_backend_sched_get_tensor_backend(sched, node);
+ggml/src/ggml-backend.cpp:976:                ggml_backend_t src_backend = ggml_backend_sched_get_tensor_backend(sched, src);
+ggml/src/ggml-backend.cpp:985:static bool ggml_backend_sched_buffer_supported(ggml_backend_sched_t sched, struct ggml_tensor * t, int backend_id) {
+ggml/src/ggml-backend.cpp:999:            buft = sched->bufts[tensor_backend_id];
+ggml/src/ggml-backend.cpp:1003:    return buft != NULL && ggml_backend_supports_buft(sched->backends[backend_id], buft);
+ggml/src/ggml-backend.cpp:1006:static void ggml_backend_sched_set_if_supported(ggml_backend_sched_t sched, struct ggml_tensor * node, int cur_backend_id, int * node_backend_id) {
+ggml/src/ggml-backend.cpp:1007:    if (ggml_backend_supports_op(sched->backends[cur_backend_id], node)) {
+ggml/src/ggml-backend.cpp:1014:void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgraph * graph) {
+ggml/src/ggml-backend.cpp:1016:    sched->n_splits = 0;
+ggml/src/ggml-backend.cpp:1017:    sched->n_graph_inputs = 0;
+ggml/src/ggml-backend.cpp:1018:    sched->is_reset = false;
+ggml/src/ggml-backend.cpp:1021:        /* .mem_size =   */ sched->context_buffer_size,
+ggml/src/ggml-backend.cpp:1022:        /* .mem_buffer = */ sched->context_buffer,
+ggml/src/ggml-backend.cpp:1026:    ggml_free(sched->ctx);
+ggml/src/ggml-backend.cpp:1028:    sched->ctx = ggml_init(params);
+ggml/src/ggml-backend.cpp:1029:    if (sched->ctx == NULL) {
+ggml/src/ggml-backend.cpp:1041:            *leaf_backend_id = ggml_backend_sched_backend_id_from_cur(sched, leaf);
+ggml/src/ggml-backend.cpp:1050:            *node_backend_id = ggml_backend_sched_backend_id_from_cur(sched, node);
+ggml/src/ggml-backend.cpp:1065:                    *src_backend_id = ggml_backend_sched_backend_id_from_cur(sched, src);
+ggml/src/ggml-backend.cpp:1087:                if (*node_backend_id == sched->n_backends - 1) {
+ggml/src/ggml-backend.cpp:1094:                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+ggml/src/ggml-backend.cpp:1108:                if (*node_backend_id == sched->n_backends - 1) {
+ggml/src/ggml-backend.cpp:1115:                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+ggml/src/ggml-backend.cpp:1131:                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+ggml/src/ggml-backend.cpp:1147:                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+ggml/src/ggml-backend.cpp:1169:            for (int b = 0; b < sched->n_backends; b++) {
+ggml/src/ggml-backend.cpp:1170:                if (ggml_backend_supports_op(sched->backends[b], node)) {
+ggml/src/ggml-backend.cpp:1177:                        if ((tensor_backend_id(src) != -1 || tensor_backend_id(src->view_src) != -1) && ggml_backend_sched_buffer_supported(sched, src, b)) {
+ggml/src/ggml-backend.cpp:1191:                if (sched->bufts[b] == sched->bufts[*node_backend_id] && ggml_backend_supports_op(sched->backends[b], node)) {
+ggml/src/ggml-backend.cpp:1198:                        if (!ggml_backend_sched_buffer_supported(sched, src, b)) {
+ggml/src/ggml-backend.cpp:1239:        for (int b = 0; b < sched->n_backends && *cur_backend_id == -1; b++) {
+ggml/src/ggml-backend.cpp:1240:            ggml_backend_sched_set_if_supported(sched, node, b, cur_backend_id);
+ggml/src/ggml-backend.cpp:1248:        struct ggml_backend_sched_split * split = &sched->splits[0];
+ggml/src/ggml-backend.cpp:1284:                        if (src_backend_id != cur_backend_id && !ggml_backend_sched_buffer_supported(sched, src, cur_backend_id)) {
+ggml/src/ggml-backend.cpp:1293:                        int src_backend_id = sched->hv_tensor_backend_ids[id];
+ggml/src/ggml-backend.cpp:1294:                        bool supported = ggml_backend_sched_buffer_supported(sched, src, cur_backend_id);
+ggml/src/ggml-backend.cpp:1306:                if (i_split >= sched->splits_capacity) {
+ggml/src/ggml-backend.cpp:1307:                    sched->splits_capacity *= 2;
+### repack / OpenMP / AVX2 / AVX512 / VNNI
+examples/gguf-hash/deps/xxhash/xxhash.h:61: * | XXH3_64bits()        | @b AVX2 |    64 |        59.4 GB/s |               133.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:63: * | XXH3_128bits()       | @b AVX2 |   128 |        57.9 GB/s |               118.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:79: * | Blake3*              | @b AVX2 |   256 |         4.4 GB/s |                 8.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:1088: *   - AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:1089: *   - AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:3406:#if (defined(__AVX512F__)) && !defined(XXH_ENABLE_AUTOVECTORIZE)
+examples/gguf-hash/deps/xxhash/xxhash.h:3411:     * reason) without globally disabling AVX512.
+examples/gguf-hash/deps/xxhash/xxhash.h:3750:#  elif defined(__AVX2__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3867:    XXH_AVX2   = 2,  /*!< AVX2 for Haswell and Bulldozer */
+examples/gguf-hash/deps/xxhash/xxhash.h:3868:    XXH_AVX512 = 3,  /*!< AVX512 for Skylake and Icelake */
+examples/gguf-hash/deps/xxhash/xxhash.h:3882: * type, so, for example, 32 for AVX2.
+examples/gguf-hash/deps/xxhash/xxhash.h:3893:#  define XXH_AVX2   2
+examples/gguf-hash/deps/xxhash/xxhash.h:3894:#  define XXH_AVX512 3
+examples/gguf-hash/deps/xxhash/xxhash.h:3912:#  elif defined(__AVX512F__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3913:#    define XXH_VECTOR XXH_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:3914:#  elif defined(__AVX2__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3915:#    define XXH_VECTOR XXH_AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:3949:#  elif XXH_VECTOR == XXH_AVX2  /* avx2 */
+examples/gguf-hash/deps/xxhash/xxhash.h:3955:#  elif XXH_VECTOR == XXH_AVX512  /* avx512 */
+examples/gguf-hash/deps/xxhash/xxhash.h:3963:    || XXH_VECTOR == XXH_AVX2 || XXH_VECTOR == XXH_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:3981: * However, when targeting AVX2, it is overzealous in its unrolling resulting
+examples/gguf-hash/deps/xxhash/xxhash.h:3986: * only applies to Sandy and Ivy Bridge... which don't even support AVX2.
+examples/gguf-hash/deps/xxhash/xxhash.h:3988: * That is why when compiling the AVX2 version, it is recommended to use either
+examples/gguf-hash/deps/xxhash/xxhash.h:3998:#if XXH_VECTOR == XXH_AVX2 /* AVX2 */ \
+examples/gguf-hash/deps/xxhash/xxhash.h:4800:#    if (XXH_VECTOR == XXH_AVX512)
+examples/gguf-hash/deps/xxhash/xxhash.h:4881:#if (XXH_VECTOR == XXH_AVX512) \
+examples/gguf-hash/deps/xxhash/xxhash.h:4882:     || (defined(XXH_DISPATCH_AVX512) && XXH_DISPATCH_AVX512 != 0)
+examples/gguf-hash/deps/xxhash/xxhash.h:4884:#ifndef XXH_TARGET_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:4885:# define XXH_TARGET_AVX512  /* disable attribute target */
+examples/gguf-hash/deps/xxhash/xxhash.h:4888:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4915:XXH_FORCE_INLINE XXH_TARGET_AVX512 XXH3_ACCUMULATE_TEMPLATE(avx512)
+examples/gguf-hash/deps/xxhash/xxhash.h:4938:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4961:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4984:#if (XXH_VECTOR == XXH_AVX2) \
+examples/gguf-hash/deps/xxhash/xxhash.h:4985:    || (defined(XXH_DISPATCH_AVX2) && XXH_DISPATCH_AVX2 != 0)
+examples/gguf-hash/deps/xxhash/xxhash.h:4987:#ifndef XXH_TARGET_AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:4988:# define XXH_TARGET_AVX2  /* disable attribute target */
+examples/gguf-hash/deps/xxhash/xxhash.h:4991:XXH_FORCE_INLINE XXH_TARGET_AVX2 void
+examples/gguf-hash/deps/xxhash/xxhash.h:5024:XXH_FORCE_INLINE XXH_TARGET_AVX2 XXH3_ACCUMULATE_TEMPLATE(avx2)
+examples/gguf-hash/deps/xxhash/xxhash.h:5026:XXH_FORCE_INLINE XXH_TARGET_AVX2 void
+examples/gguf-hash/deps/xxhash/xxhash.h:5055:XXH_FORCE_INLINE XXH_TARGET_AVX2 void XXH3_initCustomSecret_avx2(void* XXH_RESTRICT customSecret, xxh_u64 seed64)
+examples/gguf-hash/deps/xxhash/xxhash.h:5102:    /* SSE2 is just a half-scale version of the AVX2 version. */
+examples/gguf-hash/deps/xxhash/xxhash.h:5785:#if (XXH_VECTOR == XXH_AVX512)
+examples/gguf-hash/deps/xxhash/xxhash.h:5792:#elif (XXH_VECTOR == XXH_AVX2)
+examples/gguf-hash/deps/xxhash/xxhash.h:6067: * alignment on 32-bit. This isn't enough for the 32 byte aligned loads in AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:7075:#if XXH_VECTOR == XXH_AVX2 /* AVX2 */ \
+ggml/src/CMakeLists.txt:314:                      AVX AVX2 BMI2 AVX_VNNI FMA F16C
+ggml/src/CMakeLists.txt:315:                      AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16
+ggml/src/CMakeLists.txt:365:            # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/src/CMakeLists.txt:369:        ggml_add_cpu_backend_variant(haswell            SSE42 AVX F16C FMA AVX2 BMI2)
+ggml/src/CMakeLists.txt:370:        ggml_add_cpu_backend_variant(skylakex           SSE42 AVX F16C FMA AVX2 BMI2 AVX512)
+ggml/src/CMakeLists.txt:371:        ggml_add_cpu_backend_variant(cannonlake         SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI)
+ggml/src/CMakeLists.txt:372:        ggml_add_cpu_backend_variant(cascadelake        SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI)
+ggml/src/CMakeLists.txt:373:        ggml_add_cpu_backend_variant(icelake            SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI)
+ggml/src/CMakeLists.txt:378:            ggml_add_cpu_backend_variant(cooperlake     SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:379:            ggml_add_cpu_backend_variant(zen4           SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:381:        ggml_add_cpu_backend_variant(alderlake          SSE42 AVX F16C FMA AVX2 BMI2 AVX_VNNI)
+ggml/src/CMakeLists.txt:384:            ggml_add_cpu_backend_variant(sapphirerapids SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16 AMX_TILE AMX_INT8)
+ggml/src/ggml-blas/ggml-blas.cpp:297:        GGML_LOG_DEBUG("%s: warning: ggml is using OpenMP, but OpenBLAS was compiled without OpenMP support\n", __func__);
+ggml/src/ggml-blas/ggml-blas.cpp:302:    GGML_LOG_DEBUG("%s: warning: ggml is using OpenMP, but BLIS was compiled without OpenMP support\n", __func__);
+ggml/src/ggml-cpu/CMakeLists.txt:32:        ggml-cpu/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:33:        ggml-cpu/repack.h
+ggml/src/ggml-cpu/CMakeLists.txt:76:        find_package(OpenMP)
+ggml/src/ggml-cpu/CMakeLists.txt:77:        if (OpenMP_FOUND)
+ggml/src/ggml-cpu/CMakeLists.txt:81:            target_link_libraries(${GGML_CPU_NAME} PRIVATE OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/src/ggml-cpu/CMakeLists.txt:84:            message(WARNING "OpenMP not found")
+ggml/src/ggml-cpu/CMakeLists.txt:110:            ggml-cpu/arch/arm/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:252:            ggml-cpu/arch/x86/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:260:            if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:261:                list(APPEND ARCH_FLAGS /arch:AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:262:                # /arch:AVX512 includes: __AVX512F__, __AVX512CD__, __AVX512BW__, __AVX512DQ__, and __AVX512VL__
+ggml/src/ggml-cpu/CMakeLists.txt:264:                # AVX512 extensions, neither it defines the
+ggml/src/ggml-cpu/CMakeLists.txt:267:                list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:268:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:269:                    list(APPEND ARCH_DEFINITIONS __AVX512VBMI__)
+ggml/src/ggml-cpu/CMakeLists.txt:274:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:275:                    list(APPEND ARCH_DEFINITIONS __AVX512VNNI__ GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:280:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:281:                    list(APPEND ARCH_DEFINITIONS __AVX512BF16__ GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:295:            elseif (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:296:                list(APPEND ARCH_FLAGS /arch:AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:297:                list(APPEND ARCH_DEFINITIONS GGML_AVX2 GGML_FMA GGML_F16C)
+ggml/src/ggml-cpu/CMakeLists.txt:305:            if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:306:                list(APPEND ARCH_DEFINITIONS __AVXVNNI__ GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:336:                if (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:338:                    list(APPEND ARCH_DEFINITIONS GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:340:                if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:342:                    list(APPEND ARCH_DEFINITIONS GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:344:                if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:350:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:352:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:354:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:356:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:358:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:360:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:362:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:450:            ggml-cpu/arch/riscv/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:460:                ggml-cpu/spacemit/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:461:                ggml-cpu/spacemit/repack.h
+ggml/src/ggml-cpu/amx/amx.cpp:19:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.cpp:70:        GGML_LOG_DEBUG("%s: amx repack tensor %s of type %s\n", __func__, tensor->name, ggml_type_name(tensor->type));
+ggml/src/ggml-cpu/amx/amx.cpp:249:#endif  // defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.h:6:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/common.h:19:#define VNNI_BLK 4
+ggml/src/ggml-cpu/amx/mmq.cpp:35:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/mmq.cpp:180:// Block B needs to be prepacked to vnni format before feeding into  TMUL:
+ggml/src/ggml-cpu/amx/mmq.cpp:1986:#define LAUNCH_TINYGEMM_KERNEL_VNNI(NB_SIZE)                                                   \
+ggml/src/ggml-cpu/amx/mmq.cpp:2030:            _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2032:            _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2047:            _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2049:            _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2068:                    _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2070:                    _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2088:                    _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2090:                    _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2128:                _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2130:                _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2135:                _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2137:                _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2215:                _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+
+## Camelid implementation grep
+docs/CONFIGURATION.md:112:- `CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL=on` is a default-off Ubuntu x86_64 developer experiment for multi-row dense attention Q/K/V packed-runtime matmul. It only consumes backend-owned `PackedRows4` Q8_0 runtime storage for `blk.*.attn_{q,k,v}.weight`, and falls back unless all three projections, the runtime plan, dimensions, row count, row grouping, and packed interleave guards match exactly.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:21:- The path is intentionally narrow: dense Llama Q8_0 `blk.*.attn_output.weight`, rank-2 input with more than one row, `Q8_0RuntimeStorage::PackedRows4`, I8 interleave, input width divisible by 32, `rectangular_role == "linear"`, and exact packed projection shape guards. If any guard fails or the flag is unset/off, `linear_for_role_runtime_with_plan` falls through to existing guarded paths and the safe linear fallback.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:40:- The existing runtime path remains directly usable only for `ffn_down` with backend-owned `Q8_0RuntimeStorage::PackedRows4`, I8 interleave, Q8_0 weights, matching input/output dimensions, 32-wide input blocks, and output rows divisible by four; otherwise it falls back to the safe linear path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:60:- The path is intentionally narrow: dense Llama Q8_0 `blk.*.attn_output.weight`, one input row, `Q8_0RuntimeStorage::PackedRows4`, I8 interleave, input width divisible by 32, and `rectangular_role == "linear"`. If any guard fails or the flag is unset/off, `linear_for_role_runtime_with_plan` falls back to the existing safe linear path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:98:- This avoids the failed duplicate packed-copy sidecar direction: it does not add a new sidecar and leaves the directly usable x86 paths consuming backend-owned `Q8_0RuntimeStorage::PackedRows4` when separately opted in.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:106:- The path is intentionally narrow: dense Llama Q8_0 `blk.*.ffn_gate.weight` plus `blk.*.ffn_up.weight`, one activation row, runtime-packed `Q8_0RuntimeStorage::PackedRows4`, I8 interleave, input width divisible by 32, matching gate/up output widths divisible by 4. If any guard fails or the env flag is unset/off, `gated_ffn_activation_with_plan` falls back to the existing safe gate/up path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:115:- The path is intentionally narrow: dense Llama Q8_0 `output.weight`, token-major output projection, one activation row, runtime-packed `Q8_0RuntimeStorage::PackedRows4`, I8 interleave, input width divisible by 32, vocab rows divisible by 4. If any guard fails or the env flag is unset/off, `output_projection_with_layout` falls back to the existing borrowed transposed matmul path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:124:- The path is intentionally narrow: dense Llama Q8_0 `ffn_down`, one activation row, runtime-packed `Q8_0RuntimeStorage::PackedRows4`, I8 interleave, input width divisible by 32, output width divisible by 4. If any guard fails or the env flag is unset/off, `linear_for_role_runtime` falls back to the existing path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:132:- Small follow-on slice widened the default-off `CAMELID_X86_Q8_REPACK=on` runtime-packed loader to include dense Llama `blk.*.ffn_down.weight` in backend-owned `Q8_0RuntimeStorage::PackedRows4`.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:141:- The implementation still uses backend-owned `Q8_0RuntimeStorage::PackedRows4` for selected tensors and keeps `data`, `q8_0_blocks`, file backing, and debug packed sidecars empty/absent for that path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:296:- When the gate is on, `TensorStore::{load_q8_0_file_backed_linear,load_q8_0_block_backed_linear}` build `Q8_0RuntimeStorage::PackedRows4` directly from GGUF Q8_0 bytes and return a tensor with empty `data`, no `q8_0_blocks`, and no file-backed row-major sidecar for those selected tensors.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:298:- `CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER=on` is a second default-off experiment gate for decode-time `ffn_down` to consume `Q8_0RuntimeStorage::PackedRows4` directly through `try_x86_q8_ffn_down_decode_owner_path`; it falls back unless the tensor/shape/interleave guards match exactly.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:299:- `CAMELID_X86_Q8_OUTPUT_DECODE_OWNER=on` is a default-off experiment gate for one-row decode `output.weight` to consume `Q8_0RuntimeStorage::PackedRows4` directly through `try_x86_q8_output_decode_owner_path`; it falls back unless the tensor/shape/interleave guards match exactly.
+src/execution_plan.rs:19:    "CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL",
+src/execution_plan.rs:361:        "CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL",
+src/execution_plan.rs:737:            "CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL",
+src/execution_plan.rs:973:                .get("CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL"),
+src/execution_plan.rs:1017:        env::set_var("CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL", "on");
+src/execution_plan.rs:1028:        assert!(env::var("CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL").is_err());
+src/inference.rs:676:    attention_qkv_packed_rows4_matmul: bool,
+src/inference.rs:721:            attention_qkv_packed_rows4_matmul: q8_0_env_flag_enabled_default_off(
+src/inference.rs:722:                "CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL",
+src/inference.rs:3516:    } else if let Some(qkv) = try_x86_q8_attention_qkv_packed_rows4_matmul_path(
+src/inference.rs:5074:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = storage else {
+src/inference.rs:7328:fn try_x86_q8_attention_qkv_packed_rows4_matmul_path(
+src/inference.rs:7335:    if !runtime_plan.q8.attention_qkv_packed_rows4_matmul || input.rank() != 2 || input.dim(0)? <= 1
+src/inference.rs:7360:    let q = q8_0_packed_rows4_matmul_projection(
+src/inference.rs:7366:    let k = q8_0_packed_rows4_matmul_projection(
+src/inference.rs:7372:    let v = q8_0_packed_rows4_matmul_projection(
+src/inference.rs:7455:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() else {
+src/inference.rs:7486:fn q8_0_packed_rows4_matmul_projection(
+src/inference.rs:7600:    q8_0_packed_rows4_matmul_projection(input, packed, output_width, name).map(Some)
+src/inference.rs:7642:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() else {
+src/inference.rs:7704:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() else {
+src/inference.rs:7715:    q8_0_packed_rows4_matmul_projection(input, packed, output_width, name).map(Some)
+src/inference.rs:7749:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() else {
+src/inference.rs:9827:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() {
+src/inference.rs:9846:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage {
+src/inference.rs:13279:                attention_qkv_packed_rows4_matmul: false,
+src/inference.rs:13378:        std::env::set_var("CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL", "on");
+src/inference.rs:13397:        assert!(plan.q8.attention_qkv_packed_rows4_matmul);
+src/inference.rs:13405:        std::env::remove_var("CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL");
+src/inference.rs:13426:            plan.q8.attention_qkv_packed_rows4_matmul,
+src/inference.rs:13478:                !plan.q8.attention_qkv_packed_rows4_matmul,
+src/inference.rs:14007:    fn attention_qkv_packed_rows4_matmul_plan(enabled: bool) -> ResolvedRuntimePlan {
+src/inference.rs:14009:        plan.q8.attention_qkv_packed_rows4_matmul = enabled;
+src/inference.rs:14038:                attention_qkv_packed_rows4_matmul: false,
+src/inference.rs:14101:            Some(Q8_0RuntimeStorage::PackedRows4(_))
+src/inference.rs:14204:    fn q8_attention_qkv_packed_rows4_matmul_matches_runtime_packed_baseline_for_prefill() {
+src/inference.rs:14227:        let plan = attention_qkv_packed_rows4_matmul_plan(true);
+src/inference.rs:14229:        let (q, k, v) = try_x86_q8_attention_qkv_packed_rows4_matmul_path(
+src/inference.rs:14242:        let expected_q = q8_0_packed_rows4_matmul_projection(
+src/inference.rs:14245:                Some(Q8_0RuntimeStorage::PackedRows4(packed)) => packed,
+src/inference.rs:14252:        let expected_k = q8_0_packed_rows4_matmul_projection(
+src/inference.rs:14255:                Some(Q8_0RuntimeStorage::PackedRows4(packed)) => packed,
+src/inference.rs:14262:        let expected_v = q8_0_packed_rows4_matmul_projection(
+src/inference.rs:14265:                Some(Q8_0RuntimeStorage::PackedRows4(packed)) => packed,
+src/inference.rs:14278:    fn q8_attention_qkv_packed_rows4_matmul_is_plan_gated_and_prefill_limited() {
+src/inference.rs:14289:            try_x86_q8_attention_qkv_packed_rows4_matmul_path(
+src/inference.rs:14294:                &attention_qkv_packed_rows4_matmul_plan(true),
+src/inference.rs:14307:        assert!(try_x86_q8_attention_qkv_packed_rows4_matmul_path(
+src/inference.rs:14312:            &attention_qkv_packed_rows4_matmul_plan(false),
+src/inference.rs:14323:        assert!(try_x86_q8_attention_qkv_packed_rows4_matmul_path(
+src/inference.rs:14328:            &attention_qkv_packed_rows4_matmul_plan(true),
+src/inference.rs:14393:            Some(Q8_0RuntimeStorage::PackedRows4(_))
+src/inference.rs:14469:            Some(Q8_0RuntimeStorage::PackedRows4(packed)) => packed,
+src/inference.rs:14567:                attention_qkv_packed_rows4_matmul: false,
+src/inference.rs:14590:                attention_qkv_packed_rows4_matmul: false,
+src/inference.rs:14613:                attention_qkv_packed_rows4_matmul: false,
+src/inference.rs:14753:            Some(Q8_0RuntimeStorage::PackedRows4(packed))
+src/inference.rs:14853:        if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/inference.rs:14891:            Some(Q8_0RuntimeStorage::PackedRows4(packed)) => packed,
+src/inference.rs:14978:            Some(Q8_0RuntimeStorage::PackedRows4(_))
+src/inference.rs:14982:            Some(Q8_0RuntimeStorage::PackedRows4(_))
+src/tensor/mod.rs:391:    Ok(Some(Q8_0RuntimeStorage::PackedRows4(packed)))
+src/tensor/mod.rs:1043:            q8_0_runtime_storage: Some(Q8_0RuntimeStorage::PackedRows4(packed)),
+src/tensor/mod.rs:2498:        if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:2576:            if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:3026:        let Some(super::Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:3035:        let Some(super::Q8_0RuntimeStorage::PackedRows4(attn_output_packed)) =
+
+## Local macOS compile-only/unit gate (not performance evidence)
+cargo fmt --all
+cargo test q8_attention_qkv_packed_rows4_matmul --lib -- --nocapture
+cargo test resolved_runtime_plan_captures_q8_env_once --lib
+cargo test runtime_profile_defaults_keep_experimental_q8_gates_closed --lib
+cargo test planner_env_apply_clears_stale_x86_q8_decode_consumer_flags --lib
+cargo test ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib
+result: all passed locally; hardlink warning only from external target cache.
+
+## Canonical Ubuntu x86_64 host gate
+host: SSH to the canonical validation host
+remote_workdir: <ubuntu-workdir>/camelid-attn-qkv-packed-rows4-matmul-20260517T1013Z
+uname: Linux <validation-host> 6.17.0-1013-aws #13~24.04.1-Ubuntu SMP Fri Apr 24 21:50:45 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+rustc: rustc 1.95.0 (59807616e 2026-04-14) via ~/.cargo/bin/rustc
+commands:
+  ~/.cargo/bin/cargo test q8_attention_qkv_packed_rows4_matmul --lib -- --nocapture
+  ~/.cargo/bin/cargo test resolved_runtime_plan_captures_q8_env_once --lib
+  ~/.cargo/bin/cargo test runtime_profile_defaults_keep_experimental_q8_gates_closed --lib
+  ~/.cargo/bin/cargo test planner_env_apply_clears_stale_x86_q8_decode_consumer_flags --lib
+  ~/.cargo/bin/cargo test ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib
+results:
+  q8_attention_qkv_packed_rows4_matmul_matches_runtime_packed_baseline_for_prefill ... ok
+  q8_attention_qkv_packed_rows4_matmul_is_plan_gated_and_prefill_limited ... ok
+  resolved_runtime_plan_captures_q8_env_once ... ok
+  runtime_profile_defaults_keep_experimental_q8_gates_closed ... ok
+  planner_env_apply_clears_stale_x86_q8_decode_consumer_flags ... ok
+  ubuntu_experimental_validated_gates_select_rust_avx2_q8_path ... ok
+note: /usr/bin rustc 1.75 could not parse Cargo.lock v4; reran with ~/.cargo/bin Rust 1.95 and passed.

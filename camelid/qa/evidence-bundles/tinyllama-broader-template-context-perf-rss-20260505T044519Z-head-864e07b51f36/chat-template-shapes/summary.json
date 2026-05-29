@@ -1,0 +1,156 @@
+{
+  "schema": "camelid.chat-parity.prompt-pack-run.v1",
+  "pack": {
+    "schema": "camelid.tinyllama.prompt-pack.v1",
+    "id": "tinyllama-chat-template-shapes-v1",
+    "path": "$CAMELID_WORKTREE",
+    "description": "Bounded TinyLlama marker-template shape coverage for the exact TinyLlama Q8_0 row. These cases exercise Camelid's explicit marker renderer rather than broader LLaMA-family claims.",
+    "prompt_count": 4,
+    "default_max_tokens": 5,
+    "default_render_mode": "tinyllama-marker",
+    "target_context_window": null
+  },
+  "backend": "http://127.0.0.1:8281",
+  "llama_server": "http://127.0.0.1:8283",
+  "model": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+  "model_id": "tinyllama-q8",
+  "prefix": "tinyllama-q8",
+  "chat_parity_script": "$CAMELID_WORKTREE",
+  "wait_ms": 180000,
+  "require_prompt_match": true,
+  "require_generated_match": true,
+  "prompts": [
+    {
+      "id": "single-system-user",
+      "message": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Answer briefly and stay factual."
+        },
+        {
+          "role": "user",
+          "content": "Name one primary color."
+        }
+      ],
+      "render_mode": "tinyllama-marker",
+      "note": "System + user message shape.",
+      "max_tokens": 5,
+      "target_context_window": null,
+      "artifact_dir": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-single-system-user",
+      "report_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-single-system-user/report.json",
+      "stdout_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-single-system-user/stdout.log",
+      "stderr_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-single-system-user/stderr.log",
+      "command_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-single-system-user/command.txt",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 38,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "multi-turn-user-assistant-user",
+      "message": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Say alpha."
+        },
+        {
+          "role": "assistant",
+          "content": "alpha"
+        },
+        {
+          "role": "user",
+          "content": "Now say beta."
+        }
+      ],
+      "render_mode": "tinyllama-marker",
+      "note": "Multi-turn user/assistant history followed by a new user turn.",
+      "max_tokens": 5,
+      "target_context_window": null,
+      "artifact_dir": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multi-turn-user-assistant-user",
+      "report_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multi-turn-user-assistant-user/report.json",
+      "stdout_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multi-turn-user-assistant-user/stdout.log",
+      "stderr_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multi-turn-user-assistant-user/stderr.log",
+      "command_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multi-turn-user-assistant-user/command.txt",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 45,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "assistant-final-no-generation-header",
+      "message": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Complete the word: cam"
+        },
+        {
+          "role": "assistant",
+          "content": "elid"
+        }
+      ],
+      "render_mode": "tinyllama-marker",
+      "note": "Assistant-final messages should not append another assistant generation header.",
+      "max_tokens": 1,
+      "target_context_window": null,
+      "artifact_dir": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-assistant-final-no-generation-header",
+      "report_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-assistant-final-no-generation-header/report.json",
+      "stdout_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-assistant-final-no-generation-header/stdout.log",
+      "stderr_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-assistant-final-no-generation-header/stderr.log",
+      "command_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-assistant-final-no-generation-header/command.txt",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 27,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "multiline-whitespace-preservation",
+      "message": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Preserve line breaks in reasoning inputs."
+        },
+        {
+          "role": "user",
+          "content": "Line one.\n\n  Indented line two.  "
+        }
+      ],
+      "render_mode": "tinyllama-marker",
+      "note": "Whitespace and multiline content are preserved inside message content.",
+      "max_tokens": 5,
+      "target_context_window": null,
+      "artifact_dir": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multiline-whitespace-preservation",
+      "report_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multiline-whitespace-preservation/report.json",
+      "stdout_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multiline-whitespace-preservation/stdout.log",
+      "stderr_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multiline-whitespace-preservation/stderr.log",
+      "command_path": "target/tinyllama-broader-template-context-perf-rss-20260505T044519Z-head-864e07b51f36/chat-template-shapes/tinyllama-q8-multiline-whitespace-preservation/command.txt",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 46,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    }
+  ],
+  "passed": true,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true
+}

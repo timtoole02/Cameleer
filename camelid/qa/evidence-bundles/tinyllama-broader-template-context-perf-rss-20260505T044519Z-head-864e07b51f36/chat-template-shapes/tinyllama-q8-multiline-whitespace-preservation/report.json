@@ -1,0 +1,1997 @@
+{
+  "backend": "http://127.0.0.1:8281",
+  "llama_server": "http://127.0.0.1:8283",
+  "model": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+  "model_id": "tinyllama-q8",
+  "message": "hello",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Preserve line breaks in reasoning inputs."
+    },
+    {
+      "role": "user",
+      "content": "Line one.\n\n  Indented line two.  "
+    }
+  ],
+  "render_mode": "tinyllama-marker",
+  "expected_prompt": "<|system|>\nPreserve line breaks in reasoning inputs.</s>\n<|user|>\nLine one.\n\n  Indented line two.  </s>\n<|assistant|>\n",
+  "expected_prompt_char_count": 118,
+  "reference_prompt_token_count": 46,
+  "reference_context": 512,
+  "prompt_tokens_match": true,
+  "generated_tokens_match": true,
+  "generated_text_match": true,
+  "first_generated_token_diff_index": -1,
+  "first_generated_token_logit_comparison": {
+    "backend_token_id": 2568,
+    "llama_token_id": 2568,
+    "token_ids_match": true,
+    "backend_margin_llama_minus_backend": 0,
+    "llama_margin_llama_minus_backend": 0,
+    "margin_disagreement": 0,
+    "backend_rows": [
+      {
+        "token_id": 2568,
+        "logit": 14.468216,
+        "probability": 0.3488428,
+        "rank": 1,
+        "selected": true,
+        "text": "Ind"
+      },
+      {
+        "token_id": 2568,
+        "logit": 14.468216,
+        "probability": 0.3488428,
+        "rank": 1,
+        "selected": true,
+        "text": "Ind"
+      }
+    ],
+    "llama_rows": [
+      {
+        "id": 2568,
+        "token": "Ind",
+        "bytes": [
+          73,
+          110,
+          100
+        ],
+        "logprob": -0.9495211243629456
+      },
+      {
+        "id": 2568,
+        "token": "Ind",
+        "bytes": [
+          73,
+          110,
+          100
+        ],
+        "logprob": -0.9495211243629456
+      }
+    ]
+  },
+  "first_generated_text_diff_index": -1,
+  "backend_prompt_tokens": [
+    1,
+    529,
+    29989,
+    5205,
+    29989,
+    29958,
+    13,
+    13504,
+    7143,
+    1196,
+    16706,
+    297,
+    24481,
+    10970,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    3542,
+    697,
+    29889,
+    13,
+    13,
+    259,
+    2568,
+    14927,
+    1196,
+    1023,
+    29889,
+    259,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13
+  ],
+  "reference_prompt_tokens": [
+    1,
+    529,
+    29989,
+    5205,
+    29989,
+    29958,
+    13,
+    13504,
+    7143,
+    1196,
+    16706,
+    297,
+    24481,
+    10970,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    3542,
+    697,
+    29889,
+    13,
+    13,
+    259,
+    2568,
+    14927,
+    1196,
+    1023,
+    29889,
+    259,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13
+  ],
+  "backend_generated_tokens": [
+    2568,
+    14927,
+    1196,
+    1023,
+    29889
+  ],
+  "llama_generated_tokens": [
+    2568,
+    14927,
+    1196,
+    1023,
+    29889
+  ],
+  "llama_top_logprobs": [
+    {
+      "id": 2568,
+      "token": "Ind",
+      "bytes": [
+        73,
+        110,
+        100
+      ],
+      "logprob": -0.9495211243629456
+    },
+    {
+      "id": 3542,
+      "token": "Line",
+      "bytes": [
+        76,
+        105,
+        110,
+        101
+      ],
+      "logprob": -1.3906469345092773
+    },
+    {
+      "id": 29931,
+      "token": "L",
+      "bytes": [
+        76
+      ],
+      "logprob": -3.5509328842163086
+    },
+    {
+      "id": 13504,
+      "token": "Pres",
+      "bytes": [
+        80,
+        114,
+        101,
+        115
+      ],
+      "logprob": -3.9261531829833984
+    },
+    {
+      "id": 28956,
+      "token": "```",
+      "bytes": [
+        96,
+        96,
+        96
+      ],
+      "logprob": -4.180920600891113
+    },
+    {
+      "id": 1123,
+      "token": "Re",
+      "bytes": [
+        82,
+        101
+      ],
+      "logprob": -4.417779922485352
+    },
+    {
+      "id": 797,
+      "token": "In",
+      "bytes": [
+        73,
+        110
+      ],
+      "logprob": -4.419855117797852
+    },
+    {
+      "id": 2177,
+      "token": "Par",
+      "bytes": [
+        80,
+        97,
+        114
+      ],
+      "logprob": -4.790658950805664
+    },
+    {
+      "id": 29966,
+      "token": "<",
+      "bytes": [
+        60
+      ],
+      "logprob": -4.88254451751709
+    },
+    {
+      "id": 29933,
+      "token": "B",
+      "bytes": [
+        66
+      ],
+      "logprob": -4.888387680053711
+    },
+    {
+      "id": 29908,
+      "token": "\"",
+      "bytes": [
+        34
+      ],
+      "logprob": -4.939846038818359
+    },
+    {
+      "id": 2928,
+      "token": "Int",
+      "bytes": [
+        73,
+        110,
+        116
+      ],
+      "logprob": -4.959772109985352
+    },
+    {
+      "id": 29899,
+      "token": "-",
+      "bytes": [
+        45
+      ],
+      "logprob": -5.14821720123291
+    },
+    {
+      "id": 2525,
+      "token": "Un",
+      "bytes": [
+        85,
+        110
+      ],
+      "logprob": -5.194104194641113
+    },
+    {
+      "id": 10399,
+      "token": "Enter",
+      "bytes": [
+        69,
+        110,
+        116,
+        101,
+        114
+      ],
+      "logprob": -5.210786819458008
+    },
+    {
+      "id": 1678,
+      "token": "   ",
+      "bytes": [
+        32,
+        32,
+        32
+      ],
+      "logprob": -5.2932233810424805
+    },
+    {
+      "id": 29961,
+      "token": "[",
+      "bytes": [
+        91
+      ],
+      "logprob": -5.336846351623535
+    },
+    {
+      "id": 29903,
+      "token": "S",
+      "bytes": [
+        83
+      ],
+      "logprob": -5.352119445800781
+    },
+    {
+      "id": 29902,
+      "token": "I",
+      "bytes": [
+        73
+      ],
+      "logprob": -5.399295806884766
+    },
+    {
+      "id": 20130,
+      "token": "Bre",
+      "bytes": [
+        66,
+        114,
+        101
+      ],
+      "logprob": -5.462934494018555
+    },
+    {
+      "id": 14927,
+      "token": "ented",
+      "bytes": [
+        101,
+        110,
+        116,
+        101,
+        100
+      ],
+      "logprob": -0.007317188195884228
+    },
+    {
+      "id": 9233,
+      "token": "entation",
+      "bytes": [
+        101,
+        110,
+        116,
+        97,
+        116,
+        105,
+        111,
+        110
+      ],
+      "logprob": -5.4565300941467285
+    },
+    {
+      "id": 296,
+      "token": "ent",
+      "bytes": [
+        101,
+        110,
+        116
+      ],
+      "logprob": -6.39219331741333
+    },
+    {
+      "id": 1237,
+      "token": "ents",
+      "bytes": [
+        101,
+        110,
+        116,
+        115
+      ],
+      "logprob": -7.320390224456787
+    },
+    {
+      "id": 12613,
+      "token": "eed",
+      "bytes": [
+        101,
+        101,
+        100
+      ],
+      "logprob": -8.528162002563477
+    },
+    {
+      "id": 29877,
+      "token": "o",
+      "bytes": [
+        111
+      ],
+      "logprob": -9.725085258483887
+    },
+    {
+      "id": 29884,
+      "token": "u",
+      "bytes": [
+        117
+      ],
+      "logprob": -9.810857772827148
+    },
+    {
+      "id": 5893,
+      "token": "enter",
+      "bytes": [
+        101,
+        110,
+        116,
+        101,
+        114
+      ],
+      "logprob": -10.170515060424805
+    },
+    {
+      "id": 18186,
+      "token": "icted",
+      "bytes": [
+        105,
+        99,
+        116,
+        101,
+        100
+      ],
+      "logprob": -10.215291976928711
+    },
+    {
+      "id": 23352,
+      "token": "ividual",
+      "bytes": [
+        105,
+        118,
+        105,
+        100,
+        117,
+        97,
+        108
+      ],
+      "logprob": -10.329002380371094
+    },
+    {
+      "id": 293,
+      "token": "ic",
+      "bytes": [
+        105,
+        99
+      ],
+      "logprob": -10.582662582397461
+    },
+    {
+      "id": 2509,
+      "token": "ention",
+      "bytes": [
+        101,
+        110,
+        116,
+        105,
+        111,
+        110
+      ],
+      "logprob": -10.831783294677734
+    },
+    {
+      "id": 29872,
+      "token": "e",
+      "bytes": [
+        101
+      ],
+      "logprob": -10.92746353149414
+    },
+    {
+      "id": 1022,
+      "token": "ep",
+      "bytes": [
+        101,
+        112
+      ],
+      "logprob": -11.130163192749023
+    },
+    {
+      "id": 2760,
+      "token": "ended",
+      "bytes": [
+        101,
+        110,
+        100,
+        101,
+        100
+      ],
+      "logprob": -11.387984275817871
+    },
+    {
+      "id": 6478,
+      "token": "enty",
+      "bytes": [
+        101,
+        110,
+        116,
+        121
+      ],
+      "logprob": -11.559490203857422
+    },
+    {
+      "id": 5313,
+      "token": "uct",
+      "bytes": [
+        117,
+        99,
+        116
+      ],
+      "logprob": -11.66020679473877
+    },
+    {
+      "id": 3640,
+      "token": "ivid",
+      "bytes": [
+        105,
+        118,
+        105,
+        100
+      ],
+      "logprob": -11.778306007385254
+    },
+    {
+      "id": 1088,
+      "token": "irect",
+      "bytes": [
+        105,
+        114,
+        101,
+        99,
+        116
+      ],
+      "logprob": -11.86886215209961
+    },
+    {
+      "id": 774,
+      "token": "eb",
+      "bytes": [
+        101,
+        98
+      ],
+      "logprob": -12.16648006439209
+    },
+    {
+      "id": 1196,
+      "token": " line",
+      "bytes": [
+        32,
+        108,
+        105,
+        110,
+        101
+      ],
+      "logprob": -0.1298600286245346
+    },
+    {
+      "id": 7407,
+      "token": " Line",
+      "bytes": [
+        32,
+        76,
+        105,
+        110,
+        101
+      ],
+      "logprob": -2.395601272583008
+    },
+    {
+      "id": 3454,
+      "token": " lines",
+      "bytes": [
+        32,
+        108,
+        105,
+        110,
+        101,
+        115
+      ],
+      "logprob": -5.591408729553223
+    },
+    {
+      "id": 29901,
+      "token": ":",
+      "bytes": [
+        58
+      ],
+      "logprob": -5.60964298248291
+    },
+    {
+      "id": 322,
+      "token": " and",
+      "bytes": [
+        32,
+        97,
+        110,
+        100
+      ],
+      "logprob": -6.176997184753418
+    },
+    {
+      "id": 411,
+      "token": " with",
+      "bytes": [
+        32,
+        119,
+        105,
+        116,
+        104
+      ],
+      "logprob": -6.328606605529785
+    },
+    {
+      "id": 1473,
+      "token": " second",
+      "bytes": [
+        32,
+        115,
+        101,
+        99,
+        111,
+        110,
+        100
+      ],
+      "logprob": -6.330081939697266
+    },
+    {
+      "id": 14880,
+      "token": " paragraph",
+      "bytes": [
+        32,
+        112,
+        97,
+        114,
+        97,
+        103,
+        114,
+        97,
+        112,
+        104
+      ],
+      "logprob": -6.781889915466309
+    },
+    {
+      "id": 29871,
+      "token": " ",
+      "bytes": [
+        32
+      ],
+      "logprob": -7.06541633605957
+    },
+    {
+      "id": 365,
+      "token": " L",
+      "bytes": [
+        32,
+        76
+      ],
+      "logprob": -7.1250104904174805
+    },
+    {
+      "id": 29892,
+      "token": ",",
+      "bytes": [
+        44
+      ],
+      "logprob": -7.132257461547852
+    },
+    {
+      "id": 1023,
+      "token": " two",
+      "bytes": [
+        32,
+        116,
+        119,
+        111
+      ],
+      "logprob": -7.230369567871094
+    },
+    {
+      "id": 26241,
+      "token": " linea",
+      "bytes": [
+        32,
+        108,
+        105,
+        110,
+        101,
+        97
+      ],
+      "logprob": -7.345890998840332
+    },
+    {
+      "id": 13,
+      "token": "\n",
+      "bytes": [
+        10
+      ],
+      "logprob": -7.391353607177734
+    },
+    {
+      "id": 3542,
+      "token": "Line",
+      "bytes": [
+        76,
+        105,
+        110,
+        101
+      ],
+      "logprob": -7.761066436767578
+    },
+    {
+      "id": 1459,
+      "token": " Par",
+      "bytes": [
+        32,
+        80,
+        97,
+        114
+      ],
+      "logprob": -7.796383857727051
+    },
+    {
+      "id": 7330,
+      "token": " ligne",
+      "bytes": [
+        32,
+        108,
+        105,
+        103,
+        110,
+        101
+      ],
+      "logprob": -8.014663696289062
+    },
+    {
+      "id": 1220,
+      "token": "line",
+      "bytes": [
+        108,
+        105,
+        110,
+        101
+      ],
+      "logprob": -8.077335357666016
+    },
+    {
+      "id": 4004,
+      "token": " section",
+      "bytes": [
+        32,
+        115,
+        101,
+        99,
+        116,
+        105,
+        111,
+        110
+      ],
+      "logprob": -8.09581184387207
+    },
+    {
+      "id": 697,
+      "token": " one",
+      "bytes": [
+        32,
+        111,
+        110,
+        101
+      ],
+      "logprob": -8.155489921569824
+    },
+    {
+      "id": 1023,
+      "token": " two",
+      "bytes": [
+        32,
+        116,
+        119,
+        111
+      ],
+      "logprob": -0.06520453840494156
+    },
+    {
+      "id": 697,
+      "token": " one",
+      "bytes": [
+        32,
+        111,
+        110,
+        101
+      ],
+      "logprob": -2.911931037902832
+    },
+    {
+      "id": 2211,
+      "token": " three",
+      "bytes": [
+        32,
+        116,
+        104,
+        114,
+        101,
+        101
+      ],
+      "logprob": -5.789364814758301
+    },
+    {
+      "id": 29871,
+      "token": " ",
+      "bytes": [
+        32
+      ],
+      "logprob": -6.194310188293457
+    },
+    {
+      "id": 7803,
+      "token": " Two",
+      "bytes": [
+        32,
+        84,
+        119,
+        111
+      ],
+      "logprob": -7.327476501464844
+    },
+    {
+      "id": 1353,
+      "token": " number",
+      "bytes": [
+        32,
+        110,
+        117,
+        109,
+        98,
+        101,
+        114
+      ],
+      "logprob": -7.353896141052246
+    },
+    {
+      "id": 29901,
+      "token": ":",
+      "bytes": [
+        58
+      ],
+      "logprob": -7.881115913391113
+    },
+    {
+      "id": 3023,
+      "token": " four",
+      "bytes": [
+        32,
+        102,
+        111,
+        117,
+        114
+      ],
+      "logprob": -8.264067649841309
+    },
+    {
+      "id": 411,
+      "token": " with",
+      "bytes": [
+        32,
+        119,
+        105,
+        116,
+        104
+      ],
+      "logprob": -8.682658195495605
+    },
+    {
+      "id": 3118,
+      "token": " One",
+      "bytes": [
+        32,
+        79,
+        110,
+        101
+      ],
+      "logprob": -9.026931762695312
+    },
+    {
+      "id": 313,
+      "token": " (",
+      "bytes": [
+        32,
+        40
+      ],
+      "logprob": -9.205621719360352
+    },
+    {
+      "id": 29899,
+      "token": "-",
+      "bytes": [
+        45
+      ],
+      "logprob": -9.390289306640625
+    },
+    {
+      "id": 1473,
+      "token": " second",
+      "bytes": [
+        32,
+        115,
+        101,
+        99,
+        111,
+        110,
+        100
+      ],
+      "logprob": -9.569392204284668
+    },
+    {
+      "id": 4832,
+      "token": " six",
+      "bytes": [
+        32,
+        115,
+        105,
+        120
+      ],
+      "logprob": -9.840042114257812
+    },
+    {
+      "id": 29892,
+      "token": ",",
+      "bytes": [
+        44
+      ],
+      "logprob": -9.917841911315918
+    },
+    {
+      "id": 29906,
+      "token": "2",
+      "bytes": [
+        50
+      ],
+      "logprob": -9.986492156982422
+    },
+    {
+      "id": 3579,
+      "token": " **",
+      "bytes": [
+        32,
+        42,
+        42
+      ],
+      "logprob": -10.019320487976074
+    },
+    {
+      "id": 5320,
+      "token": " five",
+      "bytes": [
+        32,
+        102,
+        105,
+        118,
+        101
+      ],
+      "logprob": -10.032306671142578
+    },
+    {
+      "id": 4239,
+      "token": " deux",
+      "bytes": [
+        32,
+        100,
+        101,
+        117,
+        120
+      ],
+      "logprob": -10.175289154052734
+    },
+    {
+      "id": 310,
+      "token": " of",
+      "bytes": [
+        32,
+        111,
+        102
+      ],
+      "logprob": -10.258353233337402
+    },
+    {
+      "id": 29889,
+      "token": ".",
+      "bytes": [
+        46
+      ],
+      "logprob": -0.42267802357673645
+    },
+    {
+      "id": 2,
+      "token": "",
+      "bytes": [],
+      "logprob": -2.2858314514160156
+    },
+    {
+      "id": 29901,
+      "token": ":",
+      "bytes": [
+        58
+      ],
+      "logprob": -2.7813119888305664
+    },
+    {
+      "id": 13,
+      "token": "\n",
+      "bytes": [
+        10
+      ],
+      "logprob": -2.8595352172851562
+    },
+    {
+      "id": 29892,
+      "token": ",",
+      "bytes": [
+        44
+      ],
+      "logprob": -3.590024948120117
+    },
+    {
+      "id": 313,
+      "token": " (",
+      "bytes": [
+        32,
+        40
+      ],
+      "logprob": -3.7570362091064453
+    },
+    {
+      "id": 411,
+      "token": " with",
+      "bytes": [
+        32,
+        119,
+        105,
+        116,
+        104
+      ],
+      "logprob": -3.948711395263672
+    },
+    {
+      "id": 259,
+      "token": "  ",
+      "bytes": [
+        32,
+        32
+      ],
+      "logprob": -4.457494735717773
+    },
+    {
+      "id": 310,
+      "token": " of",
+      "bytes": [
+        32,
+        111,
+        102
+      ],
+      "logprob": -4.805994987487793
+    },
+    {
+      "id": 29871,
+      "token": " ",
+      "bytes": [
+        32
+      ],
+      "logprob": -5.094511985778809
+    },
+    {
+      "id": 6943,
+      "token": " containing",
+      "bytes": [
+        32,
+        99,
+        111,
+        110,
+        116,
+        97,
+        105,
+        110,
+        105,
+        110,
+        103
+      ],
+      "logprob": -6.353872299194336
+    },
+    {
+      "id": 6695,
+      "token": " (`",
+      "bytes": [
+        32,
+        40,
+        96
+      ],
+      "logprob": -6.368658065795898
+    },
+    {
+      "id": 1678,
+      "token": "   ",
+      "bytes": [
+        32,
+        32,
+        32
+      ],
+      "logprob": -6.80306339263916
+    },
+    {
+      "id": 297,
+      "token": " in",
+      "bytes": [
+        32,
+        105,
+        110
+      ],
+      "logprob": -6.940472602844238
+    },
+    {
+      "id": 19423,
+      "token": ".<",
+      "bytes": [
+        46,
+        60
+      ],
+      "logprob": -6.982995986938477
+    },
+    {
+      "id": 322,
+      "token": " and",
+      "bytes": [
+        32,
+        97,
+        110,
+        100
+      ],
+      "logprob": -7.043636322021484
+    },
+    {
+      "id": 304,
+      "token": " to",
+      "bytes": [
+        32,
+        116,
+        111
+      ],
+      "logprob": -7.079859733581543
+    },
+    {
+      "id": 338,
+      "token": " is",
+      "bytes": [
+        32,
+        105,
+        115
+      ],
+      "logprob": -7.089484214782715
+    },
+    {
+      "id": 4852,
+      "token": " (\"",
+      "bytes": [
+        32,
+        40,
+        34
+      ],
+      "logprob": -7.244895935058594
+    },
+    {
+      "id": 773,
+      "token": " using",
+      "bytes": [
+        32,
+        117,
+        115,
+        105,
+        110,
+        103
+      ],
+      "logprob": -7.285889625549316
+    }
+  ],
+  "backend_diagnostic_token_ids": [
+    2568,
+    14927,
+    1196,
+    1023,
+    29889,
+    3542,
+    29931,
+    13504,
+    28956,
+    1123,
+    797,
+    2177,
+    29966,
+    29933,
+    29908,
+    2928
+  ],
+  "backend_text": "Indented line two.",
+  "llama_text": "Indented line two.",
+  "backend_usage": {
+    "prompt_tokens": 46,
+    "completion_tokens": 5,
+    "total_tokens": 51
+  },
+  "llama_usage": {
+    "cache_n": 0,
+    "prompt_n": 46,
+    "prompt_ms": 106.739,
+    "prompt_per_token_ms": 2.320413043478261,
+    "prompt_per_second": 430.95775677118957,
+    "predicted_n": 5,
+    "predicted_ms": 65.569,
+    "predicted_per_token_ms": 13.113800000000001,
+    "predicted_per_second": 76.25554759108725
+  },
+  "backendinference": {
+    "prompt_token_ids": [
+      1,
+      529,
+      29989,
+      5205,
+      29989,
+      29958,
+      13,
+      13504,
+      7143,
+      1196,
+      16706,
+      297,
+      24481,
+      10970,
+      29889,
+      2,
+      29871,
+      13,
+      29966,
+      29989,
+      1792,
+      29989,
+      29958,
+      13,
+      3542,
+      697,
+      29889,
+      13,
+      13,
+      259,
+      2568,
+      14927,
+      1196,
+      1023,
+      29889,
+      259,
+      2,
+      29871,
+      13,
+      29966,
+      29989,
+      465,
+      22137,
+      29989,
+      29958,
+      13
+    ],
+    "generated_token_ids": [
+      2568,
+      14927,
+      1196,
+      1023,
+      29889
+    ],
+    "dense_metadata": {
+      "embedding_length": 2048,
+      "attention_head_count": 32,
+      "attention_head_count_kv": 4,
+      "head_dim": 64,
+      "rope_dimension_count": 64,
+      "rope_freq_base": 10000,
+      "rope_pairing": "adjacent_even_odd",
+      "rope_direction": "forward",
+      "rope_position_mode": "zero_based",
+      "gqa_head_mapping": "grouped",
+      "attention_score_scale": "head_dim",
+      "linear_accumulation": "f32",
+      "ffn_gate_up_order": "gate_up",
+      "rms_norm_epsilon": 0.00001,
+      "rms_norm_effective_epsilon": 0.00001,
+      "square_linear_diagnostic_layout": "transposed",
+      "rectangular_linear_diagnostic_layout": "auto",
+      "token_embedding_shape": [
+        32000,
+        2048
+      ],
+      "output_shape": [
+        2048,
+        32000
+      ],
+      "output_is_tied_embedding": false,
+      "output_projection_layout": "input_output",
+      "output_projection_diagnostic_layout": "token_major",
+      "zero_attention_delta": "none",
+      "zero_ffn_delta": "none",
+      "projection_orientations": {
+        "attention_q": {
+          "shape": [
+            2048,
+            2048
+          ],
+          "input_width": 2048,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "attention_k": {
+          "shape": [
+            2048,
+            256
+          ],
+          "input_width": 2048,
+          "output_width": 256,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_v": {
+          "shape": [
+            2048,
+            256
+          ],
+          "input_width": 2048,
+          "output_width": 256,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_output": {
+          "shape": [
+            2048,
+            2048
+          ],
+          "input_width": 2048,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "ffn_gate": {
+          "shape": [
+            2048,
+            5632
+          ],
+          "input_width": 2048,
+          "output_width": 5632,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_up": {
+          "shape": [
+            2048,
+            5632
+          ],
+          "input_width": 2048,
+          "output_width": 5632,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_down": {
+          "shape": [
+            5632,
+            2048
+          ],
+          "input_width": 5632,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        }
+      }
+    },
+    "top_logits": [
+      {
+        "token_id": 2568,
+        "logit": 14.468216,
+        "probability": 0.3488428,
+        "rank": 1,
+        "selected": true,
+        "text": "Ind"
+      },
+      {
+        "token_id": 3542,
+        "logit": 14.1252775,
+        "probability": 0.24756743,
+        "rank": 2,
+        "selected": true,
+        "text": "Line"
+      },
+      {
+        "token_id": 29931,
+        "logit": 12.052023,
+        "probability": 0.031137982,
+        "rank": 3,
+        "selected": true,
+        "text": "L"
+      },
+      {
+        "token_id": 13504,
+        "logit": 11.765339,
+        "probability": 0.023376806,
+        "rank": 4,
+        "selected": true,
+        "text": "Pres"
+      },
+      {
+        "token_id": 28956,
+        "logit": 11.346473,
+        "probability": 0.015377081,
+        "rank": 5,
+        "selected": true,
+        "text": "```"
+      },
+      {
+        "token_id": 797,
+        "logit": 11.184786,
+        "probability": 0.013081399,
+        "rank": 6,
+        "selected": true,
+        "text": "In"
+      },
+      {
+        "token_id": 1123,
+        "logit": 11.133391,
+        "probability": 0.012426072,
+        "rank": 7,
+        "selected": true,
+        "text": "Re"
+      },
+      {
+        "token_id": 29966,
+        "logit": 10.826413,
+        "probability": 0.009141446,
+        "rank": 8,
+        "selected": true,
+        "text": "<"
+      },
+      {
+        "token_id": 14927,
+        "logit": 0.62696004,
+        "probability": 3.3997625e-7,
+        "rank": 4591,
+        "selected": true,
+        "text": "ented"
+      },
+      {
+        "token_id": 1196,
+        "logit": 7.898543,
+        "probability": 0.0004891668,
+        "rank": 125,
+        "selected": true,
+        "text": " line"
+      },
+      {
+        "token_id": 1023,
+        "logit": -0.7937457,
+        "probability": 8.211905e-8,
+        "rank": 9709,
+        "selected": true,
+        "text": " two"
+      },
+      {
+        "token_id": 29889,
+        "logit": 4.931424,
+        "probability": 0.00002516829,
+        "rank": 781,
+        "selected": true,
+        "text": "."
+      },
+      {
+        "token_id": 2177,
+        "logit": 10.823667,
+        "probability": 0.009116373,
+        "rank": 9,
+        "selected": true,
+        "text": "Par"
+      },
+      {
+        "token_id": 29933,
+        "logit": 10.727752,
+        "probability": 0.008282602,
+        "rank": 10,
+        "selected": true,
+        "text": "B"
+      },
+      {
+        "token_id": 29908,
+        "logit": 10.639089,
+        "probability": 0.007579855,
+        "rank": 11,
+        "selected": true,
+        "text": "\""
+      },
+      {
+        "token_id": 2928,
+        "logit": 10.589597,
+        "probability": 0.007213846,
+        "rank": 12,
+        "selected": true,
+        "text": "Int"
+      }
+    ],
+    "output_projection": [],
+    "timings_ms": {
+      "tokenize": 23,
+      "weight_load": 0,
+      "weight_cache_hit": false,
+      "prompt_cache_hit": false,
+      "session_create": 0,
+      "generate": 12671,
+      "generation": {
+        "forward_total": 12669.678,
+        "embedding": 0.277,
+        "layers_total": 12585.845,
+        "final_norm": 0.02,
+        "logits": 83.449,
+        "sample": 0.279
+      },
+      "layers": [
+        {
+          "layer_index": 0,
+          "total": 578.876,
+          "attention_norm": 0.115,
+          "attention_q": 55.743,
+          "attention_k": 7.394,
+          "attention_v": 7.076,
+          "attention_rope": 0.844,
+          "kv_cache_write": 0.643,
+          "attention_context": 1.991,
+          "attention_output": 59.798,
+          "attention_residual": 0.066,
+          "ffn_norm": 0.115,
+          "ffn_gate": 148.186,
+          "ffn_up": 147.141,
+          "ffn_activation": 0.676,
+          "ffn_down": 148.156,
+          "ffn_residual": 0.069
+        },
+        {
+          "layer_index": 1,
+          "total": 570.471,
+          "attention_norm": 0.122,
+          "attention_q": 54.22,
+          "attention_k": 7.383,
+          "attention_v": 7.074,
+          "attention_rope": 0.843,
+          "kv_cache_write": 0.152,
+          "attention_context": 2.046,
+          "attention_output": 54.276,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.106,
+          "ffn_gate": 146.913,
+          "ffn_up": 146.983,
+          "ffn_activation": 0.692,
+          "ffn_down": 148.707,
+          "ffn_residual": 0.063
+        },
+        {
+          "layer_index": 2,
+          "total": 573.74,
+          "attention_norm": 0.148,
+          "attention_q": 54.429,
+          "attention_k": 7.394,
+          "attention_v": 7.098,
+          "attention_rope": 0.817,
+          "kv_cache_write": 0.148,
+          "attention_context": 1.987,
+          "attention_output": 54.449,
+          "attention_residual": 0.056,
+          "ffn_norm": 0.117,
+          "ffn_gate": 147.388,
+          "ffn_up": 148.625,
+          "ffn_activation": 0.719,
+          "ffn_down": 149.504,
+          "ffn_residual": 0.057
+        },
+        {
+          "layer_index": 3,
+          "total": 570.829,
+          "attention_norm": 0.146,
+          "attention_q": 54.822,
+          "attention_k": 7.332,
+          "attention_v": 7.038,
+          "attention_rope": 0.807,
+          "kv_cache_write": 0.162,
+          "attention_context": 2.024,
+          "attention_output": 54.481,
+          "attention_residual": 0.053,
+          "ffn_norm": 0.111,
+          "ffn_gate": 147.217,
+          "ffn_up": 147.148,
+          "ffn_activation": 0.696,
+          "ffn_down": 147.914,
+          "ffn_residual": 0.051
+        },
+        {
+          "layer_index": 4,
+          "total": 572.04,
+          "attention_norm": 0.152,
+          "attention_q": 54.45,
+          "attention_k": 7.347,
+          "attention_v": 7.002,
+          "attention_rope": 0.816,
+          "kv_cache_write": 0.151,
+          "attention_context": 1.952,
+          "attention_output": 54.243,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.111,
+          "ffn_gate": 148.589,
+          "ffn_up": 147.274,
+          "ffn_activation": 0.7,
+          "ffn_down": 148.352,
+          "ffn_residual": 0.052
+        },
+        {
+          "layer_index": 5,
+          "total": 570.427,
+          "attention_norm": 0.119,
+          "attention_q": 54.376,
+          "attention_k": 7.442,
+          "attention_v": 7.082,
+          "attention_rope": 0.809,
+          "kv_cache_write": 0.151,
+          "attention_context": 2.067,
+          "attention_output": 54.165,
+          "attention_residual": 0.056,
+          "ffn_norm": 0.108,
+          "ffn_gate": 147.508,
+          "ffn_up": 146.814,
+          "ffn_activation": 0.702,
+          "ffn_down": 148.154,
+          "ffn_residual": 0.054
+        },
+        {
+          "layer_index": 6,
+          "total": 572.528,
+          "attention_norm": 0.133,
+          "attention_q": 54.651,
+          "attention_k": 7.308,
+          "attention_v": 6.995,
+          "attention_rope": 0.803,
+          "kv_cache_write": 0.15,
+          "attention_context": 2.029,
+          "attention_output": 54.368,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.113,
+          "ffn_gate": 147.581,
+          "ffn_up": 147.879,
+          "ffn_activation": 0.689,
+          "ffn_down": 148.911,
+          "ffn_residual": 0.053
+        },
+        {
+          "layer_index": 7,
+          "total": 573.081,
+          "attention_norm": 0.153,
+          "attention_q": 54.737,
+          "attention_k": 7.402,
+          "attention_v": 7.247,
+          "attention_rope": 0.816,
+          "kv_cache_write": 0.152,
+          "attention_context": 2.044,
+          "attention_output": 54.613,
+          "attention_residual": 0.053,
+          "ffn_norm": 0.127,
+          "ffn_gate": 148.114,
+          "ffn_up": 147.316,
+          "ffn_activation": 0.693,
+          "ffn_down": 148.742,
+          "ffn_residual": 0.055
+        },
+        {
+          "layer_index": 8,
+          "total": 572.599,
+          "attention_norm": 0.137,
+          "attention_q": 54.692,
+          "attention_k": 7.365,
+          "attention_v": 7.112,
+          "attention_rope": 0.822,
+          "kv_cache_write": 0.152,
+          "attention_context": 1.985,
+          "attention_output": 54.325,
+          "attention_residual": 0.054,
+          "ffn_norm": 0.115,
+          "ffn_gate": 147.042,
+          "ffn_up": 147.82,
+          "ffn_activation": 0.669,
+          "ffn_down": 149.446,
+          "ffn_residual": 0.052
+        },
+        {
+          "layer_index": 9,
+          "total": 569.408,
+          "attention_norm": 0.159,
+          "attention_q": 54.214,
+          "attention_k": 7.353,
+          "attention_v": 7.094,
+          "attention_rope": 0.812,
+          "kv_cache_write": 0.149,
+          "attention_context": 2.002,
+          "attention_output": 54.368,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.115,
+          "ffn_gate": 146.941,
+          "ffn_up": 146.761,
+          "ffn_activation": 0.684,
+          "ffn_down": 147.852,
+          "ffn_residual": 0.051
+        },
+        {
+          "layer_index": 10,
+          "total": 568.604,
+          "attention_norm": 0.17,
+          "attention_q": 54.299,
+          "attention_k": 7.272,
+          "attention_v": 6.983,
+          "attention_rope": 0.827,
+          "kv_cache_write": 0.157,
+          "attention_context": 1.973,
+          "attention_output": 54.229,
+          "attention_residual": 0.053,
+          "ffn_norm": 0.106,
+          "ffn_gate": 146.29,
+          "ffn_up": 146.964,
+          "ffn_activation": 0.67,
+          "ffn_down": 147.728,
+          "ffn_residual": 0.057
+        },
+        {
+          "layer_index": 11,
+          "total": 572.558,
+          "attention_norm": 0.143,
+          "attention_q": 54.563,
+          "attention_k": 7.391,
+          "attention_v": 7.025,
+          "attention_rope": 0.821,
+          "kv_cache_write": 0.162,
+          "attention_context": 2.012,
+          "attention_output": 54.172,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.11,
+          "ffn_gate": 147.851,
+          "ffn_up": 147.592,
+          "ffn_activation": 0.689,
+          "ffn_down": 149.119,
+          "ffn_residual": 0.057
+        },
+        {
+          "layer_index": 12,
+          "total": 573.423,
+          "attention_norm": 0.142,
+          "attention_q": 54.77,
+          "attention_k": 7.366,
+          "attention_v": 7.059,
+          "attention_rope": 0.851,
+          "kv_cache_write": 0.15,
+          "attention_context": 1.964,
+          "attention_output": 54.187,
+          "attention_residual": 0.068,
+          "ffn_norm": 0.117,
+          "ffn_gate": 147.969,
+          "ffn_up": 148.121,
+          "ffn_activation": 0.674,
+          "ffn_down": 149.113,
+          "ffn_residual": 0.069
+        },
+        {
+          "layer_index": 13,
+          "total": 571.675,
+          "attention_norm": 0.157,
+          "attention_q": 55.064,
+          "attention_k": 7.403,
+          "attention_v": 7.065,
+          "attention_rope": 0.836,
+          "kv_cache_write": 0.149,
+          "attention_context": 2.077,
+          "attention_output": 54.495,
+          "attention_residual": 0.052,
+          "ffn_norm": 0.112,
+          "ffn_gate": 147.297,
+          "ffn_up": 147.263,
+          "ffn_activation": 0.675,
+          "ffn_down": 148.151,
+          "ffn_residual": 0.058
+        },
+        {
+          "layer_index": 14,
+          "total": 570.171,
+          "attention_norm": 0.144,
+          "attention_q": 54.636,
+          "attention_k": 7.42,
+          "attention_v": 7.056,
+          "attention_rope": 0.804,
+          "kv_cache_write": 0.151,
+          "attention_context": 2.015,
+          "attention_output": 54.242,
+          "attention_residual": 0.052,
+          "ffn_norm": 0.121,
+          "ffn_gate": 147.279,
+          "ffn_up": 146.791,
+          "ffn_activation": 0.685,
+          "ffn_down": 147.904,
+          "ffn_residual": 0.05
+        },
+        {
+          "layer_index": 15,
+          "total": 570.733,
+          "attention_norm": 0.149,
+          "attention_q": 54.308,
+          "attention_k": 7.4,
+          "attention_v": 7.045,
+          "attention_rope": 0.824,
+          "kv_cache_write": 0.152,
+          "attention_context": 2.044,
+          "attention_output": 54.212,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.111,
+          "ffn_gate": 147.088,
+          "ffn_up": 147.04,
+          "ffn_activation": 0.671,
+          "ffn_down": 148.781,
+          "ffn_residual": 0.053
+        },
+        {
+          "layer_index": 16,
+          "total": 572.901,
+          "attention_norm": 0.141,
+          "attention_q": 54.457,
+          "attention_k": 7.393,
+          "attention_v": 7.016,
+          "attention_rope": 0.807,
+          "kv_cache_write": 0.152,
+          "attention_context": 1.978,
+          "attention_output": 54.605,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.125,
+          "ffn_gate": 148.497,
+          "ffn_up": 147.367,
+          "ffn_activation": 0.668,
+          "ffn_down": 148.787,
+          "ffn_residual": 0.052
+        },
+        {
+          "layer_index": 17,
+          "total": 572.84,
+          "attention_norm": 0.129,
+          "attention_q": 54.86,
+          "attention_k": 7.337,
+          "attention_v": 7.047,
+          "attention_rope": 0.799,
+          "kv_cache_write": 0.162,
+          "attention_context": 2.044,
+          "attention_output": 54.412,
+          "attention_residual": 0.052,
+          "ffn_norm": 0.135,
+          "ffn_gate": 147.745,
+          "ffn_up": 148.114,
+          "ffn_activation": 0.676,
+          "ffn_down": 148.472,
+          "ffn_residual": 0.056
+        },
+        {
+          "layer_index": 18,
+          "total": 569.088,
+          "attention_norm": 0.141,
+          "attention_q": 54.54,
+          "attention_k": 7.487,
+          "attention_v": 7.013,
+          "attention_rope": 0.834,
+          "kv_cache_write": 0.167,
+          "attention_context": 1.972,
+          "attention_output": 54.651,
+          "attention_residual": 0.052,
+          "ffn_norm": 0.115,
+          "ffn_gate": 146.807,
+          "ffn_up": 146.365,
+          "ffn_activation": 0.691,
+          "ffn_down": 147.395,
+          "ffn_residual": 0.058
+        },
+        {
+          "layer_index": 19,
+          "total": 570.573,
+          "attention_norm": 0.145,
+          "attention_q": 54.392,
+          "attention_k": 7.249,
+          "attention_v": 6.984,
+          "attention_rope": 0.793,
+          "kv_cache_write": 0.151,
+          "attention_context": 2.008,
+          "attention_output": 54.043,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.111,
+          "ffn_gate": 146.947,
+          "ffn_up": 147.751,
+          "ffn_activation": 0.676,
+          "ffn_down": 148.387,
+          "ffn_residual": 0.053
+        },
+        {
+          "layer_index": 20,
+          "total": 571.036,
+          "attention_norm": 0.136,
+          "attention_q": 54.921,
+          "attention_k": 7.429,
+          "attention_v": 7.02,
+          "attention_rope": 0.819,
+          "kv_cache_write": 0.15,
+          "attention_context": 2.034,
+          "attention_output": 54.428,
+          "attention_residual": 0.053,
+          "ffn_norm": 0.121,
+          "ffn_gate": 147.082,
+          "ffn_up": 146.574,
+          "ffn_activation": 0.702,
+          "ffn_down": 148.709,
+          "ffn_residual": 0.054
+        },
+        {
+          "layer_index": 21,
+          "total": 572.04,
+          "attention_norm": 0.136,
+          "attention_q": 54.927,
+          "attention_k": 7.406,
+          "attention_v": 7.059,
+          "attention_rope": 0.804,
+          "kv_cache_write": 0.149,
+          "attention_context": 2.027,
+          "attention_output": 54.309,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.112,
+          "ffn_gate": 148.033,
+          "ffn_up": 147.098,
+          "ffn_activation": 0.678,
+          "ffn_down": 148.392,
+          "ffn_residual": 0.053
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,67 @@
+CAMELID BACKEND ENGINEER UBUNTU X86 Q8 — cron 95495a91, 2026-05-17T06:55Z
+
+Scope guard
+- Ubuntu x86_64 dense Llama Q8_0 only.
+- No Mac, Apple Silicon, Metal, Mixtral, portability, support-contract, or production-throughput claim.
+- All x86 Q8 flags in this artifact are default-off developer experiments unless a separate support artifact promotes them.
+
+Small slice
+- Completed planner/docs ownership for the existing dense FFN-down multi-row packed-runtime matmul gate `CAMELID_X86_Q8_PACKED_ROWS4_MATMUL`.
+- The runtime path remains directly usable only when `ResolvedRuntimePlan.q8.ffn_down_packed_rows4_matmul` is true and the tensor guards pass:
+  - rectangular role is `ffn_down`
+  - input/weight rank is 2
+  - weight source type is Q8_0
+  - input width is divisible by 32
+  - weight dimensions match input width
+  - backend-owned runtime storage is `Q8_0RuntimeStorage::PackedRows4`
+  - packed interleave is `I8`
+  - packed rows/blocks_per_row match output/input dimensions
+  - output width is divisible by 4
+- If the flag is off or any guard fails, the path returns `Ok(None)` and `linear_for_role_runtime_with_plan` preserves the existing fallback path.
+- No duplicate packed-copy sidecar was added; the consumer uses backend-owned packed Q8_0 runtime storage.
+
+Camelid exact files / functions / evidence
+- `src/inference.rs:670-724`: `Q8RuntimeFlags` includes `ffn_down_packed_rows4_matmul`, read via default-off env flag `CAMELID_X86_Q8_PACKED_ROWS4_MATMUL`.
+- `src/inference.rs:7509-7603`: `try_x86_q8_ffn_down_packed_rows4_matmul_path` consumes backend-owned `PackedRows4` Q8_0 storage for multi-row FFN-down matmul and returns fallback on guard mismatch.
+- `src/inference.rs:14473-14529`: `q8_ffn_down_packed_rows4_matmul_matches_runtime_packed_baseline_for_prefill` validates multi-row output against the existing packed-row dot baseline.
+- `src/inference.rs:14531-14555`: `q8_ffn_down_packed_rows4_matmul_is_plan_gated` validates default-off/role fallback behavior.
+- `src/execution_plan.rs:7-23`: `MANAGED_ENV_KEYS` now includes `CAMELID_X86_Q8_PACKED_ROWS4_MATMUL` so stale developer env cannot leak into planned runs.
+- `src/execution_plan.rs:342-358`: Ubuntu x86 experimental plan pins `CAMELID_X86_Q8_PACKED_ROWS4_MATMUL=off` alongside other Q8 decode-consumer gates.
+- `src/execution_plan.rs:715-730`: profile test cleanup covers the packed-rows4 matmul gate.
+- `src/execution_plan.rs:958-969`: Ubuntu validated-gates test asserts the packed-rows4 matmul flag is pinned off.
+- `src/execution_plan.rs:986-1000`: stale-env clearing test now seeds and clears `CAMELID_X86_Q8_PACKED_ROWS4_MATMUL`.
+- `docs/CONFIGURATION.md:109-116`: documents the flag as default-off Ubuntu x86_64 developer-only, scoped to dense FFN-down multi-row packed-runtime matmul with fallback.
+
+llama.cpp grep evidence refreshed from `<local-llama.cpp-worktree>` at HEAD `3e037f3`
+- `ggml/src/ggml-cpu/ggml-cpu.c:1245-1442`: `ggml_compute_forward_mul_mat` is the primary dense CPU `MUL_MAT` path; it selects type traits, quantizes RHS into `params->wdata` when needed, and performs threaded chunk scheduling.
+- `ggml/src/ggml-cpu/ggml-cpu.c:1155-1243`: `ggml_compute_forward_mul_mat_one_chunk` does the tiled inner loop and calls the selected `vec_dot` function.
+- `ggml/src/ggml-cpu/ggml-cpu.c:262-270`: `GGML_TYPE_Q8_0` binds `.vec_dot = ggml_vec_dot_q8_0_q8_0`, `.vec_dot_type = GGML_TYPE_Q8_0`, and uses one output row per dot on x86.
+- `ggml/src/ggml-cpu/arch/x86/quants.c:1170-1228`: x86 `ggml_vec_dot_q8_0_q8_0` has AVX2 and AVX fallback branches plus scalar tail.
+- `ggml/src/ggml-cpu/ggml-cpu.c:1286-1310` and `1357-1378`: `llamafile_sgemm`/tinyBLAS is attempted for suitable contiguous dense matmul inputs.
+- `ggml/src/ggml-cpu/llamafile/sgemm.cpp:3692-3949`: `llamafile_sgemm`; Q8_0 dispatch reaches `tinyBLAS_Q0_AVX<block_q8_0, block_q8_0, float>` at `3928-3938`.
+- `ggml/src/ggml-cpu/llamafile/sgemm.cpp:1353-1373`: `tinyBLAS_Q0_AVX` constructor and `matmul` entry.
+- `ggml/src/ggml-cpu/repack.cpp:3480-3509` and `3535-3563`: Q8_0 repack implementations exist for CPU repack layouts.
+- `ggml/src/ggml-cpu/repack.cpp:4699-4721`: Q8_0 CPU_REPACK selection covers NEON/RISC-V cases but has no AVX2/AVX512 x86 branch.
+- `ggml/src/ggml-cpu/repack.cpp:4774-4806`: CPU_REPACK extra-buffer path only supports F32 source; Q8_0 support is commented out/disabled.
+- `ggml/CMakeLists.txt:156-162`, `246`, and `ggml/src/CMakeLists.txt:369-384`: AVX2/AVX512/VNNI/OpenMP build knobs and x86 CPU variants are explicit.
+- `ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:289-315`: runtime x86 feature checks gate AVX2, AVX_VNNI, AVX512, AVX512_VNNI variants.
+- Takeaway for Camelid: dense Ubuntu x86_64 Q8_0 should keep moving toward directly usable backend-owned packed/runtime storage or an x86-specific matmul path; llama.cpp does not currently provide an x86 Q8_0 CPU_REPACK branch to mirror wholesale.
+
+Local validation
+- `cargo fmt --all` passed.
+- `cargo test q8_ffn_down_packed_rows4_matmul --lib` passed: 2 tests.
+- `cargo test ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib` passed: 1 test.
+- `cargo test planner_env_apply_clears_stale_x86_q8_decode_consumer_flags --lib` passed: 1 test.
+- Local warning only: incremental-cache hard-link warning from target directory storage; tests passed.
+
+Canonical Ubuntu x86_64 validation
+- Copied the working tree to `<ubuntu-workdir>/camelid-x86-q8-packed-rows4-matmul-20260517T0655Z` via `SSH to the canonical validation host`.
+- Non-login shell initially found distro Cargo/Rust 1.75.0 and Cargo.lock v4 failed; validation used `<rustup-cargo-bin>` rustup toolchain.
+- Toolchain used: `rustc 1.95.0 (59807616e 2026-04-14)`, `cargo 1.95.0 (f2d3ce0bd 2026-03-21)`.
+- `cargo fmt --all -- --check` passed.
+- `cargo test q8_ffn_down_packed_rows4_matmul --lib` passed: 2 tests.
+- `cargo test ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib` passed: 1 test.
+- `cargo test planner_env_apply_clears_stale_x86_q8_decode_consumer_flags --lib` passed: 1 test.
+
+Status
+- Commit not created because the repository already had substantial pre-existing uncommitted Ubuntu x86 Q8 changes and artifacts before this slice; this update is left as a worktree delta on top of that state.

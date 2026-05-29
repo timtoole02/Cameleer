@@ -1,0 +1,34 @@
+CAMELID DOCS UBUNTU X86 Q8 — claim guard audit
+Timestamp: 2026-05-17T05:11Z
+Scope: Ubuntu x86_64 dense Llama Q8_0 experiment docs/report wording only.
+
+Evidence root:
+- qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md
+
+Files reviewed/touched:
+- docs/CONFIGURATION.md
+- docs/performance/ubuntu-x86-q8.md
+- qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md
+
+Changes made:
+1. docs/CONFIGURATION.md now names the new default-off Ubuntu x86_64 attention-output decode-consumer flag alongside the existing attention Q/K/V flags:
+   - CAMELID_X86_Q8_ATTENTION_OUTPUT_DECODE_CONSUMER=on
+   This is documented only as a default-off developer experiment with safe fallback and exact guard requirements.
+2. docs/performance/ubuntu-x86-q8.md now separates attention Q/K/V and attention-output wording so it does not overstate or blur the current narrow decode-consumer slices.
+3. The evidence report's 2026-05-17T05:03Z canonical validation line was privacy-scrubbed to use `<ubuntu-workdir>`, `<operator-key>`, and `<validation-host>` placeholders instead of a raw local key path / host address.
+4. The evidence report's recommended future tiled Q8_0 GEMM item no longer names a placeholder `CAMELID_X86_Q8_GEMM=...` flag as if it were current evidence. It now requires any future matrix-owner path to be introduced only under a concrete, newly validated default-off Ubuntu x86_64 experiment gate.
+
+Guardrails preserved:
+- Ubuntu x86_64 experiment only.
+- Current Q8 reference truth remains qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md.
+- No Mac evidence added.
+- No Apple Silicon / Metal / Mixtral support widening.
+- No README/support-contract/API/frontend promotion.
+- No production-throughput or portability claim.
+- Matrix-level Q8 GEMM/MUL_MAT remains directional until fresh Ubuntu x86_64 evidence proves a concrete default-off flag/path.
+
+Verification commands run:
+- grep -RInE 'CAMELID_X86_Q8_(REPACK_TENSORS|PACKED_TILE16|PACKED_TILE16_SERIAL_OWNER)|avx2_scaled_rowdot|CAMELID_X86_Q8_GEMM=|canonical-ssh-pattern|ubuntu@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' docs/performance/ubuntu-x86-q8.md docs/CONFIGURATION.md qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md
+
+Verification result:
+- Only the historical doc-guard note listing removed stale flags remains; no active reproduction command, current recommendation, or raw operator SSH/IP detail matched.

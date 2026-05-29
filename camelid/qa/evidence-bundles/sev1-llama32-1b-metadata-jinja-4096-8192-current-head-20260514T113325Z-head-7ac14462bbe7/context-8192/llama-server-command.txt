@@ -1,0 +1,1 @@
+<ubuntu-llama-build>/bin/llama-server --host 127.0.0.1 --port 19683 -m <ubuntu-model-path>/Llama-3.2-1B-Instruct-Q8_0.gguf -ngl 0 -c 8192 --no-warmup -fa off

@@ -1,0 +1,10 @@
+{
+  "id": "trailing-spaces",
+  "note": "Whitespace-preservation edge case.",
+  "message": "Reply with the word camelid and preserve this prompt's trailing spaces.",
+  "messages": null,
+  "max_tokens": 50,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 50
+}

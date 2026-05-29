@@ -1,0 +1,7 @@
+b0abe8e76b9c22b829f912726f8acbb1da26eb6187e6a74bc321c099c6c9006d  ./manifest.json
+b35df584bfbc36961b2cf823ac79e58ce2f487be078c6c868c6ac7ee4ef0b9f6  ./model-SHA256SUMS
+c6a7183159a02eeebf88125236e4307006df6eef7f75627875abe61902d239cc  ./pack/llama32-3b-q8-roughly-2048-token-recall/command.txt
+a5e111339448ae05e5845f284bc31ac410b43c9bc4cc8763382ff237cf9aaa6c  ./pack/llama32-3b-q8-roughly-2048-token-recall/report.json
+946e03e28f33ec0d8d4a78f6fedb93732dafc3649fcec661868583c44f3ed46e  ./pack.stdout.log
+4c161ed96923f1b59da4bf7ef5c7c6479ed029e9fe11874a89b720cabbedd058  ./pack.time.txt
+8a5df20a90cfde20ece1e25c9a2f31038e6da79c0a1bdae35a4e9f877698fc48  ./summary.json

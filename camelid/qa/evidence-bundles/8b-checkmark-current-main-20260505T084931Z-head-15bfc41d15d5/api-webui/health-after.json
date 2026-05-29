@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "engine": "backendinference",
+  "loaded_now": true,
+  "generation_ready": true,
+  "active_model_id": "llama3-8b-q8"
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "camelid.llama32_1b_context_1024_public_summary.v1",
+  "source_manifest": "manifest.json",
+  "generated_utc": "2026-05-05T08:15:15Z",
+  "passed": true,
+  "checks": {
+    "checkout_clean": true,
+    "prompt_tokens_all_match": true,
+    "generated_tokens_all_match": true,
+    "generated_text_all_match": true,
+    "prompt_count_is_one": true,
+    "reference_prompt_tokens_exceed_512": true,
+    "row_has_bounded_rss": true
+  },
+  "rows": [
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "context_window": 1024,
+      "reference_prompt_token_count": 881,
+      "max_tokens": 5,
+      "max_resident_set_kib": 2897852,
+      "elapsed_wall_clock": "4:16.80",
+      "passed": true
+    }
+  ],
+  "claim_boundary": "Closes only the second bounded 1024-context pack for the exact Llama 3.2 1B Instruct Q8_0 row. It does not promote neighboring rows, other quantizations, model-native/larger context buckets beyond this checked pack, arbitrary GGUF/Jinja template execution, broad/full Llama-family support, production throughput, or portability support."
+}

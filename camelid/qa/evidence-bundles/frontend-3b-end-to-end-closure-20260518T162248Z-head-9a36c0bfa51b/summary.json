@@ -1,0 +1,25 @@
+{
+  "target": "Llama 3.2 3B Instruct Q8_0 frontend/WebUI closure regression coverage",
+  "branch": "frontend-3b-end-to-end-closure-20260518",
+  "head": "9a36c0bfa51b81ef9d9a0178a6cce10116656b68",
+  "slice": "improved feedback loop: dedicated 3B closure smoke covering model-state/readiness surfaces, exact-row gating, live chat UX source contracts, capabilities rendering, and API view readiness source contracts",
+  "local_frontend_gates": {
+    "npm_ci": "pass",
+    "npm_run_smoke_3b_closure": "pass",
+    "npm_run_smoke_model_state": "pass",
+    "npm_run_smoke_integration": "pass",
+    "npm_run_smoke_ui": "pass",
+    "npm_run_build": "pass"
+  },
+  "remote_backend_check": {
+    "host": "canonical_ubuntu_host",
+    "ssh": "pass",
+    "api_base": "http://127.0.0.1:8181",
+    "result": "blocked_backend_not_listening",
+    "curl_exit": 7
+  },
+  "retain_reject": {
+    "local_frontend_regression_slice": "retain",
+    "live_backend_evidence_refresh": "reject_for_this_run_backend_not_listening"
+  }
+}

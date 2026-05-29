@@ -1,0 +1,58 @@
+{
+  "artifact": "mixtral-8x7b-v0.1-q8-prefill-decode-kqv-rejection-20260509",
+  "created_at": "2026-05-10T00:42:00Z",
+  "branch": "main",
+  "base_commit": "fad2c13",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+  "model_sha256": "c48f9680d5aa60703ed0fd38e29fc6556b3490f8f6c9919a31c9da7996039f81",
+  "probe": "Additional Count to three. blocker probes separating prefill/decode f16 effects and emulating ggml-style KQV lane accumulation",
+  "baseline": {
+    "camelid_tokens": [28705, 28740, 28723, 12875, 28725],
+    "llama_cpp_default_tokens": [28705, 28740, 28725, 28705, 28750],
+    "result": "FAIL"
+  },
+  "rejected_variants": [
+    {
+      "variant": "value_product_f16_prefill_only_before_position_12",
+      "backend_tokens": [4529, 2363, 28808, 4003, 478],
+      "result": "REGRESSION",
+      "notes": "Applying crude value-product f16 only during prompt/prefill still overcorrects into the bad early first-token path."
+    },
+    {
+      "variant": "probability_f16_prefill_only_before_position_12",
+      "backend_tokens": [28705, 28740, 28723, 12875, 28725],
+      "result": "NO_FIX",
+      "notes": "Prefill-only probability f16 leaves the dot path unchanged."
+    },
+    {
+      "variant": "value_product_f16_plus_probability_f16_prefill_only_before_position_12",
+      "backend_tokens": [28705, 28740, 28723, 12875, 28725],
+      "result": "NO_FIX",
+      "notes": "Combined prefill-only variant leaves the dot path unchanged."
+    },
+    {
+      "variant": "value_product_f16_decode_only_after_position_12",
+      "backend_tokens": [28705, 28740, 28723, 12875, 28725],
+      "result": "NO_FIX",
+      "notes": "Decode-only value-product rounding leaves the dot path unchanged."
+    },
+    {
+      "variant": "probability_f16_decode_only_after_position_12",
+      "backend_tokens": [28705, 28740, 28723, 12875, 28725],
+      "result": "NO_FIX",
+      "notes": "Decode-only probability rounding leaves the dot path unchanged."
+    },
+    {
+      "variant": "kqv_f16_vec4_lane_accumulation_emulation",
+      "backend_tokens": [28705, 28740, 28723, 12875, 28725],
+      "result": "NO_FIX",
+      "notes": "A simple f16-probability plus lane-grouped KQV accumulation emulation did not flip the step-2 near-tie."
+    }
+  ],
+  "source_notes": {
+    "host_cpu": "x86_64 with avx512_fp16 available",
+    "llama_cpp_mapping": "simd-mappings.h uses an AVX512 FP16 mapping when compiled with __AVX512FP16__, but the Count to three. short attention lengths are below the 128-value F16_STEP main loop, so scalar/tail and operand materialization details remain the likely target."
+  },
+  "current_localization": "The blocker survived prefill-only/decode-only coarse f16 separation and a simple KQV lane-accumulation approximation. The next productive step is a direct small harness against ggml's actual f16 mul_mat/vec_dot for the captured KQV tensors, or adding temporary tensor dump hooks to compare Camelid vs llama.cpp KQV inputs at the divergent step.",
+  "support_boundary": "Evidence only; no broad Mixtral, frontend, long-context, production, neighboring-row, or full-support claim."
+}

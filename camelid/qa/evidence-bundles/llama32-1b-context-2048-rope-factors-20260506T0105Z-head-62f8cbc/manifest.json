@@ -1,0 +1,27 @@
+{
+  "schema": "camelid.public-evidence-bundle.v1",
+  "id": "llama32-1b-context-2048-rope-factors-20260506T0105Z-head-62f8cbc",
+  "source_head": "62f8cbc",
+  "created_at_utc": "2026-05-06T01:05:00Z",
+  "model_row": "llama32_1b_instruct_q8_0",
+  "model": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+  "pack_id": "llama3-context-2048-smoke-v1",
+  "target_context_window": 2048,
+  "reference_prompt_token_count": 1910,
+  "max_tokens": 5,
+  "result": {
+    "passed": true,
+    "prompt_tokens_all_match": true,
+    "generated_tokens_all_match": true,
+    "generated_text_all_match": true,
+    "backend_generated_tokens": [34, 2735, 35, 12, 7854],
+    "reference_generated_tokens": [34, 2735, 35, 12, 7854],
+    "backend_text": "CMLD-204",
+    "reference_text": "CMLD-204"
+  },
+  "boundary": "Closes only the third bounded 2048-context pack for the exact Llama 3.2 1B Instruct Q8_0 row after the RoPE frequency-factor fix. It does not promote neighboring rows, other quantizations, model-native/larger context buckets beyond the checked pack, arbitrary templates, broad/full Llama-family support, production throughput, or portability support.",
+  "primary_artifacts": [
+    "pack/summary.json",
+    "pack/llama32-1b-q8-roughly-2048-token-recall/report.json"
+  ]
+}

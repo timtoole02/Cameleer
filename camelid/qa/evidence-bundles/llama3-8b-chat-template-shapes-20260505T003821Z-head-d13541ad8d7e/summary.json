@@ -1,0 +1,24 @@
+{
+  "schema": "camelid.public_8b_chat_template_shapes_summary.v1",
+  "source_manifest": "manifest.json",
+  "passed": true,
+  "checks": {
+    "clean_public_checkout": true,
+    "model_sha256_matched_expected": true,
+    "prompt_tokens_all_match": true,
+    "generated_tokens_all_match": true,
+    "generated_text_all_match": true,
+    "exit_status": 0
+  },
+  "pack": {
+    "id": "llama3-chat-template-shapes-v1",
+    "prompt_count": 4,
+    "prompt_ids": [
+      "single-system-user",
+      "multi-turn-user-assistant-user",
+      "assistant-final-no-generation-header",
+      "multiline-whitespace-preservation"
+    ]
+  },
+  "claim_boundary": "Does not promote broad Llama-family support, neighboring sizes, other quantizations, larger context buckets, arbitrary GGUF chat-template execution, or performance portability. Full-support promotion still requires normalized broader/current-head parity, stronger memory/performance, portability, broader context evidence, and docs/API/frontend synchronization."
+}

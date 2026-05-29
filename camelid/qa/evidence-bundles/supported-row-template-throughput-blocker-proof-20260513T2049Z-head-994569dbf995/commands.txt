@@ -1,0 +1,5 @@
+# Commands run for blocker-proof guardrails
+cargo fmt --all -- --check
+cargo test -q arbitrary_jinja_template_is_not_executed_as_supported_renderer
+cargo test -q capabilities_report_current_rows_with_fail_closed_full_support_bar
+bash scripts/check-evidence-bundle-checksums.sh qa/evidence-bundles/supported-row-template-throughput-blocker-proof-20260513T2049Z-head-994569dbf995

@@ -1,0 +1,8 @@
+{
+  "schema": "camelid.backend_q8_stream_diagnostics_loop.summary.v1",
+  "source_manifest": "manifest.json",
+  "passed": true,
+  "retain_reject": "retain",
+  "feedback_loop": "Same-host harness plan/self-tests plus stream timing summary self-test; final exact-tree pre-push gate is required before push.",
+  "claim_boundary": "Feedback-loop instrumentation only. No support-contract expansion, no production-throughput claim, no broad Llama-family claim, and no Mixtral claim."
+}

@@ -1,0 +1,146 @@
+{
+  "schema": "camelid.mistral_7b_context_512_1024_2048_remote_ubuntu_revalidation.v1",
+  "bundle": "mistral-7b-v0.3-q8-context-512-1024-2048-ubuntu-20260508T203513Z-head-86ad5390d265",
+  "validated_source_head": "86ad5390d2652919d00931fd3d4366885fc7aa4b",
+  "validated_source_head_short": "86ad5390d265",
+  "validation_host": "canonical-private-ubuntu-validation-host",
+  "model_row": "mistral_7b_instruct_v0_3_q8_0",
+  "model_filename": "Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+  "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+  "passed": true,
+  "checkout_clean": true,
+  "run_started_utc": "2026-05-08T20:35:13Z",
+  "run_finished_utc": "2026-05-08T20:43:03Z",
+  "pack": {
+    "ids": [
+      "mistral-context-512-smoke-v1",
+      "mistral-context-1024-smoke-v1",
+      "mistral-context-2048-smoke-v1"
+    ],
+    "source_prompt_packs": [
+      "qa/prompt-packs/mistral-context-512-smoke.json",
+      "qa/prompt-packs/mistral-context-1024-smoke.json",
+      "qa/prompt-packs/mistral-context-2048-smoke.json"
+    ],
+    "max_tokens": 5,
+    "prompt_count_per_pack": 1
+  },
+  "checks": {
+    "prompt_tokens_all_match": true,
+    "generated_tokens_all_match": true,
+    "generated_text_all_match": true,
+    "api_health_loaded_generation_ready": true,
+    "v1_chat_completions_passed": true,
+    "privacy_scrub_required": true,
+    "remote_ubuntu_revalidation": true
+  },
+  "rows": [
+    {
+      "row_id": "mistral_7b_instruct_v0_3_q8_0",
+      "prompt_id": "mistral-roughly-512-token-recall",
+      "context_window": 512,
+      "source_prompt_pack": "qa/prompt-packs/mistral-context-512-smoke.json",
+      "pack_id": "mistral-context-512-smoke-v1",
+      "max_tokens": 5,
+      "reference_prompt_token_count": 402,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        1113
+      ],
+      "llama_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        1113
+      ],
+      "generated_text": " The repeat marker is \"",
+      "llama_text": " The repeat marker is \"",
+      "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+      "raw_artifact": "raw/pack-512/mistral-7b-v0.3-q8-ubuntu-head-86ad5390d265-mistral-roughly-512-token-recall/report.sanitized.json",
+      "passed": true
+    },
+    {
+      "row_id": "mistral_7b_instruct_v0_3_q8_0",
+      "prompt_id": "mistral-roughly-1024-token-recall",
+      "context_window": 1024,
+      "source_prompt_pack": "qa/prompt-packs/mistral-context-1024-smoke.json",
+      "pack_id": "mistral-context-1024-smoke-v1",
+      "max_tokens": 5,
+      "reference_prompt_token_count": 863,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        1113
+      ],
+      "llama_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        1113
+      ],
+      "generated_text": " The repeat marker is \"",
+      "llama_text": " The repeat marker is \"",
+      "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+      "raw_artifact": "raw/pack-1024/mistral-7b-v0.3-q8-ubuntu-head-86ad5390d265-mistral-roughly-1024-token-recall/report.sanitized.json",
+      "passed": true
+    },
+    {
+      "row_id": "mistral_7b_instruct_v0_3_q8_0",
+      "prompt_id": "mistral-roughly-2048-token-recall",
+      "context_window": 2048,
+      "source_prompt_pack": "qa/prompt-packs/mistral-context-2048-smoke.json",
+      "pack_id": "mistral-context-2048-smoke-v1",
+      "max_tokens": 5,
+      "reference_prompt_token_count": 1724,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        1113
+      ],
+      "llama_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        1113
+      ],
+      "generated_text": " The repeat marker is \"",
+      "llama_text": " The repeat marker is \"",
+      "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+      "raw_artifact": "raw/pack-2048/mistral-7b-v0.3-q8-ubuntu-head-86ad5390d265-mistral-roughly-2048-token-recall/report.sanitized.json",
+      "passed": true
+    }
+  ],
+  "claim_boundary": "Remote Ubuntu revalidation for exact Mistral-7B-Instruct-v0.3 Q8_0 row smoke plus checked bounded 512/1024/2048 prompt-pack support at pushed head 86ad5390d265. It does not promote Mistral-family support, neighboring Mistral variants, model-native/larger context beyond the checked packs, arbitrary/Jinja templates, 50-token parity, production throughput, portability, or full support.",
+  "artifacts": [
+    "manifest.json",
+    "summary.json",
+    "command.txt",
+    "raw/",
+    "SHA256SUMS"
+  ]
+}

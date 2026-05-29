@@ -1,0 +1,68 @@
+# CAMELID BACKEND ENGINEER UBUNTU X86 Q8 — managed decode-consumer flags
+
+Timestamp: 2026-05-17T00:35Z
+Scope: Ubuntu x86_64 dense Llama Q8_0 only.
+Canonical host check: `SSH to the canonical validation host` reported Ubuntu 24.04, x86_64, 16 CPUs, Intel Xeon Platinum 8488C, with AVX2/AVX512/VNNI/AMX CPU flags available.
+
+## Small technical slice
+
+ExecutionPlan now manages the default-off x86 Q8 decode-consumer flags for attention QKV, attention projection, and FFN gate/up in addition to the existing x86 repack/kernel/output/FFN-down flags. This prevents stale opt-in owner experiments from leaking into planned runs and keeps the safe fallback behavior explicit.
+
+This is a planner/runtime-gate hardening slice, not a throughput promotion. It does not add a duplicate packed-copy sidecar. The directly usable paths continue to consume backend-owned `Q8_0RuntimeStorage::PackedRows4` and remain default-off.
+
+## Camelid implementation evidence
+
+Commands used:
+
+```bash
+git grep -n -E "CAMELID_X86_Q8_ATTENTION|CAMELID_X86_Q8_FFN_GATE_UP|MANAGED_ENV_KEYS|attention, FFN, and output|planner_env_apply_clears" -- src/execution_plan.rs src/inference.rs docs/CONFIGURATION.md docs/performance/ubuntu-x86-q8.md
+git grep -n -E "try_x86_q8_attention_qkv_decode_consumer_path|try_x86_q8_attention_projection_decode_consumer_path|q8_0_runtime_packed_projection|Q8_0RuntimeStorage::PackedRows4|CAMELID_X86_Q8_ATTENTION|CAMELID_X86_Q8_FFN_GATE_UP" -- src/inference.rs src/tensor/mod.rs src/execution_plan.rs tests
+```
+
+Selected hits:
+
+- `src/execution_plan.rs:15-17` adds `CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER`, `CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER`, and `CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER` to `MANAGED_ENV_KEYS`.
+- `src/execution_plan.rs:343-347` forces those x86 decode-consumer flags to `off` in the current validated Ubuntu x86 experimental plan.
+- `src/execution_plan.rs:956` adds `planner_env_apply_clears_stale_x86_q8_decode_consumer_flags`, proving planner apply clears stale opt-in flags.
+- `src/inference.rs:706-712` resolves the same runtime flags once in `Q8RuntimeFlags::from_env`.
+- `src/inference.rs:7230` keeps `try_x86_q8_attention_qkv_decode_consumer_path` guarded by the runtime plan and exact shape/storage checks.
+- `src/inference.rs:7335` keeps `q8_0_runtime_packed_projection` constrained to `Q8_0RuntimeStorage::PackedRows4`, I8 interleave, input-width block alignment, and output rows multiple of 4.
+- `src/inference.rs:7382` keeps `try_x86_q8_attention_projection_decode_consumer_path` fallback-first unless role, tensor, packed storage, and shape guards match.
+- `src/tensor/mod.rs:390` is the backend-owned `Q8_0RuntimeStorage::PackedRows4` construction point for selected runtime-packed tensors.
+
+## llama.cpp source evidence consulted
+
+Command used:
+
+```bash
+git grep -n -E "GGML_TYPE_Q8_0|ggml_vec_dot_q8_0_q8_0|GGML_OP_MUL_MAT|GGML_CPU_REPACK|GGML_OPENMP|GGML_AVX2|GGML_AVX512_VNNI|VNNI|repack" -- ggml/CMakeLists.txt ggml/src/CMakeLists.txt ggml/src/ggml-cpu/ggml-cpu.c ggml/src/ggml-cpu/arch/x86/quants.c ggml/src/ggml-cpu/arch/x86/repack.cpp ggml/src/ggml-cpu/CMakeLists.txt ggml/include/ggml.h ggml/src/ggml-backend.cpp
+```
+
+Selected hits:
+
+- `ggml/CMakeLists.txt:152` keeps `GGML_CPU_REPACK` visible in the CPU build configuration.
+- `ggml/CMakeLists.txt:157` keeps `GGML_AVX2` visible as an x86 build gate.
+- `ggml/CMakeLists.txt:161` shows `GGML_AVX512_VNNI` as a separate build gate, not assumed by this Camelid slice.
+- `ggml/CMakeLists.txt:246` keeps `GGML_OPENMP` visible for CPU scheduling.
+- `ggml/include/ggml.h:398` defines `GGML_TYPE_Q8_0`; `ggml/include/ggml.h:511-512` defines `GGML_OP_MUL_MAT` / `GGML_OP_MUL_MAT_ID`.
+- `ggml/src/ggml-cpu/ggml-cpu.c:262-265` wires Q8_0 to `ggml_vec_dot_q8_0_q8_0` with `GGML_TYPE_Q8_0` vec-dot type.
+- `ggml/src/ggml-cpu/arch/x86/quants.c:1170` defines `ggml_vec_dot_q8_0_q8_0`.
+- `ggml/src/ggml-cpu/ggml-cpu.c:2814-2822` shows `GGML_OP_MUL_MAT` / `GGML_OP_MUL_MAT_ID` in CPU work scheduling.
+- `ggml/src/ggml-cpu/arch/x86/repack.cpp:124-166` keeps x86 repack variants gated by VNNI-related compile definitions.
+
+## Local validation
+
+- `cargo fmt --all -- --check` — PASS.
+- `./scripts/with-rustup-cargo.sh test x86_q8 --lib -- --nocapture` — PASS; matched `planner_env_apply_clears_stale_x86_q8_decode_consumer_flags`.
+- `./scripts/with-rustup-cargo.sh test execution_plan::tests::ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib -- --nocapture` — PASS.
+- `./scripts/with-rustup-cargo.sh test inference::tests::resolved_runtime_plan_captures_q8_env_once --lib -- --nocapture` — PASS.
+- `./scripts/with-rustup-cargo.sh test inference::tests::runtime_profile_defaults_keep_experimental_q8_gates_closed --lib -- --nocapture` — PASS.
+- `./scripts/with-rustup-cargo.sh test execution_plan::tests --lib -- --nocapture` — PASS (`13 passed`).
+
+Note: local cargo emitted the existing target-cache hard-link warning and copied incremental-cache files instead; tests passed.
+
+## Fallback / claim boundary
+
+- With `CAMELID_PROFILE` unset/auto or without explicit `CAMELID_X86_Q8_REPACK=on CAMELID_X86_Q8_KERNEL=avx2`, Ubuntu x86 Q8 planning remains `cpu_reference` / `safe_q8_0_block_dot`.
+- With current validated experimental gates, ExecutionPlan still selects the runtime-packed AVX2 path but now pins attention QKV/projection, FFN gate/up, FFN-down, and output owner/consumer flags to `off` unless separately opted into a developer run.
+- No performance, support-contract, portability, or broader model-family claim is made by this slice.

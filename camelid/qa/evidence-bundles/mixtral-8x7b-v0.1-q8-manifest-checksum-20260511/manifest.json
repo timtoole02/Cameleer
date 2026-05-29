@@ -1,0 +1,78 @@
+{
+  "schema": "camelid.mixtral_exact_row_manifest.v1",
+  "created_utc": "2026-05-12T00:09:58Z",
+  "model": {
+    "filename": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+    "evidence_file_placeholder": "<MODEL:Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf>",
+    "size_bytes": 49624262592,
+    "sha256": "cdca4a8c09dfd722702f781d479695cda0d45e1bd1cd602ba1b6085ad921fc5f",
+    "mtime_epoch_recorded_for_repro_only": 1778107861
+  },
+  "scope": "validated exact row only; no broad Mixtral-family support claim",
+  "promotion_gate_artifacts": [
+    {
+      "bundle": "mixtral-8x7b-v0.1-q8-backend-parity-refresh-20260511",
+      "files": [
+        "Count_to_three.json",
+        "Count_to_three.out",
+        "Hello.json",
+        "Hello.out",
+        "Name_a_color.json",
+        "Name_a_color.out",
+        "README.md",
+        "Say_yes.json",
+        "Say_yes.out",
+        "What_is_2_2.json",
+        "What_is_2_2.out",
+        "Write_OK.json",
+        "Write_OK.out",
+        "manifest.json",
+        "summary.json"
+      ]
+    },
+    {
+      "bundle": "mixtral-8x7b-v0.1-q8-api-smoke-20260511",
+      "files": [
+        "01_health_before.json",
+        "02_v1_models_before.json",
+        "03_load_model.json",
+        "04_health_after_load.json",
+        "05_v1_models_after.json",
+        "06_v1_completions.json",
+        "07_v1_chat_completions.json",
+        "README.md",
+        "manifest.json",
+        "summary.json"
+      ]
+    },
+    {
+      "bundle": "mixtral-8x7b-v0.1-q8-webui-readiness-20260511",
+      "files": [
+        "README.md",
+        "frontend-build.out",
+        "frontend-runtime-smoke.out",
+        "manifest.json",
+        "model-state-smoke.out",
+        "npm-ci-node22.out",
+        "npm-ci.out",
+        "summary.json"
+      ]
+    },
+    {
+      "bundle": "mixtral-8x7b-v0.1-q8-rss-timing-runtime-20260511",
+      "files": [
+        "README.md",
+        "chat_5_tokens.json",
+        "completion_1_token.json",
+        "health_after.json",
+        "host.json",
+        "load.json",
+        "manifest.json",
+        "rss_samples.json",
+        "summary.json",
+        "unload.json"
+      ]
+    }
+  ],
+  "privacy": "Private paths, host identifiers, usernames, secrets, and tokens are omitted or placeholder-scrubbed."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "multi-turn-user-assistant-user",
+  "note": "Multi-turn user/assistant history followed by a new user turn.",
+  "message": null,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Say alpha."
+    },
+    {
+      "role": "assistant",
+      "content": "alpha"
+    },
+    {
+      "role": "user",
+      "content": "Now say beta."
+    }
+  ],
+  "max_tokens": 5,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 5
+}

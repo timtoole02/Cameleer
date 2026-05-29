@@ -1,0 +1,37 @@
+[
+  {
+    "label": "before_unload",
+    "rss_rows": [
+      "15270 192200 2302880 camelid"
+    ],
+    "timestamp_utc": "2026-05-12T00:06:02Z"
+  },
+  {
+    "label": "after_unload",
+    "rss_rows": [
+      "15270 192236 2302880 camelid"
+    ],
+    "timestamp_utc": "2026-05-12T00:06:02Z"
+  },
+  {
+    "label": "after_load",
+    "rss_rows": [
+      "15270 202168 2302880 camelid"
+    ],
+    "timestamp_utc": "2026-05-12T00:06:02Z"
+  },
+  {
+    "label": "after_completion_1_token",
+    "rss_rows": [
+      "15270 283148 2363812 camelid"
+    ],
+    "timestamp_utc": "2026-05-12T00:06:08Z"
+  },
+  {
+    "label": "after_chat_5_tokens",
+    "rss_rows": [
+      "15270 293448 2363812 camelid"
+    ],
+    "timestamp_utc": "2026-05-12T00:06:52Z"
+  }
+]

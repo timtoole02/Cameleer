@@ -1,0 +1,7 @@
+utc=2026-05-05T04:45:19Z
+head=864e07b51f36e9248f898a07781eeaee2ed5c6d8
+head_short=864e07b51f36
+branch=main
+node=v22.22.2
+cargo=cargo 1.87.0 (99624be96 2025-05-06)
+uname=Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux

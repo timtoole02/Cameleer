@@ -1,0 +1,127 @@
+{
+  "schema": "camelid.lazy_q8_hotpath_bundle.v1",
+  "generated_utc": "2026-05-05T03:51:59.534Z",
+  "git_head": "e22307f2f90b",
+  "source_tree_dirty": false,
+  "scope": "Retained-block lazy Q8_0 hot-path microbenchmarks; measurement evidence only.",
+  "model": {
+    "file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+  },
+  "bench": {
+    "command": "target/release/backendinference bench-q8-blocks <model-path> --tensor <tensor> [--swap-rank2-shape] --all-rows-dot --single-input-row-dot",
+    "repeats": 20,
+    "warmup": 3,
+    "all_rows_dot": true,
+    "single_input_row_dot": true,
+    "files": [
+      "blk_0_ffn_down_weight.json",
+      "blk_0_ffn_gate_weight-swap.json",
+      "output_weight-swap.json"
+    ]
+  },
+  "runs": [
+    {
+      "tensor": "blk.0.ffn_down.weight",
+      "storage_shape": [
+        14336,
+        4096
+      ],
+      "logical_shape": [
+        14336,
+        4096
+      ],
+      "swap_rank2_shape": false,
+      "tensor_mib": 59.5,
+      "retained_q8_payload_mib": 59.5,
+      "f32_materialized_mib": 224,
+      "dot_input_f32_mib": 0.015625,
+      "all_rows_output_f32_mib": 0.0546875,
+      "single_input_row_output_f32_mib": 0.0546875,
+      "metadata_load_ms": 282.76030099999997,
+      "block_load_ms": 58.907174,
+      "avg_dequant_ms": 0.007031549999999999,
+      "avg_dot_ms": 0.0036654499999999994,
+      "avg_all_rows_dot_ms": 35.782649199999994,
+      "avg_single_input_row_dot_ms": 35.685597650000005,
+      "repeats": 20,
+      "warmup": 3,
+      "determinism": {
+        "execution": "serial_only_q8_0_block_rows",
+        "parallel_kernel_default": false,
+        "serial_vs_parallel_delta_target": 0,
+        "serial_vs_parallel_delta_fail_threshold": 1e-7
+      }
+    },
+    {
+      "tensor": "blk.0.ffn_gate.weight",
+      "storage_shape": [
+        4096,
+        14336
+      ],
+      "logical_shape": [
+        14336,
+        4096
+      ],
+      "swap_rank2_shape": true,
+      "tensor_mib": 59.5,
+      "retained_q8_payload_mib": 59.5,
+      "f32_materialized_mib": 224,
+      "dot_input_f32_mib": 0.015625,
+      "all_rows_output_f32_mib": 0.0546875,
+      "single_input_row_output_f32_mib": 0.0546875,
+      "metadata_load_ms": 276.390574,
+      "block_load_ms": 58.214023,
+      "avg_dequant_ms": 0.006934799999999998,
+      "avg_dot_ms": 0.0041554,
+      "avg_all_rows_dot_ms": 35.7291901,
+      "avg_single_input_row_dot_ms": 35.715270399999994,
+      "repeats": 20,
+      "warmup": 3,
+      "determinism": {
+        "execution": "serial_only_q8_0_block_rows",
+        "parallel_kernel_default": false,
+        "serial_vs_parallel_delta_target": 0,
+        "serial_vs_parallel_delta_fail_threshold": 1e-7
+      }
+    },
+    {
+      "tensor": "output.weight",
+      "storage_shape": [
+        4096,
+        128256
+      ],
+      "logical_shape": [
+        128256,
+        4096
+      ],
+      "swap_rank2_shape": true,
+      "tensor_mib": 532.3125,
+      "retained_q8_payload_mib": 532.3125,
+      "f32_materialized_mib": 2004,
+      "dot_input_f32_mib": 0.015625,
+      "all_rows_output_f32_mib": 0.4892578125,
+      "single_input_row_output_f32_mib": 0.4892578125,
+      "metadata_load_ms": 277.18779900000004,
+      "block_load_ms": 499.42151,
+      "avg_dequant_ms": 0.006967899999999999,
+      "avg_dot_ms": 0.0036024499999999992,
+      "avg_all_rows_dot_ms": 320.24430280000007,
+      "avg_single_input_row_dot_ms": 320.43018215000006,
+      "repeats": 20,
+      "warmup": 3,
+      "determinism": {
+        "execution": "serial_only_q8_0_block_rows",
+        "parallel_kernel_default": false,
+        "serial_vs_parallel_delta_target": 0,
+        "serial_vs_parallel_delta_fail_threshold": 1e-7
+      }
+    }
+  ],
+  "interpretation": {
+    "ffn_projection_observation": "Representative FFN retained-block Q8 all-row dots measured blk.0.ffn_down.weight 35.78 ms, blk.0.ffn_gate.weight 35.73 ms in this serial microbench path.",
+    "logits_observation": "output.weight measured 320.24 ms for one all-row Q8 dot while avoiding 2004.0 MiB of f32 materialization.",
+    "known_gap": "This bundle benchmarks retained Q8_0 blocks, not the production file-backed reader path. Pair it with API/WebUI timing/RSS evidence before making performance-portability claims."
+  },
+  "claim_boundary": "Lazy Q8_0 hot-path cost evidence only for the exact measured model/tensors. No broad Llama-family, full-context, arbitrary-template, neighboring-size, other-quantization, production-throughput, or portability support claim."
+}

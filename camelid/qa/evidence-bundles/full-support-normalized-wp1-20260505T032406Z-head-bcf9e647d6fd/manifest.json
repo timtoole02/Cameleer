@@ -1,0 +1,27 @@
+{
+  "schema": "camelid.full_support.normalized_wp1.v1",
+  "generated_utc": "2026-05-05T03:24:48Z",
+  "head": "bcf9e647d6fd",
+  "out_dir": "target/full-support-normalized-wp1-20260505T032406Z-head-bcf9e647d6fd",
+  "node": "v22.22.2",
+  "rows": [
+    {
+      "row": "llama32_1b_instruct_q8_0",
+      "passed": true,
+      "error": null,
+      "summary": "target/full-support-normalized-wp1-20260505T032406Z-head-bcf9e647d6fd/llama32_1b_instruct_q8_0/api-webui/summary.json"
+    },
+    {
+      "row": "llama32_3b_instruct_q8_0",
+      "passed": true,
+      "error": null,
+      "summary": "target/full-support-normalized-wp1-20260505T032406Z-head-bcf9e647d6fd/llama32_3b_instruct_q8_0/api-webui/summary.json"
+    },
+    {
+      "row": "tinyllama_1_1b_chat_q8_0",
+      "passed": true,
+      "error": null,
+      "summary": "target/full-support-normalized-wp1-20260505T032406Z-head-bcf9e647d6fd/tinyllama_1_1b_chat_q8_0/api-webui/summary.json"
+    }
+  ]
+}

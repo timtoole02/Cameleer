@@ -1,0 +1,7 @@
+remote_host=canonical-private-ubuntu-validation-host
+generated_utc=2026-05-13T19:36:46Z
+source_snapshot=<canonical-ubuntu-current-main-snapshot>
+source_head=9a296eaac6d63556d5fcbf7db74d0c1f65ab3ca9
+origin_main=9a296eaac6d63556d5fcbf7db74d0c1f65ab3ca9
+model=<canonical-model-store>/Mistral-7B-Instruct-v0.3-Q8_0.gguf
+404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f  model_sha256  <canonical-model-store>/Mistral-7B-Instruct-v0.3-Q8_0.gguf

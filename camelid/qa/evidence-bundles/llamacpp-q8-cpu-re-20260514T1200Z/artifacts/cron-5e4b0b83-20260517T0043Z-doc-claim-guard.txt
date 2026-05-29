@@ -1,0 +1,28 @@
+CAMELID DOCS UBUNTU X86 Q8 claim guard — cron 5e4b0b83 — 2026-05-17T00:43Z
+
+Scope:
+- Guard docs/report wording for the Ubuntu x86_64 dense Llama Q8_0 llama.cpp reverse-engineering lane.
+- Treat qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md as current reference truth.
+- Do not change project README/support contract/perf promotion claims.
+
+Worktree observed:
+- Branch at start: ubuntu-x86-q8-f23-plus-qkv-consumers...origin/ubuntu-x86-q8-f23-plus-qkv-consumers [ahead 3]
+- Pre-existing untracked paths included: projects/ and qa/evidence-bundles/x86-q8-llamacpp-mapping-20260516T014948Z-head-4677f34/.
+
+Guard checks performed:
+- Read current Ubuntu x86 evidence report claim guardrail and recent entries.
+- Searched markdown docs/reports for Mac, Apple Silicon, Metal, Mixtral, production throughput, support-contract, AVX512/VNNI/AMX, speedup, and llama.cpp parity wording.
+- Compared docs/performance/ubuntu-x86-q8.md reproduction flags against current source/evidence flags.
+
+Finding:
+- docs/performance/ubuntu-x86-q8.md contained a reproduction block that named stale/non-current flags not present in source or current reference evidence: CAMELID_X86_Q8_REPACK_TENSORS, CAMELID_X86_Q8_GEMM, CAMELID_X86_Q8_PACKED_TILE16, CAMELID_X86_Q8_PACKED_TILE16_SERIAL_OWNER, and CAMELID_X86_Q8_KERNEL=avx2_scaled_rowdot.
+- Current reference evidence supports the default-off developer experiment shape CAMELID_X86_Q8_REPACK=on with CAMELID_X86_Q8_KERNEL=avx2 for the measured Ubuntu x86_64 lane, plus separately evidenced narrow decode-consumer/owner flags that remain explicit experiments and are not support-contract/performance promotion claims.
+
+Action taken:
+- Narrowed docs/performance/ubuntu-x86-q8.md to the current reference gate shape and removed the stale/non-current reproduction flags.
+- Kept the wording scoped to Ubuntu x86_64, dense Llama Q8_0, current Q8 reference truth, safe fallback/default-off experiments, and no production throughput/support-contract claim.
+- Did not touch project README, support contract, API/frontend claims, Mac/Apple Silicon/Metal docs, or Mixtral support language.
+
+Verification commands:
+- rg -n "CAMELID_X86_Q8_REPACK_TENSORS|CAMELID_X86_Q8_GEMM|CAMELID_X86_Q8_PACKED_TILE16|avx2_scaled_rowdot" docs/performance/ubuntu-x86-q8.md
+- rg -n "CAMELID_X86_Q8_REPACK=on|CAMELID_X86_Q8_KERNEL=avx2|production-ready|support-contract|Mac|Apple Silicon|Metal|Mixtral" docs/performance/ubuntu-x86-q8.md qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md

@@ -1,0 +1,15 @@
+# Local validation command (paths redacted to avoid publishing operator-specific filesystem details).
+node scripts/chat-parity-mistral.mjs \
+  --backend http://127.0.0.1:8181 \
+  --llama-url http://127.0.0.1:8183 \
+  --model <Mistral-7B-Instruct-v0.3-Q8_0.gguf> \
+  --model-id mistral-7b-instruct-v0.3-q8_0 \
+  --llama-server <reference-runtime>/server \
+  --llama-tokenize <reference-runtime>/tokenize \
+  --start-llama-server \
+  --message hello \
+  --max-tokens 1 \
+  --require-prompt-match \
+  --require-generated-match \
+  --diagnostics-out tmp/mistral-one-token-parity-fa7efc0.json \
+  --wait-ms 240000

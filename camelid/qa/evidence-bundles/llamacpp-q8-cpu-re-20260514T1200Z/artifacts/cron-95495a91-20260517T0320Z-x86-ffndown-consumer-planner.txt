@@ -1,0 +1,347 @@
+# cron 95495a91 2026-05-17T03:20Z x86 FFN-down consumer planner ownership
+
+Scope: Ubuntu x86_64 dense Llama Q8_0 only; default-off planner/runtime gate hygiene slice. No Mac evidence, no Apple Silicon label, no Metal, no Mixtral, no support/throughput promotion.
+
+## Small technical slice
+- ExecutionPlan now manages and explicitly clears CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER alongside the existing attention QKV/projection and FFN gate/up decode-consumer gates.
+- The stale older CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER key is still cleared for compatibility, but the directly usable runtime path reads the CONSUMER gate through ResolvedRuntimePlan.
+- This avoids the failed duplicate packed-copy sidecar direction; it only controls default-off access to backend-owned Q8_0RuntimeStorage::PackedRows4 consumers.
+
+## Changed files/functions
+- src/execution_plan.rs: MANAGED_ENV_KEYS; select_linux_x86_q8_plan; clear_profile_env; ubuntu_experimental_validated_gates_select_rust_avx2_q8_path; planner_env_apply_clears_stale_x86_q8_decode_consumer_flags.
+- docs/CONFIGURATION.md: documented CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER as a default-off Ubuntu x86_64 developer experiment.
+- docs/performance/ubuntu-x86-q8.md and this RE bundle keep reproduction to CAMELID_X86_Q8_REPACK=on CAMELID_X86_Q8_KERNEL=avx2 unless a fresh slice names narrower gates.
+
+## Camelid grep evidence
+docs/CONFIGURATION.md:111:- `CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER=on` and `CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER=on` are default-off Ubuntu x86_64 developer experiments that let one-row dense attention Q/K/V and attention-output projections consume backend-owned packed Q8_0 runtime storage directly. They fall back unless the runtime plan, tensor type, shape, row grouping, and packed interleave guards match exactly.
+docs/CONFIGURATION.md:112:- `CAMELID_X86_Q8_OUTPUT_DECODE_OWNER=on` is a default-off Ubuntu x86_64 developer experiment that lets one-row decode output projection consume backend-owned packed `output.weight` storage directly; it falls back unless the tensor, shape, and packed-row guards match exactly.
+docs/CONFIGURATION.md:113:- `CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER=on` is a default-off Ubuntu x86_64 developer experiment that lets one-row dense FFN gate/up activation consume backend-owned packed `blk.*.ffn_{gate,up}.weight` storage directly with one input quantization; it falls back unless both tensors, shapes, and packed-row guards match exactly.
+docs/CONFIGURATION.md:114:- `CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER=on` is a default-off Ubuntu x86_64 developer experiment that lets one-row dense FFN-down projection consume backend-owned packed `blk.*.ffn_down.weight` storage directly; the execution planner clears stale values unless a future slice explicitly owns and validates that consumer gate for the run.
+src/execution_plan.rs:7:const MANAGED_ENV_KEYS: &[&str] = &[
+src/execution_plan.rs:15:    "CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER",
+src/execution_plan.rs:16:    "CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER",
+src/execution_plan.rs:17:    "CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER",
+src/execution_plan.rs:18:    "CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER",
+src/execution_plan.rs:19:    "CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER",
+src/execution_plan.rs:20:    "CAMELID_X86_Q8_OUTPUT_DECODE_OWNER",
+src/execution_plan.rs:72:        for key in MANAGED_ENV_KEYS {
+src/execution_plan.rs:155:            select_linux_x86_q8_plan(&profile, &platform, &mut env_updates, &mut reasons)
+src/execution_plan.rs:287:fn select_linux_x86_q8_plan(
+src/execution_plan.rs:344:        "CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER",
+src/execution_plan.rs:347:    env_updates.insert("CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER", Some("off"));
+src/execution_plan.rs:348:    env_updates.insert("CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER", Some("off"));
+src/execution_plan.rs:349:    env_updates.insert("CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER", Some("off"));
+src/execution_plan.rs:350:    env_updates.insert("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER", Some("off"));
+src/execution_plan.rs:351:    env_updates.insert("CAMELID_X86_Q8_OUTPUT_DECODE_OWNER", Some("off"));
+src/execution_plan.rs:716:            "CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER",
+src/execution_plan.rs:717:            "CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER",
+src/execution_plan.rs:718:            "CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER",
+src/execution_plan.rs:719:            "CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER",
+src/execution_plan.rs:720:            "CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER",
+src/execution_plan.rs:721:            "CAMELID_X86_Q8_OUTPUT_DECODE_OWNER",
+src/execution_plan.rs:928:                .get("CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER"),
+src/execution_plan.rs:934:                .get("CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER"),
+src/execution_plan.rs:940:                .get("CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER"),
+src/execution_plan.rs:946:                .get("CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER"),
+src/execution_plan.rs:952:                .get("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER"),
+src/execution_plan.rs:958:                .get("CAMELID_X86_Q8_OUTPUT_DECODE_OWNER"),
+src/execution_plan.rs:968:        env::set_var("CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER", "on");
+src/execution_plan.rs:969:        env::set_var("CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER", "on");
+src/execution_plan.rs:970:        env::set_var("CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER", "on");
+src/execution_plan.rs:971:        env::set_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER", "on");
+src/execution_plan.rs:975:        assert!(env::var("CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER").is_err());
+src/execution_plan.rs:976:        assert!(env::var("CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER").is_err());
+src/execution_plan.rs:977:        assert!(env::var("CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER").is_err());
+src/execution_plan.rs:978:        assert!(env::var("CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER").is_err());
+src/inference.rs:706:                "CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER",
+src/inference.rs:709:                "CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER",
+src/inference.rs:712:                "CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER",
+src/inference.rs:715:                "CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER",
+src/inference.rs:4681:        if let Some(output) = try_x86_q8_ffn_down_decode_consumer_path(
+src/inference.rs:5023:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = storage else {
+src/inference.rs:7180:        env_flag_enabled("CAMELID_X86_Q8_OUTPUT_DECODE_OWNER")
+src/inference.rs:7351:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() else {
+src/inference.rs:7421:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() else {
+src/inference.rs:7452:fn try_x86_q8_ffn_down_decode_consumer_path(
+src/inference.rs:7483:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() else {
+src/inference.rs:9561:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() {
+src/inference.rs:9580:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage {
+src/inference.rs:12694:            "CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER",
+src/inference.rs:12695:            "CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER",
+src/inference.rs:12696:            "CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER",
+src/inference.rs:12697:            "CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER",
+src/inference.rs:12698:            "CAMELID_X86_Q8_OUTPUT_DECODE_OWNER",
+src/inference.rs:13104:        std::env::set_var("CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER", "on");
+src/inference.rs:13105:        std::env::set_var("CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER", "yes");
+src/inference.rs:13106:        std::env::set_var("CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER", "true");
+src/inference.rs:13107:        std::env::set_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER", "on");
+src/inference.rs:13123:        std::env::remove_var("CAMELID_X86_Q8_ATTENTION_PROJECTION_DECODE_CONSUMER");
+src/inference.rs:13124:        std::env::remove_var("CAMELID_X86_Q8_ATTENTION_QKV_DECODE_CONSUMER");
+src/inference.rs:13125:        std::env::remove_var("CAMELID_X86_Q8_FFN_GATE_UP_DECODE_CONSUMER");
+src/inference.rs:13126:        std::env::remove_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_CONSUMER");
+src/inference.rs:13765:            Some(Q8_0RuntimeStorage::PackedRows4(_))
+src/inference.rs:14068:            Some(Q8_0RuntimeStorage::PackedRows4(packed))
+src/inference.rs:14099:        std::env::set_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER", "on");
+src/inference.rs:14104:            try_x86_q8_ffn_down_decode_consumer_path(
+src/inference.rs:14118:            try_x86_q8_ffn_down_decode_consumer_path(
+src/inference.rs:14130:        std::env::remove_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER");
+src/inference.rs:14155:            try_x86_q8_ffn_down_decode_consumer_path(
+src/inference.rs:14168:        if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/inference.rs:14174:            try_x86_q8_ffn_down_decode_consumer_path(
+src/inference.rs:14208:            Some(Q8_0RuntimeStorage::PackedRows4(_))
+src/inference.rs:14212:            Some(Q8_0RuntimeStorage::PackedRows4(_))
+src/inference.rs:14220:        std::env::set_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER", "on");
+src/inference.rs:14266:        std::env::remove_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER");
+src/inference.rs:16391:        std::env::set_var("CAMELID_X86_Q8_OUTPUT_DECODE_OWNER", "on");
+src/inference.rs:16440:        std::env::remove_var("CAMELID_X86_Q8_OUTPUT_DECODE_OWNER");
+
+## llama.cpp grep anchors refreshed
+### q8_0 / tinyBLAS / ggml_vec_dot_q8_0_q8_0
+ggml/src/ggml-cann/acl_tensor.cpp:44:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/aclnn_ops.cpp:1992:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/aclnn_ops.cpp:1994:                // Dequantize Q8_0 to dst type, then gather.
+ggml/src/ggml-cann/aclnn_ops.cpp:2230:    } else if (type == GGML_TYPE_Q8_0) {
+ggml/src/ggml-cann/aclnn_ops.cpp:2233:        GGML_ABORT("Only support Q4_0 and Q8_0 MUL_MAT");
+ggml/src/ggml-cann/aclnn_ops.cpp:2370:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/aclnn_ops.cpp:3626: * (Q4_0 and Q8_0 formats). It selects expert-specific weight matrices based on
+ggml/src/ggml-cann/aclnn_ops.cpp:3638: * - src0: [D, M, A, 1] - quantized weight matrices (Q4_0 or Q8_0)
+ggml/src/ggml-cann/aclnn_ops.cpp:3645: * @note Only Q4_0 and Q8_0 quantization formats are supported.
+ggml/src/ggml-cann/aclnn_ops.cpp:3666:    const int32_t group_size = QK8_0;  // Both Q4_0 and Q8_0 use group size of 32
+ggml/src/ggml-cann/aclnn_ops.cpp:3672:        (type == GGML_TYPE_Q8_0) ? 1.0f :
+ggml/src/ggml-cann/aclnn_ops.cpp:3673:                                   (GGML_ABORT("MUL_MAT_ID only supports Q4_0 and Q8_0"), 0.0f);
+ggml/src/ggml-cann/aclnn_ops.cpp:3737:        // Q4_0 stores 2 values per byte, Q8_0 stores 1 value per byte
+ggml/src/ggml-cann/aclnn_ops.cpp:3849:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/aclnn_ops.h:569: *          multiplication F32, F16, and Q8_0.
+ggml/src/ggml-cann/ggml-cann.cpp:1017:static void ggml_backend_cann_transform_q8_0(ggml_tensor * tensor, const void * src, void * dst) {
+ggml/src/ggml-cann/ggml-cann.cpp:1026:        const block_q8_0 * group = (const block_q8_0 *) ((const char *) src + i * sizeof(block_q8_0));
+ggml/src/ggml-cann/ggml-cann.cpp:1040: * ggml_backend_cann_transform_q8_0(), converting the data back into its
+ggml/src/ggml-cann/ggml-cann.cpp:1048:static void ggml_backend_cann_transform_back_q8_0(const ggml_tensor * tensor, const void * src, void * dst) {
+ggml/src/ggml-cann/ggml-cann.cpp:1057:        block_q8_0 * group = (block_q8_0 *) ((char *) dst + i * sizeof(block_q8_0));
+ggml/src/ggml-cann/ggml-cann.cpp:1083:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:1084:            ggml_backend_cann_transform_q8_0(tensor, src, dst);
+ggml/src/ggml-cann/ggml-cann.cpp:1108:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:1109:            ggml_backend_cann_transform_back_q8_0(tensor, src, dst);
+ggml/src/ggml-cann/ggml-cann.cpp:1128:        case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:1265: * For quantized tensors (Q4_0/Q8_0), data is staged in a host buffer and
+ggml/src/ggml-cann/ggml-cann.cpp:2445:                    case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:2462:                case GGML_TYPE_Q8_0:
+ggml/src/ggml-cann/ggml-cann.cpp:2482:                    case GGML_TYPE_Q8_0:
+ggml/src/ggml-common.h:245:} block_q8_0;
+ggml/src/ggml-common.h:246:static_assert(sizeof(block_q8_0) == sizeof(ggml_half) + QK8_0, "wrong q8_0 block size/padding");
+ggml/src/ggml-cpu/amx/amx.cpp:168:            case GGML_TYPE_Q8_0:
+ggml/src/ggml-cpu/amx/common.h:110:        (type == GGML_TYPE_Q8_0) ||
+ggml/src/ggml-cpu/amx/mmq.cpp:61:template <> struct PackedTypes<block_q8_0> { using type = int8_t; };
+ggml/src/ggml-cpu/amx/mmq.cpp:66:    std::is_same<T, block_q8_0>::value> {};
+ggml/src/ggml-cpu/amx/mmq.cpp:103:                using vec_dot_type = block_q8_0;                                       \
+ggml/src/ggml-cpu/amx/mmq.cpp:113:            case GGML_TYPE_Q8_0: {                                                     \
+ggml/src/ggml-cpu/amx/mmq.cpp:114:                using type = block_q8_0;                                               \
+ggml/src/ggml-cpu/amx/mmq.cpp:115:                using vec_dot_type = block_q8_0;                                       \
+ggml/src/ggml-cpu/amx/mmq.cpp:433:            __m128i q8_0 = _mm512_cvtepi32_epi8(_mm512_cvtps_epi32(v[j * 4 + 0]));
+ggml/src/ggml-cpu/amx/mmq.cpp:438:            __m256i q8_01 = _mm256_insertf128_si256(_mm256_castsi128_si256(q8_0), (q8_1), 1);
+ggml/src/ggml-cpu/amx/mmq.cpp:441:            vq[j] = _mm512_inserti32x8(_mm512_castsi256_si512(q8_01), q8_23, 1);
+ggml/src/ggml-cpu/amx/mmq.cpp:462:inline void from_float<block_q8_0>(const float * x, char * vy, int64_t k) {
+ggml/src/ggml-cpu/amx/mmq.cpp:463:    quantize_row_q8_0(x, (block_q8_0 *)vy, k);
+ggml/src/ggml-cpu/amx/mmq.cpp:482:void unpack_A(int8_t * RESTRICT tile, const block_q8_0 * RESTRICT A, int lda, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:613:inline void pack_qs<block_q8_0>(void * RESTRICT packed_B, const block_q8_0 * RESTRICT B, int KB) {
+ggml/src/ggml-cpu/amx/mmq.cpp:785:void pack_B(void * RESTRICT packed_B, const block_q8_0 * RESTRICT B, int KB) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1052:struct acc_C<block_q8_0, block_q4_0, is_acc> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1053:    static void apply(float * RESTRICT C, int ldc, const int32_t * RESTRICT tile, const block_q8_0 * A, int lda, const void * packed_B, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1099:struct acc_C<block_q8_0, block_q8_0, is_acc> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1100:    static void apply(float * RESTRICT C, int ldc, const int32_t * RESTRICT tile, const block_q8_0 * A, int lda, const void * packed_B, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1366:struct tinygemm_kernel_vnni<block_q8_0, block_q4_0, float, BLOCK_M, BLOCK_N, BLOCK_K> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1372:        const block_q8_0 * RESTRICT A = static_cast<const block_q8_0 *>(_A);
+ggml/src/ggml-cpu/amx/mmq.cpp:1503:struct tinygemm_kernel_vnni<block_q8_0, block_q8_0, float, BLOCK_M, BLOCK_N, BLOCK_K> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1507:        const int TILE_SIZE = TILE_N * sizeof(block_q8_0) + TILE_N * sizeof(int32_t);
+ggml/src/ggml-cpu/amx/mmq.cpp:1509:        const block_q8_0 * RESTRICT A = static_cast<const block_q8_0 *>(_A);
+ggml/src/ggml-cpu/amx/mmq.cpp:2416:            // Q4_0, Q4_1, Q8_0 handles 1 TILE_K per blck_size
+ggml/src/ggml-cpu/arch-fallback.h:9:#define quantize_row_q8_0_generic quantize_row_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:12:#define ggml_vec_dot_q4_0_q8_0_generic ggml_vec_dot_q4_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:14:#define ggml_vec_dot_q5_0_q8_0_generic ggml_vec_dot_q5_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:16:#define ggml_vec_dot_q8_0_q8_0_generic ggml_vec_dot_q8_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:17:#define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:18:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:19:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:34:#define ggml_vec_dot_iq4_nl_q8_0_generic ggml_vec_dot_iq4_nl_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:37:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:38:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:41:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:42:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:43:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:51:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:52:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:53:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:54:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:55:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:56:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:57:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:58:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:59:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:67:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:68:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:69:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:70:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:71:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:72:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:77:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:78:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:80:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:81:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:85:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+### repack / MUL_MAT / scheduling / OpenMP / AVX2 / AVX512 / VNNI
+ggml/CMakeLists.txt:152:option(GGML_CPU_REPACK       "ggml: use runtime weight conversion of Q4_0 to Q4_X_X" ON)
+ggml/CMakeLists.txt:156:option(GGML_AVX_VNNI         "ggml: enable AVX-VNNI"         OFF)
+ggml/CMakeLists.txt:157:option(GGML_AVX2             "ggml: enable AVX2"             ${INS_ENB})
+ggml/CMakeLists.txt:159:option(GGML_AVX512           "ggml: enable AVX512F"          OFF)
+ggml/CMakeLists.txt:160:option(GGML_AVX512_VBMI      "ggml: enable AVX512-VBMI"      OFF)
+ggml/CMakeLists.txt:161:option(GGML_AVX512_VNNI      "ggml: enable AVX512-VNNI"      OFF)
+ggml/CMakeLists.txt:162:option(GGML_AVX512_BF16      "ggml: enable AVX512-BF16"      OFF)
+ggml/CMakeLists.txt:164:    # in MSVC F16C and FMA is implied with AVX2/AVX512
+ggml/CMakeLists.txt:246:option(GGML_OPENMP                          "ggml: use OpenMP"                                ON)
+ggml/CMakeLists.txt:447:    # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/CMakeLists.txt:475:        configure_msvc_target(gpt-2-sched)
+ggml/src/CMakeLists.txt:314:                      AVX AVX2 BMI2 AVX_VNNI FMA F16C
+ggml/src/CMakeLists.txt:315:                      AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16
+ggml/src/CMakeLists.txt:365:            # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/src/CMakeLists.txt:369:        ggml_add_cpu_backend_variant(haswell            SSE42 AVX F16C FMA AVX2 BMI2)
+ggml/src/CMakeLists.txt:370:        ggml_add_cpu_backend_variant(skylakex           SSE42 AVX F16C FMA AVX2 BMI2 AVX512)
+ggml/src/CMakeLists.txt:371:        ggml_add_cpu_backend_variant(cannonlake         SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI)
+ggml/src/CMakeLists.txt:372:        ggml_add_cpu_backend_variant(cascadelake        SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI)
+ggml/src/CMakeLists.txt:373:        ggml_add_cpu_backend_variant(icelake            SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI)
+ggml/src/CMakeLists.txt:378:            ggml_add_cpu_backend_variant(cooperlake     SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:379:            ggml_add_cpu_backend_variant(zen4           SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:381:        ggml_add_cpu_backend_variant(alderlake          SSE42 AVX F16C FMA AVX2 BMI2 AVX_VNNI)
+ggml/src/CMakeLists.txt:384:            ggml_add_cpu_backend_variant(sapphirerapids SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16 AMX_TILE AMX_INT8)
+ggml/src/ggml-cpu/CMakeLists.txt:32:        ggml-cpu/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:33:        ggml-cpu/repack.h
+ggml/src/ggml-cpu/CMakeLists.txt:76:        find_package(OpenMP)
+ggml/src/ggml-cpu/CMakeLists.txt:77:        if (OpenMP_FOUND)
+ggml/src/ggml-cpu/CMakeLists.txt:81:            target_link_libraries(${GGML_CPU_NAME} PRIVATE OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/src/ggml-cpu/CMakeLists.txt:84:            message(WARNING "OpenMP not found")
+ggml/src/ggml-cpu/CMakeLists.txt:110:            ggml-cpu/arch/arm/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:252:            ggml-cpu/arch/x86/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:260:            if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:261:                list(APPEND ARCH_FLAGS /arch:AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:262:                # /arch:AVX512 includes: __AVX512F__, __AVX512CD__, __AVX512BW__, __AVX512DQ__, and __AVX512VL__
+ggml/src/ggml-cpu/CMakeLists.txt:264:                # AVX512 extensions, neither it defines the
+ggml/src/ggml-cpu/CMakeLists.txt:267:                list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:268:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:269:                    list(APPEND ARCH_DEFINITIONS __AVX512VBMI__)
+ggml/src/ggml-cpu/CMakeLists.txt:274:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:275:                    list(APPEND ARCH_DEFINITIONS __AVX512VNNI__ GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:280:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:281:                    list(APPEND ARCH_DEFINITIONS __AVX512BF16__ GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:295:            elseif (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:296:                list(APPEND ARCH_FLAGS /arch:AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:297:                list(APPEND ARCH_DEFINITIONS GGML_AVX2 GGML_FMA GGML_F16C)
+ggml/src/ggml-cpu/CMakeLists.txt:305:            if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:306:                list(APPEND ARCH_DEFINITIONS __AVXVNNI__ GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:336:                if (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:338:                    list(APPEND ARCH_DEFINITIONS GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:340:                if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:342:                    list(APPEND ARCH_DEFINITIONS GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:344:                if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:350:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:352:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:354:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:356:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:358:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:360:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:362:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:450:            ggml-cpu/arch/riscv/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:460:                ggml-cpu/spacemit/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:461:                ggml-cpu/spacemit/repack.h
+ggml/src/ggml-cpu/CMakeLists.txt:582:    if (GGML_CPU_REPACK)
+ggml/src/ggml-cpu/CMakeLists.txt:583:        target_compile_definitions(${GGML_CPU_NAME} PRIVATE GGML_USE_CPU_REPACK)
+ggml/src/ggml-cpu/amx/amx.cpp:19:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.cpp:30:        if (op->op == GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:70:        GGML_LOG_DEBUG("%s: amx repack tensor %s of type %s\n", __func__, tensor->name, ggml_type_name(tensor->type));
+ggml/src/ggml-cpu/amx/amx.cpp:146:        if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:193:        if (op->op == GGML_OP_MUL_MAT && op->src[0]->buffer &&
+ggml/src/ggml-cpu/amx/amx.cpp:249:#endif  // defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.h:6:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/common.h:19:#define VNNI_BLK 4
+ggml/src/ggml-cpu/amx/mmq.cpp:35:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/mmq.cpp:180:// Block B needs to be prepacked to vnni format before feeding into  TMUL:
+ggml/src/ggml-cpu/amx/mmq.cpp:1986:#define LAUNCH_TINYGEMM_KERNEL_VNNI(NB_SIZE)                                                   \
+ggml/src/ggml-cpu/amx/mmq.cpp:2030:            _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2032:            _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2047:            _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2049:            _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2068:                    _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2070:                    _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2088:                    _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2090:                    _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2128:                _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2130:                _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2135:                _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2137:                _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2215:                _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2218:                _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2459:                        //case 160: LAUNCH_TINYGEMM_KERNEL_VNNI(160); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2460:                        case 128: LAUNCH_TINYGEMM_KERNEL_VNNI(128); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2461:                        case 96: LAUNCH_TINYGEMM_KERNEL_VNNI(96); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2462:                        case 64: LAUNCH_TINYGEMM_KERNEL_VNNI(64); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2463:                        case 32: LAUNCH_TINYGEMM_KERNEL_VNNI(32); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2512:#endif // if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/arch-fallback.h:36:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:74:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:86:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:120:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:166:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:206:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:257:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:311:// repack.cpp
+ggml/src/ggml-cpu/arch/arm/repack.cpp:19:#include "../../repack.h"
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:19:#include "../../repack.h"
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:47:    bool AVX2(void) { return f_7_ebx[5]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:52:    bool AVX512F(void) { return f_7_ebx[16]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:53:    bool AVX512DQ(void) { return f_7_ebx[17]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:56:    bool AVX512PF(void) { return f_7_ebx[26]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:57:    bool AVX512ER(void) { return f_7_ebx[27]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:58:    bool AVX512CD(void) { return f_7_ebx[28]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:59:    bool AVX512BW(void) { return f_7_ebx[30]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:60:    bool AVX512VL(void) { return f_7_ebx[31]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:79:    bool AVX512_VBMI(void) { return f_7_ecx[1]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:80:    bool AVX512_VNNI(void) { return f_7_ecx[11]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:81:    bool AVX512_FP16(void) { return f_7_edx[23]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:82:    bool AVX512_BF16(void) { return f_7_1_eax[5]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:83:    bool AVX_VNNI(void) { return f_7_1_eax[4]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:228:    printf("avx2: %d\n", is.AVX2());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:233:    printf("avx512f: %d\n", is.AVX512F());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:236:    printf("avx512pf: %d\n", is.AVX512PF());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:237:    printf("avx512er: %d\n", is.AVX512ER());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:238:    printf("avx512cd: %d\n", is.AVX512CD());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:252:    printf("avx512_vbmi: %d\n", is.AVX512_VBMI());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:253:    printf("avx512_vnni: %d\n", is.AVX512_VNNI());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:254:    printf("avx512_fp16: %d\n", is.AVX512_FP16());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:255:    printf("avx512_bf16: %d\n", is.AVX512_BF16());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:289:#ifdef GGML_AVX2
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:290:    if (!is.AVX2()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:293:#ifdef GGML_AVX_VNNI
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:294:    if (!is.AVX_VNNI()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:297:#ifdef GGML_AVX512
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:298:    if (!is.AVX512F()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:299:    if (!is.AVX512CD()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:300:    if (!is.AVX512VL()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:301:    if (!is.AVX512DQ()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:302:    if (!is.AVX512BW()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:305:#ifdef GGML_AVX512_VBMI
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:306:    if (!is.AVX512_VBMI()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:309:#ifdef GGML_AVX512_BF16
+
+## Local validation
+- cargo fmt --check: PASS
+- cargo test -q planner_env_apply_clears_stale_x86_q8_decode_consumer_flags --lib: PASS (1 passed)
+- cargo test -q ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib: PASS (1 passed)
+- cargo test -q resolved_runtime_plan_captures_q8_env_once --lib: PASS (1 passed)
+- cargo test -q q8_ffn_down_consumer --lib: PASS (3 passed)
+
+## Canonical Ubuntu x86_64 validation
+Host command: SSH to the canonical validation host
+Remote workdir: <ubuntu-workdir>/camelid-x86-q8-planner-ffndown-consumer-20260517T0320Z
+Observed: Ubuntu x86_64 Intel Xeon Platinum 8488C, 16 vCPUs, AVX2/AVX512/VNNI/AMX flags present; rustc/cargo 1.90.0 used from ~/.rustup/toolchains.
+- cargo fmt --check: PASS
+- cargo test -q planner_env_apply_clears_stale_x86_q8_decode_consumer_flags --lib: PASS (1 passed; 245 filtered)
+- cargo test -q ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib: PASS (1 passed; 245 filtered)
+- cargo test -q resolved_runtime_plan_captures_q8_env_once --lib: PASS (1 passed; 245 filtered)
+- cargo test -q q8_ffn_down_consumer --lib: PASS (3 passed; 243 filtered)

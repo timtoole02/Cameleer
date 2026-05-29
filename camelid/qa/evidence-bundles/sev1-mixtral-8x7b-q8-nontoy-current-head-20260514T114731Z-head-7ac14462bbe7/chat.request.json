@@ -1,0 +1,10 @@
+{
+  "model": "mixtral_8x7b_instruct_v0_1_q8_0",
+  "messages": [
+    {"role":"system","content":"You are validating local inference runtime behavior. Be concrete and concise."},
+    {"role":"user","content":"Give a non-toy 50-token validation response for a local inference backend, covering API readiness, tokenizer behavior, generation length, determinism, and failure handling."}
+  ],
+  "max_tokens": 50,
+  "temperature": 0,
+  "stream": false
+}

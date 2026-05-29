@@ -1,0 +1,236 @@
+# current status before verification
+1dd65f90163123602b97222f92c402320914f2f5
+?? qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/logs/current-head-grep-evidence-20260514T204922Z.txt
+?? qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/logs/current-head-grep-evidence-20260514T204932Z.txt
+# focused llama.cpp grep refs
+834a243664114487f99520370a7a7b00fc7a486f
+common/arg.cpp:1135:        string_format("number of CPU threads to use during generation (default: %d)", params.cpuparams.n_threads),
+common/arg.cpp:1137:            params.cpuparams.n_threads = value;
+common/arg.cpp:1138:            if (params.cpuparams.n_threads <= 0) {
+common/arg.cpp:1139:                params.cpuparams.n_threads = std::thread::hardware_concurrency();
+common/arg.cpp:1147:            params.cpuparams_batch.n_threads = value;
+common/arg.cpp:1148:            if (params.cpuparams_batch.n_threads <= 0) {
+common/arg.cpp:1149:                params.cpuparams_batch.n_threads = std::thread::hardware_concurrency();
+common/arg.cpp:2014:        {"--repack"},
+common/arg.cpp:2967:        string_format("number of threads used to process HTTP requests (default: %d)", params.n_threads_http),
+common/arg.cpp:2969:            params.n_threads_http = value;
+common/arg.cpp:3336:            params.speculative.draft.cpuparams.n_threads = value;
+common/arg.cpp:3337:            if (params.speculative.draft.cpuparams.n_threads <= 0) {
+common/arg.cpp:3338:                params.speculative.draft.cpuparams.n_threads = std::thread::hardware_concurrency();
+common/arg.cpp:3346:            params.speculative.draft.cpuparams_batch.n_threads = value;
+common/arg.cpp:3347:            if (params.speculative.draft.cpuparams_batch.n_threads <= 0) {
+common/arg.cpp:3348:                params.speculative.draft.cpuparams_batch.n_threads = std::thread::hardware_concurrency();
+common/common.cpp:104:    unsigned int n_threads_win = std::thread::hardware_concurrency();
+common/common.cpp:105:    unsigned int default_threads = n_threads_win > 0 ? (n_threads_win <= 4 ? n_threads_win : n_threads_win / 2) : 4;
+common/common.cpp:131:    unsigned int n_threads = std::thread::hardware_concurrency();
+common/common.cpp:132:    return n_threads > 0 ? (n_threads <= 4 ? n_threads : n_threads / 2) : 4;
+common/common.cpp:269:    if (cpuparams.n_threads < 0) {
+common/common.cpp:274:            cpuparams.n_threads = common_cpu_get_num_math();
+common/common.cpp:284:    if (n_set && n_set < cpuparams.n_threads) {
+common/common.cpp:286:        LOG_WRN("Not enough set bits in CPU mask (%d) to satisfy requested thread count: %d\n", n_set, cpuparams.n_threads);
+common/common.cpp:397:    os << "system_info: n_threads = " << params.cpuparams.n_threads;
+common/common.cpp:398:    if (params.cpuparams_batch.n_threads != -1) {
+common/common.cpp:399:        os << " (n_threads_batch = " << params.cpuparams_batch.n_threads << ")";
+common/common.cpp:1510:    cparams.n_threads         = params.cpuparams.n_threads;
+common/common.cpp:1511:    cparams.n_threads_batch   = params.cpuparams_batch.n_threads == -1 ?
+common/common.cpp:1512:                                params.cpuparams.n_threads : params.cpuparams_batch.n_threads;
+common/common.cpp:1542:    ggml_threadpool_params_init(&tpp, params.n_threads); // setup the defaults
+common/common.h:58:    int      n_threads                   = -1;
+common/common.h:580:    int32_t n_threads_http      = -1;    // number of threads to process HTTP requests (TODO: support threadpool)
+ggml/include/ggml-backend.h:213:    typedef void                         (*ggml_backend_set_n_threads_t)(ggml_backend_t backend, int n_threads);
+ggml/include/ggml-blas.h:18:GGML_BACKEND_API void ggml_backend_blas_set_n_threads(ggml_backend_t backend_blas, int n_threads);
+ggml/include/ggml-cpu.h:16:        int n_threads;
+ggml/include/ggml-cpu.h:60:    GGML_BACKEND_API int                           ggml_threadpool_get_n_threads (struct ggml_threadpool * threadpool);
+ggml/include/ggml-cpu.h:68:                                       int   n_threads, /* = GGML_DEFAULT_N_THREADS */
+ggml/include/ggml-cpu.h:74:    GGML_BACKEND_API enum ggml_status  ggml_graph_compute_with_ctx(struct ggml_context * ctx, struct ggml_cgraph * cgraph, int n_threads);
+ggml/include/ggml-cpu.h:134:    GGML_BACKEND_API void ggml_backend_cpu_set_n_threads     (ggml_backend_t backend_cpu, int n_threads);
+ggml/include/ggml-rpc.h:28:                                                    size_t n_threads, size_t n_devices, ggml_backend_dev_t * devices);
+ggml/include/ggml-zendnn.h:16:GGML_BACKEND_API void ggml_backend_zendnn_set_n_threads(ggml_backend_t backend_zendnn, int n_threads);
+ggml/include/ggml.h:69://       ggml_graph_compute_with_ctx(ctx, &gf, n_threads);
+ggml/include/ggml.h:511:        GGML_OP_MUL_MAT,
+ggml/include/ggml.h:512:        GGML_OP_MUL_MAT_ID,
+ggml/include/ggml.h:2823:        int                 n_threads;                   // number of threads
+ggml/include/ggml.h:2834:    GGML_API struct ggml_threadpool_params ggml_threadpool_params_default(int n_threads);
+ggml/include/ggml.h:2835:    GGML_API void                          ggml_threadpool_params_init   (struct ggml_threadpool_params * p, int n_threads);
+ggml/src/ggml-backend-meta.cpp:845:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-backend-meta.cpp:846:            case GGML_OP_MUL_MAT_ID: {
+ggml/src/ggml-backend.cpp:1581:                    (node->src[0] == input_cpy && node->op == GGML_OP_MUL_MAT_ID)
+ggml/src/ggml-backend.cpp:1585:                    const int64_t n_expert   = node->op == GGML_OP_MUL_MAT_ID ? input->ne[2] : input->ne[1];
+ggml/src/ggml-backend.cpp:1586:                    const size_t expert_size = node->op == GGML_OP_MUL_MAT_ID ? input->nb[2] : input->nb[1];
+ggml/src/ggml-blas/ggml-blas.cpp:22:    int n_threads = GGML_DEFAULT_N_THREADS;
+ggml/src/ggml-blas/ggml-blas.cpp:78:                const int n_threads = std::max(std::min(ctx->n_threads, (int)(ne01/min_rows_per_thread)), 1);
+ggml/src/ggml-blas/ggml-blas.cpp:81:                #pragma omp parallel for num_threads(n_threads)
+ggml/src/ggml-blas/ggml-blas.cpp:86:                for (int i = 1; i < n_threads; i++) {
+ggml/src/ggml-blas/ggml-blas.cpp:87:                    const int64_t start =       i*ne01/n_threads;
+ggml/src/ggml-blas/ggml-blas.cpp:88:                    const int64_t end   = (i + 1)*ne01/n_threads;
+ggml/src/ggml-blas/ggml-blas.cpp:100:                    const int64_t end   = ne01/n_threads;
+ggml/src/ggml-blas/ggml-blas.cpp:119:    openblas_set_num_threads(ctx->n_threads);
+ggml/src/ggml-blas/ggml-blas.cpp:121:    bli_thread_set_num_threads(ctx->n_threads);
+ggml/src/ggml-blas/ggml-blas.cpp:123:    nvpl_blas_set_num_threads(ctx->n_threads);
+ggml/src/ggml-blas/ggml-blas.cpp:125:    mkl_set_num_threads(ctx->n_threads);
+ggml/src/ggml-blas/ggml-blas.cpp:236:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-blas/ggml-blas.cpp:312:void ggml_backend_blas_set_n_threads(ggml_backend_t backend_blas, int n_threads) {
+ggml/src/ggml-blas/ggml-blas.cpp:316:    ctx->n_threads = n_threads;
+ggml/src/ggml-blas/ggml-blas.cpp:404:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-blas/ggml-blas.cpp:496:    if (std::strcmp(name, "ggml_backend_set_n_threads") == 0) {
+ggml/src/ggml-blas/ggml-blas.cpp:497:        return (void *)ggml_backend_blas_set_n_threads;
+ggml/src/ggml-cann/aclnn_ops.h:573: *            multiplication. dst->op is `GGML_OP_MUL_MAT`.
+ggml/src/ggml-cann/ggml-cann.cpp:1915:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:1918:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cann/ggml-cann.cpp:2436:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:2457:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/CMakeLists.txt:582:    if (GGML_CPU_REPACK)
+ggml/src/ggml-cpu/CMakeLists.txt:583:        target_compile_definitions(${GGML_CPU_NAME} PRIVATE GGML_USE_CPU_REPACK)
+ggml/src/ggml-cpu/amx/amx.cpp:24:    bool work_size(int /* n_threads */, const struct ggml_tensor * op, size_t & size) override {
+ggml/src/ggml-cpu/amx/amx.cpp:30:        if (op->op == GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:146:        if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:193:        if (op->op == GGML_OP_MUL_MAT && op->src[0]->buffer &&
+ggml/src/ggml-cpu/arch-fallback.h:38:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:55:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:56:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:71:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:72:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:98:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:99:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:109:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:110:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:122:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:139:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:140:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:155:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:156:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:168:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:185:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:186:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:201:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:202:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:225:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:226:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:240:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:241:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:259:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:276:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:277:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:292:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:293:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:313:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:330:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:331:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:346:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:347:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch/arm/repack.cpp:119:void ggml_quantize_mat_q8_0_4x8(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:208:    ggml_quantize_mat_q8_0_4x8_generic(x, vy, k);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1699:void ggml_gemv_q8_0_4x4_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1754:    ggml_gemv_q8_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1757:void ggml_gemv_q8_0_4x8_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1823:    ggml_gemv_q8_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4938:void ggml_gemm_q8_0_4x4_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5003:    ggml_gemm_q8_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5006:void ggml_gemm_q8_0_4x8_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5155:    ggml_gemm_q8_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:27:void ggml_quantize_mat_q8_0_4x8(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:110:    ggml_quantize_mat_q8_0_4x8_generic(x, vy, k);
+ggml/src/ggml-cpu/arch/x86/repack.cpp:178:void ggml_quantize_mat_q8_0_4x8(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/x86/repack.cpp:286:    ggml_quantize_mat_q8_0_4x8_generic(x, vy, k);
+ggml/src/ggml-cpu/ggml-cpu.c:490:    int          n_threads;   // Number of threads in the pool
+ggml/src/ggml-cpu/ggml-cpu.c:567:    int n_threads = atomic_load_explicit(&tp->n_graph, memory_order_relaxed) & GGML_THREADPOOL_N_THREADS_MASK;
+ggml/src/ggml-cpu/ggml-cpu.c:568:    if (n_threads == 1) {
+ggml/src/ggml-cpu/ggml-cpu.c:580:    if (n_barrier == (n_threads - 1)) {
+ggml/src/ggml-cpu/ggml-cpu.c:1827:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:1831:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.c:2191:static int ggml_get_n_tasks(struct ggml_tensor * node, int n_threads) {
+ggml/src/ggml-cpu/ggml-cpu.c:2212:                n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2231:                n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2268:                        n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2283:                        n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2298:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:2299:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.c:2302:                n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2309:                //n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2330:                n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2338:                n_tasks = MIN(n_threads, ggml_nrows(node->src[0]));
+ggml/src/ggml-cpu/ggml-cpu.c:2349:                n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2370:                n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2377:                n_tasks = MIN(n_threads, n_heads);
+ggml/src/ggml-cpu/ggml-cpu.c:2390:                    n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2392:                    n_tasks = MIN(p.n_tasks, n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:2400:                    n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2402:                    n_tasks = MIN(p.n_tasks, n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:2410:                    n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2412:                    n_tasks = MIN(p.n_tasks, n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:2420:                    n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2422:                    n_tasks = MIN(p.n_tasks, n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:2430:                n_tasks = n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2513:        // n_threads > 4
+ggml/src/ggml-cpu/ggml-cpu.c:2680:    const int n_threads = threadpool->n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2693:    for (int j = 1; j < n_threads; j++) {
+ggml/src/ggml-cpu/ggml-cpu.c:2703:    const size_t workers_size = sizeof(struct ggml_compute_state) * n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:2749:                               int   n_threads,
+ggml/src/ggml-cpu/ggml-cpu.c:2753:        //GGML_PRINT_DEBUG("Threadpool is not specified. Will create a disposable threadpool : n_threads %d\n", n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:2755:    if (n_threads <= 0) {
+ggml/src/ggml-cpu/ggml-cpu.c:2756:        n_threads = threadpool ? threadpool->n_threads : GGML_DEFAULT_N_THREADS;
+ggml/src/ggml-cpu/ggml-cpu.c:2761:    n_threads = 1;
+ggml/src/ggml-cpu/ggml-cpu.c:2775:        const int n_tasks = ggml_get_n_tasks(node, n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:2781:        if (!ggml_cpu_extra_work_size(n_threads, node, &cur)) {
+ggml/src/ggml-cpu/ggml-cpu.c:2814:                case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:2822:                case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.c:2961:        work_size += CACHE_LINE_SIZE*(n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:2965:    cplan.n_threads  = MIN(max_tasks, n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:3097:    int n_threads = n_graph & GGML_THREADPOOL_N_THREADS_MASK;
+ggml/src/ggml-cpu/ggml-cpu.c:3099:        state->pending    = (state->ith < n_threads);
+ggml/src/ggml-cpu/ggml-cpu.c:3190:static void ggml_graph_compute_kickoff(struct ggml_threadpool * threadpool, int n_threads)
+ggml/src/ggml-cpu/ggml-cpu.c:3198:    n_graph = ((n_graph + 1) << GGML_THREADPOOL_N_THREADS_BITS) | (n_threads & GGML_THREADPOOL_N_THREADS_MASK);
+ggml/src/ggml-cpu/ggml-cpu.c:3200:    GGML_PRINT_DEBUG("compute-kickoff: n_threads %d n_graph %d\n", n_threads, n_graph);
+ggml/src/ggml-cpu/ggml-cpu.c:3242:        threadpool->n_threads        = tpp->n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:3249:    const size_t workers_size = sizeof(struct ggml_compute_state) * tpp->n_threads;
+ggml/src/ggml-cpu/ggml-cpu.c:3253:    for (int j = 0; j < tpp->n_threads; j++) {
+# focused Camelid refs
+qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/README.md:4:- CAMELID TPM LLAMACPP RE MAC Q8: Camelid first landed port slice is default-off `CAMELID_MAC_Q8_REPACK=on`, narrowed to Llama 3.2 3B `blk.*.attn_q.weight` Q8_0 only. The loader now reads GGUF Q8_0 bytes into backend-owned `Q8_0RuntimeStorage::PackedRows4` 4x8 storage for the gated family; Q8 linear ops consume that packed runtime storage directly. The runtime storage path does not retain duplicate row-major Q8 blocks, file backing, or f32 data for the performance copy. The earlier `ffn_gate` candidate was not kept because its descriptor-oriented rectangular layout would require a different direct Q8 kernel instead of this rows4 transposed-dot slice.
+qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/README.md:5:- CAMELID TPM LLAMACPP RE MAC Q8: fallback/default behavior remains unchanged: `CAMELID_MAC_Q8_REPACK` defaults off; legacy `CAMELID_Q8_0_PACKED_4X4_DOT` / `CAMELID_Q8_0_PACKED_4X8_DOT` sidecars remain explicit parity/debug opt-ins only, and `CAMELID_MAC_Q8_REPACK=on` no longer enables those sidecars from `from_f32_with_q8_0_blocks`.
+qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/README.md:6:- CAMELID TPM LLAMACPP RE MAC Q8: parity/guard gates pass against current Camelid Q8 retained-block truth and stable release build: `cargo fmt --check`, `cargo test --release -q q8_0 --lib`, `cargo test --release -q mac_q8_repack_loads_attn_q_as_packed_runtime_without_row_major_duplicate`, and `cargo build --release -q`; evidence: `logs/runtime-packed-storage-tests-attn-q-20260514T203935Z.txt`. Earlier sidecar/family-narrowing runs were used during development; final committed evidence is the runtime-owned attn_q slice above.
+src/inference.rs:29:        Q8_0PackedRows4Interleave, Q8_0RuntimeStorage, TensorShape, TensorStore,
+src/inference.rs:4696:    q8_0_runtime_storage: Option<&'a Q8_0RuntimeStorage>,
+src/inference.rs:6246:        && (weight.q8_0_blocks.is_some() || q8_0_selected_packed_rows4(weight).is_some())
+src/inference.rs:6256:        && (weight.q8_0_blocks.is_some() || q8_0_selected_borrowed_packed_rows4(weight).is_some())
+src/inference.rs:6525:    } else if q8_0_selected_packed_rows4(weight)
+src/inference.rs:6544:        if let Some((packed, interleave)) = q8_0_selected_packed_rows4(weight) {
+src/inference.rs:6546:                accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:6914:    if q8_0_selected_packed_rows4(weight).is_some() {
+src/inference.rs:7807:    if q8_0_selected_borrowed_packed_rows4(weight).is_some() {
+src/inference.rs:8203:    if let Some((packed, interleave)) = q8_0_selected_borrowed_packed_rows4(weight) {
+src/inference.rs:8205:            accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:8275:fn q8_0_selected_packed_rows4(
+src/inference.rs:8278:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() {
+src/inference.rs:8294:fn q8_0_selected_borrowed_packed_rows4(
+src/inference.rs:8297:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage {
+src/inference.rs:8313:fn accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:10819:            "CAMELID_MAC_Q8_REPACK",
+src/inference.rs:11252:        std::env::remove_var("CAMELID_MAC_Q8_REPACK");
+src/inference.rs:11325:        std::env::remove_var("CAMELID_MAC_Q8_REPACK");
+src/inference.rs:11354:        std::env::set_var("CAMELID_MAC_Q8_REPACK", "on");
+src/inference.rs:11377:        std::env::remove_var("CAMELID_MAC_Q8_REPACK");
+src/tensor/mod.rs:129:pub enum Q8_0RuntimeStorage {
+src/tensor/mod.rs:277:fn mac_q8_repack_enabled() -> bool {
+src/tensor/mod.rs:278:    env_flag_enabled("CAMELID_MAC_Q8_REPACK")
+src/tensor/mod.rs:281:fn mac_q8_repack_tensor_enabled(name: &str) -> bool {
+src/tensor/mod.rs:282:    mac_q8_repack_enabled() && name.starts_with("blk.") && name.ends_with(".attn_q.weight")
+src/tensor/mod.rs:293:fn q8_0_runtime_packed_rows4_for_tensor(
+src/tensor/mod.rs:297:) -> Result<Option<Q8_0RuntimeStorage>> {
+src/tensor/mod.rs:298:    if !mac_q8_repack_tensor_enabled(name)
+src/tensor/mod.rs:325:    Ok(Some(Q8_0RuntimeStorage::PackedRows4(packed)))
+src/tensor/mod.rs:637:    pub q8_0_runtime_storage: Option<Q8_0RuntimeStorage>,
+src/tensor/mod.rs:977:            q8_0_runtime_storage: Some(Q8_0RuntimeStorage::PackedRows4(packed)),
+src/tensor/mod.rs:2409:        if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:2410:            q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+src/tensor/mod.rs:2485:        if mac_q8_repack_tensor_enabled(name) {
+src/tensor/mod.rs:2487:            if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:2488:                q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+src/tensor/mod.rs:2836:        std::env::remove_var("CAMELID_MAC_Q8_REPACK");
+src/tensor/mod.rs:2879:        std::env::set_var("CAMELID_MAC_Q8_REPACK", "on");
+src/tensor/mod.rs:2901:        std::env::remove_var("CAMELID_MAC_Q8_REPACK");
+tests/tensor_store.rs:9:    tensor::{CpuTensor, Q8_0Block, Q8_0RuntimeStorage, RuntimeDType, TensorStore},
+tests/tensor_store.rs:117:fn mac_q8_repack_loads_attn_q_as_packed_runtime_without_row_major_duplicate() {
+tests/tensor_store.rs:119:    std::env::set_var("CAMELID_MAC_Q8_REPACK", "on");
+tests/tensor_store.rs:143:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:155:    let Q8_0RuntimeStorage::PackedRows4(packed) = block_backed_tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:159:    std::env::remove_var("CAMELID_MAC_Q8_REPACK");

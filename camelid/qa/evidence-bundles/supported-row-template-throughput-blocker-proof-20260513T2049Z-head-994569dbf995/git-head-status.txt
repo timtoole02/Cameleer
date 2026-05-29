@@ -1,0 +1,15 @@
+head=994569dbf9953a2c44eb72d31e3834a0c0d116f6
+branch=main
+status:
+## main...origin/main [ahead 1]
+ M COMPATIBILITY.md
+ M FULL_SUPPORT_BLOCKER_MATRIX.md
+ M STATUS.md
+?? qa/evidence-bundles/supported-row-template-throughput-blocker-proof-20260513T2049Z-head-994569dbf995/
+?? qa/validation-notes/2026-05-13-supported-row-template-throughput-blocker-proof.md
+recent_commits:
+994569d Guard supported-row caveat boundaries
+dd80b36 Add opt-in Q8 throughput paths
+6ac5df5 Align bounded context support docs
+215054d Tighten frontend exact-row capability matching
+5eb0755 Refresh Llama 3.2 3B API WebUI evidence

@@ -1,0 +1,13 @@
+git diff --check
+bash scripts/check-public-scrub.sh
+node scripts/audit-evidence-bundle-privacy.mjs --strict
+bash scripts/check-evidence-bundle-checksums.sh
+node scripts/check-public-evidence-claims.mjs
+node scripts/test-readme-screenshot.mjs
+cd frontend && npm ci
+cd frontend && npm run build
+cd frontend && npm run smoke:model-state
+cd frontend && npm run smoke:3b-closure
+cd frontend && npm run smoke:integration
+cd frontend && npm run smoke:ui
+cd frontend && npm run smoke:streaming

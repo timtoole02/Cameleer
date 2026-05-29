@@ -1,0 +1,23 @@
+2026-05-14T12:42:03+00:00
+canonical-private-ubuntu-validation-host
+Linux canonical-private-ubuntu-validation-host 6.17.0-1013-aws #13~24.04.1-Ubuntu SMP Fri Apr 24 21:50:45 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+head=61e6e972a294
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/root       193G  106G   88G  55% /
+/dev/root       193G  106G   88G  55% /
+/dev/root       193G  106G   88G  55% /
+Filesystem     Inodes IUsed IFree IUse% Mounted on
+/dev/root         25M  242K   25M    1% /
+/dev/root         25M  242K   25M    1% /
+/dev/root         25M  242K   25M    1% /
+               total        used        free      shared  buff/cache   available
+Mem:           123Gi       2.1Gi        50Gi       2.9Mi        72Gi       121Gi
+Swap:             0B          0B          0B
+rust/cargo:
+rustc 1.87.0 (17067e9ac 2025-05-09)
+cargo 1.87.0 (99624be96 2025-05-06)
+node/npm:
+v18.19.1
+9.2.0
+llama.cpp:
+b97ebdc98f6053604a19d861c08d8087601b96e0

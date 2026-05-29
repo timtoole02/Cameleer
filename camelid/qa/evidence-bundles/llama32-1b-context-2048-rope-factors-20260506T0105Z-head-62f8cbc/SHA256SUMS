@@ -1,0 +1,10 @@
+7d06e565fbb60b95a53475bbaec5e216cfb36161b2790af3722533a9b86b0dd6  ./README.md
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./backend.log
+0163fdd8fccfc5732f3839e8172091af81ce2c29594ab17cd97693192cc86b8e  ./manifest.json
+7d914b2bf167dcee7d2144088088af6578b44e3c7210a3dddce23f62d6fcf3a8  ./pack/llama32-1b-q8-roughly-2048-token-recall/command.txt
+0c63892bf9e1a47909508edc4b93f622c3893add06bb9077aaaca047d1bd2dd0  ./pack/llama32-1b-q8-roughly-2048-token-recall/prompt.json
+f530695cb4e98d5955630b8f7651728d6772bd0709f40316ffdf1d6f7876e96b  ./pack/llama32-1b-q8-roughly-2048-token-recall/report.json
+fde32994cc6b84bd7602df29e0619b7c2ff4f62fa258974b550b84ae2ebac91c  ./pack/llama32-1b-q8-roughly-2048-token-recall/stderr.log
+48c24a63510101526e6122edb19a0b3a83d75d54fb874e139b0e53a8fa002dcb  ./pack/llama32-1b-q8-roughly-2048-token-recall/stdout.log
+96fdfc2297150f788649fef245c5c2011522e11c55c834e97fef4f3465f02d98  ./pack/summary.json
+ad9bc3c82f2b9696e4fcade372c3902f92264b12412d091d96a0156dd4c92498  ./status.txt

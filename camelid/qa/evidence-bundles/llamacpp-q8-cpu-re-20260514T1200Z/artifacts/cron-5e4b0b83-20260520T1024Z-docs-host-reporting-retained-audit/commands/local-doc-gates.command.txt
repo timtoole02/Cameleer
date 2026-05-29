@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+python3 - <<'PY'
+from pathlib import Path
+scan_roots = [Path('README.md'), Path('STATUS.md'), Path('CONTEXT.md'), Path('COMPATIBILITY.md'), Path('CONTRIBUTING.md'), Path('docs'), Path('frontend/README.md'), Path('frontend/src'), Path('frontend/scripts'), Path('src'), Path('scripts'), Path('qa/validation-notes'), Path('qa/evidence-bundles/README.md')]
+needles = ['Ubuntu is '+w for w in ('blocked','down','unavailable')]
+needles += ['Ubuntu host '+w for w in ('blocked','down','unavailable')]
+needles += ['Permission denied ('+'publickey'+')']
+hits = []
+for root in scan_roots:
+    if not root.exists():
+        continue
+    paths = [root] if root.is_file() else [p for p in root.rglob('*') if p.is_file() and p.suffix in {'.md','.rs','.js','.mjs','.json','.sh'}]
+    for path in paths:
+        text = path.read_text(errors='ignore')
+        for needle in needles:
+            if needle in text:
+                hits.append(f'{path}: contains {needle!r}')
+if hits:
+    print('\n'.join(hits))
+    raise SystemExit(1)
+print('PASS: no explicit stale Ubuntu host-failure reporting phrases found in public docs/source/status scan set.')
+PY
+git diff --check

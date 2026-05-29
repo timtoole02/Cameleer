@@ -1,0 +1,1731 @@
+{
+  "backend": "http://127.0.0.1:8281",
+  "llama_server": "http://127.0.0.1:8283",
+  "model": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+  "model_id": "tinyllama-q8",
+  "message": "hello",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Say alpha."
+    },
+    {
+      "role": "assistant",
+      "content": "alpha"
+    },
+    {
+      "role": "user",
+      "content": "Now say beta."
+    }
+  ],
+  "render_mode": "tinyllama-marker",
+  "expected_prompt": "<|user|>\nSay alpha.</s>\n<|assistant|>\nalpha</s>\n<|user|>\nNow say beta.</s>\n<|assistant|>\n",
+  "expected_prompt_char_count": 89,
+  "reference_prompt_token_count": 45,
+  "reference_context": 512,
+  "prompt_tokens_match": true,
+  "generated_tokens_match": true,
+  "generated_text_match": true,
+  "first_generated_token_diff_index": -1,
+  "first_generated_token_logit_comparison": {
+    "backend_token_id": 29933,
+    "llama_token_id": 29933,
+    "token_ids_match": true,
+    "backend_margin_llama_minus_backend": 0,
+    "llama_margin_llama_minus_backend": 0,
+    "margin_disagreement": 0,
+    "backend_rows": [
+      {
+        "token_id": 29933,
+        "logit": 18.790977,
+        "probability": 0.82419145,
+        "rank": 1,
+        "selected": true,
+        "text": "B"
+      },
+      {
+        "token_id": 29933,
+        "logit": 18.790977,
+        "probability": 0.82419145,
+        "rank": 1,
+        "selected": true,
+        "text": "B"
+      }
+    ],
+    "llama_rows": [
+      {
+        "id": 29933,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -0.24986232817173004
+      },
+      {
+        "id": 29933,
+        "token": "B",
+        "bytes": [
+          66
+        ],
+        "logprob": -0.24986232817173004
+      }
+    ]
+  },
+  "first_generated_text_diff_index": -1,
+  "backend_prompt_tokens": [
+    1,
+    529,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    17618,
+    29891,
+    15595,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13,
+    2312,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    10454,
+    1827,
+    21762,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13
+  ],
+  "reference_prompt_tokens": [
+    1,
+    529,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    17618,
+    29891,
+    15595,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13,
+    2312,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    10454,
+    1827,
+    21762,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13
+  ],
+  "backend_generated_tokens": [
+    29933,
+    1187,
+    29991,
+    2
+  ],
+  "llama_generated_tokens": [
+    29933,
+    1187,
+    29991,
+    2
+  ],
+  "llama_top_logprobs": [
+    {
+      "id": 29933,
+      "token": "B",
+      "bytes": [
+        66
+      ],
+      "logprob": -0.24986232817173004
+    },
+    {
+      "id": 3571,
+      "token": "beta",
+      "bytes": [
+        98,
+        101,
+        116,
+        97
+      ],
+      "logprob": -1.7695480585098267
+    },
+    {
+      "id": 6878,
+      "token": "bet",
+      "bytes": [
+        98,
+        101,
+        116
+      ],
+      "logprob": -4.857435703277588
+    },
+    {
+      "id": 30187,
+      "token": "β",
+      "bytes": [
+        206,
+        178
+      ],
+      "logprob": -4.966493129730225
+    },
+    {
+      "id": 29966,
+      "token": "<",
+      "bytes": [
+        60
+      ],
+      "logprob": -5.288934230804443
+    },
+    {
+      "id": 29890,
+      "token": "b",
+      "bytes": [
+        98
+      ],
+      "logprob": -6.087164402008057
+    },
+    {
+      "id": 3629,
+      "token": "Be",
+      "bytes": [
+        66,
+        101
+      ],
+      "logprob": -6.125790119171143
+    },
+    {
+      "id": 29908,
+      "token": "\"",
+      "bytes": [
+        34
+      ],
+      "logprob": -6.529330730438232
+    },
+    {
+      "id": 28183,
+      "token": "Bra",
+      "bytes": [
+        66,
+        114,
+        97
+      ],
+      "logprob": -6.665876865386963
+    },
+    {
+      "id": 10454,
+      "token": "Now",
+      "bytes": [
+        78,
+        111,
+        119
+      ],
+      "logprob": -6.862171649932861
+    },
+    {
+      "id": 21762,
+      "token": " beta",
+      "bytes": [
+        32,
+        98,
+        101,
+        116,
+        97
+      ],
+      "logprob": -7.117324352264404
+    },
+    {
+      "id": 915,
+      "token": "be",
+      "bytes": [
+        98,
+        101
+      ],
+      "logprob": -7.228763103485107
+    },
+    {
+      "id": 29907,
+      "token": "C",
+      "bytes": [
+        67
+      ],
+      "logprob": -7.449085712432861
+    },
+    {
+      "id": 30506,
+      "token": "Β",
+      "bytes": [
+        206,
+        146
+      ],
+      "logprob": -7.463095188140869
+    },
+    {
+      "id": 28630,
+      "token": "Alpha",
+      "bytes": [
+        65,
+        108,
+        112,
+        104,
+        97
+      ],
+      "logprob": -7.476059436798096
+    },
+    {
+      "id": 29961,
+      "token": "[",
+      "bytes": [
+        91
+      ],
+      "logprob": -7.5322346687316895
+    },
+    {
+      "id": 29903,
+      "token": "S",
+      "bytes": [
+        83
+      ],
+      "logprob": -7.570260524749756
+    },
+    {
+      "id": 3727,
+      "token": "Bu",
+      "bytes": [
+        66,
+        117
+      ],
+      "logprob": -7.836485385894775
+    },
+    {
+      "id": 10605,
+      "token": "Here",
+      "bytes": [
+        72,
+        101,
+        114,
+        101
+      ],
+      "logprob": -7.850103855133057
+    },
+    {
+      "id": 29909,
+      "token": "A",
+      "bytes": [
+        65
+      ],
+      "logprob": -7.977654933929443
+    },
+    {
+      "id": 1187,
+      "token": "eta",
+      "bytes": [
+        101,
+        116,
+        97
+      ],
+      "logprob": -0.0030379497911781073
+    },
+    {
+      "id": 300,
+      "token": "et",
+      "bytes": [
+        101,
+        116
+      ],
+      "logprob": -6.10341215133667
+    },
+    {
+      "id": 28899,
+      "token": "éta",
+      "bytes": [
+        195,
+        169,
+        116,
+        97
+      ],
+      "logprob": -8.317473411560059
+    },
+    {
+      "id": 11300,
+      "token": "etta",
+      "bytes": [
+        101,
+        116,
+        116,
+        97
+      ],
+      "logprob": -8.811513900756836
+    },
+    {
+      "id": 2544,
+      "token": "ET",
+      "bytes": [
+        69,
+        84
+      ],
+      "logprob": -8.937694549560547
+    },
+    {
+      "id": 16577,
+      "token": "eti",
+      "bytes": [
+        101,
+        116,
+        105
+      ],
+      "logprob": -10.724843978881836
+    },
+    {
+      "id": 30037,
+      "token": "ê",
+      "bytes": [
+        195,
+        170
+      ],
+      "logprob": -10.733356475830078
+    },
+    {
+      "id": 2650,
+      "token": "ete",
+      "bytes": [
+        101,
+        116,
+        101
+      ],
+      "logprob": -11.036288261413574
+    },
+    {
+      "id": 1691,
+      "token": "ets",
+      "bytes": [
+        101,
+        116,
+        115
+      ],
+      "logprob": -11.043684959411621
+    },
+    {
+      "id": 2554,
+      "token": "elta",
+      "bytes": [
+        101,
+        108,
+        116,
+        97
+      ],
+      "logprob": -11.09000301361084
+    },
+    {
+      "id": 6618,
+      "token": "etz",
+      "bytes": [
+        101,
+        116,
+        122
+      ],
+      "logprob": -11.281798362731934
+    },
+    {
+      "id": 30230,
+      "token": "ē",
+      "bytes": [
+        196,
+        147
+      ],
+      "logprob": -11.319113731384277
+    },
+    {
+      "id": 1893,
+      "token": "ét",
+      "bytes": [
+        195,
+        169,
+        116
+      ],
+      "logprob": -11.324344635009766
+    },
+    {
+      "id": 621,
+      "token": "eth",
+      "bytes": [
+        101,
+        116,
+        104
+      ],
+      "logprob": -11.545361518859863
+    },
+    {
+      "id": 19036,
+      "token": "etter",
+      "bytes": [
+        101,
+        116,
+        116,
+        101,
+        114
+      ],
+      "logprob": -11.637544631958008
+    },
+    {
+      "id": 7492,
+      "token": "etic",
+      "bytes": [
+        101,
+        116,
+        105,
+        99
+      ],
+      "logprob": -11.891622543334961
+    },
+    {
+      "id": 23043,
+      "token": "ethe",
+      "bytes": [
+        101,
+        116,
+        104,
+        101
+      ],
+      "logprob": -12.044513702392578
+    },
+    {
+      "id": 2353,
+      "token": "ette",
+      "bytes": [
+        101,
+        116,
+        116,
+        101
+      ],
+      "logprob": -12.063283920288086
+    },
+    {
+      "id": 21366,
+      "token": "ета",
+      "bytes": [
+        208,
+        181,
+        209,
+        130,
+        208,
+        176
+      ],
+      "logprob": -12.282750129699707
+    },
+    {
+      "id": 29983,
+      "token": "í",
+      "bytes": [
+        195,
+        173
+      ],
+      "logprob": -12.438728332519531
+    },
+    {
+      "id": 29991,
+      "token": "!",
+      "bytes": [
+        33
+      ],
+      "logprob": -0.7935171127319336
+    },
+    {
+      "id": 2,
+      "token": "",
+      "bytes": [],
+      "logprob": -1.1741629838943481
+    },
+    {
+      "id": 29889,
+      "token": ".",
+      "bytes": [
+        46
+      ],
+      "logprob": -1.735428810119629
+    },
+    {
+      "id": 13,
+      "token": "\n",
+      "bytes": [
+        10
+      ],
+      "logprob": -3.5349016189575195
+    },
+    {
+      "id": 29892,
+      "token": ",",
+      "bytes": [
+        44
+      ],
+      "logprob": -4.235522270202637
+    },
+    {
+      "id": 856,
+      "token": "...",
+      "bytes": [
+        46,
+        46,
+        46
+      ],
+      "logprob": -6.667752265930176
+    },
+    {
+      "id": 29973,
+      "token": "?",
+      "bytes": [
+        63
+      ],
+      "logprob": -6.754551887512207
+    },
+    {
+      "id": 1827,
+      "token": " say",
+      "bytes": [
+        32,
+        115,
+        97,
+        121
+      ],
+      "logprob": -7.035906791687012
+    },
+    {
+      "id": 29871,
+      "token": " ",
+      "bytes": [
+        32
+      ],
+      "logprob": -7.266810417175293
+    },
+    {
+      "id": 1286,
+      "token": " now",
+      "bytes": [
+        32,
+        110,
+        111,
+        119
+      ],
+      "logprob": -7.323448181152344
+    },
+    {
+      "id": 4083,
+      "token": " says",
+      "bytes": [
+        32,
+        115,
+        97,
+        121,
+        115
+      ],
+      "logprob": -7.421029090881348
+    },
+    {
+      "id": 3850,
+      "token": "!\"",
+      "bytes": [
+        33,
+        34
+      ],
+      "logprob": -7.576562881469727
+    },
+    {
+      "id": 447,
+      "token": " ha",
+      "bytes": [
+        32,
+        104,
+        97
+      ],
+      "logprob": -7.700138092041016
+    },
+    {
+      "id": 6824,
+      "token": "!!",
+      "bytes": [
+        33,
+        33
+      ],
+      "logprob": -7.7056427001953125
+    },
+    {
+      "id": 4248,
+      "token": " :)",
+      "bytes": [
+        32,
+        58,
+        41
+      ],
+      "logprob": -7.835419178009033
+    },
+    {
+      "id": 1738,
+      "token": " !",
+      "bytes": [
+        32,
+        33
+      ],
+      "logprob": -7.949569225311279
+    },
+    {
+      "id": 694,
+      "token": " no",
+      "bytes": [
+        32,
+        110,
+        111
+      ],
+      "logprob": -7.984517574310303
+    },
+    {
+      "id": 2023,
+      "token": " ...",
+      "bytes": [
+        32,
+        46,
+        46,
+        46
+      ],
+      "logprob": -8.004804611206055
+    },
+    {
+      "id": 21004,
+      "token": "!!!",
+      "bytes": [
+        33,
+        33,
+        33
+      ],
+      "logprob": -8.045554161071777
+    },
+    {
+      "id": 313,
+      "token": " (",
+      "bytes": [
+        32,
+        40
+      ],
+      "logprob": -8.088869094848633
+    },
+    {
+      "id": 2,
+      "token": "",
+      "bytes": [],
+      "logprob": -0.12165510654449463
+    },
+    {
+      "id": 13,
+      "token": "\n",
+      "bytes": [
+        10
+      ],
+      "logprob": -3.3734958171844482
+    },
+    {
+      "id": 29871,
+      "token": " ",
+      "bytes": [
+        32
+      ],
+      "logprob": -4.922483921051025
+    },
+    {
+      "id": 350,
+      "token": " B",
+      "bytes": [
+        32,
+        66
+      ],
+      "logprob": -4.988305568695068
+    },
+    {
+      "id": 14891,
+      "token": " Say",
+      "bytes": [
+        32,
+        83,
+        97,
+        121
+      ],
+      "logprob": -5.358554363250732
+    },
+    {
+      "id": 2803,
+      "token": " Let",
+      "bytes": [
+        32,
+        76,
+        101,
+        116
+      ],
+      "logprob": -5.580495357513428
+    },
+    {
+      "id": 2266,
+      "token": " Here",
+      "bytes": [
+        32,
+        72,
+        101,
+        114,
+        101
+      ],
+      "logprob": -5.811789035797119
+    },
+    {
+      "id": 2567,
+      "token": " Now",
+      "bytes": [
+        32,
+        78,
+        111,
+        119
+      ],
+      "logprob": -5.872067928314209
+    },
+    {
+      "id": 4248,
+      "token": " :)",
+      "bytes": [
+        32,
+        58,
+        41
+      ],
+      "logprob": -5.917473316192627
+    },
+    {
+      "id": 3374,
+      "token": " Thank",
+      "bytes": [
+        32,
+        84,
+        104,
+        97,
+        110,
+        107
+      ],
+      "logprob": -6.189197063446045
+    },
+    {
+      "id": 2193,
+      "token": " That",
+      "bytes": [
+        32,
+        84,
+        104,
+        97,
+        116
+      ],
+      "logprob": -6.269838809967041
+    },
+    {
+      "id": 5032,
+      "token": " Bra",
+      "bytes": [
+        32,
+        66,
+        114,
+        97
+      ],
+      "logprob": -6.449674129486084
+    },
+    {
+      "id": 306,
+      "token": " I",
+      "bytes": [
+        32,
+        73
+      ],
+      "logprob": -6.777617931365967
+    },
+    {
+      "id": 838,
+      "token": " Al",
+      "bytes": [
+        32,
+        65,
+        108
+      ],
+      "logprob": -6.797587871551514
+    },
+    {
+      "id": 1815,
+      "token": " Can",
+      "bytes": [
+        32,
+        67,
+        97,
+        110
+      ],
+      "logprob": -6.80581521987915
+    },
+    {
+      "id": 7197,
+      "token": " Good",
+      "bytes": [
+        32,
+        71,
+        111,
+        111,
+        100
+      ],
+      "logprob": -6.815852642059326
+    },
+    {
+      "id": 6439,
+      "token": " Oh",
+      "bytes": [
+        32,
+        79,
+        104
+      ],
+      "logprob": -7.017908573150635
+    },
+    {
+      "id": 3869,
+      "token": " Yes",
+      "bytes": [
+        32,
+        89,
+        101,
+        115
+      ],
+      "logprob": -7.034342288970947
+    },
+    {
+      "id": 313,
+      "token": " (",
+      "bytes": [
+        32,
+        40
+      ],
+      "logprob": -7.055537700653076
+    },
+    {
+      "id": 349,
+      "token": " P",
+      "bytes": [
+        32,
+        80
+      ],
+      "logprob": -7.1057305335998535
+    }
+  ],
+  "backend_diagnostic_token_ids": [
+    29933,
+    1187,
+    29991,
+    2,
+    3571,
+    6878,
+    30187,
+    29966,
+    29890,
+    3629,
+    29908,
+    28183,
+    10454,
+    21762,
+    915,
+    29907
+  ],
+  "backend_text": "Beta!",
+  "llama_text": "Beta!",
+  "backend_usage": {
+    "prompt_tokens": 45,
+    "completion_tokens": 4,
+    "total_tokens": 49
+  },
+  "llama_usage": {
+    "cache_n": 0,
+    "prompt_n": 45,
+    "prompt_ms": 100.505,
+    "prompt_per_token_ms": 2.2334444444444443,
+    "prompt_per_second": 447.73891846176815,
+    "predicted_n": 4,
+    "predicted_ms": 49.084,
+    "predicted_per_token_ms": 12.271,
+    "predicted_per_second": 81.49295085975062
+  },
+  "backendinference": {
+    "prompt_token_ids": [
+      1,
+      529,
+      29989,
+      1792,
+      29989,
+      29958,
+      13,
+      17618,
+      29891,
+      15595,
+      29889,
+      2,
+      29871,
+      13,
+      29966,
+      29989,
+      465,
+      22137,
+      29989,
+      29958,
+      13,
+      2312,
+      2,
+      29871,
+      13,
+      29966,
+      29989,
+      1792,
+      29989,
+      29958,
+      13,
+      10454,
+      1827,
+      21762,
+      29889,
+      2,
+      29871,
+      13,
+      29966,
+      29989,
+      465,
+      22137,
+      29989,
+      29958,
+      13
+    ],
+    "generated_token_ids": [
+      29933,
+      1187,
+      29991,
+      2
+    ],
+    "dense_metadata": {
+      "embedding_length": 2048,
+      "attention_head_count": 32,
+      "attention_head_count_kv": 4,
+      "head_dim": 64,
+      "rope_dimension_count": 64,
+      "rope_freq_base": 10000,
+      "rope_pairing": "adjacent_even_odd",
+      "rope_direction": "forward",
+      "rope_position_mode": "zero_based",
+      "gqa_head_mapping": "grouped",
+      "attention_score_scale": "head_dim",
+      "linear_accumulation": "f32",
+      "ffn_gate_up_order": "gate_up",
+      "rms_norm_epsilon": 0.00001,
+      "rms_norm_effective_epsilon": 0.00001,
+      "square_linear_diagnostic_layout": "transposed",
+      "rectangular_linear_diagnostic_layout": "auto",
+      "token_embedding_shape": [
+        32000,
+        2048
+      ],
+      "output_shape": [
+        2048,
+        32000
+      ],
+      "output_is_tied_embedding": false,
+      "output_projection_layout": "input_output",
+      "output_projection_diagnostic_layout": "token_major",
+      "zero_attention_delta": "none",
+      "zero_ffn_delta": "none",
+      "projection_orientations": {
+        "attention_q": {
+          "shape": [
+            2048,
+            2048
+          ],
+          "input_width": 2048,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "attention_k": {
+          "shape": [
+            2048,
+            256
+          ],
+          "input_width": 2048,
+          "output_width": 256,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_v": {
+          "shape": [
+            2048,
+            256
+          ],
+          "input_width": 2048,
+          "output_width": 256,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_output": {
+          "shape": [
+            2048,
+            2048
+          ],
+          "input_width": 2048,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "ffn_gate": {
+          "shape": [
+            2048,
+            5632
+          ],
+          "input_width": 2048,
+          "output_width": 5632,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_up": {
+          "shape": [
+            2048,
+            5632
+          ],
+          "input_width": 2048,
+          "output_width": 5632,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_down": {
+          "shape": [
+            5632,
+            2048
+          ],
+          "input_width": 5632,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        }
+      }
+    },
+    "top_logits": [
+      {
+        "token_id": 29933,
+        "logit": 18.790977,
+        "probability": 0.82419145,
+        "rank": 1,
+        "selected": true,
+        "text": "B"
+      },
+      {
+        "token_id": 3571,
+        "logit": 16.955784,
+        "probability": 0.1315266,
+        "rank": 2,
+        "selected": true,
+        "text": "beta"
+      },
+      {
+        "token_id": 30187,
+        "logit": 14.011067,
+        "probability": 0.006920533,
+        "rank": 3,
+        "selected": true,
+        "text": "β"
+      },
+      {
+        "token_id": 6878,
+        "logit": 13.87639,
+        "probability": 0.006048533,
+        "rank": 4,
+        "selected": true,
+        "text": "bet"
+      },
+      {
+        "token_id": 29966,
+        "logit": 13.603167,
+        "probability": 0.004602465,
+        "rank": 5,
+        "selected": true,
+        "text": "<"
+      },
+      {
+        "token_id": 3629,
+        "logit": 12.822442,
+        "probability": 0.0021082694,
+        "rank": 6,
+        "selected": true,
+        "text": "Be"
+      },
+      {
+        "token_id": 29890,
+        "logit": 12.787863,
+        "probability": 0.002036613,
+        "rank": 7,
+        "selected": true,
+        "text": "b"
+      },
+      {
+        "token_id": 29908,
+        "logit": 12.286915,
+        "probability": 0.0012340978,
+        "rank": 8,
+        "selected": true,
+        "text": "\""
+      },
+      {
+        "token_id": 1187,
+        "logit": 6.219465,
+        "probability": 0.0000028594975,
+        "rank": 587,
+        "selected": true,
+        "text": "eta"
+      },
+      {
+        "token_id": 29991,
+        "logit": 6.834464,
+        "probability": 0.000005289082,
+        "rank": 401,
+        "selected": true,
+        "text": "!"
+      },
+      {
+        "token_id": 2,
+        "logit": 7.6849866,
+        "probability": 0.000012381046,
+        "rank": 229,
+        "selected": true,
+        "text": ""
+      },
+      {
+        "token_id": 28183,
+        "logit": 12.231816,
+        "probability": 0.0011679402,
+        "rank": 9,
+        "selected": true,
+        "text": "Bra"
+      },
+      {
+        "token_id": 10454,
+        "logit": 11.89383,
+        "probability": 0.00083298114,
+        "rank": 10,
+        "selected": true,
+        "text": "Now"
+      },
+      {
+        "token_id": 21762,
+        "logit": 11.692453,
+        "probability": 0.0006810488,
+        "rank": 11,
+        "selected": true,
+        "text": " beta"
+      },
+      {
+        "token_id": 915,
+        "logit": 11.550792,
+        "probability": 0.00059109245,
+        "rank": 12,
+        "selected": true,
+        "text": "be"
+      },
+      {
+        "token_id": 29907,
+        "logit": 11.486693,
+        "probability": 0.0005543931,
+        "rank": 14,
+        "selected": true,
+        "text": "C"
+      }
+    ],
+    "output_projection": [],
+    "timings_ms": {
+      "tokenize": 22,
+      "weight_load": 0,
+      "weight_cache_hit": false,
+      "prompt_cache_hit": false,
+      "session_create": 0,
+      "generate": 12138,
+      "generation": {
+        "forward_total": 12136.637,
+        "embedding": 0.264,
+        "layers_total": 12068.816,
+        "final_norm": 0.016,
+        "logits": 67.462,
+        "sample": 0.232
+      },
+      "layers": [
+        {
+          "layer_index": 0,
+          "total": 555.532,
+          "attention_norm": 0.118,
+          "attention_q": 53.501,
+          "attention_k": 7.109,
+          "attention_v": 6.835,
+          "attention_rope": 0.828,
+          "kv_cache_write": 0.657,
+          "attention_context": 1.847,
+          "attention_output": 57.274,
+          "attention_residual": 0.068,
+          "ffn_norm": 0.116,
+          "ffn_gate": 142.321,
+          "ffn_up": 140.698,
+          "ffn_activation": 0.685,
+          "ffn_down": 142.577,
+          "ffn_residual": 0.06
+        },
+        {
+          "layer_index": 1,
+          "total": 547.131,
+          "attention_norm": 0.123,
+          "attention_q": 52.322,
+          "attention_k": 7.076,
+          "attention_v": 6.818,
+          "attention_rope": 0.776,
+          "kv_cache_write": 0.146,
+          "attention_context": 1.894,
+          "attention_output": 52.099,
+          "attention_residual": 0.055,
+          "ffn_norm": 0.12,
+          "ffn_gate": 140.783,
+          "ffn_up": 141.155,
+          "ffn_activation": 0.66,
+          "ffn_down": 142.257,
+          "ffn_residual": 0.066
+        },
+        {
+          "layer_index": 2,
+          "total": 548.777,
+          "attention_norm": 0.141,
+          "attention_q": 52.025,
+          "attention_k": 7.015,
+          "attention_v": 6.728,
+          "attention_rope": 0.773,
+          "kv_cache_write": 0.144,
+          "attention_context": 1.826,
+          "attention_output": 52.072,
+          "attention_residual": 0.053,
+          "ffn_norm": 0.113,
+          "ffn_gate": 141.06,
+          "ffn_up": 142.062,
+          "ffn_activation": 0.646,
+          "ffn_down": 143.296,
+          "ffn_residual": 0.055
+        },
+        {
+          "layer_index": 3,
+          "total": 550.134,
+          "attention_norm": 0.136,
+          "attention_q": 52.337,
+          "attention_k": 7.098,
+          "attention_v": 6.744,
+          "attention_rope": 0.787,
+          "kv_cache_write": 0.157,
+          "attention_context": 1.861,
+          "attention_output": 52.118,
+          "attention_residual": 0.055,
+          "ffn_norm": 0.12,
+          "ffn_gate": 141.924,
+          "ffn_up": 141.75,
+          "ffn_activation": 0.694,
+          "ffn_down": 143.525,
+          "ffn_residual": 0.08
+        },
+        {
+          "layer_index": 4,
+          "total": 549.165,
+          "attention_norm": 0.154,
+          "attention_q": 52.551,
+          "attention_k": 7.065,
+          "attention_v": 6.754,
+          "attention_rope": 0.775,
+          "kv_cache_write": 0.144,
+          "attention_context": 1.809,
+          "attention_output": 51.942,
+          "attention_residual": 0.053,
+          "ffn_norm": 0.107,
+          "ffn_gate": 142.385,
+          "ffn_up": 141.806,
+          "ffn_activation": 0.649,
+          "ffn_down": 142.119,
+          "ffn_residual": 0.058
+        },
+        {
+          "layer_index": 5,
+          "total": 547.078,
+          "attention_norm": 0.136,
+          "attention_q": 52.262,
+          "attention_k": 7.119,
+          "attention_v": 6.88,
+          "attention_rope": 0.779,
+          "kv_cache_write": 0.145,
+          "attention_context": 1.866,
+          "attention_output": 51.825,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.109,
+          "ffn_gate": 141.573,
+          "ffn_up": 140.706,
+          "ffn_activation": 0.644,
+          "ffn_down": 142.152,
+          "ffn_residual": 0.059
+        },
+        {
+          "layer_index": 6,
+          "total": 545.492,
+          "attention_norm": 0.136,
+          "attention_q": 52.389,
+          "attention_k": 7.02,
+          "attention_v": 6.703,
+          "attention_rope": 0.793,
+          "kv_cache_write": 0.156,
+          "attention_context": 1.857,
+          "attention_output": 51.795,
+          "attention_residual": 0.055,
+          "ffn_norm": 0.107,
+          "ffn_gate": 140.654,
+          "ffn_up": 140.58,
+          "ffn_activation": 0.657,
+          "ffn_down": 141.742,
+          "ffn_residual": 0.059
+        },
+        {
+          "layer_index": 7,
+          "total": 547.828,
+          "attention_norm": 0.151,
+          "attention_q": 52.233,
+          "attention_k": 7.073,
+          "attention_v": 6.843,
+          "attention_rope": 0.775,
+          "kv_cache_write": 0.149,
+          "attention_context": 1.89,
+          "attention_output": 51.975,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.106,
+          "ffn_gate": 140.869,
+          "ffn_up": 141.29,
+          "ffn_activation": 0.639,
+          "ffn_down": 142.933,
+          "ffn_residual": 0.056
+        },
+        {
+          "layer_index": 8,
+          "total": 552.037,
+          "attention_norm": 0.138,
+          "attention_q": 52.594,
+          "attention_k": 7.189,
+          "attention_v": 6.91,
+          "attention_rope": 0.796,
+          "kv_cache_write": 0.145,
+          "attention_context": 1.82,
+          "attention_output": 52.718,
+          "attention_residual": 0.057,
+          "ffn_norm": 0.112,
+          "ffn_gate": 141.463,
+          "ffn_up": 142.568,
+          "ffn_activation": 0.644,
+          "ffn_down": 144.058,
+          "ffn_residual": 0.061
+        },
+        {
+          "layer_index": 9,
+          "total": 547.421,
+          "attention_norm": 0.137,
+          "attention_q": 51.979,
+          "attention_k": 7.004,
+          "attention_v": 6.8,
+          "attention_rope": 0.772,
+          "kv_cache_write": 0.144,
+          "attention_context": 1.82,
+          "attention_output": 52.342,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.105,
+          "ffn_gate": 140.889,
+          "ffn_up": 141.329,
+          "ffn_activation": 0.65,
+          "ffn_down": 142.545,
+          "ffn_residual": 0.065
+        },
+        {
+          "layer_index": 10,
+          "total": 545.205,
+          "attention_norm": 0.166,
+          "attention_q": 52.29,
+          "attention_k": 7.075,
+          "attention_v": 6.75,
+          "attention_rope": 0.782,
+          "kv_cache_write": 0.143,
+          "attention_context": 1.823,
+          "attention_output": 51.892,
+          "attention_residual": 0.055,
+          "ffn_norm": 0.106,
+          "ffn_gate": 140.367,
+          "ffn_up": 140.642,
+          "ffn_activation": 0.64,
+          "ffn_down": 141.656,
+          "ffn_residual": 0.057
+        },
+        {
+          "layer_index": 11,
+          "total": 546.733,
+          "attention_norm": 0.142,
+          "attention_q": 52.143,
+          "attention_k": 7.022,
+          "attention_v": 6.722,
+          "attention_rope": 0.799,
+          "kv_cache_write": 0.146,
+          "attention_context": 1.836,
+          "attention_output": 51.565,
+          "attention_residual": 0.052,
+          "ffn_norm": 0.101,
+          "ffn_gate": 141.211,
+          "ffn_up": 141.201,
+          "ffn_activation": 0.647,
+          "ffn_down": 142.32,
+          "ffn_residual": 0.057
+        },
+        {
+          "layer_index": 12,
+          "total": 548.941,
+          "attention_norm": 0.136,
+          "attention_q": 52.358,
+          "attention_k": 7.126,
+          "attention_v": 6.857,
+          "attention_rope": 0.798,
+          "kv_cache_write": 0.146,
+          "attention_context": 1.823,
+          "attention_output": 51.733,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.129,
+          "ffn_gate": 141.491,
+          "ffn_up": 142.008,
+          "ffn_activation": 0.648,
+          "ffn_down": 142.808,
+          "ffn_residual": 0.059
+        },
+        {
+          "layer_index": 13,
+          "total": 548.126,
+          "attention_norm": 0.14,
+          "attention_q": 53.052,
+          "attention_k": 7.113,
+          "attention_v": 6.833,
+          "attention_rope": 0.783,
+          "kv_cache_write": 0.145,
+          "attention_context": 1.877,
+          "attention_output": 52.093,
+          "attention_residual": 0.055,
+          "ffn_norm": 0.121,
+          "ffn_gate": 141.819,
+          "ffn_up": 141.109,
+          "ffn_activation": 0.671,
+          "ffn_down": 141.477,
+          "ffn_residual": 0.069
+        },
+        {
+          "layer_index": 14,
+          "total": 546.685,
+          "attention_norm": 0.137,
+          "attention_q": 52.388,
+          "attention_k": 7.008,
+          "attention_v": 6.808,
+          "attention_rope": 0.775,
+          "kv_cache_write": 0.146,
+          "attention_context": 1.854,
+          "attention_output": 51.863,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.105,
+          "ffn_gate": 140.804,
+          "ffn_up": 140.866,
+          "ffn_activation": 0.637,
+          "ffn_down": 142.415,
+          "ffn_residual": 0.058
+        },
+        {
+          "layer_index": 15,
+          "total": 546.586,
+          "attention_norm": 0.133,
+          "attention_q": 51.943,
+          "attention_k": 7.008,
+          "attention_v": 6.85,
+          "attention_rope": 0.782,
+          "kv_cache_write": 0.146,
+          "attention_context": 1.884,
+          "attention_output": 52.096,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.107,
+          "ffn_gate": 140.996,
+          "ffn_up": 140.896,
+          "ffn_activation": 0.676,
+          "ffn_down": 142.201,
+          "ffn_residual": 0.059
+        },
+        {
+          "layer_index": 16,
+          "total": 549.653,
+          "attention_norm": 0.154,
+          "attention_q": 52.303,
+          "attention_k": 7.036,
+          "attention_v": 6.751,
+          "attention_rope": 0.79,
+          "kv_cache_write": 0.158,
+          "attention_context": 1.822,
+          "attention_output": 52.383,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.111,
+          "ffn_gate": 142.756,
+          "ffn_up": 141.172,
+          "ffn_activation": 0.678,
+          "ffn_down": 142.663,
+          "ffn_residual": 0.059
+        },
+        {
+          "layer_index": 17,
+          "total": 549.461,
+          "attention_norm": 0.13,
+          "attention_q": 52.431,
+          "attention_k": 7.089,
+          "attention_v": 6.806,
+          "attention_rope": 0.793,
+          "kv_cache_write": 0.147,
+          "attention_context": 1.85,
+          "attention_output": 52.408,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.115,
+          "ffn_gate": 142.174,
+          "ffn_up": 141.706,
+          "ffn_activation": 0.662,
+          "ffn_down": 142.228,
+          "ffn_residual": 0.068
+        },
+        {
+          "layer_index": 18,
+          "total": 545.191,
+          "attention_norm": 0.142,
+          "attention_q": 52.1,
+          "attention_k": 7.143,
+          "attention_v": 6.724,
+          "attention_rope": 0.8,
+          "kv_cache_write": 0.144,
+          "attention_context": 1.817,
+          "attention_output": 51.525,
+          "attention_residual": 0.048,
+          "ffn_norm": 0.106,
+          "ffn_gate": 140.528,
+          "ffn_up": 140.538,
+          "ffn_activation": 0.645,
+          "ffn_down": 142.122,
+          "ffn_residual": 0.057
+        },
+        {
+          "layer_index": 19,
+          "total": 547.657,
+          "attention_norm": 0.142,
+          "attention_q": 52.505,
+          "attention_k": 7.019,
+          "attention_v": 6.751,
+          "attention_rope": 0.816,
+          "kv_cache_write": 0.145,
+          "attention_context": 1.867,
+          "attention_output": 51.872,
+          "attention_residual": 0.063,
+          "ffn_norm": 0.106,
+          "ffn_gate": 141.643,
+          "ffn_up": 141.192,
+          "ffn_activation": 0.65,
+          "ffn_down": 142.06,
+          "ffn_residual": 0.053
+        },
+        {
+          "layer_index": 20,
+          "total": 547.149,
+          "attention_norm": 0.141,
+          "attention_q": 52.499,
+          "attention_k": 7.068,
+          "attention_v": 6.771,
+          "attention_rope": 0.789,
+          "kv_cache_write": 0.145,
+          "attention_context": 1.833,
+          "attention_output": 51.942,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.103,
+          "ffn_gate": 141.42,
+          "ffn_up": 140.879,
+          "ffn_activation": 0.68,
+          "ffn_down": 142.001,
+          "ffn_residual": 0.053
+        },
+        {
+          "layer_index": 21,
+          "total": 550.976,
+          "attention_norm": 0.144,
+          "attention_q": 52.679,
+          "attention_k": 7.135,
+          "attention_v": 6.897,
+          "attention_rope": 0.79,
+          "kv_cache_write": 0.144,
+          "attention_context": 1.883,
+          "attention_output": 52.269,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.108,
+          "ffn_gate": 142.11,
+          "ffn_up": 142.12,
+          "ffn_activation": 0.665,
+          "ffn_down": 143.137,
+          "ffn_residual": 0.059
+        }
+      ]
+    }
+  }
+}

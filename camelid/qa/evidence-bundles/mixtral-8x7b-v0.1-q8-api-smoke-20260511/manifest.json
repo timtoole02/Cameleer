@@ -1,0 +1,26 @@
+{
+  "bundle": "mixtral-8x7b-v0.1-q8-api-smoke-20260511",
+  "created_utc": "2026-05-12T00:00:11Z",
+  "scope": "Mixtral-8x7B-Instruct-v0.1.Q8_0 exact-row API smoke",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+  "model_id": "mixtral-8x7b-v0.1-q8-api-smoke",
+  "api_base": "http://127.0.0.1:9221",
+  "endpoints": [
+    "/health",
+    "/api/models/load",
+    "/v1/models",
+    "/v1/completions",
+    "/v1/chat/completions"
+  ],
+  "all_passed": true,
+  "files": [
+    "01_health_before.json",
+    "02_v1_models_before.json",
+    "03_load_model.json",
+    "04_health_after_load.json",
+    "05_v1_models_after.json",
+    "06_v1_completions.json",
+    "07_v1_chat_completions.json",
+    "summary.json"
+  ]
+}

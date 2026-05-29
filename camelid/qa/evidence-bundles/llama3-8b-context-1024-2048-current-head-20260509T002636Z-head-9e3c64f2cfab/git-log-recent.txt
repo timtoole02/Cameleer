@@ -1,0 +1,12 @@
+9e3c64f Add green Mistral broader parity evidence
+03e86ea Keep README Mistral lane fail-closed
+1a7aed7 Fix active streaming chat indicators
+5440cf8 Guard 8B capability notes fail-closed
+d330e97 Keep 8B long-context claims fail-closed
+24e1810 Fix Mistral SPM prompt tokenization
+ed47514 Add Mistral 1-token parity evidence
+5e989e6 Use SPM best-path pieces after control tokens
+86624d1 Keep README Mistral fail-closed
+ccb3f24 Preserve Q8 cache peaks in merged timings
+afba90f Update README Mistral bounded status
+0d262f5 Keep 8B long-context capabilities fail-closed

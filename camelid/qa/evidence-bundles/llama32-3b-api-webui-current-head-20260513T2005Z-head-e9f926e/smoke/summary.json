@@ -1,0 +1,56 @@
+{
+  "schema": "camelid.model-promotion.smoke-bundle.v1",
+  "generated_utc": "2026-05-13T20:04:02.877Z",
+  "api_base": "http://127.0.0.1:19281",
+  "frontend_url": "http://127.0.0.1:19275",
+  "model_path": "<canonical-model-store>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+  "model_id": "llama32-3b-q8-current-e9f926e",
+  "message": "hello",
+  "max_tokens": 1,
+  "temperature": 0,
+  "allow_guarded_chat": false,
+  "skip_frontend": false,
+  "steps": {
+    "health_before": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/health-before.json"
+    },
+    "load": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/load.response.json"
+    },
+    "current_model": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/current-model.json"
+    },
+    "v1_models": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/v1-models.json"
+    },
+    "capabilities": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/capabilities.json"
+    },
+    "v1_completions": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/completion.response.json"
+    },
+    "v1_chat_completions": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/chat.response.json"
+    },
+    "generation_timings": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/generation-timings.run.json"
+    },
+    "health_after": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/health-after.json"
+    },
+    "frontend_smoke": {
+      "ok": true,
+      "path": "qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/smoke/frontend.summary.json"
+    }
+  },
+  "passed": true
+}

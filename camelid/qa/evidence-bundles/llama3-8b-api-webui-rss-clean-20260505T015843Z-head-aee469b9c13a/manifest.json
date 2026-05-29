@@ -1,0 +1,109 @@
+{
+  "schema": "camelid.public_8b_api_webui_rss_summary.v1",
+  "generated_utc": "2026-05-05T01:58:43Z",
+  "git_head": "aee469b9c13a0fa5e97fe6263eba71e75e29dff2",
+  "origin_main": "aee469b9c13a0fa5e97fe6263eba71e75e29dff2",
+  "source_tree": "clean public origin/main checkout after the completion timing diagnostics patch was committed",
+  "checkout_clean": true,
+  "validation_lane": "approved_ubuntu_validation_lane_reopened_fresh_clone_clean_main",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "scope": "Exact Llama 3 8B Instruct Q8_0 API + frontend promotion smoke and response-local timing/RSS sample on clean public main.",
+  "model": {
+    "row_id": "llama3_8b_instruct_q8_0",
+    "file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "model_id": "llama3-8b-q8",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+  },
+  "toolchain": {
+    "os": "Ubuntu x86_64",
+    "kernel": "6.17.0-1012-aws",
+    "node": "v22.22.2",
+    "npm": "10.9.7",
+    "cargo": "1.87.0"
+  },
+  "builds_passed": [
+    "scripts/with-rustup-cargo.sh build --release --bin backendinference",
+    "frontend npm ci",
+    "frontend npm run build"
+  ],
+  "smoke": {
+    "exit_code": 0,
+    "passed": true,
+    "steps_ok": [
+      "health_before",
+      "load",
+      "current_model",
+      "v1_models",
+      "capabilities",
+      "v1_completions",
+      "v1_chat_completions",
+      "generation_timings",
+      "health_after",
+      "frontend_smoke"
+    ],
+    "expect_compatibility_row": "llama3_8b_instruct_q8_0",
+    "expect_compatibility_status": "supported_exact_row_smoke",
+    "expect_contract_supported": true,
+    "expect_webui_chat": "enabled"
+  },
+  "api_timing_summary": {
+    "schema": "camelid.generation_timing_summary.v1",
+    "input_count": 2,
+    "completion_response": {
+      "object": "text_completion",
+      "prompt_tokens": 2,
+      "completion_tokens": 1,
+      "generated_token_ids": [
+        11
+      ],
+      "has_backendinference_timings_ms": true,
+      "forward_total_ms": 3738.379,
+      "generate_ms": 3744,
+      "layer_count": 32,
+      "linear_hot_path_ms": 3595.171,
+      "top_bottleneck": "generation.logits"
+    },
+    "chat_response": {
+      "object": "chat.completion",
+      "prompt_tokens": 11,
+      "completion_tokens": 1,
+      "generated_token_ids": [
+        9906
+      ],
+      "has_backendinference_timings_ms": true,
+      "forward_total_ms": 19891.325,
+      "generate_ms": 19898,
+      "layer_count": 32,
+      "linear_hot_path_ms": 19705.507999999998,
+      "top_bottleneck": "layers.10.ffn_down"
+    },
+    "aggregate": {
+      "avg_forward_total_ms": 11814.852,
+      "avg_generate_ms": 11821,
+      "avg_linear_hot_path_ms": 11650.339499999998,
+      "max_logits_ms": 134.785
+    }
+  },
+  "frontend_smoke": {
+    "exit_code": 0,
+    "mode": "require_generation",
+    "frontend_http_200_ms": 27,
+    "model_load_ms": 575,
+    "chat_completion_ms": 20202,
+    "generated_text": "Hello",
+    "backend_generated_token_ids": [
+      9906
+    ],
+    "backend_forward_total_ms": 19903.123,
+    "backend_layers_total_ms": 19768.294
+  },
+  "rss_sample": {
+    "backend_rss_before_smoke_kib": 6316,
+    "backend_rss_after_smoke_kib": 283352,
+    "backend_elapsed_after_smoke": "00:47",
+    "smoke_process_max_rss_kib": 227696,
+    "note": "Sampled process RSS around the API/frontend smoke only; this is not a peak model-memory proof and does not replace broader memory/performance validation."
+  },
+  "raw_artifact_root_private": "target/ubuntu-llama3-8b-api-webui-rss-20260505T015843Z-head-aee469b9c13a",
+  "claim_boundary": "This validates the exact 8B API/WebUI smoke slice and completion-diagnostics timing-summary behavior on clean public main aee469b. It does not promote broad Llama-family support, neighboring sizes, other quantizations, larger contexts, arbitrary chat-template behavior, or full performance portability."
+}

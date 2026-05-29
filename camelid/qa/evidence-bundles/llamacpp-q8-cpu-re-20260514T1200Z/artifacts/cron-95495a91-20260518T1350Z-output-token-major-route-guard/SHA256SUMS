@@ -1,0 +1,6 @@
+dbadf3fd8aaa54c7755f37a473ecb33de8d5968171dbc25544f62004ab743de1  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1350Z-output-token-major-route-guard/README.md
+601a7f81ac21ae135903457026c496e573b4c8304a007927be04f462fabcf461  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1350Z-output-token-major-route-guard/dirty-diff-src-tensor.patch
+83fe22e8463d48038f7746f882156e1fcfefe201e6ba4b5567f1ae11fb4adb7a  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1350Z-output-token-major-route-guard/dirty-stat.txt
+8100ad95143ca373d953f50ce8fd0b16258c8f24b1c8932fe6dafe587aed7869  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1350Z-output-token-major-route-guard/head-before-commit.txt
+fe04c1b2011b88cc1b97c2bf0ea13ce223e97d504f4a2bfe0a791c8059c3c796  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1350Z-output-token-major-route-guard/logs/cargo-fmt-check.log
+356e8e0145688b2192d7056ec37e921eb091a81955b71dee30f2c6db58bd49d9  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1350Z-output-token-major-route-guard/logs/test-summary.log

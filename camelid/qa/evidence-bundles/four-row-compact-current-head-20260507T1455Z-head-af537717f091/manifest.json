@@ -1,0 +1,141 @@
+{
+  "schema": "camelid.four_row_compact_current_head_public_evidence.v1",
+  "generated_utc": "2026-05-07T15:15:00Z",
+  "bundle_root": "qa/evidence-bundles/four-row-compact-current-head-20260507T1455Z-head-af537717f091",
+  "bundle_public_head": "30f86fcae3d4",
+  "source_runtime_head": "af537717f091",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "passed": true,
+  "checkout_clean": true,
+  "pack": {
+    "id": "four-row-compact-current-head-v1",
+    "message": "hello",
+    "max_tokens": 5,
+    "render_mode": "compact",
+    "reference": "llama.cpp llama-server /completion plus llama-tokenize --ids"
+  },
+  "claim": "Camelid achieves 1:1 parity with llama.cpp for four exact GGUF rows within a bounded published validation envelope.",
+  "claim_boundary": "Promotes only four exact GGUF rows\u2014tinyllama_1_1b_chat_q8_0, llama32_1b_instruct_q8_0, llama32_3b_instruct_q8_0, and llama3_8b_instruct_q8_0\u2014as compact current-head 1:1 parity with llama.cpp inside this bounded published validation envelope. This does not promote neighboring rows, other quantizations, broader/full Llama-family support, model-native/larger context beyond separately checked packs, arbitrary GGUF/Jinja templates, production throughput, or portability support.",
+  "rows": [
+    {
+      "row_id": "tinyllama_1_1b_chat_q8_0",
+      "model_file": "tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+      "model_sha256": "a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59",
+      "reference_prompt_token_count": 18,
+      "reference_context": 512,
+      "max_tokens": 5,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "generated_text": "Certainly! Here",
+      "llama_text": "Certainly! Here",
+      "backend_generated_tokens": [
+        29907,
+        13946,
+        368,
+        29991,
+        2266
+      ],
+      "llama_generated_tokens": [
+        29907,
+        13946,
+        368,
+        29991,
+        2266
+      ],
+      "max_resident_set_kib": 2369272,
+      "raw_artifact": "target/four-row-compact-current-head-20260507T1455Z-head-af537717f091/tinyllama_1_1b_chat_q8_0/report.json",
+      "passed": true
+    },
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "model_file": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "model_sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+      "reference_prompt_token_count": 11,
+      "reference_context": 512,
+      "max_tokens": 5,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "generated_text": "Hello! How can I",
+      "llama_text": "Hello! How can I",
+      "backend_generated_tokens": [
+        9906,
+        0,
+        2650,
+        649,
+        358
+      ],
+      "llama_generated_tokens": [
+        9906,
+        0,
+        2650,
+        649,
+        358
+      ],
+      "max_resident_set_kib": 2820776,
+      "raw_artifact": "target/four-row-compact-current-head-20260507T1455Z-head-af537717f091/llama32_1b_instruct_q8_0/report.json",
+      "passed": true
+    },
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "model_sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+      "reference_prompt_token_count": 11,
+      "reference_context": 512,
+      "max_tokens": 5,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "generated_text": "Hello! How can I",
+      "llama_text": "Hello! How can I",
+      "backend_generated_tokens": [
+        9906,
+        0,
+        2650,
+        649,
+        358
+      ],
+      "llama_generated_tokens": [
+        9906,
+        0,
+        2650,
+        649,
+        358
+      ],
+      "max_resident_set_kib": 7205484,
+      "raw_artifact": "target/four-row-compact-current-head-20260507T1455Z-head-af537717f091/llama32_3b_instruct_q8_0/report.json",
+      "passed": true
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "model_file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+      "reference_prompt_token_count": 11,
+      "reference_context": 512,
+      "max_tokens": 5,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "generated_text": "Hello! It's nice",
+      "llama_text": "Hello! It's nice",
+      "backend_generated_tokens": [
+        9906,
+        0,
+        1102,
+        596,
+        6555
+      ],
+      "llama_generated_tokens": [
+        9906,
+        0,
+        1102,
+        596,
+        6555
+      ],
+      "max_resident_set_kib": 17191612,
+      "raw_artifact": "target/four-row-compact-current-head-20260507T1455Z-head-af537717f091/llama3_8b_instruct_q8_0/report.json",
+      "passed": true
+    }
+  ]
+}

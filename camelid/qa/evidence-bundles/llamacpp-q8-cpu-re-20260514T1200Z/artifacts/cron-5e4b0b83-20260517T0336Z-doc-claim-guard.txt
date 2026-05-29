@@ -1,0 +1,34 @@
+CAMELID DOCS UBUNTU X86 Q8 claim guard — cron 5e4b0b83 — 2026-05-17T03:36Z
+
+Scope:
+- Guard docs/report wording for the Ubuntu x86_64 dense Llama Q8_0 llama.cpp reverse-engineering lane.
+- Treat qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md as the current Q8 reference truth.
+- Do not change project README, support contract, API/frontend claims, Mac/Apple Silicon/Metal docs, or Mixtral language.
+
+Worktree observed:
+- Requested lane said current main, but the checkout was already on branch ubuntu-x86-q8-f23-plus-qkv-consumers at 0ebbcba with pre-existing dirty docs/evidence from this docs guard lane.
+- main/origin/main resolve to d9c7e17; main still contains the older stale reproduction command if inspected via git show, while the current checkout already carries the prior guard correction.
+- Pre-existing untracked paths included projects/, qa/evidence-bundles/x86-q8-llamacpp-mapping-20260516T014948Z-head-4677f34/, and the earlier 20260517T0043Z doc-claim-guard artifact.
+
+Guard checks performed:
+- Read the current evidence report header and recent Ubuntu x86 Q8 entries.
+- Compared the public performance note against the current reference gate shape: CAMELID_X86_Q8_REPACK=on plus CAMELID_X86_Q8_KERNEL=avx2.
+- Grepped source/docs/report references for stale sketch flags, current x86 Q8 env flags, unsupported platform language, support-contract/performance promotion language, and Mac/Apple Silicon/Metal/Mixtral bleed-through.
+
+Finding:
+- The previous guard correction already removed the stale reproduction command flags CAMELID_X86_Q8_REPACK_TENSORS, CAMELID_X86_Q8_GEMM, CAMELID_X86_Q8_PACKED_TILE16, CAMELID_X86_Q8_PACKED_TILE16_SERIAL_OWNER, and CAMELID_X86_Q8_KERNEL=avx2_scaled_rowdot from docs/performance/ubuntu-x86-q8.md.
+- One remaining summary phrase could over-read as implemented matrix-level Q8 GEMM/MUL_MAT ownership rather than a direction. That is not current reference truth: concrete retained paths are the default-off Ubuntu x86_64 repack/kernel gate shape plus separately evidenced narrow decode consumers/owners; matrix-level GEMM/MUL_MAT remains evidence-gated future/directional work unless a fresh slice proves a concrete flag/path.
+
+Action taken:
+- Narrowed docs/performance/ubuntu-x86-q8.md wording so matrix-level Q8 GEMM/MUL_MAT is described as an evidence-gated direction only, not a support, throughput, or implemented-owner claim.
+- Kept the reproduction block at only:
+  CAMELID_X86_Q8_REPACK=on
+  CAMELID_X86_Q8_KERNEL=avx2
+- Kept language scoped to the Ubuntu x86_64 dense Llama Q8_0 experiment lane, default-off developer flags only, safe fallback preserved, no Mac evidence, no Apple Silicon labels, no Metal, no Mixtral, no production-throughput or support-contract promotion.
+- Did not touch project README, support contract, API/frontend surfaces, Mac/Apple Silicon/Metal notes, or Mixtral language.
+
+Verification commands:
+- git branch --show-current && git rev-parse --short HEAD && git status --short
+- git show main:docs/performance/ubuntu-x86-q8.md | sed -n '1,140p'
+- rg -n "CAMELID_X86_Q8_REPACK_TENSORS|CAMELID_X86_Q8_GEMM|CAMELID_X86_Q8_PACKED_TILE16|avx2_scaled_rowdot" docs/performance/ubuntu-x86-q8.md
+- rg -n "matrix-level Q8 GEMM/MUL_MAT|CAMELID_X86_Q8_REPACK=on|CAMELID_X86_Q8_KERNEL=avx2|production-ready|support-contract|Mac|Apple Silicon|Metal|Mixtral" docs/performance/ubuntu-x86-q8.md qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md

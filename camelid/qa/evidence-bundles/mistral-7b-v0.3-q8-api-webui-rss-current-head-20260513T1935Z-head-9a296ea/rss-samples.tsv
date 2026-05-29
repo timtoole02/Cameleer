@@ -1,0 +1,3 @@
+label	utc	pid	rss_kib	vsz_kib
+before_smoke	2026-05-13T19:37:56Z	28708	6824	1631524
+after_smoke	2026-05-13T19:38:18Z	28708	109624	1763668

@@ -1,0 +1,62 @@
+{
+  "schema": "camelid.backend_q8_stream_diagnostics_loop.v1",
+  "head": "7bfba9ac68e1ae6d5760146e53a1b82670eb9822",
+  "head_short": "7bfba9ac68e1",
+  "branch": "ubuntu-x86-q8-f23-plus-qkv-consumers",
+  "passed": true,
+  "tracer_bullet": "Default-off streaming backend timing diagnostics and same-host summary loop for Q8 TTFT role attribution.",
+  "default_off_env": "CAMELID_STREAM_TIMING_DIAGNOSTICS",
+  "support_boundary": "Feedback-loop instrumentation only. No support-contract expansion, no production-throughput claim, no broad Llama-family claim, and no Mixtral claim.",
+  "commands": [
+    {
+      "name": "cargo-fmt",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0
+    },
+    {
+      "name": "same-host-script-self-tests",
+      "command": "node scripts/test-bench-llama3-same-host.mjs && node scripts/test-summarize-same-host-stream-timing.mjs",
+      "exit_code": 0
+    },
+    {
+      "name": "stream-diagnostics-api-tests",
+      "command": "cargo test --all-features api::tests::stream_timing_diagnostics -- --nocapture",
+      "exit_code": 0
+    },
+    {
+      "name": "all-node-script-self-tests",
+      "command": "for f in scripts/test-*.mjs; do node \"$f\"; done",
+      "exit_code": 0
+    },
+    {
+      "name": "public-scrub",
+      "command": "bash scripts/check-public-scrub.sh",
+      "exit_code": 0
+    },
+    {
+      "name": "public-evidence-claims",
+      "command": "node scripts/check-public-evidence-claims.mjs",
+      "exit_code": 0
+    },
+    {
+      "name": "readme-screenshot",
+      "command": "node scripts/test-readme-screenshot.mjs",
+      "exit_code": 0
+    },
+    {
+      "name": "evidence-checksums",
+      "command": "bash scripts/check-evidence-bundle-checksums.sh",
+      "exit_code": 0
+    },
+    {
+      "name": "cargo-clippy",
+      "command": "cargo clippy --all-targets --all-features -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "name": "cargo-test-all",
+      "command": "cargo test --all-targets --all-features",
+      "exit_code": 0
+    }
+  ]
+}

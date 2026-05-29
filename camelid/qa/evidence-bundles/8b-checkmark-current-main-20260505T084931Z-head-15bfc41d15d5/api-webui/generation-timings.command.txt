@@ -1,0 +1,1 @@
+node scripts/summarize-generation-timings.mjs --out target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/generation-timings.summary.json target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/completion.response.json target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/chat.response.json

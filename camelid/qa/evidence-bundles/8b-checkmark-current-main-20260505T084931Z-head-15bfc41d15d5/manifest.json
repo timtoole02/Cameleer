@@ -1,0 +1,86 @@
+{
+  "schema": "camelid.public_evidence_bundle.v1",
+  "title": "Llama 3 8B checkmark current-main API/WebUI/RSS smoke",
+  "generated_utc": "2026-05-05T08:50:23.014Z",
+  "source_head": "15bfc41d15d5aaf4b8b0244bc38989a2d096f922",
+  "source_short_head": "15bfc41d15d5",
+  "raw_out_dir": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5",
+  "model": {
+    "file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+    "row_id": "llama3_8b_instruct_q8_0",
+    "expected_status": "supported_exact_row_smoke"
+  },
+  "node": "v22.22.2",
+  "result": {
+    "passed": true,
+    "frontend_exit_code": 0,
+    "frontend_mode": "require_generation",
+    "max_backend_rss_kib": 286148
+  },
+  "checks": {
+    "health_before": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/health-before.json"
+    },
+    "load": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/load.response.json"
+    },
+    "current_model": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/current-model.json"
+    },
+    "v1_models": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/v1-models.json"
+    },
+    "capabilities": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/capabilities.json"
+    },
+    "v1_completions": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/completion.response.json"
+    },
+    "v1_chat_completions": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/chat.response.json"
+    },
+    "generation_timings": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/generation-timings.run.json"
+    },
+    "health_after": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/health-after.json"
+    },
+    "frontend_smoke": {
+      "ok": true,
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/frontend.summary.json"
+    }
+  },
+  "timing_inputs": [
+    {
+      "file": "completion.response.json",
+      "prompt_tokens": 2,
+      "completion_tokens": 1,
+      "generate_ms": 3849,
+      "forward_total_ms": 3843.897,
+      "linear_hot_path_ms": 3696.5850000000005
+    },
+    {
+      "file": "chat.response.json",
+      "prompt_tokens": 11,
+      "completion_tokens": 1,
+      "generate_ms": 20524,
+      "forward_total_ms": 20517.822,
+      "linear_hot_path_ms": 20328.818
+    }
+  ],
+  "scope_boundary": "Exact Llama 3 8B Instruct Q8_0 current-main API/WebUI/RSS smoke only. This refreshes the checkmark at public main head 15bfc41d15d5 after the 1B 1024-context evidence landed. It preserves supported_exact_row_smoke and does not promote broad/full Llama-family support, neighboring rows, other quantizations, larger contexts, arbitrary chat-template behavior, or production performance/portability.",
+  "public_sanitization": {
+    "api-webui/load.response.json": "large tokenizer token/type/merge arrays omitted with original counts retained; upstream imatrix path normalized",
+    "api-webui/current-model.json": "large tokenizer token/type/merge arrays omitted with original counts retained; upstream imatrix path normalized"
+  }
+}

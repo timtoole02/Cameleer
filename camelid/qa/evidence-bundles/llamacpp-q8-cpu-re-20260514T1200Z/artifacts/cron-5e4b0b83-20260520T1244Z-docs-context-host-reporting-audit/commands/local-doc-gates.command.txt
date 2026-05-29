@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+python3 - <<'PY'
+from pathlib import Path
+import re
+
+roots = [Path('README.md'), Path('CONTEXT.md'), Path('docs')]
+files = []
+for root in roots:
+    if root.is_file():
+        files.append(root)
+    elif root.is_dir():
+        files.extend(p for p in root.rglob('*') if p.is_file() and p.suffix.lower() in {'.md','.json','.txt'})
+
+negative_host_access = re.compile(
+    r'(?i)(ubuntu|validation host|canonical host)[^\n]{0,120}\b(is |was |currently |still |remains |reported )?'
+    r'(?<![-/])(blocked|down|unavailable|unreachable|offline|failing ssh|permission denied \(publickey\)|auth failure|host failure|host outage)\b'
+    r'|\b(permission denied \(publickey\)|auth failure|host failure|host outage)\b[^\n]{0,120}(ubuntu|validation host|canonical host)'
+)
+private_host = re.compile(r'(?i)ec2-[0-9-]+|compute(?:-1)?\.amazonaws\.com')
+
+failures = []
+for path in files:
+    text = path.read_text(errors='replace')
+    for i, line in enumerate(text.splitlines(), 1):
+        if negative_host_access.search(line):
+            failures.append(f'{path}:{i}: stale-negative-host-access: {line}')
+        if private_host.search(line):
+            failures.append(f'{path}:{i}: private-host-leak: {line}')
+
+if failures:
+    print('\n'.join(failures))
+    raise SystemExit(1)
+print(f'PASS scanned {len(files)} public docs/context files for stale host-access wording and private host aliases')
+PY
+
+git diff --check

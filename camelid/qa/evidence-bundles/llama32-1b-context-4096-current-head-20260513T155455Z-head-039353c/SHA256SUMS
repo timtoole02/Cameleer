@@ -1,0 +1,9 @@
+49d8506fe23196df3790d84a2fa64fc6d928fd09c02e05c5e81c2a83e3a45aeb  ./final.status
+29a4d1027a072f9cda81e44daba76e6edeb8bd5dc95b29e97d8ed37517052e86  ./manifest.json
+f39c7a902aaec233b96d7cfe780bfbd3a0b0c16bd481224dbfacde71199bd4e2  ./pack/llama32-1b-q8-current-head-039353c-roughly-4096-token-recall/command.txt
+f33da5e8415532e04485a158676a9b0ed145b7935e00aecdd81468ce1a66becf  ./pack/llama32-1b-q8-current-head-039353c-roughly-4096-token-recall/prompt.json
+753f209bcd1646102a7ab87ae16041c942e22e78bbed4f937f64bd98ac778c02  ./pack/llama32-1b-q8-current-head-039353c-roughly-4096-token-recall/report.json
+e476df286653f30a546d772e97af3e4de91f7e210dc355b013ca0a37aacd49b4  ./pack/summary.json
+c61443afce1b791ab7f48fa40be10fb291832da98462edd9c38ea0077f3a4558  ./repo-head.status
+fc542d585073f0442dcc52cafd81adcdac3a597a90f27c7fee9a9daf8696978d  ./summary.compact.json
+03996497cc332d5f41db3209c8b123d26949bbda4f17b2fbbee5f76f12b019c2  ./summary.json

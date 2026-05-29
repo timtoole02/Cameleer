@@ -1,0 +1,27 @@
+{
+  "command": [
+    "node",
+    "frontend/scripts/smoke.mjs",
+    "--api",
+    "http://127.0.0.1:8381",
+    "--frontend",
+    "http://127.0.0.1:4598",
+    "--model",
+    "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "--model-id",
+    "llama3_8b_instruct_q8_0",
+    "--chat-repeats",
+    "1",
+    "--require-generation",
+    "--expect-compatibility-row",
+    "llama3_8b_instruct_q8_0",
+    "--expect-compatibility-status",
+    "supported_exact_row_smoke",
+    "--expect-contract-supported",
+    "true",
+    "--expect-webui-chat",
+    "enabled"
+  ],
+  "exit_code": 0,
+  "mode": "require_generation"
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "camelid.chat-parity.prompt-pack-run.v1",
+  "pack": {
+    "schema": "camelid.llama3.prompt-pack.v1",
+    "id": "llama3-context-1024-smoke-v1",
+    "path": "<canonical-remote-workdir>/qa/prompt-packs/llama3-context-1024-smoke.json",
+    "description": "Second bounded Llama 3 compact-header context parity bucket for exact Llama 3.2 1B/3B rows. The synthetic recall prompt is intentionally longer than the checked 512 pack but still bounded to a 1024-token reference context, so prompt-token and generated-token parity can be compared without implying broad/full Llama support.",
+    "prompt_count": 1,
+    "default_max_tokens": 5,
+    "default_render_mode": "compact",
+    "target_context_window": 1024
+  },
+  "backend": "http://127.0.0.1:8531",
+  "llama_server": "http://127.0.0.1:8533",
+  "model": "<canonical-model-path>/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+  "model_id": "meta-llama3-8b-q8-current-head-bb8b616a09d6",
+  "prefix": "meta-llama3-8b-q8-current-head-bb8b616a09d6",
+  "chat_parity_script": "<canonical-remote-workdir>/scripts/chat-parity-llama3.mjs",
+  "wait_ms": 900000,
+  "require_prompt_match": true,
+  "require_generated_match": true,
+  "prompts": [
+    {
+      "id": "roughly-1024-token-recall",
+      "message": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are checking deterministic local model parity for a bounded 1024-context bucket. Answer with the final requested marker only."
+        },
+        {
+          "role": "user",
+          "content": "Context block start. Fact 01: alpaca keeps blue evidence. Fact 02: llama records deterministic tokens. Fact 03: vicuna checks bounded context. Fact 04: guanaco preserves exact rows. Fact 05: camelid audits public summaries. Fact 06: rust module matches clean checkouts. Fact 07: API route guards RSS milestones. Fact 08: frontend gate reports generated text. Fact 09: tokenizer samples prompt IDs. Fact 10: prompt pack anchors claim boundaries. Fact 11: checksum verifies support copy. Fact 12: memory sampler limits local paths. Fact 13: validation lane documents model hashes. Fact 14: model row rejects runtime readiness. Fact 15: Q8 tensor compares reference output. Fact 16: context bucket stabilizes operator notes. Fact 17: Jinja template measures latency numbers. Fact 18: portable host publishes portable claims. Fact 19: throughput sample normalizes template shapes. Fact 20: support ledger reviews green boxes. Fact 21: alpaca keeps blue evidence. Fact 22: llama records deterministic tokens. Fact 23: vicuna checks bounded context. Fact 24: guanaco preserves exact rows. Fact 25: camelid audits public summaries. Fact 26: rust module matches clean checkouts. Fact 27: API route guards RSS milestones. Fact 28: frontend gate reports generated text. Fact 29: tokenizer samples prompt IDs. Fact 30: prompt pack anchors claim boundaries. Fact 31: checksum verifies support copy. Fact 32: memory sampler limits local paths. Fact 33: validation lane documents model hashes. Fact 34: model row rejects runtime readiness. Fact 35: Q8 tensor compares reference output. Fact 36: context bucket stabilizes operator notes. Fact 37: Jinja template measures latency numbers. Fact 38: portable host publishes portable claims. Fact 39: throughput sample normalizes template shapes. Fact 40: support ledger reviews green boxes. Fact 41: alpaca keeps blue evidence. Fact 42: llama records deterministic tokens. Fact 43: vicuna checks bounded context. Fact 44: guanaco preserves exact rows. Fact 45: camelid audits public summaries. Fact 46: rust module matches clean checkouts. Fact 47: API route guards RSS milestones. Fact 48: frontend gate reports generated text. Fact 49: tokenizer samples prompt IDs. Fact 50: prompt pack anchors claim boundaries. Fact 51: checksum verifies support copy. Fact 52: memory sampler limits local paths. Fact 53: validation lane documents model hashes. Fact 54: model row rejects runtime readiness. Fact 55: Q8 tensor compares reference output. Fact 56: context bucket stabilizes operator notes. Fact 57: Jinja template measures latency numbers. Fact 58: portable host publishes portable claims. Fact 59: throughput sample normalizes template shapes. Fact 60: support ledger reviews green boxes. Fact 61: alpaca keeps blue evidence. Fact 62: llama records deterministic tokens. Fact 63: vicuna checks bounded context. Fact 64: guanaco preserves exact rows. Fact 65: camelid audits public summaries. Fact 66: rust module matches clean checkouts. Fact 67: API route guards RSS milestones. Fact 68: frontend gate reports generated text. Fact 69: tokenizer samples prompt IDs. Fact 70: prompt pack anchors claim boundaries. Fact 71: checksum verifies support copy. Fact 72: memory sampler limits local paths. Fact 73: validation lane documents model hashes. Fact 74: model row rejects runtime readiness. Fact 75: Q8 tensor compares reference output. Fact 76: context bucket stabilizes operator notes. Fact 77: Jinja template measures latency numbers. Fact 78: portable host publishes portable claims. Fact 79: throughput sample normalizes template shapes. Fact 80: support ledger reviews green boxes. Repeat marker: CMLD-1024-CHECK. Context block end. What is the repeat marker?"
+        }
+      ],
+      "render_mode": "compact",
+      "note": "Bounded synthetic recall prompt for the next larger context bucket after the checked 512 pack; validate actual prompt token count from each parity report.",
+      "max_tokens": 5,
+      "target_context_window": 1024,
+      "artifact_dir": "<canonical-remote-workdir>/target/llama3-8b-context-1024-2048-current-head-20260507T185917Z-head-bb8b616a09d6/pack-1024/meta-llama3-8b-q8-current-head-bb8b616a09d6-roughly-1024-token-recall",
+      "report_path": "<canonical-remote-workdir>/target/llama3-8b-context-1024-2048-current-head-20260507T185917Z-head-bb8b616a09d6/pack-1024/meta-llama3-8b-q8-current-head-bb8b616a09d6-roughly-1024-token-recall/report.json",
+      "stdout_path": "<canonical-remote-workdir>/target/llama3-8b-context-1024-2048-current-head-20260507T185917Z-head-bb8b616a09d6/pack-1024/meta-llama3-8b-q8-current-head-bb8b616a09d6-roughly-1024-token-recall/stdout.log",
+      "stderr_path": "<canonical-remote-workdir>/target/llama3-8b-context-1024-2048-current-head-20260507T185917Z-head-bb8b616a09d6/pack-1024/meta-llama3-8b-q8-current-head-bb8b616a09d6-roughly-1024-token-recall/stderr.log",
+      "command_path": "<canonical-remote-workdir>/target/llama3-8b-context-1024-2048-current-head-20260507T185917Z-head-bb8b616a09d6/pack-1024/meta-llama3-8b-q8-current-head-bb8b616a09d6-roughly-1024-token-recall/command.txt",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 881,
+      "reference_context": 1024,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    }
+  ],
+  "passed": true,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true
+}

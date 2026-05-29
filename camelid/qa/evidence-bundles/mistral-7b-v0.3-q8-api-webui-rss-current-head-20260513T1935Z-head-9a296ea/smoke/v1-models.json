@@ -1,0 +1,11 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "mistral-7b-v0.3-q8-remote-current-head",
+      "object": "model",
+      "created": 0,
+      "owned_by": "camelid"
+    }
+  ]
+}

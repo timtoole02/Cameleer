@@ -1,0 +1,28 @@
+diff --git a/src/inference.rs b/src/inference.rs
+index a3c3979..36ce859 100644
+--- a/src/inference.rs
++++ b/src/inference.rs
+@@ -13421,6 +13421,7 @@ mod tests {
+         std::env::remove_var("CAMELID_X86_Q8_PACKED_ROWS4_MATMUL_GROUPS_PER_CHUNK");
+     }
+ 
++    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+     #[test]
+     fn x86_q8_avx2_packed_rows4_i8_matches_scalar_dot() {
+         let _env_guard = env_lock();
+@@ -16158,7 +16159,6 @@ mod tests {
+         }
+     }
+ 
+-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+     fn ffn_gate_up_packed_rows4_matmul_plan(enabled: bool) -> ResolvedRuntimePlan {
+         let mut plan = ffn_gate_up_consumer_plan(false);
+         plan.q8.ffn_gate_up_packed_rows4_matmul = enabled;
+@@ -16908,6 +16908,7 @@ mod tests {
+         .is_none());
+     }
+ 
++    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+     #[test]
+     fn q8_ffn_gate_up_single_owner_matches_decode_and_prefill_owners() {
+         let _env_guard = env_lock();

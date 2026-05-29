@@ -1,0 +1,4306 @@
+{
+  "backend": "http://127.0.0.1:8187",
+  "llama_server": "http://127.0.0.1:8188",
+  "model": "models/mixtral-8x7b-instruct-v0.1-q8_0.gguf",
+  "model_id": "mixtral-probe",
+  "message": "Write OK.",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Write OK."
+    }
+  ],
+  "render_mode": "mistral_instruct",
+  "expected_prompt": "<s>[INST] Write OK. [/INST]",
+  "expected_prompt_char_count": 27,
+  "reference_prompt_token_count": 11,
+  "reference_context": 512,
+  "llama_flash_attn": "off",
+  "llama_completion_prompt_kind": "tokens",
+  "llama_server_args": null,
+  "prompt_tokens_match": true,
+  "generated_tokens_match": true,
+  "generated_text_match": true,
+  "first_generated_token_diff_index": -1,
+  "first_generated_token_logit_comparison": {
+    "backend_token_id": 12206,
+    "llama_token_id": 12206,
+    "token_ids_match": true,
+    "backend_margin_llama_minus_backend": 0,
+    "llama_margin_llama_minus_backend": 0,
+    "margin_disagreement": 0,
+    "backend_rows": [
+      {
+        "token_id": 12206,
+        "logit": 39.438786,
+        "probability": 0.99945337,
+        "rank": 1,
+        "selected": true,
+        "text": " OK"
+      },
+      {
+        "token_id": 12206,
+        "logit": 39.438786,
+        "probability": 0.99945337,
+        "rank": 1,
+        "selected": true,
+        "text": " OK"
+      }
+    ],
+    "llama_rows": [
+      {
+        "id": 12206,
+        "token": " OK",
+        "bytes": [
+          32,
+          79,
+          75
+        ],
+        "logprob": -0.0009766817092895508
+      },
+      {
+        "id": 12206,
+        "token": " OK",
+        "bytes": [
+          32,
+          79,
+          75
+        ],
+        "logprob": -0.0009766817092895508
+      }
+    ]
+  },
+  "first_generated_text_diff_index": -1,
+  "backend_prompt_tokens": [
+    1,
+    28792,
+    16289,
+    28793,
+    12018,
+    12206,
+    28723,
+    733,
+    28748,
+    16289,
+    28793
+  ],
+  "reference_prompt_tokens": [
+    1,
+    28792,
+    16289,
+    28793,
+    12018,
+    12206,
+    28723,
+    733,
+    28748,
+    16289,
+    28793
+  ],
+  "backend_generated_tokens": [
+    12206,
+    28723,
+    1691,
+    736,
+    2424
+  ],
+  "llama_generated_tokens": [
+    12206,
+    28723,
+    1691,
+    736,
+    2424
+  ],
+  "llama_top_logprobs": [
+    {
+      "id": 12206,
+      "token": " OK",
+      "bytes": [
+        32,
+        79,
+        75
+      ],
+      "logprob": -0.0009766817092895508
+    },
+    {
+      "id": 4903,
+      "token": "OK",
+      "bytes": [
+        79,
+        75
+      ],
+      "logprob": -7.214191436767578
+    },
+    {
+      "id": 19811,
+      "token": " Okay",
+      "bytes": [
+        32,
+        79,
+        107,
+        97,
+        121
+      ],
+      "logprob": -8.823053359985352
+    },
+    {
+      "id": 12875,
+      "token": " Sure",
+      "bytes": [
+        32,
+        83,
+        117,
+        114,
+        101
+      ],
+      "logprob": -9.289138793945312
+    },
+    {
+      "id": 16488,
+      "token": "Okay",
+      "bytes": [
+        79,
+        107,
+        97,
+        121
+      ],
+      "logprob": -15.334157943725586
+    },
+    {
+      "id": 6504,
+      "token": " Ok",
+      "bytes": [
+        32,
+        79,
+        107
+      ],
+      "logprob": -15.72116470336914
+    },
+    {
+      "id": 22557,
+      "token": " Hello",
+      "bytes": [
+        32,
+        72,
+        101,
+        108,
+        108,
+        111
+      ],
+      "logprob": -17.189359664916992
+    },
+    {
+      "id": 22099,
+      "token": "Sure",
+      "bytes": [
+        83,
+        117,
+        114,
+        101
+      ],
+      "logprob": -17.437463760375977
+    },
+    {
+      "id": 976,
+      "token": " Al",
+      "bytes": [
+        32,
+        65,
+        108
+      ],
+      "logprob": -18.839494705200195
+    },
+    {
+      "id": 8810,
+      "token": " okay",
+      "bytes": [
+        32,
+        111,
+        107,
+        97,
+        121
+      ],
+      "logprob": -19.012800216674805
+    },
+    {
+      "id": 5434,
+      "token": " Oh",
+      "bytes": [
+        32,
+        79,
+        104
+      ],
+      "logprob": -19.199399948120117
+    },
+    {
+      "id": 3194,
+      "token": " Just",
+      "bytes": [
+        32,
+        74,
+        117,
+        115,
+        116
+      ],
+      "logprob": -19.81336212158203
+    },
+    {
+      "id": 9052,
+      "token": "Ok",
+      "bytes": [
+        79,
+        107
+      ],
+      "logprob": -20.016368865966797
+    },
+    {
+      "id": 4033,
+      "token": " OF",
+      "bytes": [
+        32,
+        79,
+        70
+      ],
+      "logprob": -20.055192947387695
+    },
+    {
+      "id": 345,
+      "token": " \"",
+      "bytes": [
+        32,
+        34
+      ],
+      "logprob": -20.328847885131836
+    },
+    {
+      "id": 15359,
+      "token": " Hi",
+      "bytes": [
+        32,
+        72,
+        105
+      ],
+      "logprob": -21.19468879699707
+    },
+    {
+      "id": 8997,
+      "token": " OP",
+      "bytes": [
+        32,
+        79,
+        80
+      ],
+      "logprob": -21.392635345458984
+    },
+    {
+      "id": 4529,
+      "token": " Of",
+      "bytes": [
+        32,
+        79,
+        102
+      ],
+      "logprob": -22.153615951538086
+    },
+    {
+      "id": 18005,
+      "token": " Oak",
+      "bytes": [
+        32,
+        79,
+        97,
+        107
+      ],
+      "logprob": -22.91034507751465
+    },
+    {
+      "id": 23565,
+      "token": " Oklahoma",
+      "bytes": [
+        32,
+        79,
+        107,
+        108,
+        97,
+        104,
+        111,
+        109,
+        97
+      ],
+      "logprob": -23.116504669189453
+    },
+    {
+      "id": 28723,
+      "token": ".",
+      "bytes": [
+        46
+      ],
+      "logprob": -0.0015581462066620588
+    },
+    {
+      "id": 28808,
+      "token": "!",
+      "bytes": [
+        33
+      ],
+      "logprob": -6.46501350402832
+    },
+    {
+      "id": 5923,
+      "token": ".\\",
+      "bytes": [
+        46,
+        92
+      ],
+      "logprob": -21.599552154541016
+    },
+    {
+      "id": 3946,
+      "token": "!!",
+      "bytes": [
+        33,
+        33
+      ],
+      "logprob": -24.87716293334961
+    },
+    {
+      "id": 3752,
+      "token": ".*",
+      "bytes": [
+        46,
+        42
+      ],
+      "logprob": -26.417821884155273
+    },
+    {
+      "id": 8263,
+      "token": "!\\",
+      "bytes": [
+        33,
+        92
+      ],
+      "logprob": -26.58393096923828
+    },
+    {
+      "id": 29267,
+      "token": "！",
+      "bytes": [
+        239,
+        188,
+        129
+      ],
+      "logprob": -27.07350730895996
+    },
+    {
+      "id": 28944,
+      "token": "。",
+      "bytes": [
+        227,
+        128,
+        130
+      ],
+      "logprob": -28.69507598876953
+    },
+    {
+      "id": 26364,
+      "token": ".<",
+      "bytes": [
+        46,
+        60
+      ],
+      "logprob": -28.713764190673828
+    },
+    {
+      "id": 918,
+      "token": " !",
+      "bytes": [
+        32,
+        33
+      ],
+      "logprob": -28.832469940185547
+    },
+    {
+      "id": 5910,
+      "token": ".$",
+      "bytes": [
+        46,
+        36
+      ],
+      "logprob": -28.849937438964844
+    },
+    {
+      "id": 568,
+      "token": "..",
+      "bytes": [
+        46,
+        46
+      ],
+      "logprob": -28.945240020751953
+    },
+    {
+      "id": 14902,
+      "token": ".-",
+      "bytes": [
+        46,
+        45
+      ],
+      "logprob": -29.569629669189453
+    },
+    {
+      "id": 1573,
+      "token": "._",
+      "bytes": [
+        46,
+        95
+      ],
+      "logprob": -29.663576126098633
+    },
+    {
+      "id": 12813,
+      "token": ".:",
+      "bytes": [
+        46,
+        58
+      ],
+      "logprob": -30.120298385620117
+    },
+    {
+      "id": 1815,
+      "token": ".'",
+      "bytes": [
+        46,
+        39
+      ],
+      "logprob": -30.60634422302246
+    },
+    {
+      "id": 13915,
+      "token": "!!!",
+      "bytes": [
+        33,
+        33,
+        33
+      ],
+      "logprob": -30.64211082458496
+    },
+    {
+      "id": 4698,
+      "token": ".</",
+      "bytes": [
+        46,
+        60,
+        47
+      ],
+      "logprob": -30.791040420532227
+    },
+    {
+      "id": 2063,
+      "token": ".,",
+      "bytes": [
+        46,
+        44
+      ],
+      "logprob": -31.241498947143555
+    },
+    {
+      "id": 8089,
+      "token": ".}",
+      "bytes": [
+        46,
+        125
+      ],
+      "logprob": -31.315805435180664
+    },
+    {
+      "id": 1691,
+      "token": " Is",
+      "bytes": [
+        32,
+        73,
+        115
+      ],
+      "logprob": -0.0009490581578575075
+    },
+    {
+      "id": 315,
+      "token": " I",
+      "bytes": [
+        32,
+        73
+      ],
+      "logprob": -7.199568748474121
+    },
+    {
+      "id": 4003,
+      "token": " Here",
+      "bytes": [
+        32,
+        72,
+        101,
+        114,
+        101
+      ],
+      "logprob": -9.667082786560059
+    },
+    {
+      "id": 13,
+      "token": "\n",
+      "bytes": [
+        10
+      ],
+      "logprob": -10.159882545471191
+    },
+    {
+      "id": 2301,
+      "token": "Is",
+      "bytes": [
+        73,
+        115
+      ],
+      "logprob": -10.813305854797363
+    },
+    {
+      "id": 28705,
+      "token": " ",
+      "bytes": [
+        32
+      ],
+      "logprob": -11.02485179901123
+    },
+    {
+      "id": 1602,
+      "token": " How",
+      "bytes": [
+        32,
+        72,
+        111,
+        119
+      ],
+      "logprob": -11.070740699768066
+    },
+    {
+      "id": 349,
+      "token": " is",
+      "bytes": [
+        32,
+        105,
+        115
+      ],
+      "logprob": -11.785311698913574
+    },
+    {
+      "id": 661,
+      "token": " It",
+      "bytes": [
+        32,
+        73,
+        116
+      ],
+      "logprob": -11.819977760314941
+    },
+    {
+      "id": 1047,
+      "token": " If",
+      "bytes": [
+        32,
+        73,
+        102
+      ],
+      "logprob": -11.976730346679688
+    },
+    {
+      "id": 2378,
+      "token": " Do",
+      "bytes": [
+        32,
+        68,
+        111
+      ],
+      "logprob": -12.245942115783691
+    },
+    {
+      "id": 7812,
+      "token": " Thank",
+      "bytes": [
+        32,
+        84,
+        104,
+        97,
+        110,
+        107
+      ],
+      "logprob": -12.416783332824707
+    },
+    {
+      "id": 1725,
+      "token": " That",
+      "bytes": [
+        32,
+        84,
+        104,
+        97,
+        116
+      ],
+      "logprob": -12.425628662109375
+    },
+    {
+      "id": 7336,
+      "token": " Was",
+      "bytes": [
+        32,
+        87,
+        97,
+        115
+      ],
+      "logprob": -12.722745895385742
+    },
+    {
+      "id": 7164,
+      "token": " Did",
+      "bytes": [
+        32,
+        68,
+        105,
+        100
+      ],
+      "logprob": -13.45733642578125
+    },
+    {
+      "id": 9377,
+      "token": " Does",
+      "bytes": [
+        32,
+        68,
+        111,
+        101,
+        115
+      ],
+      "logprob": -13.659897804260254
+    },
+    {
+      "id": 342,
+      "token": " |",
+      "bytes": [
+        32,
+        124
+      ],
+      "logprob": -13.926228523254395
+    },
+    {
+      "id": 4867,
+      "token": " Are",
+      "bytes": [
+        32,
+        65,
+        114,
+        101
+      ],
+      "logprob": -14.00278091430664
+    },
+    {
+      "id": 3169,
+      "token": " Let",
+      "bytes": [
+        32,
+        76,
+        101,
+        116
+      ],
+      "logprob": -14.037696838378906
+    },
+    {
+      "id": 1824,
+      "token": " What",
+      "bytes": [
+        32,
+        87,
+        104,
+        97,
+        116
+      ],
+      "logprob": -14.090110778808594
+    },
+    {
+      "id": 736,
+      "token": " there",
+      "bytes": [
+        32,
+        116,
+        104,
+        101,
+        114,
+        101
+      ],
+      "logprob": 0
+    },
+    {
+      "id": 15325,
+      "token": "there",
+      "bytes": [
+        116,
+        104,
+        101,
+        114,
+        101
+      ],
+      "logprob": -17.270198822021484
+    },
+    {
+      "id": 1387,
+      "token": " There",
+      "bytes": [
+        32,
+        84,
+        104,
+        101,
+        114,
+        101
+      ],
+      "logprob": -22.8687686920166
+    },
+    {
+      "id": 5816,
+      "token": "There",
+      "bytes": [
+        84,
+        104,
+        101,
+        114,
+        101
+      ],
+      "logprob": -24.585084915161133
+    },
+    {
+      "id": 7454,
+      "token": " ther",
+      "bytes": [
+        32,
+        116,
+        104,
+        101,
+        114
+      ],
+      "logprob": -28.426326751708984
+    },
+    {
+      "id": 1236,
+      "token": " here",
+      "bytes": [
+        32,
+        104,
+        101,
+        114,
+        101
+      ],
+      "logprob": -28.703998565673828
+    },
+    {
+      "id": 19187,
+      "token": " dort",
+      "bytes": [
+        32,
+        100,
+        111,
+        114,
+        116
+      ],
+      "logprob": -28.958019256591797
+    },
+    {
+      "id": 26941,
+      "token": " là",
+      "bytes": [
+        32,
+        108,
+        195,
+        160
+      ],
+      "logprob": -28.994426727294922
+    },
+    {
+      "id": 18603,
+      "token": " där",
+      "bytes": [
+        32,
+        100,
+        195,
+        164,
+        114
+      ],
+      "logprob": -29.467309951782227
+    },
+    {
+      "id": 369,
+      "token": " that",
+      "bytes": [
+        32,
+        116,
+        104,
+        97,
+        116
+      ],
+      "logprob": -29.63676643371582
+    },
+    {
+      "id": 20705,
+      "token": " dere",
+      "bytes": [
+        32,
+        100,
+        101,
+        114,
+        101
+      ],
+      "logprob": -33.14274597167969
+    },
+    {
+      "id": 456,
+      "token": " this",
+      "bytes": [
+        32,
+        116,
+        104,
+        105,
+        115
+      ],
+      "logprob": -34.56608581542969
+    },
+    {
+      "id": 652,
+      "token": " their",
+      "bytes": [
+        32,
+        116,
+        104,
+        101,
+        105,
+        114
+      ],
+      "logprob": -35.30929183959961
+    },
+    {
+      "id": 378,
+      "token": " it",
+      "bytes": [
+        32,
+        105,
+        116
+      ],
+      "logprob": -36.10914993286133
+    },
+    {
+      "id": 2905,
+      "token": " everything",
+      "bytes": [
+        32,
+        101,
+        118,
+        101,
+        114,
+        121,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -36.33274841308594
+    },
+    {
+      "id": 306,
+      "token": " th",
+      "bytes": [
+        32,
+        116,
+        104
+      ],
+      "logprob": -36.65032196044922
+    },
+    {
+      "id": 868,
+      "token": " then",
+      "bytes": [
+        32,
+        116,
+        104,
+        101,
+        110
+      ],
+      "logprob": -36.927947998046875
+    },
+    {
+      "id": 8810,
+      "token": " okay",
+      "bytes": [
+        32,
+        111,
+        107,
+        97,
+        121
+      ],
+      "logprob": -37.1532096862793
+    },
+    {
+      "id": 21959,
+      "token": " gibt",
+      "bytes": [
+        32,
+        103,
+        105,
+        98,
+        116
+      ],
+      "logprob": -37.337677001953125
+    },
+    {
+      "id": 3629,
+      "token": " further",
+      "bytes": [
+        32,
+        102,
+        117,
+        114,
+        116,
+        104,
+        101,
+        114
+      ],
+      "logprob": -37.66579818725586
+    },
+    {
+      "id": 2424,
+      "token": " anything",
+      "bytes": [
+        32,
+        97,
+        110,
+        121,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -0.024236375465989113
+    },
+    {
+      "id": 1545,
+      "token": " something",
+      "bytes": [
+        32,
+        115,
+        111,
+        109,
+        101,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -3.7320268154144287
+    },
+    {
+      "id": 24674,
+      "token": "something",
+      "bytes": [
+        115,
+        111,
+        109,
+        101,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -14.385631561279297
+    },
+    {
+      "id": 27985,
+      "token": " Anything",
+      "bytes": [
+        32,
+        65,
+        110,
+        121,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -16.3804931640625
+    },
+    {
+      "id": 264,
+      "token": " a",
+      "bytes": [
+        32,
+        97
+      ],
+      "logprob": -16.762617111206055
+    },
+    {
+      "id": 28493,
+      "token": "Something",
+      "bytes": [
+        83,
+        111,
+        109,
+        101,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -19.020748138427734
+    },
+    {
+      "id": 13264,
+      "token": " Something",
+      "bytes": [
+        32,
+        83,
+        111,
+        109,
+        101,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -20.231428146362305
+    },
+    {
+      "id": 707,
+      "token": " any",
+      "bytes": [
+        32,
+        97,
+        110,
+        121
+      ],
+      "logprob": -22.611116409301758
+    },
+    {
+      "id": 4378,
+      "token": " somet",
+      "bytes": [
+        32,
+        115,
+        111,
+        109,
+        101,
+        116
+      ],
+      "logprob": -23.289976119995117
+    },
+    {
+      "id": 3637,
+      "token": " anyone",
+      "bytes": [
+        32,
+        97,
+        110,
+        121,
+        111,
+        110,
+        101
+      ],
+      "logprob": -23.872533798217773
+    },
+    {
+      "id": 2905,
+      "token": " everything",
+      "bytes": [
+        32,
+        101,
+        118,
+        101,
+        114,
+        121,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -24.063671112060547
+    },
+    {
+      "id": 25682,
+      "token": " algo",
+      "bytes": [
+        32,
+        97,
+        108,
+        103,
+        111
+      ],
+      "logprob": -24.635377883911133
+    },
+    {
+      "id": 8622,
+      "token": " somewhere",
+      "bytes": [
+        32,
+        115,
+        111,
+        109,
+        101,
+        119,
+        104,
+        101,
+        114,
+        101
+      ],
+      "logprob": -24.876710891723633
+    },
+    {
+      "id": 1698,
+      "token": " another",
+      "bytes": [
+        32,
+        97,
+        110,
+        111,
+        116,
+        104,
+        101,
+        114
+      ],
+      "logprob": -25.13801383972168
+    },
+    {
+      "id": 1113,
+      "token": " som",
+      "bytes": [
+        32,
+        115,
+        111,
+        109
+      ],
+      "logprob": -25.389307022094727
+    },
+    {
+      "id": 2493,
+      "token": " someone",
+      "bytes": [
+        32,
+        115,
+        111,
+        109,
+        101,
+        111,
+        110,
+        101
+      ],
+      "logprob": -25.4468936920166
+    },
+    {
+      "id": 1164,
+      "token": "any",
+      "bytes": [
+        97,
+        110,
+        121
+      ],
+      "logprob": -26.47519874572754
+    },
+    {
+      "id": 2511,
+      "token": " nothing",
+      "bytes": [
+        32,
+        110,
+        111,
+        116,
+        104,
+        105,
+        110,
+        103
+      ],
+      "logprob": -26.797163009643555
+    },
+    {
+      "id": 12971,
+      "token": " quel",
+      "bytes": [
+        32,
+        113,
+        117,
+        101,
+        108
+      ],
+      "logprob": -27.356542587280273
+    },
+    {
+      "id": 7799,
+      "token": " anyway",
+      "bytes": [
+        32,
+        97,
+        110,
+        121,
+        119,
+        97,
+        121
+      ],
+      "logprob": -27.726884841918945
+    }
+  ],
+  "backend_diagnostic_token_ids": [
+    12206,
+    28723,
+    1691,
+    736,
+    2424,
+    4903,
+    19811,
+    12875,
+    16488,
+    6504,
+    22557,
+    22099,
+    976,
+    8810,
+    5434,
+    3194
+  ],
+  "backend_text": " OK. Is there anything",
+  "llama_text": " OK. Is there anything",
+  "backend_usage": {
+    "prompt_tokens": 11,
+    "completion_tokens": 5,
+    "total_tokens": 16
+  },
+  "llama_usage": {
+    "cache_n": 0,
+    "prompt_n": 11,
+    "prompt_ms": 1070.496,
+    "prompt_per_token_ms": 97.3178181818182,
+    "prompt_per_second": 10.275610558096433,
+    "predicted_n": 5,
+    "predicted_ms": 799.435,
+    "predicted_per_token_ms": 159.887,
+    "predicted_per_second": 6.254417182134883
+  },
+  "camelid": {
+    "prompt_token_ids": [
+      1,
+      28792,
+      16289,
+      28793,
+      12018,
+      12206,
+      28723,
+      733,
+      28748,
+      16289,
+      28793
+    ],
+    "generated_token_ids": [
+      12206,
+      28723,
+      1691,
+      736,
+      2424
+    ],
+    "dense_metadata": {
+      "embedding_length": 4096,
+      "attention_head_count": 32,
+      "attention_head_count_kv": 8,
+      "head_dim": 128,
+      "rope_dimension_count": 128,
+      "rope_freq_base": 1000000,
+      "rope_scaling_type": "none",
+      "rope_scaling_factor": null,
+      "rope_scaling_original_context_length": null,
+      "rope_scaling_low_freq_factor": null,
+      "rope_scaling_high_freq_factor": null,
+      "rope_pairing": "adjacent_even_odd",
+      "rope_direction": "forward",
+      "rope_position_mode": "zero_based",
+      "gqa_head_mapping": "grouped",
+      "attention_score_scale": "head_dim",
+      "linear_accumulation": "f32",
+      "ffn_gate_up_order": "gate_up",
+      "rms_norm_epsilon": 0.00001,
+      "rms_norm_effective_epsilon": 0.00001,
+      "square_linear_diagnostic_layout": "transposed",
+      "rectangular_linear_diagnostic_layout": "auto",
+      "token_embedding_shape": [
+        32000,
+        4096
+      ],
+      "output_shape": [
+        4096,
+        32000
+      ],
+      "output_is_tied_embedding": false,
+      "output_projection_layout": "input_output",
+      "output_projection_diagnostic_layout": "token_major",
+      "zero_attention_delta": "none",
+      "zero_ffn_delta": "none",
+      "projection_orientations": {
+        "attention_q": {
+          "shape": [
+            4096,
+            4096
+          ],
+          "input_width": 4096,
+          "output_width": 4096,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "attention_k": {
+          "shape": [
+            4096,
+            1024
+          ],
+          "input_width": 4096,
+          "output_width": 1024,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_v": {
+          "shape": [
+            4096,
+            1024
+          ],
+          "input_width": 4096,
+          "output_width": 1024,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_output": {
+          "shape": [
+            4096,
+            4096
+          ],
+          "input_width": 4096,
+          "output_width": 4096,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "ffn_gate": {
+          "shape": [
+            4096,
+            14336,
+            8
+          ],
+          "input_width": 4096,
+          "output_width": 14336,
+          "descriptor_layout": "incompatible",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_up": {
+          "shape": [
+            4096,
+            14336,
+            8
+          ],
+          "input_width": 4096,
+          "output_width": 14336,
+          "descriptor_layout": "incompatible",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_down": {
+          "shape": [
+            14336,
+            4096,
+            8
+          ],
+          "input_width": 14336,
+          "output_width": 4096,
+          "descriptor_layout": "incompatible",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        }
+      }
+    },
+    "top_logits": [
+      {
+        "token_id": 12206,
+        "logit": 39.438786,
+        "probability": 0.99945337,
+        "rank": 1,
+        "selected": true,
+        "text": " OK"
+      },
+      {
+        "token_id": 4903,
+        "logit": 31.604683,
+        "probability": 0.00039578104,
+        "rank": 2,
+        "selected": true,
+        "text": "OK"
+      },
+      {
+        "token_id": 19811,
+        "logit": 30.450472,
+        "probability": 0.00012479222,
+        "rank": 3,
+        "selected": true,
+        "text": " Okay"
+      },
+      {
+        "token_id": 12875,
+        "logit": 28.870834,
+        "probability": 0.000025713409,
+        "rank": 4,
+        "selected": true,
+        "text": " Sure"
+      },
+      {
+        "token_id": 6504,
+        "logit": 24.176044,
+        "probability": 2.3509224e-7,
+        "rank": 5,
+        "selected": true,
+        "text": " Ok"
+      },
+      {
+        "token_id": 16488,
+        "logit": 23.02603,
+        "probability": 7.443774e-8,
+        "rank": 6,
+        "selected": true,
+        "text": "Okay"
+      },
+      {
+        "token_id": 22557,
+        "logit": 21.889553,
+        "probability": 2.3890635e-8,
+        "rank": 7,
+        "selected": true,
+        "text": " Hello"
+      },
+      {
+        "token_id": 22099,
+        "logit": 20.61678,
+        "probability": 6.6906622e-9,
+        "rank": 8,
+        "selected": true,
+        "text": "Sure"
+      },
+      {
+        "token_id": 28723,
+        "logit": 2.3365731,
+        "probability": 7.699757e-17,
+        "rank": 4051,
+        "selected": true,
+        "text": "."
+      },
+      {
+        "token_id": 1691,
+        "logit": 9.509111,
+        "probability": 1.00339096e-13,
+        "rank": 162,
+        "selected": true,
+        "text": " Is"
+      },
+      {
+        "token_id": 736,
+        "logit": -2.7285821,
+        "probability": 4.860805e-19,
+        "rank": 21342,
+        "selected": true,
+        "text": " there"
+      },
+      {
+        "token_id": 2424,
+        "logit": -0.41623592,
+        "probability": 4.9084707e-18,
+        "rank": 11944,
+        "selected": true,
+        "text": " anything"
+      },
+      {
+        "token_id": 976,
+        "logit": 20.396505,
+        "probability": 5.367911e-9,
+        "rank": 9,
+        "selected": true,
+        "text": " Al"
+      },
+      {
+        "token_id": 8810,
+        "logit": 19.34998,
+        "probability": 1.884972e-9,
+        "rank": 11,
+        "selected": true,
+        "text": " okay"
+      },
+      {
+        "token_id": 5434,
+        "logit": 19.794474,
+        "probability": 2.9399927e-9,
+        "rank": 10,
+        "selected": true,
+        "text": " Oh"
+      },
+      {
+        "token_id": 3194,
+        "logit": 18.092592,
+        "probability": 5.3607874e-10,
+        "rank": 15,
+        "selected": true,
+        "text": " Just"
+      }
+    ],
+    "step_top_logits": [
+      [
+        {
+          "token_id": 12206,
+          "logit": 39.438786,
+          "probability": 0.99945337,
+          "rank": 1,
+          "selected": true,
+          "text": " OK"
+        },
+        {
+          "token_id": 4903,
+          "logit": 31.604683,
+          "probability": 0.00039578104,
+          "rank": 2,
+          "selected": true,
+          "text": "OK"
+        },
+        {
+          "token_id": 19811,
+          "logit": 30.450472,
+          "probability": 0.00012479222,
+          "rank": 3,
+          "selected": true,
+          "text": " Okay"
+        },
+        {
+          "token_id": 12875,
+          "logit": 28.870834,
+          "probability": 0.000025713409,
+          "rank": 4,
+          "selected": true,
+          "text": " Sure"
+        },
+        {
+          "token_id": 6504,
+          "logit": 24.176044,
+          "probability": 2.3509224e-7,
+          "rank": 5,
+          "selected": true,
+          "text": " Ok"
+        },
+        {
+          "token_id": 16488,
+          "logit": 23.02603,
+          "probability": 7.443774e-8,
+          "rank": 6,
+          "selected": true,
+          "text": "Okay"
+        },
+        {
+          "token_id": 22557,
+          "logit": 21.889553,
+          "probability": 2.3890635e-8,
+          "rank": 7,
+          "selected": true,
+          "text": " Hello"
+        },
+        {
+          "token_id": 22099,
+          "logit": 20.61678,
+          "probability": 6.6906622e-9,
+          "rank": 8,
+          "selected": true,
+          "text": "Sure"
+        },
+        {
+          "token_id": 28723,
+          "logit": 2.3365731,
+          "probability": 7.699757e-17,
+          "rank": 4051,
+          "selected": true,
+          "text": "."
+        },
+        {
+          "token_id": 1691,
+          "logit": 9.509111,
+          "probability": 1.00339096e-13,
+          "rank": 162,
+          "selected": true,
+          "text": " Is"
+        },
+        {
+          "token_id": 736,
+          "logit": -2.7285821,
+          "probability": 4.860805e-19,
+          "rank": 21342,
+          "selected": true,
+          "text": " there"
+        },
+        {
+          "token_id": 2424,
+          "logit": -0.41623592,
+          "probability": 4.9084707e-18,
+          "rank": 11944,
+          "selected": true,
+          "text": " anything"
+        },
+        {
+          "token_id": 976,
+          "logit": 20.396505,
+          "probability": 5.367911e-9,
+          "rank": 9,
+          "selected": true,
+          "text": " Al"
+        },
+        {
+          "token_id": 8810,
+          "logit": 19.34998,
+          "probability": 1.884972e-9,
+          "rank": 11,
+          "selected": true,
+          "text": " okay"
+        },
+        {
+          "token_id": 5434,
+          "logit": 19.794474,
+          "probability": 2.9399927e-9,
+          "rank": 10,
+          "selected": true,
+          "text": " Oh"
+        },
+        {
+          "token_id": 3194,
+          "logit": 18.092592,
+          "probability": 5.3607874e-10,
+          "rank": 15,
+          "selected": true,
+          "text": " Just"
+        }
+      ],
+      [
+        {
+          "token_id": 28723,
+          "logit": 44.521534,
+          "probability": 0.99844164,
+          "rank": 1,
+          "selected": true,
+          "text": "."
+        },
+        {
+          "token_id": 28808,
+          "logit": 38.058994,
+          "probability": 0.0015583943,
+          "rank": 2,
+          "selected": false,
+          "text": "!"
+        },
+        {
+          "token_id": 5923,
+          "logit": 23.307962,
+          "probability": 6.1148475e-10,
+          "rank": 3,
+          "selected": false,
+          "text": ".\\"
+        },
+        {
+          "token_id": 8263,
+          "logit": 19.11179,
+          "probability": 9.204728e-12,
+          "rank": 4,
+          "selected": false,
+          "text": "!\\"
+        },
+        {
+          "token_id": 3946,
+          "logit": 19.05239,
+          "probability": 8.673884e-12,
+          "rank": 5,
+          "selected": false,
+          "text": "!!"
+        },
+        {
+          "token_id": 29267,
+          "logit": 17.67935,
+          "probability": 2.1974057e-12,
+          "rank": 6,
+          "selected": false,
+          "text": "！"
+        },
+        {
+          "token_id": 3752,
+          "logit": 17.569801,
+          "probability": 1.9694e-12,
+          "rank": 7,
+          "selected": false,
+          "text": ".*"
+        },
+        {
+          "token_id": 568,
+          "logit": 16.895449,
+          "probability": 1.003382e-12,
+          "rank": 8,
+          "selected": false,
+          "text": ".."
+        },
+        {
+          "token_id": 12206,
+          "logit": 1.2184304,
+          "probability": 1.5596365e-19,
+          "rank": 1714,
+          "selected": true,
+          "text": " OK"
+        },
+        {
+          "token_id": 1691,
+          "logit": 1.4843262,
+          "probability": 2.0347006e-19,
+          "rank": 1438,
+          "selected": true,
+          "text": " Is"
+        },
+        {
+          "token_id": 736,
+          "logit": 3.5029876,
+          "probability": 1.5317717e-18,
+          "rank": 381,
+          "selected": true,
+          "text": " there"
+        },
+        {
+          "token_id": 2424,
+          "logit": 1.7187257,
+          "probability": 2.572171e-19,
+          "rank": 1239,
+          "selected": true,
+          "text": " anything"
+        },
+        {
+          "token_id": 4903,
+          "logit": 1.7590612,
+          "probability": 2.6780345e-19,
+          "rank": 1205,
+          "selected": true,
+          "text": "OK"
+        },
+        {
+          "token_id": 19811,
+          "logit": 0.08818397,
+          "probability": 5.0369092e-20,
+          "rank": 3385,
+          "selected": true,
+          "text": " Okay"
+        },
+        {
+          "token_id": 12875,
+          "logit": 5.388348,
+          "probability": 1.00924315e-17,
+          "rank": 143,
+          "selected": true,
+          "text": " Sure"
+        },
+        {
+          "token_id": 16488,
+          "logit": -0.15502378,
+          "probability": 3.9494756e-20,
+          "rank": 3896,
+          "selected": true,
+          "text": "Okay"
+        },
+        {
+          "token_id": 6504,
+          "logit": 0.25203538,
+          "probability": 5.9336845e-20,
+          "rank": 3086,
+          "selected": true,
+          "text": " Ok"
+        },
+        {
+          "token_id": 22557,
+          "logit": -1.9960632,
+          "probability": 6.2659497e-21,
+          "rank": 9714,
+          "selected": true,
+          "text": " Hello"
+        },
+        {
+          "token_id": 22099,
+          "logit": 5.2817197,
+          "probability": 9.071679e-18,
+          "rank": 151,
+          "selected": true,
+          "text": "Sure"
+        },
+        {
+          "token_id": 976,
+          "logit": 1.6423888,
+          "probability": 2.3831203e-19,
+          "rank": 1301,
+          "selected": true,
+          "text": " Al"
+        },
+        {
+          "token_id": 8810,
+          "logit": 1.4085848,
+          "probability": 1.8862822e-19,
+          "rank": 1524,
+          "selected": true,
+          "text": " okay"
+        },
+        {
+          "token_id": 5434,
+          "logit": -1.1636258,
+          "probability": 1.4404862e-20,
+          "rank": 6647,
+          "selected": true,
+          "text": " Oh"
+        },
+        {
+          "token_id": 3194,
+          "logit": -0.1329386,
+          "probability": 4.0376786e-20,
+          "rank": 3852,
+          "selected": true,
+          "text": " Just"
+        }
+      ],
+      [
+        {
+          "token_id": 1691,
+          "logit": 27.398666,
+          "probability": 0.9983962,
+          "rank": 1,
+          "selected": true,
+          "text": " Is"
+        },
+        {
+          "token_id": 315,
+          "logit": 20.806944,
+          "probability": 0.0013694754,
+          "rank": 2,
+          "selected": false,
+          "text": " I"
+        },
+        {
+          "token_id": 4003,
+          "logit": 18.036245,
+          "probability": 0.00008575415,
+          "rank": 3,
+          "selected": false,
+          "text": " Here"
+        },
+        {
+          "token_id": 13,
+          "logit": 16.88318,
+          "probability": 0.000027069827,
+          "rank": 4,
+          "selected": false,
+          "text": "\n"
+        },
+        {
+          "token_id": 2301,
+          "logit": 16.806395,
+          "probability": 0.000025069043,
+          "rank": 5,
+          "selected": false,
+          "text": "Is"
+        },
+        {
+          "token_id": 1602,
+          "logit": 16.664835,
+          "probability": 0.000021760015,
+          "rank": 6,
+          "selected": false,
+          "text": " How"
+        },
+        {
+          "token_id": 661,
+          "logit": 15.869535,
+          "probability": 0.000009823471,
+          "rank": 7,
+          "selected": false,
+          "text": " It"
+        },
+        {
+          "token_id": 349,
+          "logit": 15.852428,
+          "probability": 0.00000965685,
+          "rank": 8,
+          "selected": false,
+          "text": " is"
+        },
+        {
+          "token_id": 12206,
+          "logit": 4.842508,
+          "probability": 1.5969377e-10,
+          "rank": 737,
+          "selected": true,
+          "text": " OK"
+        },
+        {
+          "token_id": 28723,
+          "logit": 4.459534,
+          "probability": 1.0888403e-10,
+          "rank": 896,
+          "selected": true,
+          "text": "."
+        },
+        {
+          "token_id": 736,
+          "logit": -2.2696266,
+          "probability": 1.3017483e-13,
+          "rank": 17406,
+          "selected": true,
+          "text": " there"
+        },
+        {
+          "token_id": 2424,
+          "logit": 4.919952,
+          "probability": 1.7255258e-10,
+          "rank": 707,
+          "selected": true,
+          "text": " anything"
+        },
+        {
+          "token_id": 4903,
+          "logit": 0.082472235,
+          "probability": 1.3678245e-12,
+          "rank": 8059,
+          "selected": true,
+          "text": "OK"
+        },
+        {
+          "token_id": 19811,
+          "logit": 6.6311355,
+          "probability": 9.551665e-10,
+          "rank": 301,
+          "selected": true,
+          "text": " Okay"
+        },
+        {
+          "token_id": 12875,
+          "logit": 12.148908,
+          "probability": 2.3791229e-7,
+          "rank": 32,
+          "selected": true,
+          "text": " Sure"
+        },
+        {
+          "token_id": 16488,
+          "logit": 0.48600936,
+          "probability": 2.0477862e-12,
+          "rank": 6848,
+          "selected": true,
+          "text": "Okay"
+        },
+        {
+          "token_id": 6504,
+          "logit": 1.9199166,
+          "probability": 8.590576e-12,
+          "rank": 3544,
+          "selected": true,
+          "text": " Ok"
+        },
+        {
+          "token_id": 22557,
+          "logit": 13.34906,
+          "probability": 7.90017e-7,
+          "rank": 25,
+          "selected": true,
+          "text": " Hello"
+        },
+        {
+          "token_id": 22099,
+          "logit": 3.1580567,
+          "probability": 2.963055e-11,
+          "rank": 1849,
+          "selected": true,
+          "text": "Sure"
+        },
+        {
+          "token_id": 976,
+          "logit": 4.0606394,
+          "probability": 7.306782e-11,
+          "rank": 1116,
+          "selected": true,
+          "text": " Al"
+        },
+        {
+          "token_id": 8810,
+          "logit": 0.38065726,
+          "probability": 1.8430225e-12,
+          "rank": 7159,
+          "selected": true,
+          "text": " okay"
+        },
+        {
+          "token_id": 5434,
+          "logit": 6.120256,
+          "probability": 5.73069e-10,
+          "rank": 385,
+          "selected": true,
+          "text": " Oh"
+        },
+        {
+          "token_id": 3194,
+          "logit": 11.86971,
+          "probability": 1.7995457e-7,
+          "rank": 34,
+          "selected": true,
+          "text": " Just"
+        }
+      ],
+      [
+        {
+          "token_id": 736,
+          "logit": 47.22603,
+          "probability": 1,
+          "rank": 1,
+          "selected": true,
+          "text": " there"
+        },
+        {
+          "token_id": 15325,
+          "logit": 29.962671,
+          "probability": 3.181407e-8,
+          "rank": 2,
+          "selected": false,
+          "text": "there"
+        },
+        {
+          "token_id": 1387,
+          "logit": 23.695673,
+          "probability": 6.0380465e-11,
+          "rank": 3,
+          "selected": false,
+          "text": " There"
+        },
+        {
+          "token_id": 5816,
+          "logit": 22.341574,
+          "probability": 1.5589013e-11,
+          "rank": 4,
+          "selected": false,
+          "text": "There"
+        },
+        {
+          "token_id": 7454,
+          "logit": 19.06673,
+          "probability": 5.896201e-13,
+          "rank": 5,
+          "selected": false,
+          "text": " ther"
+        },
+        {
+          "token_id": 1236,
+          "logit": 18.741432,
+          "probability": 4.258896e-13,
+          "rank": 6,
+          "selected": false,
+          "text": " here"
+        },
+        {
+          "token_id": 19187,
+          "logit": 18.27958,
+          "probability": 2.683594e-13,
+          "rank": 7,
+          "selected": false,
+          "text": " dort"
+        },
+        {
+          "token_id": 26941,
+          "logit": 18.221464,
+          "probability": 2.532082e-13,
+          "rank": 8,
+          "selected": false,
+          "text": " là"
+        },
+        {
+          "token_id": 12206,
+          "logit": 4.2603593,
+          "probability": 2.1890092e-19,
+          "rank": 199,
+          "selected": true,
+          "text": " OK"
+        },
+        {
+          "token_id": 28723,
+          "logit": 0.97222215,
+          "probability": 8.1700896e-21,
+          "rank": 1377,
+          "selected": true,
+          "text": "."
+        },
+        {
+          "token_id": 1691,
+          "logit": 2.7386837,
+          "probability": 4.7796105e-20,
+          "rank": 511,
+          "selected": true,
+          "text": " Is"
+        },
+        {
+          "token_id": 2424,
+          "logit": 4.397642,
+          "probability": 2.5111288e-19,
+          "rank": 179,
+          "selected": true,
+          "text": " anything"
+        },
+        {
+          "token_id": 4903,
+          "logit": 2.8073952,
+          "probability": 5.1195643e-20,
+          "rank": 486,
+          "selected": true,
+          "text": "OK"
+        },
+        {
+          "token_id": 19811,
+          "logit": 4.2035413,
+          "probability": 2.0680976e-19,
+          "rank": 207,
+          "selected": true,
+          "text": " Okay"
+        },
+        {
+          "token_id": 12875,
+          "logit": -1.1261876,
+          "probability": 1.0020743e-21,
+          "rank": 4622,
+          "selected": true,
+          "text": " Sure"
+        },
+        {
+          "token_id": 16488,
+          "logit": 5.2907753,
+          "probability": 6.1341016e-19,
+          "rank": 109,
+          "selected": true,
+          "text": "Okay"
+        },
+        {
+          "token_id": 6504,
+          "logit": 1.3269122,
+          "probability": 1.1648419e-20,
+          "rank": 1116,
+          "selected": true,
+          "text": " Ok"
+        },
+        {
+          "token_id": 22557,
+          "logit": -0.52728105,
+          "probability": 1.8238977e-21,
+          "rank": 3343,
+          "selected": true,
+          "text": " Hello"
+        },
+        {
+          "token_id": 22099,
+          "logit": -1.3520409,
+          "probability": 7.9949036e-22,
+          "rank": 5201,
+          "selected": true,
+          "text": "Sure"
+        },
+        {
+          "token_id": 976,
+          "logit": -3.2262545,
+          "probability": 1.227022e-22,
+          "rank": 11890,
+          "selected": true,
+          "text": " Al"
+        },
+        {
+          "token_id": 8810,
+          "logit": 9.65966,
+          "probability": 4.8432136e-17,
+          "rank": 19,
+          "selected": true,
+          "text": " okay"
+        },
+        {
+          "token_id": 5434,
+          "logit": -4.119083,
+          "probability": 5.024597e-23,
+          "rank": 16034,
+          "selected": true,
+          "text": " Oh"
+        },
+        {
+          "token_id": 3194,
+          "logit": -0.32504708,
+          "probability": 2.2327008e-21,
+          "rank": 2986,
+          "selected": true,
+          "text": " Just"
+        }
+      ],
+      [
+        {
+          "token_id": 2424,
+          "logit": 36.994843,
+          "probability": 0.96167684,
+          "rank": 1,
+          "selected": true,
+          "text": " anything"
+        },
+        {
+          "token_id": 1545,
+          "logit": 33.772198,
+          "probability": 0.038322363,
+          "rank": 2,
+          "selected": false,
+          "text": " something"
+        },
+        {
+          "token_id": 24674,
+          "logit": 22.66737,
+          "probability": 5.763507e-7,
+          "rank": 3,
+          "selected": false,
+          "text": "something"
+        },
+        {
+          "token_id": 264,
+          "logit": 21.734316,
+          "probability": 2.2670788e-7,
+          "rank": 4,
+          "selected": false,
+          "text": " a"
+        },
+        {
+          "token_id": 27985,
+          "logit": 19.815268,
+          "probability": 3.3268602e-8,
+          "rank": 5,
+          "selected": false,
+          "text": " Anything"
+        },
+        {
+          "token_id": 28493,
+          "logit": 17.669397,
+          "probability": 3.8913024e-9,
+          "rank": 6,
+          "selected": false,
+          "text": "Something"
+        },
+        {
+          "token_id": 13264,
+          "logit": 16.330168,
+          "probability": 1.019706e-9,
+          "rank": 7,
+          "selected": false,
+          "text": " Something"
+        },
+        {
+          "token_id": 707,
+          "logit": 15.505536,
+          "probability": 4.4703502e-10,
+          "rank": 8,
+          "selected": false,
+          "text": " any"
+        },
+        {
+          "token_id": 12206,
+          "logit": -1.9613285,
+          "probability": 1.1603255e-17,
+          "rank": 2945,
+          "selected": true,
+          "text": " OK"
+        },
+        {
+          "token_id": 28723,
+          "logit": -2.1794245,
+          "probability": 9.329562e-18,
+          "rank": 3348,
+          "selected": true,
+          "text": "."
+        },
+        {
+          "token_id": 1691,
+          "logit": 1.7457952,
+          "probability": 4.7267525e-16,
+          "rank": 326,
+          "selected": true,
+          "text": " Is"
+        },
+        {
+          "token_id": 736,
+          "logit": 0.20023838,
+          "probability": 1.00770894e-16,
+          "rank": 801,
+          "selected": true,
+          "text": " there"
+        },
+        {
+          "token_id": 4903,
+          "logit": -0.66944027,
+          "probability": 4.22317e-17,
+          "rank": 1345,
+          "selected": true,
+          "text": "OK"
+        },
+        {
+          "token_id": 19811,
+          "logit": -2.691886,
+          "probability": 5.588581e-18,
+          "rank": 4425,
+          "selected": true,
+          "text": " Okay"
+        },
+        {
+          "token_id": 12875,
+          "logit": -2.4622648,
+          "probability": 7.031129e-18,
+          "rank": 3904,
+          "selected": true,
+          "text": " Sure"
+        },
+        {
+          "token_id": 16488,
+          "logit": -1.8109158,
+          "probability": 1.3486585e-17,
+          "rank": 2687,
+          "selected": true,
+          "text": "Okay"
+        },
+        {
+          "token_id": 6504,
+          "logit": -2.9174132,
+          "probability": 4.460231e-18,
+          "rank": 4964,
+          "selected": true,
+          "text": " Ok"
+        },
+        {
+          "token_id": 22557,
+          "logit": -2.747331,
+          "probability": 5.2871677e-18,
+          "rank": 4554,
+          "selected": true,
+          "text": " Hello"
+        },
+        {
+          "token_id": 22099,
+          "logit": -4.8280206,
+          "probability": 6.600698e-19,
+          "rank": 11795,
+          "selected": true,
+          "text": "Sure"
+        },
+        {
+          "token_id": 976,
+          "logit": 2.0028987,
+          "probability": 6.1125333e-16,
+          "rank": 285,
+          "selected": true,
+          "text": " Al"
+        },
+        {
+          "token_id": 8810,
+          "logit": 2.4545095,
+          "probability": 9.601813e-16,
+          "rank": 225,
+          "selected": true,
+          "text": " okay"
+        },
+        {
+          "token_id": 5434,
+          "logit": -3.475846,
+          "probability": 2.5517182e-18,
+          "rank": 6609,
+          "selected": true,
+          "text": " Oh"
+        },
+        {
+          "token_id": 3194,
+          "logit": -5.80177,
+          "probability": 2.4928538e-19,
+          "rank": 16176,
+          "selected": true,
+          "text": " Just"
+        }
+      ]
+    ],
+    "output_projection": [],
+    "timings_ms": {
+      "tokenize": 4,
+      "weight_load": 1,
+      "weight_cache_hit": false,
+      "prompt_cache_hit": false,
+      "session_create": 0,
+      "generate": 47264,
+      "generation": {
+        "forward_total": 47257.449,
+        "embedding": 0.095,
+        "layers_total": 47076.241,
+        "final_norm": 0.04,
+        "logits": 181.052,
+        "sample": 0.29
+      },
+      "prompt_evaluation": {
+        "prompt_token_count": 11,
+        "prefill_token_count": 10,
+        "first_token_evaluated": true,
+        "prefill": {
+          "forward_total": 30263.926,
+          "embedding": 0.046,
+          "layers_total": 30263.879,
+          "final_norm": 0,
+          "logits": 0,
+          "sample": 0
+        },
+        "first_token": {
+          "forward_total": 3527.509,
+          "embedding": 0.009,
+          "layers_total": 3489.631,
+          "final_norm": 0.007,
+          "logits": 37.858,
+          "sample": 0.06
+        },
+        "prefill_layers": [
+          {
+            "layer_index": 0,
+            "total": 958.736,
+            "attention_norm": 0.035,
+            "attention_q": 8.439,
+            "attention_k": 2.334,
+            "attention_v": 2.339,
+            "attention_rope": 0.325,
+            "kv_cache_write": 0.307,
+            "attention_context": 0.401,
+            "attention_output": 7.827,
+            "attention_residual": 0.023,
+            "ffn_norm": 0.047,
+            "ffn_gate": 308.26,
+            "ffn_up": 302.773,
+            "ffn_activation": 1.118,
+            "ffn_down": 323.549,
+            "ffn_residual": 0.037
+          },
+          {
+            "layer_index": 1,
+            "total": 915.351,
+            "attention_norm": 0.042,
+            "attention_q": 6.663,
+            "attention_k": 2.027,
+            "attention_v": 1.839,
+            "attention_rope": 0.33,
+            "kv_cache_write": 0.137,
+            "attention_context": 0.302,
+            "attention_output": 6.628,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.044,
+            "ffn_gate": 300.377,
+            "ffn_up": 301.241,
+            "ffn_activation": 1.168,
+            "ffn_down": 293.553,
+            "ffn_residual": 0.039
+          },
+          {
+            "layer_index": 2,
+            "total": 908.307,
+            "attention_norm": 0.044,
+            "attention_q": 7.385,
+            "attention_k": 2.184,
+            "attention_v": 2.025,
+            "attention_rope": 0.323,
+            "kv_cache_write": 0.145,
+            "attention_context": 0.515,
+            "attention_output": 6.946,
+            "attention_residual": 0.023,
+            "ffn_norm": 0.044,
+            "ffn_gate": 295.132,
+            "ffn_up": 297.428,
+            "ffn_activation": 1.134,
+            "ffn_down": 294.045,
+            "ffn_residual": 0.03
+          },
+          {
+            "layer_index": 3,
+            "total": 926.4,
+            "attention_norm": 0.043,
+            "attention_q": 6.481,
+            "attention_k": 2.022,
+            "attention_v": 1.924,
+            "attention_rope": 0.334,
+            "kv_cache_write": 0.136,
+            "attention_context": 0.437,
+            "attention_output": 6.609,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.045,
+            "ffn_gate": 304.587,
+            "ffn_up": 300.014,
+            "ffn_activation": 1.156,
+            "ffn_down": 301.65,
+            "ffn_residual": 0.03
+          },
+          {
+            "layer_index": 4,
+            "total": 980.826,
+            "attention_norm": 0.043,
+            "attention_q": 6.518,
+            "attention_k": 2.044,
+            "attention_v": 1.96,
+            "attention_rope": 0.33,
+            "kv_cache_write": 0.138,
+            "attention_context": 0.52,
+            "attention_output": 6.58,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.044,
+            "ffn_gate": 323.013,
+            "ffn_up": 318.803,
+            "ffn_activation": 1.149,
+            "ffn_down": 318.579,
+            "ffn_residual": 0.033
+          },
+          {
+            "layer_index": 5,
+            "total": 933.856,
+            "attention_norm": 0.044,
+            "attention_q": 6.565,
+            "attention_k": 2.01,
+            "attention_v": 1.938,
+            "attention_rope": 0.324,
+            "kv_cache_write": 0.135,
+            "attention_context": 0.362,
+            "attention_output": 6.62,
+            "attention_residual": 0.02,
+            "ffn_norm": 0.043,
+            "ffn_gate": 305.699,
+            "ffn_up": 303.287,
+            "ffn_activation": 1.141,
+            "ffn_down": 304.707,
+            "ffn_residual": 0.033
+          },
+          {
+            "layer_index": 6,
+            "total": 932.566,
+            "attention_norm": 0.045,
+            "attention_q": 6.503,
+            "attention_k": 1.971,
+            "attention_v": 1.972,
+            "attention_rope": 0.347,
+            "kv_cache_write": 0.142,
+            "attention_context": 0.323,
+            "attention_output": 6.705,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.046,
+            "ffn_gate": 306.16,
+            "ffn_up": 302.051,
+            "ffn_activation": 1.159,
+            "ffn_down": 304.166,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 7,
+            "total": 933.385,
+            "attention_norm": 0.043,
+            "attention_q": 6.427,
+            "attention_k": 2.01,
+            "attention_v": 1.928,
+            "attention_rope": 0.356,
+            "kv_cache_write": 0.137,
+            "attention_context": 0.389,
+            "attention_output": 6.823,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.044,
+            "ffn_gate": 306.807,
+            "ffn_up": 303.59,
+            "ffn_activation": 1.115,
+            "ffn_down": 302.724,
+            "ffn_residual": 0.035
+          },
+          {
+            "layer_index": 8,
+            "total": 974.116,
+            "attention_norm": 0.046,
+            "attention_q": 6.845,
+            "attention_k": 2.044,
+            "attention_v": 1.906,
+            "attention_rope": 0.322,
+            "kv_cache_write": 0.202,
+            "attention_context": 0.441,
+            "attention_output": 6.645,
+            "attention_residual": 0.02,
+            "ffn_norm": 0.046,
+            "ffn_gate": 318.681,
+            "ffn_up": 315.695,
+            "ffn_activation": 1.183,
+            "ffn_down": 319.025,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 9,
+            "total": 1006.235,
+            "attention_norm": 0.043,
+            "attention_q": 6.614,
+            "attention_k": 1.935,
+            "attention_v": 1.973,
+            "attention_rope": 0.337,
+            "kv_cache_write": 0.136,
+            "attention_context": 0.385,
+            "attention_output": 6.688,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.045,
+            "ffn_gate": 331.648,
+            "ffn_up": 326.376,
+            "ffn_activation": 1.147,
+            "ffn_down": 327.865,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 10,
+            "total": 992.185,
+            "attention_norm": 0.044,
+            "attention_q": 6.447,
+            "attention_k": 2.092,
+            "attention_v": 1.899,
+            "attention_rope": 0.324,
+            "kv_cache_write": 0.155,
+            "attention_context": 0.437,
+            "attention_output": 6.928,
+            "attention_residual": 0.023,
+            "ffn_norm": 0.045,
+            "ffn_gate": 327.263,
+            "ffn_up": 321.241,
+            "ffn_activation": 1.161,
+            "ffn_down": 323.19,
+            "ffn_residual": 0.034
+          },
+          {
+            "layer_index": 11,
+            "total": 1026.237,
+            "attention_norm": 0.042,
+            "attention_q": 6.596,
+            "attention_k": 2.03,
+            "attention_v": 2.002,
+            "attention_rope": 0.337,
+            "kv_cache_write": 0.136,
+            "attention_context": 0.4,
+            "attention_output": 7.015,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.057,
+            "ffn_gate": 337.889,
+            "ffn_up": 332.574,
+            "ffn_activation": 1.165,
+            "ffn_down": 334.95,
+            "ffn_residual": 0.033
+          },
+          {
+            "layer_index": 12,
+            "total": 1052.862,
+            "attention_norm": 0.043,
+            "attention_q": 6.787,
+            "attention_k": 2.038,
+            "attention_v": 1.972,
+            "attention_rope": 0.352,
+            "kv_cache_write": 0.134,
+            "attention_context": 0.5,
+            "attention_output": 6.82,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.046,
+            "ffn_gate": 348.666,
+            "ffn_up": 340.73,
+            "ffn_activation": 1.205,
+            "ffn_down": 342.476,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 13,
+            "total": 966.474,
+            "attention_norm": 0.046,
+            "attention_q": 6.479,
+            "attention_k": 2.162,
+            "attention_v": 1.928,
+            "attention_rope": 0.343,
+            "kv_cache_write": 0.141,
+            "attention_context": 0.47,
+            "attention_output": 6.707,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.045,
+            "ffn_gate": 315.761,
+            "ffn_up": 314.652,
+            "ffn_activation": 1.119,
+            "ffn_down": 315.556,
+            "ffn_residual": 0.035
+          },
+          {
+            "layer_index": 14,
+            "total": 943.885,
+            "attention_norm": 0.044,
+            "attention_q": 7.026,
+            "attention_k": 2.056,
+            "attention_v": 1.929,
+            "attention_rope": 0.344,
+            "kv_cache_write": 0.135,
+            "attention_context": 0.307,
+            "attention_output": 6.857,
+            "attention_residual": 0.023,
+            "ffn_norm": 0.046,
+            "ffn_gate": 310.207,
+            "ffn_up": 305.359,
+            "ffn_activation": 1.142,
+            "ffn_down": 307.422,
+            "ffn_residual": 0.033
+          },
+          {
+            "layer_index": 15,
+            "total": 923.86,
+            "attention_norm": 0.044,
+            "attention_q": 6.293,
+            "attention_k": 1.925,
+            "attention_v": 1.982,
+            "attention_rope": 0.352,
+            "kv_cache_write": 0.144,
+            "attention_context": 0.374,
+            "attention_output": 6.658,
+            "attention_residual": 0.024,
+            "ffn_norm": 0.045,
+            "ffn_gate": 304.161,
+            "ffn_up": 299.78,
+            "ffn_activation": 1.164,
+            "ffn_down": 299.988,
+            "ffn_residual": 0.033
+          },
+          {
+            "layer_index": 16,
+            "total": 921.593,
+            "attention_norm": 0.043,
+            "attention_q": 6.421,
+            "attention_k": 1.94,
+            "attention_v": 1.914,
+            "attention_rope": 0.321,
+            "kv_cache_write": 0.134,
+            "attention_context": 0.34,
+            "attention_output": 6.581,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.047,
+            "ffn_gate": 301.411,
+            "ffn_up": 300.953,
+            "ffn_activation": 1.138,
+            "ffn_down": 299.351,
+            "ffn_residual": 0.031
+          },
+          {
+            "layer_index": 17,
+            "total": 914.028,
+            "attention_norm": 0.042,
+            "attention_q": 6.352,
+            "attention_k": 2.122,
+            "attention_v": 1.859,
+            "attention_rope": 0.344,
+            "kv_cache_write": 0.147,
+            "attention_context": 0.383,
+            "attention_output": 6.575,
+            "attention_residual": 0.02,
+            "ffn_norm": 0.044,
+            "ffn_gate": 300.762,
+            "ffn_up": 297.525,
+            "ffn_activation": 1.156,
+            "ffn_down": 295.724,
+            "ffn_residual": 0.031
+          },
+          {
+            "layer_index": 18,
+            "total": 913.742,
+            "attention_norm": 0.044,
+            "attention_q": 6.369,
+            "attention_k": 1.984,
+            "attention_v": 1.889,
+            "attention_rope": 0.35,
+            "kv_cache_write": 0.15,
+            "attention_context": 0.319,
+            "attention_output": 6.616,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.045,
+            "ffn_gate": 300.647,
+            "ffn_up": 296.158,
+            "ffn_activation": 1.17,
+            "ffn_down": 297.024,
+            "ffn_residual": 0.03
+          },
+          {
+            "layer_index": 19,
+            "total": 935.34,
+            "attention_norm": 0.043,
+            "attention_q": 6.318,
+            "attention_k": 1.964,
+            "attention_v": 1.862,
+            "attention_rope": 0.327,
+            "kv_cache_write": 0.134,
+            "attention_context": 0.804,
+            "attention_output": 6.636,
+            "attention_residual": 0.02,
+            "ffn_norm": 0.044,
+            "ffn_gate": 306.903,
+            "ffn_up": 302.489,
+            "ffn_activation": 1.13,
+            "ffn_down": 305.709,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 20,
+            "total": 907.509,
+            "attention_norm": 0.044,
+            "attention_q": 6.299,
+            "attention_k": 1.912,
+            "attention_v": 1.893,
+            "attention_rope": 0.356,
+            "kv_cache_write": 0.157,
+            "attention_context": 0.414,
+            "attention_output": 6.657,
+            "attention_residual": 0.02,
+            "ffn_norm": 0.045,
+            "ffn_gate": 298.088,
+            "ffn_up": 294.792,
+            "ffn_activation": 1.166,
+            "ffn_down": 294.714,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 21,
+            "total": 890.057,
+            "attention_norm": 0.044,
+            "attention_q": 6.371,
+            "attention_k": 2.035,
+            "attention_v": 2.024,
+            "attention_rope": 0.352,
+            "kv_cache_write": 0.154,
+            "attention_context": 0.386,
+            "attention_output": 6.636,
+            "attention_residual": 0.02,
+            "ffn_norm": 0.044,
+            "ffn_gate": 292.069,
+            "ffn_up": 288.093,
+            "ffn_activation": 1.175,
+            "ffn_down": 289.668,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 22,
+            "total": 899.793,
+            "attention_norm": 0.043,
+            "attention_q": 6.268,
+            "attention_k": 1.984,
+            "attention_v": 1.845,
+            "attention_rope": 0.327,
+            "kv_cache_write": 0.142,
+            "attention_context": 0.475,
+            "attention_output": 6.507,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.045,
+            "ffn_gate": 296.166,
+            "ffn_up": 291.158,
+            "ffn_activation": 1.204,
+            "ffn_down": 292.72,
+            "ffn_residual": 0.033
+          },
+          {
+            "layer_index": 23,
+            "total": 906.724,
+            "attention_norm": 0.043,
+            "attention_q": 6.469,
+            "attention_k": 2.045,
+            "attention_v": 1.957,
+            "attention_rope": 0.345,
+            "kv_cache_write": 0.146,
+            "attention_context": 0.408,
+            "attention_output": 6.535,
+            "attention_residual": 0.023,
+            "ffn_norm": 0.046,
+            "ffn_gate": 297.817,
+            "ffn_up": 294.352,
+            "ffn_activation": 1.174,
+            "ffn_down": 294.444,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 24,
+            "total": 930.101,
+            "attention_norm": 0.053,
+            "attention_q": 6.229,
+            "attention_k": 2.018,
+            "attention_v": 1.882,
+            "attention_rope": 0.325,
+            "kv_cache_write": 0.136,
+            "attention_context": 0.315,
+            "attention_output": 6.635,
+            "attention_residual": 0.026,
+            "ffn_norm": 0.047,
+            "ffn_gate": 305.058,
+            "ffn_up": 302.715,
+            "ffn_activation": 1.181,
+            "ffn_down": 302.526,
+            "ffn_residual": 0.033
+          },
+          {
+            "layer_index": 25,
+            "total": 955.858,
+            "attention_norm": 0.042,
+            "attention_q": 6.588,
+            "attention_k": 2.073,
+            "attention_v": 2.01,
+            "attention_rope": 0.331,
+            "kv_cache_write": 0.147,
+            "attention_context": 0.349,
+            "attention_output": 6.649,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.045,
+            "ffn_gate": 314.216,
+            "ffn_up": 311.34,
+            "ffn_activation": 1.173,
+            "ffn_down": 309.832,
+            "ffn_residual": 0.032
+          },
+          {
+            "layer_index": 26,
+            "total": 949.247,
+            "attention_norm": 0.042,
+            "attention_q": 6.305,
+            "attention_k": 2.027,
+            "attention_v": 1.913,
+            "attention_rope": 0.329,
+            "kv_cache_write": 0.134,
+            "attention_context": 0.284,
+            "attention_output": 6.606,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.045,
+            "ffn_gate": 313.751,
+            "ffn_up": 308.18,
+            "ffn_activation": 1.139,
+            "ffn_down": 307.522,
+            "ffn_residual": 0.03
+          },
+          {
+            "layer_index": 27,
+            "total": 964.509,
+            "attention_norm": 0.044,
+            "attention_q": 6.258,
+            "attention_k": 1.986,
+            "attention_v": 1.933,
+            "attention_rope": 0.326,
+            "kv_cache_write": 0.133,
+            "attention_context": 0.383,
+            "attention_output": 6.658,
+            "attention_residual": 0.021,
+            "ffn_norm": 0.046,
+            "ffn_gate": 315.9,
+            "ffn_up": 313.862,
+            "ffn_activation": 1.156,
+            "ffn_down": 314.803,
+            "ffn_residual": 0.031
+          },
+          {
+            "layer_index": 28,
+            "total": 971.83,
+            "attention_norm": 0.043,
+            "attention_q": 6.594,
+            "attention_k": 2.136,
+            "attention_v": 1.97,
+            "attention_rope": 0.348,
+            "kv_cache_write": 0.146,
+            "attention_context": 0.409,
+            "attention_output": 6.647,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.048,
+            "ffn_gate": 318.875,
+            "ffn_up": 314.238,
+            "ffn_activation": 1.124,
+            "ffn_down": 318.174,
+            "ffn_residual": 0.035
+          },
+          {
+            "layer_index": 29,
+            "total": 954.745,
+            "attention_norm": 0.044,
+            "attention_q": 6.95,
+            "attention_k": 2.325,
+            "attention_v": 1.936,
+            "attention_rope": 0.356,
+            "kv_cache_write": 0.134,
+            "attention_context": 0.367,
+            "attention_output": 6.951,
+            "attention_residual": 0.024,
+            "ffn_norm": 0.046,
+            "ffn_gate": 312.23,
+            "ffn_up": 310.685,
+            "ffn_activation": 1.139,
+            "ffn_down": 310.561,
+            "ffn_residual": 0.027
+          },
+          {
+            "layer_index": 30,
+            "total": 962.153,
+            "attention_norm": 0.043,
+            "attention_q": 6.714,
+            "attention_k": 2.163,
+            "attention_v": 2.003,
+            "attention_rope": 0.323,
+            "kv_cache_write": 0.14,
+            "attention_context": 0.319,
+            "attention_output": 6.416,
+            "attention_residual": 0.02,
+            "ffn_norm": 0.044,
+            "ffn_gate": 318.777,
+            "ffn_up": 310.219,
+            "ffn_activation": 1.17,
+            "ffn_down": 312.799,
+            "ffn_residual": 0.031
+          },
+          {
+            "layer_index": 31,
+            "total": 910.126,
+            "attention_norm": 0.042,
+            "attention_q": 6.345,
+            "attention_k": 2.061,
+            "attention_v": 1.906,
+            "attention_rope": 0.335,
+            "kv_cache_write": 0.136,
+            "attention_context": 0.414,
+            "attention_output": 6.592,
+            "attention_residual": 0.02,
+            "ffn_norm": 0.043,
+            "ffn_gate": 299.788,
+            "ffn_up": 296.149,
+            "ffn_activation": 1.151,
+            "ffn_down": 294.183,
+            "ffn_residual": 0.031
+          }
+        ],
+        "first_token_layers": [
+          {
+            "layer_index": 0,
+            "total": 105.557,
+            "attention_norm": 0.005,
+            "attention_q": 4.764,
+            "attention_k": 1.41,
+            "attention_v": 1.504,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.213,
+            "attention_context": 0.038,
+            "attention_output": 5.166,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 31.303,
+            "ffn_up": 28.625,
+            "ffn_activation": 0.108,
+            "ffn_down": 32.246,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 1,
+            "total": 100.895,
+            "attention_norm": 0.01,
+            "attention_q": 4.412,
+            "attention_k": 1.294,
+            "attention_v": 1.334,
+            "attention_rope": 0.051,
+            "kv_cache_write": 0.019,
+            "attention_context": 0.056,
+            "attention_output": 4.448,
+            "attention_residual": 0.005,
+            "ffn_norm": 0.007,
+            "ffn_gate": 31.331,
+            "ffn_up": 28.736,
+            "ffn_activation": 0.113,
+            "ffn_down": 28.975,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 2,
+            "total": 98.432,
+            "attention_norm": 0.01,
+            "attention_q": 4.383,
+            "attention_k": 1.315,
+            "attention_v": 1.319,
+            "attention_rope": 0.056,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.041,
+            "attention_output": 4.54,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.009,
+            "ffn_gate": 30.967,
+            "ffn_up": 28.052,
+            "ffn_activation": 0.112,
+            "ffn_down": 27.515,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 3,
+            "total": 108.502,
+            "attention_norm": 0.009,
+            "attention_q": 3.948,
+            "attention_k": 1.338,
+            "attention_v": 1.244,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.053,
+            "attention_output": 4.342,
+            "attention_residual": 0.004,
+            "ffn_norm": 0.007,
+            "ffn_gate": 34.128,
+            "ffn_up": 32.161,
+            "ffn_activation": 0.111,
+            "ffn_down": 30.963,
+            "ffn_residual": 0.022
+          },
+          {
+            "layer_index": 4,
+            "total": 108.27,
+            "attention_norm": 0.008,
+            "attention_q": 4.444,
+            "attention_k": 1.348,
+            "attention_v": 1.253,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.051,
+            "attention_output": 4.497,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 34.081,
+            "ffn_up": 30.847,
+            "ffn_activation": 0.113,
+            "ffn_down": 31.429,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 5,
+            "total": 109.698,
+            "attention_norm": 0.009,
+            "attention_q": 4.197,
+            "attention_k": 1.373,
+            "attention_v": 1.231,
+            "attention_rope": 0.053,
+            "kv_cache_write": 0.02,
+            "attention_context": 0.052,
+            "attention_output": 4.424,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.009,
+            "ffn_gate": 34.766,
+            "ffn_up": 31.583,
+            "ffn_activation": 0.11,
+            "ffn_down": 31.739,
+            "ffn_residual": 0.023
+          },
+          {
+            "layer_index": 6,
+            "total": 112.326,
+            "attention_norm": 0.02,
+            "attention_q": 4.811,
+            "attention_k": 1.304,
+            "attention_v": 1.317,
+            "attention_rope": 0.055,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.058,
+            "attention_output": 4.62,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 36.443,
+            "ffn_up": 31.944,
+            "ffn_activation": 0.115,
+            "ffn_down": 31.507,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 7,
+            "total": 113.973,
+            "attention_norm": 0.009,
+            "attention_q": 4.243,
+            "attention_k": 1.315,
+            "attention_v": 1.265,
+            "attention_rope": 0.071,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.053,
+            "attention_output": 4.477,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 35.654,
+            "ffn_up": 33.85,
+            "ffn_activation": 0.113,
+            "ffn_down": 32.795,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 8,
+            "total": 106.447,
+            "attention_norm": 0.008,
+            "attention_q": 4.379,
+            "attention_k": 1.338,
+            "attention_v": 1.287,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.015,
+            "attention_context": 0.054,
+            "attention_output": 4.574,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.009,
+            "ffn_gate": 34.225,
+            "ffn_up": 30.223,
+            "ffn_activation": 0.112,
+            "ffn_down": 30.075,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 9,
+            "total": 113.676,
+            "attention_norm": 0.009,
+            "attention_q": 4.303,
+            "attention_k": 1.33,
+            "attention_v": 1.248,
+            "attention_rope": 0.049,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.053,
+            "attention_output": 4.519,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.007,
+            "ffn_gate": 36.522,
+            "ffn_up": 32.882,
+            "ffn_activation": 0.134,
+            "ffn_down": 32.488,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 10,
+            "total": 112.205,
+            "attention_norm": 0.01,
+            "attention_q": 4.569,
+            "attention_k": 1.329,
+            "attention_v": 1.225,
+            "attention_rope": 0.048,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.062,
+            "attention_output": 4.447,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 36.277,
+            "ffn_up": 32.346,
+            "ffn_activation": 0.114,
+            "ffn_down": 31.647,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 11,
+            "total": 114.744,
+            "attention_norm": 0.01,
+            "attention_q": 4.587,
+            "attention_k": 1.307,
+            "attention_v": 1.182,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.056,
+            "attention_output": 4.692,
+            "attention_residual": 0.005,
+            "ffn_norm": 0.008,
+            "ffn_gate": 37.424,
+            "ffn_up": 32.947,
+            "ffn_activation": 0.113,
+            "ffn_down": 32.225,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 12,
+            "total": 109.576,
+            "attention_norm": 0.008,
+            "attention_q": 4.502,
+            "attention_k": 1.387,
+            "attention_v": 1.211,
+            "attention_rope": 0.053,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.053,
+            "attention_output": 4.427,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 35.527,
+            "ffn_up": 31.216,
+            "ffn_activation": 0.11,
+            "ffn_down": 30.948,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 13,
+            "total": 112.358,
+            "attention_norm": 0.008,
+            "attention_q": 4.078,
+            "attention_k": 1.353,
+            "attention_v": 1.304,
+            "attention_rope": 0.055,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.059,
+            "attention_output": 4.51,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 34.652,
+            "ffn_up": 33.36,
+            "ffn_activation": 0.12,
+            "ffn_down": 32.727,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 14,
+            "total": 114.011,
+            "attention_norm": 0.01,
+            "attention_q": 5.172,
+            "attention_k": 1.547,
+            "attention_v": 1.299,
+            "attention_rope": 0.053,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.055,
+            "attention_output": 4.906,
+            "attention_residual": 0.007,
+            "ffn_norm": 0.01,
+            "ffn_gate": 37.322,
+            "ffn_up": 31.877,
+            "ffn_activation": 0.116,
+            "ffn_down": 31.513,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 15,
+            "total": 114.722,
+            "attention_norm": 0.01,
+            "attention_q": 4.21,
+            "attention_k": 1.356,
+            "attention_v": 1.232,
+            "attention_rope": 0.053,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.059,
+            "attention_output": 4.402,
+            "attention_residual": 0.005,
+            "ffn_norm": 0.009,
+            "ffn_gate": 36.483,
+            "ffn_up": 33.902,
+            "ffn_activation": 0.114,
+            "ffn_down": 32.766,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 16,
+            "total": 105.409,
+            "attention_norm": 0.009,
+            "attention_q": 4.302,
+            "attention_k": 1.292,
+            "attention_v": 1.241,
+            "attention_rope": 0.057,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.052,
+            "attention_output": 4.532,
+            "attention_residual": 0.005,
+            "ffn_norm": 0.008,
+            "ffn_gate": 33.549,
+            "ffn_up": 30.326,
+            "ffn_activation": 0.124,
+            "ffn_down": 29.8,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 17,
+            "total": 116.367,
+            "attention_norm": 0.009,
+            "attention_q": 4.639,
+            "attention_k": 1.351,
+            "attention_v": 1.295,
+            "attention_rope": 0.053,
+            "kv_cache_write": 0.015,
+            "attention_context": 0.069,
+            "attention_output": 5.198,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.009,
+            "ffn_gate": 38.432,
+            "ffn_up": 33.001,
+            "ffn_activation": 0.114,
+            "ffn_down": 32.071,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 18,
+            "total": 103.935,
+            "attention_norm": 0.009,
+            "attention_q": 4.073,
+            "attention_k": 1.336,
+            "attention_v": 1.228,
+            "attention_rope": 0.053,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.053,
+            "attention_output": 4.532,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 33.079,
+            "ffn_up": 29.597,
+            "ffn_activation": 0.114,
+            "ffn_down": 29.723,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 19,
+            "total": 111.518,
+            "attention_norm": 0.009,
+            "attention_q": 4.494,
+            "attention_k": 1.308,
+            "attention_v": 1.301,
+            "attention_rope": 0.055,
+            "kv_cache_write": 0.018,
+            "attention_context": 0.056,
+            "attention_output": 4.532,
+            "attention_residual": 0.007,
+            "ffn_norm": 0.008,
+            "ffn_gate": 35.787,
+            "ffn_up": 32.734,
+            "ffn_activation": 0.114,
+            "ffn_down": 30.992,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 20,
+            "total": 111.067,
+            "attention_norm": 0.008,
+            "attention_q": 4.114,
+            "attention_k": 1.35,
+            "attention_v": 1.217,
+            "attention_rope": 0.069,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.053,
+            "attention_output": 4.414,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 33.835,
+            "ffn_up": 34.049,
+            "ffn_activation": 0.113,
+            "ffn_down": 31.704,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 21,
+            "total": 100.99,
+            "attention_norm": 0.009,
+            "attention_q": 4.256,
+            "attention_k": 1.248,
+            "attention_v": 1.246,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.053,
+            "attention_output": 4.39,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 32.407,
+            "ffn_up": 28.579,
+            "ffn_activation": 0.122,
+            "ffn_down": 28.503,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 22,
+            "total": 102.939,
+            "attention_norm": 0.007,
+            "attention_q": 3.983,
+            "attention_k": 1.279,
+            "attention_v": 1.25,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.051,
+            "attention_output": 4.421,
+            "attention_residual": 0.005,
+            "ffn_norm": 0.007,
+            "ffn_gate": 31.537,
+            "ffn_up": 29.406,
+            "ffn_activation": 0.11,
+            "ffn_down": 30.713,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 23,
+            "total": 114.742,
+            "attention_norm": 0.01,
+            "attention_q": 4.224,
+            "attention_k": 1.285,
+            "attention_v": 1.212,
+            "attention_rope": 0.049,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.057,
+            "attention_output": 4.397,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 36.478,
+            "ffn_up": 34.401,
+            "ffn_activation": 0.117,
+            "ffn_down": 32.371,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 24,
+            "total": 105.368,
+            "attention_norm": 0.007,
+            "attention_q": 4.385,
+            "attention_k": 1.405,
+            "attention_v": 1.263,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.047,
+            "attention_output": 4.53,
+            "attention_residual": 0.028,
+            "ffn_norm": 0.009,
+            "ffn_gate": 33.317,
+            "ffn_up": 29.628,
+            "ffn_activation": 0.111,
+            "ffn_down": 30.467,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 25,
+            "total": 102.247,
+            "attention_norm": 0.01,
+            "attention_q": 4.14,
+            "attention_k": 1.321,
+            "attention_v": 1.247,
+            "attention_rope": 0.051,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.053,
+            "attention_output": 4.513,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 31.446,
+            "ffn_up": 29.546,
+            "ffn_activation": 0.111,
+            "ffn_down": 29.652,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 26,
+            "total": 113.065,
+            "attention_norm": 0.008,
+            "attention_q": 4.389,
+            "attention_k": 1.374,
+            "attention_v": 1.307,
+            "attention_rope": 0.05,
+            "kv_cache_write": 0.018,
+            "attention_context": 0.043,
+            "attention_output": 4.494,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 35.56,
+            "ffn_up": 33.832,
+            "ffn_activation": 0.114,
+            "ffn_down": 31.749,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 27,
+            "total": 103.741,
+            "attention_norm": 0.008,
+            "attention_q": 4.143,
+            "attention_k": 1.235,
+            "attention_v": 1.262,
+            "attention_rope": 0.054,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.051,
+            "attention_output": 4.441,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 32.229,
+            "ffn_up": 29.891,
+            "ffn_activation": 0.112,
+            "ffn_down": 30.188,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 28,
+            "total": 114.012,
+            "attention_norm": 0.007,
+            "attention_q": 4.436,
+            "attention_k": 1.466,
+            "attention_v": 1.28,
+            "attention_rope": 0.062,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.047,
+            "attention_output": 4.48,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 36.555,
+            "ffn_up": 32.721,
+            "ffn_activation": 0.115,
+            "ffn_down": 32.698,
+            "ffn_residual": 0.007
+          },
+          {
+            "layer_index": 29,
+            "total": 108.872,
+            "attention_norm": 0.007,
+            "attention_q": 4.657,
+            "attention_k": 1.452,
+            "attention_v": 1.293,
+            "attention_rope": 0.053,
+            "kv_cache_write": 0.016,
+            "attention_context": 0.053,
+            "attention_output": 4.512,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 34.136,
+            "ffn_up": 30.651,
+            "ffn_activation": 0.113,
+            "ffn_down": 31.811,
+            "ffn_residual": 0.006
+          },
+          {
+            "layer_index": 30,
+            "total": 111.627,
+            "attention_norm": 0.009,
+            "attention_q": 4.553,
+            "attention_k": 1.414,
+            "attention_v": 1.253,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.072,
+            "attention_output": 4.555,
+            "attention_residual": 0.006,
+            "ffn_norm": 0.008,
+            "ffn_gate": 34.812,
+            "ffn_up": 32.042,
+            "ffn_activation": 0.114,
+            "ffn_down": 32.611,
+            "ffn_residual": 0.008
+          },
+          {
+            "layer_index": 31,
+            "total": 107.885,
+            "attention_norm": 0.01,
+            "attention_q": 4.606,
+            "attention_k": 1.351,
+            "attention_v": 1.384,
+            "attention_rope": 0.052,
+            "kv_cache_write": 0.017,
+            "attention_context": 0.056,
+            "attention_output": 4.655,
+            "attention_residual": 0.007,
+            "ffn_norm": 0.009,
+            "ffn_gate": 34.453,
+            "ffn_up": 30.174,
+            "ffn_activation": 0.122,
+            "ffn_down": 30.885,
+            "ffn_residual": 0.006
+          }
+        ]
+      },
+      "layers": [
+        {
+          "layer_index": 0,
+          "total": 1508.701,
+          "attention_norm": 0.067,
+          "attention_q": 32.122,
+          "attention_k": 9.524,
+          "attention_v": 10.169,
+          "attention_rope": 0.596,
+          "kv_cache_write": 0.675,
+          "attention_context": 0.662,
+          "attention_output": 33.718,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.085,
+          "ffn_gate": 480.126,
+          "ffn_up": 454.889,
+          "ffn_activation": 1.7,
+          "ffn_down": 482.829,
+          "ffn_residual": 0.07
+        },
+        {
+          "layer_index": 1,
+          "total": 1442.222,
+          "attention_norm": 0.086,
+          "attention_q": 27.64,
+          "attention_k": 8.728,
+          "attention_v": 8.526,
+          "attention_rope": 0.595,
+          "kv_cache_write": 0.224,
+          "attention_context": 0.607,
+          "attention_output": 28.993,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.081,
+          "ffn_gate": 463.238,
+          "ffn_up": 454.604,
+          "ffn_activation": 1.735,
+          "ffn_down": 445.625,
+          "ffn_residual": 0.073
+        },
+        {
+          "layer_index": 2,
+          "total": 1438.678,
+          "attention_norm": 0.088,
+          "attention_q": 28.983,
+          "attention_k": 8.583,
+          "attention_v": 8.306,
+          "attention_rope": 0.626,
+          "kv_cache_write": 0.229,
+          "attention_context": 0.815,
+          "attention_output": 29.172,
+          "attention_residual": 0.053,
+          "ffn_norm": 0.085,
+          "ffn_gate": 462.543,
+          "ffn_up": 451.391,
+          "ffn_activation": 1.714,
+          "ffn_down": 444.663,
+          "ffn_residual": 0.061
+        },
+        {
+          "layer_index": 3,
+          "total": 1458.492,
+          "attention_norm": 0.09,
+          "attention_q": 27.429,
+          "attention_k": 8.509,
+          "attention_v": 8.253,
+          "attention_rope": 0.599,
+          "kv_cache_write": 0.217,
+          "attention_context": 0.739,
+          "attention_output": 28.745,
+          "attention_residual": 0.046,
+          "ffn_norm": 0.085,
+          "ffn_gate": 474.423,
+          "ffn_up": 453.013,
+          "ffn_activation": 1.743,
+          "ffn_down": 453.132,
+          "ffn_residual": 0.078
+        },
+        {
+          "layer_index": 4,
+          "total": 1519.136,
+          "attention_norm": 0.087,
+          "attention_q": 27.613,
+          "attention_k": 8.869,
+          "attention_v": 8.297,
+          "attention_rope": 0.6,
+          "kv_cache_write": 0.22,
+          "attention_context": 0.815,
+          "attention_output": 28.795,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.085,
+          "ffn_gate": 492.583,
+          "ffn_up": 471.034,
+          "ffn_activation": 1.721,
+          "ffn_down": 476.736,
+          "ffn_residual": 0.066
+        },
+        {
+          "layer_index": 5,
+          "total": 1461.203,
+          "attention_norm": 0.085,
+          "attention_q": 27.795,
+          "attention_k": 8.615,
+          "attention_v": 8.117,
+          "attention_rope": 0.606,
+          "kv_cache_write": 0.22,
+          "attention_context": 0.657,
+          "attention_output": 28.418,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.083,
+          "ffn_gate": 472.713,
+          "ffn_up": 454.669,
+          "ffn_activation": 1.762,
+          "ffn_down": 455.935,
+          "ffn_residual": 0.083
+        },
+        {
+          "layer_index": 6,
+          "total": 1462.149,
+          "attention_norm": 0.102,
+          "attention_q": 27.945,
+          "attention_k": 8.455,
+          "attention_v": 8.197,
+          "attention_rope": 0.61,
+          "kv_cache_write": 0.224,
+          "attention_context": 0.626,
+          "attention_output": 28.685,
+          "attention_residual": 0.053,
+          "ffn_norm": 0.088,
+          "ffn_gate": 475.855,
+          "ffn_up": 454.039,
+          "ffn_activation": 1.745,
+          "ffn_down": 454.072,
+          "ffn_residual": 0.064
+        },
+        {
+          "layer_index": 7,
+          "total": 1458.299,
+          "attention_norm": 0.094,
+          "attention_q": 27.229,
+          "attention_k": 8.528,
+          "attention_v": 8.042,
+          "attention_rope": 0.637,
+          "kv_cache_write": 0.22,
+          "attention_context": 0.677,
+          "attention_output": 28.721,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.084,
+          "ffn_gate": 472.165,
+          "ffn_up": 454.853,
+          "ffn_activation": 1.678,
+          "ffn_down": 453.825,
+          "ffn_residual": 0.071
+        },
+        {
+          "layer_index": 8,
+          "total": 1495.119,
+          "attention_norm": 0.095,
+          "attention_q": 28.087,
+          "attention_k": 8.628,
+          "attention_v": 8.141,
+          "attention_rope": 0.593,
+          "kv_cache_write": 0.281,
+          "attention_context": 0.736,
+          "attention_output": 28.953,
+          "attention_residual": 0.047,
+          "ffn_norm": 0.087,
+          "ffn_gate": 485.195,
+          "ffn_up": 464.798,
+          "ffn_activation": 1.758,
+          "ffn_down": 466.239,
+          "ffn_residual": 0.064
+        },
+        {
+          "layer_index": 9,
+          "total": 1538.898,
+          "attention_norm": 0.087,
+          "attention_q": 27.123,
+          "attention_k": 8.423,
+          "attention_v": 8.123,
+          "attention_rope": 0.602,
+          "kv_cache_write": 0.235,
+          "attention_context": 0.68,
+          "attention_output": 28.774,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.082,
+          "ffn_gate": 502.171,
+          "ffn_up": 480.908,
+          "ffn_activation": 1.75,
+          "ffn_down": 478.358,
+          "ffn_residual": 0.066
+        },
+        {
+          "layer_index": 10,
+          "total": 1513.306,
+          "attention_norm": 0.087,
+          "attention_q": 27.538,
+          "attention_k": 8.74,
+          "attention_v": 8.137,
+          "attention_rope": 0.584,
+          "kv_cache_write": 0.237,
+          "attention_context": 0.731,
+          "attention_output": 28.732,
+          "attention_residual": 0.052,
+          "ffn_norm": 0.084,
+          "ffn_gate": 489.398,
+          "ffn_up": 472.139,
+          "ffn_activation": 1.723,
+          "ffn_down": 473.669,
+          "ffn_residual": 0.066
+        },
+        {
+          "layer_index": 11,
+          "total": 1557.571,
+          "attention_norm": 0.083,
+          "attention_q": 27.996,
+          "attention_k": 8.436,
+          "attention_v": 8.163,
+          "attention_rope": 0.605,
+          "kv_cache_write": 0.218,
+          "attention_context": 0.7,
+          "attention_output": 29.208,
+          "attention_residual": 0.048,
+          "ffn_norm": 0.096,
+          "ffn_gate": 506.559,
+          "ffn_up": 486.006,
+          "ffn_activation": 1.75,
+          "ffn_down": 486.173,
+          "ffn_residual": 0.063
+        },
+        {
+          "layer_index": 12,
+          "total": 1572.119,
+          "attention_norm": 0.087,
+          "attention_q": 27.859,
+          "attention_k": 8.84,
+          "attention_v": 8.334,
+          "attention_rope": 0.625,
+          "kv_cache_write": 0.216,
+          "attention_context": 0.813,
+          "attention_output": 28.777,
+          "attention_residual": 0.048,
+          "ffn_norm": 0.086,
+          "ffn_gate": 512.512,
+          "ffn_up": 489.719,
+          "ffn_activation": 1.766,
+          "ffn_down": 490.836,
+          "ffn_residual": 0.065
+        },
+        {
+          "layer_index": 13,
+          "total": 1494.045,
+          "attention_norm": 0.09,
+          "attention_q": 27.058,
+          "attention_k": 8.558,
+          "attention_v": 8.056,
+          "attention_rope": 0.61,
+          "kv_cache_write": 0.223,
+          "attention_context": 0.771,
+          "attention_output": 28.831,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.086,
+          "ffn_gate": 481.093,
+          "ffn_up": 467.612,
+          "ffn_activation": 1.705,
+          "ffn_down": 467.747,
+          "ffn_residual": 0.067
+        },
+        {
+          "layer_index": 14,
+          "total": 1479.915,
+          "attention_norm": 0.09,
+          "attention_q": 29.009,
+          "attention_k": 8.665,
+          "attention_v": 8.315,
+          "attention_rope": 0.614,
+          "kv_cache_write": 0.22,
+          "attention_context": 0.62,
+          "attention_output": 29.082,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.089,
+          "ffn_gate": 480.123,
+          "ffn_up": 461.124,
+          "ffn_activation": 1.776,
+          "ffn_down": 458.616,
+          "ffn_residual": 0.066
+        },
+        {
+          "layer_index": 15,
+          "total": 1445.078,
+          "attention_norm": 0.088,
+          "attention_q": 27.083,
+          "attention_k": 8.65,
+          "attention_v": 7.978,
+          "attention_rope": 0.618,
+          "kv_cache_write": 0.225,
+          "attention_context": 0.67,
+          "attention_output": 28.622,
+          "attention_residual": 0.051,
+          "ffn_norm": 0.086,
+          "ffn_gate": 466.655,
+          "ffn_up": 449.842,
+          "ffn_activation": 1.784,
+          "ffn_down": 451.298,
+          "ffn_residual": 0.065
+        },
+        {
+          "layer_index": 16,
+          "total": 1437.654,
+          "attention_norm": 0.087,
+          "attention_q": 27.734,
+          "attention_k": 8.457,
+          "attention_v": 8.063,
+          "attention_rope": 0.593,
+          "kv_cache_write": 0.216,
+          "attention_context": 0.625,
+          "attention_output": 28.506,
+          "attention_residual": 0.046,
+          "ffn_norm": 0.086,
+          "ffn_gate": 465.382,
+          "ffn_up": 448.844,
+          "ffn_activation": 1.708,
+          "ffn_down": 445.819,
+          "ffn_residual": 0.063
+        },
+        {
+          "layer_index": 17,
+          "total": 1440.665,
+          "attention_norm": 0.079,
+          "attention_q": 27.442,
+          "attention_k": 8.62,
+          "attention_v": 8.162,
+          "attention_rope": 0.608,
+          "kv_cache_write": 0.228,
+          "attention_context": 0.702,
+          "attention_output": 29.258,
+          "attention_residual": 0.046,
+          "ffn_norm": 0.086,
+          "ffn_gate": 468.94,
+          "ffn_up": 447.955,
+          "ffn_activation": 1.726,
+          "ffn_down": 445.325,
+          "ffn_residual": 0.06
+        },
+        {
+          "layer_index": 18,
+          "total": 1422.446,
+          "attention_norm": 0.085,
+          "attention_q": 26.738,
+          "attention_k": 8.727,
+          "attention_v": 8.14,
+          "attention_rope": 0.615,
+          "kv_cache_write": 0.236,
+          "attention_context": 0.638,
+          "attention_output": 28.524,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.083,
+          "ffn_gate": 459.477,
+          "ffn_up": 442.731,
+          "ffn_activation": 1.734,
+          "ffn_down": 443.21,
+          "ffn_residual": 0.061
+        },
+        {
+          "layer_index": 19,
+          "total": 1461.827,
+          "attention_norm": 0.087,
+          "attention_q": 27.087,
+          "attention_k": 8.589,
+          "attention_v": 8.155,
+          "attention_rope": 0.598,
+          "kv_cache_write": 0.219,
+          "attention_context": 1.108,
+          "attention_output": 28.558,
+          "attention_residual": 0.047,
+          "ffn_norm": 0.102,
+          "ffn_gate": 470.478,
+          "ffn_up": 457.093,
+          "ffn_activation": 1.707,
+          "ffn_down": 456.511,
+          "ffn_residual": 0.064
+        },
+        {
+          "layer_index": 20,
+          "total": 1436.158,
+          "attention_norm": 0.087,
+          "attention_q": 27.558,
+          "attention_k": 8.511,
+          "attention_v": 8.059,
+          "attention_rope": 0.641,
+          "kv_cache_write": 0.263,
+          "attention_context": 0.711,
+          "attention_output": 28.546,
+          "attention_residual": 0.047,
+          "ffn_norm": 0.085,
+          "ffn_gate": 463.091,
+          "ffn_up": 449.311,
+          "ffn_activation": 1.758,
+          "ffn_down": 445.999,
+          "ffn_residual": 0.064
+        },
+        {
+          "layer_index": 21,
+          "total": 1406.282,
+          "attention_norm": 0.087,
+          "attention_q": 27.413,
+          "attention_k": 8.882,
+          "attention_v": 8.236,
+          "attention_rope": 0.618,
+          "kv_cache_write": 0.252,
+          "attention_context": 0.673,
+          "attention_output": 28.568,
+          "attention_residual": 0.047,
+          "ffn_norm": 0.084,
+          "ffn_gate": 455.763,
+          "ffn_up": 435.879,
+          "ffn_activation": 1.757,
+          "ffn_down": 436.495,
+          "ffn_residual": 0.061
+        },
+        {
+          "layer_index": 22,
+          "total": 1407.141,
+          "attention_norm": 0.082,
+          "attention_q": 26.637,
+          "attention_k": 8.473,
+          "attention_v": 8.182,
+          "attention_rope": 0.592,
+          "kv_cache_write": 0.227,
+          "attention_context": 0.783,
+          "attention_output": 28.441,
+          "attention_residual": 0.048,
+          "ffn_norm": 0.09,
+          "ffn_gate": 454.671,
+          "ffn_up": 437.091,
+          "ffn_activation": 1.787,
+          "ffn_down": 438.629,
+          "ffn_residual": 0.064
+        },
+        {
+          "layer_index": 23,
+          "total": 1427.434,
+          "attention_norm": 0.086,
+          "attention_q": 26.682,
+          "attention_k": 8.71,
+          "attention_v": 8.183,
+          "attention_rope": 0.603,
+          "kv_cache_write": 0.229,
+          "attention_context": 0.709,
+          "attention_output": 28.266,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.087,
+          "ffn_gate": 460.861,
+          "ffn_up": 444.682,
+          "ffn_activation": 1.762,
+          "ffn_down": 445.083,
+          "ffn_residual": 0.066
+        },
+        {
+          "layer_index": 24,
+          "total": 1452.97,
+          "attention_norm": 0.098,
+          "attention_q": 27.949,
+          "attention_k": 8.823,
+          "attention_v": 8.182,
+          "attention_rope": 0.591,
+          "kv_cache_write": 0.219,
+          "attention_context": 0.598,
+          "attention_output": 28.847,
+          "attention_residual": 0.077,
+          "ffn_norm": 0.086,
+          "ffn_gate": 470.653,
+          "ffn_up": 452.526,
+          "ffn_activation": 1.771,
+          "ffn_down": 451.07,
+          "ffn_residual": 0.064
+        },
+        {
+          "layer_index": 25,
+          "total": 1472.521,
+          "attention_norm": 0.087,
+          "attention_q": 27.32,
+          "attention_k": 8.638,
+          "attention_v": 8.186,
+          "attention_rope": 0.593,
+          "kv_cache_write": 0.23,
+          "attention_context": 0.644,
+          "attention_output": 28.791,
+          "attention_residual": 0.047,
+          "ffn_norm": 0.086,
+          "ffn_gate": 475.823,
+          "ffn_up": 460.119,
+          "ffn_activation": 1.75,
+          "ffn_down": 458.628,
+          "ffn_residual": 0.062
+        },
+        {
+          "layer_index": 26,
+          "total": 1485.646,
+          "attention_norm": 0.085,
+          "attention_q": 27.558,
+          "attention_k": 8.879,
+          "attention_v": 8.259,
+          "attention_rope": 0.599,
+          "kv_cache_write": 0.222,
+          "attention_context": 0.583,
+          "attention_output": 28.724,
+          "attention_residual": 0.048,
+          "ffn_norm": 0.082,
+          "ffn_gate": 484.895,
+          "ffn_up": 462.687,
+          "ffn_activation": 1.697,
+          "ffn_down": 459.813,
+          "ffn_residual": 0.062
+        },
+        {
+          "layer_index": 27,
+          "total": 1478.032,
+          "attention_norm": 0.087,
+          "attention_q": 27.059,
+          "attention_k": 8.217,
+          "attention_v": 8.023,
+          "attention_rope": 0.592,
+          "kv_cache_write": 0.214,
+          "attention_context": 0.678,
+          "attention_output": 28.534,
+          "attention_residual": 0.048,
+          "ffn_norm": 0.087,
+          "ffn_gate": 478.147,
+          "ffn_up": 460.763,
+          "ffn_activation": 1.719,
+          "ffn_down": 462.351,
+          "ffn_residual": 0.064
+        },
+        {
+          "layer_index": 28,
+          "total": 1498.032,
+          "attention_norm": 0.083,
+          "attention_q": 27.893,
+          "attention_k": 8.974,
+          "attention_v": 8.263,
+          "attention_rope": 0.628,
+          "kv_cache_write": 0.231,
+          "attention_context": 0.719,
+          "attention_output": 28.659,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.089,
+          "ffn_gate": 484.825,
+          "ffn_up": 465.025,
+          "ffn_activation": 1.69,
+          "ffn_down": 469.318,
+          "ffn_residual": 0.067
+        },
+        {
+          "layer_index": 29,
+          "total": 1477.951,
+          "attention_norm": 0.084,
+          "attention_q": 28.901,
+          "attention_k": 9.576,
+          "attention_v": 8.193,
+          "attention_rope": 0.621,
+          "kv_cache_write": 0.219,
+          "attention_context": 0.67,
+          "attention_output": 28.853,
+          "attention_residual": 0.05,
+          "ffn_norm": 0.088,
+          "ffn_gate": 477.329,
+          "ffn_up": 460.17,
+          "ffn_activation": 1.703,
+          "ffn_down": 459.987,
+          "ffn_residual": 0.058
+        },
+        {
+          "layer_index": 30,
+          "total": 1484.649,
+          "attention_norm": 0.088,
+          "attention_q": 28.201,
+          "attention_k": 9.347,
+          "attention_v": 8.066,
+          "attention_rope": 0.59,
+          "kv_cache_write": 0.221,
+          "attention_context": 0.638,
+          "attention_output": 28.26,
+          "attention_residual": 0.047,
+          "ffn_norm": 0.094,
+          "ffn_gate": 481.512,
+          "ffn_up": 459.647,
+          "ffn_activation": 1.745,
+          "ffn_down": 464.655,
+          "ffn_residual": 0.065
+        },
+        {
+          "layer_index": 31,
+          "total": 1438.511,
+          "attention_norm": 0.088,
+          "attention_q": 28.404,
+          "attention_k": 9.144,
+          "attention_v": 8.511,
+          "attention_rope": 0.601,
+          "kv_cache_write": 0.222,
+          "attention_context": 0.709,
+          "attention_output": 28.559,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.088,
+          "ffn_gate": 466.802,
+          "ffn_up": 446.69,
+          "ffn_activation": 1.707,
+          "ffn_down": 445.437,
+          "ffn_residual": 0.062
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "camelid.public_1b_3b_unique_chat_perf_rss_summary.v1",
+  "source_manifest": "manifest.json",
+  "passed": true,
+  "checks": {
+    "clean_public_checkout": true,
+    "all_rows_have_measured_runs": true,
+    "all_rows_weight_cache_hot_for_measured_runs": true,
+    "all_rows_have_memory_samples": true
+  },
+  "rows": [
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "display_name": "Llama 3.2 1B Instruct Q8_0",
+      "passed": true,
+      "measured_count": 4,
+      "max_backend_rss_mib": 274.31,
+      "avg_wall_ms": 7379.73,
+      "avg_generate_ms": 7065.25
+    },
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "display_name": "Llama 3.2 3B Instruct Q8_0",
+      "passed": true,
+      "measured_count": 4,
+      "max_backend_rss_mib": 287.21,
+      "avg_wall_ms": 19762.21,
+      "avg_generate_ms": 19449.25
+    }
+  ],
+  "claim_boundary": "This closes only the bounded unique-chat memory/perf envelope box for the exact Llama 3.2 1B/3B Instruct Q8_0 rows. It does not promote broad/full Llama-family support, neighboring rows, other quantizations, larger context buckets, arbitrary GGUF/Jinja template execution, production throughput, or portability."
+}

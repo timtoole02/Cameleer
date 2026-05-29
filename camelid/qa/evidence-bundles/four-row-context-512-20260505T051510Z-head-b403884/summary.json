@@ -1,0 +1,51 @@
+{
+  "schema": "camelid.four_row_context_512_public_summary.v1",
+  "generated_utc": "2026-05-05T05:16:20Z",
+  "passed": true,
+  "checks": {
+    "checkout_clean": true,
+    "prompt_tokens_all_match": true,
+    "generated_tokens_all_match": true,
+    "generated_text_all_match": true,
+    "all_rows_have_bounded_rss": true
+  },
+  "rows": [
+    {
+      "row_id": "tinyllama_1_1b_chat_q8_0",
+      "context_window": 512,
+      "reference_prompt_token_count": 291,
+      "max_tokens": 5,
+      "max_resident_set_kib": 2368876,
+      "elapsed_wall_clock": "17.90",
+      "passed": true
+    },
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "context_window": 512,
+      "reference_prompt_token_count": 245,
+      "max_tokens": 5,
+      "max_resident_set_kib": 2858252,
+      "elapsed_wall_clock": "07.56",
+      "passed": true
+    },
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "context_window": 512,
+      "reference_prompt_token_count": 245,
+      "max_tokens": 5,
+      "max_resident_set_kib": 7251932,
+      "elapsed_wall_clock": "07.32",
+      "passed": true
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "context_window": 512,
+      "reference_prompt_token_count": 245,
+      "max_tokens": 5,
+      "max_resident_set_kib": 17262740,
+      "elapsed_wall_clock": "7:35.65",
+      "passed": true
+    }
+  ],
+  "claim_boundary": "Closes only the first bounded 512-context pack for the four exact Q8_0 rows. It does not promote neighboring rows, other quantizations, larger contexts, broader chat-template behavior, or full Llama-family support."
+}

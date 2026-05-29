@@ -1,0 +1,263 @@
+$ git rev-parse --short=12 HEAD
+3e037f313c2c
+$ git grep -n "ggml_vec_dot_q8_0_q8_0\|block_q8_0x4\|q8_0x4\|tinyBLAS\|MUL_MAT\|OpenMP\|GGML_SCHED\|AVX2\|AVX512\|VNNI" -- ggml/src
+ggml/src/CMakeLists.txt:4:add_compile_definitions(GGML_SCHED_MAX_COPIES=${GGML_SCHED_MAX_COPIES})
+ggml/src/CMakeLists.txt:221:if (GGML_SCHED_NO_REALLOC)
+ggml/src/CMakeLists.txt:222:    target_compile_definitions(ggml-base PUBLIC GGML_SCHED_NO_REALLOC)
+ggml/src/CMakeLists.txt:314:                      AVX AVX2 BMI2 AVX_VNNI FMA F16C
+ggml/src/CMakeLists.txt:315:                      AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16
+ggml/src/CMakeLists.txt:365:            # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/src/CMakeLists.txt:369:        ggml_add_cpu_backend_variant(haswell            SSE42 AVX F16C FMA AVX2 BMI2)
+ggml/src/CMakeLists.txt:370:        ggml_add_cpu_backend_variant(skylakex           SSE42 AVX F16C FMA AVX2 BMI2 AVX512)
+ggml/src/CMakeLists.txt:371:        ggml_add_cpu_backend_variant(cannonlake         SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI)
+ggml/src/CMakeLists.txt:372:        ggml_add_cpu_backend_variant(cascadelake        SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI)
+ggml/src/CMakeLists.txt:373:        ggml_add_cpu_backend_variant(icelake            SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI)
+ggml/src/CMakeLists.txt:378:            ggml_add_cpu_backend_variant(cooperlake     SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:379:            ggml_add_cpu_backend_variant(zen4           SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:381:        ggml_add_cpu_backend_variant(alderlake          SSE42 AVX F16C FMA AVX2 BMI2 AVX_VNNI)
+ggml/src/CMakeLists.txt:384:            ggml_add_cpu_backend_variant(sapphirerapids SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16 AMX_TILE AMX_INT8)
+ggml/src/ggml-backend-meta.cpp:845:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-backend-meta.cpp:846:            case GGML_OP_MUL_MAT_ID: {
+ggml/src/ggml-backend.cpp:752:#ifndef GGML_SCHED_MAX_BACKENDS
+ggml/src/ggml-backend.cpp:753:#define GGML_SCHED_MAX_BACKENDS 16
+ggml/src/ggml-backend.cpp:756:#ifndef GGML_SCHED_MAX_SPLIT_INPUTS
+ggml/src/ggml-backend.cpp:757:#define GGML_SCHED_MAX_SPLIT_INPUTS 30
+ggml/src/ggml-backend.cpp:760:#ifndef GGML_SCHED_MAX_COPIES
+ggml/src/ggml-backend.cpp:761:#define GGML_SCHED_MAX_COPIES 4
+ggml/src/ggml-backend.cpp:768:    struct ggml_tensor * inputs[GGML_SCHED_MAX_SPLIT_INPUTS];
+ggml/src/ggml-backend.cpp:780:    ggml_backend_t backends[GGML_SCHED_MAX_BACKENDS];
+ggml/src/ggml-backend.cpp:781:    ggml_backend_buffer_type_t bufts[GGML_SCHED_MAX_BACKENDS];
+ggml/src/ggml-backend.cpp:807:    ggml_backend_event_t events[GGML_SCHED_MAX_BACKENDS][GGML_SCHED_MAX_COPIES];
+ggml/src/ggml-backend.cpp:808:    struct ggml_tensor * graph_inputs[GGML_SCHED_MAX_SPLIT_INPUTS];
+ggml/src/ggml-backend.cpp:823:    // used for debugging graph reallocations [GGML_SCHED_DEBUG_REALLOC]
+ggml/src/ggml-backend.cpp:868:#define GGML_SCHED_MAX_SPLITS_DEBUG 4096
+ggml/src/ggml-backend.cpp:869:static char causes[GGML_DEFAULT_GRAPH_SIZE*16 + GGML_SCHED_MAX_SPLITS_DEBUG*GGML_SCHED_MAX_SPLIT_INPUTS][128]; // debug only
+ggml/src/ggml-backend.cpp:1291:                    if (split->n_inputs == GGML_SCHED_MAX_SPLIT_INPUTS) {
+ggml/src/ggml-backend.cpp:1347:                        GGML_ASSERT(n_graph_inputs < GGML_SCHED_MAX_SPLIT_INPUTS);
+ggml/src/ggml-backend.cpp:1367:                        GGML_ASSERT(n_inputs < GGML_SCHED_MAX_SPLIT_INPUTS);
+ggml/src/ggml-backend.cpp:1393:    int graph_size = std::max(graph->n_nodes, graph->n_leafs) + sched->n_splits*GGML_SCHED_MAX_SPLIT_INPUTS*2*sched->n_copies;
+ggml/src/ggml-backend.cpp:1395:    // remember the actual graph_size for performing reallocation checks later [GGML_SCHED_DEBUG_REALLOC]
+ggml/src/ggml-backend.cpp:1515:            // we are interested only in situations where the graph was reallocated even though its size remained the same [GGML_SCHED_DEBUG_REALLOC]
+ggml/src/ggml-backend.cpp:1581:                    (node->src[0] == input_cpy && node->op == GGML_OP_MUL_MAT_ID)
+ggml/src/ggml-backend.cpp:1585:                    const int64_t n_expert   = node->op == GGML_OP_MUL_MAT_ID ? input->ne[2] : input->ne[1];
+ggml/src/ggml-backend.cpp:1586:                    const size_t expert_size = node->op == GGML_OP_MUL_MAT_ID ? input->nb[2] : input->nb[1];
+ggml/src/ggml-backend.cpp:1735:    GGML_ASSERT(n_backends <= GGML_SCHED_MAX_BACKENDS);
+ggml/src/ggml-backend.cpp:1740:    const char * GGML_SCHED_DEBUG = getenv("GGML_SCHED_DEBUG");
+ggml/src/ggml-backend.cpp:1741:    sched->debug = GGML_SCHED_DEBUG ? atoi(GGML_SCHED_DEBUG) : 0;
+ggml/src/ggml-backend.cpp:1744:#ifdef GGML_SCHED_NO_REALLOC
+ggml/src/ggml-backend.cpp:1747:    const char * GGML_SCHED_DEBUG_REALLOC = getenv("GGML_SCHED_DEBUG_REALLOC");
+ggml/src/ggml-backend.cpp:1748:    sched->debug_realloc = GGML_SCHED_DEBUG_REALLOC ? atoi(GGML_SCHED_DEBUG_REALLOC) : sched->debug_realloc;
+ggml/src/ggml-backend.cpp:1751:    sched->n_copies = parallel ? GGML_SCHED_MAX_COPIES : 1;
+ggml/src/ggml-backend.cpp:1760:    const size_t nodes_size = graph_size + ggml_sched_max_splits*GGML_SCHED_MAX_SPLIT_INPUTS*2;
+ggml/src/ggml-backend.cpp:1769:    sched->context_buffer_size = ggml_sched_max_splits*GGML_SCHED_MAX_SPLIT_INPUTS*2*sizeof(struct ggml_tensor) + ggml_graph_overhead_custom(graph_size, false);
+ggml/src/ggml-blas/ggml-blas.cpp:236:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-blas/ggml-blas.cpp:297:        GGML_LOG_DEBUG("%s: warning: ggml is using OpenMP, but OpenBLAS was compiled without OpenMP support\n", __func__);
+ggml/src/ggml-blas/ggml-blas.cpp:302:    GGML_LOG_DEBUG("%s: warning: ggml is using OpenMP, but BLIS was compiled without OpenMP support\n", __func__);
+ggml/src/ggml-blas/ggml-blas.cpp:404:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/acl_tensor.h:336:#define BCAST_MUL_MAT_SHAPE(input, weight, dst)                                                                  \
+ggml/src/ggml-cann/acl_tensor.h:347:#define BCAST_MUL_MAT_PARAM(tensor) bcast_##tensor##_ne, bcast_##tensor##_nb, bcast_dims
+ggml/src/ggml-cann/aclnn_ops.cpp:2163:    BCAST_MUL_MAT_SHAPE(input, weight, dst);
+ggml/src/ggml-cann/aclnn_ops.cpp:2233:        GGML_ABORT("Only support Q4_0 and Q8_0 MUL_MAT");
+ggml/src/ggml-cann/aclnn_ops.cpp:3625: * This function implements MUL_MAT_ID operation for quantized weight matrices
+ggml/src/ggml-cann/aclnn_ops.cpp:3673:                                   (GGML_ABORT("MUL_MAT_ID only supports Q4_0 and Q8_0"), 0.0f);
+ggml/src/ggml-cann/aclnn_ops.h:573: *            multiplication. dst->op is `GGML_OP_MUL_MAT`.
+ggml/src/ggml-cann/ggml-cann.cpp:1915:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:1918:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cann/ggml-cann.cpp:2436:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:2457:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/CMakeLists.txt:76:        find_package(OpenMP)
+ggml/src/ggml-cpu/CMakeLists.txt:77:        if (OpenMP_FOUND)
+ggml/src/ggml-cpu/CMakeLists.txt:81:            target_link_libraries(${GGML_CPU_NAME} PRIVATE OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/src/ggml-cpu/CMakeLists.txt:84:            message(WARNING "OpenMP not found")
+ggml/src/ggml-cpu/CMakeLists.txt:260:            if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:261:                list(APPEND ARCH_FLAGS /arch:AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:262:                # /arch:AVX512 includes: __AVX512F__, __AVX512CD__, __AVX512BW__, __AVX512DQ__, and __AVX512VL__
+ggml/src/ggml-cpu/CMakeLists.txt:264:                # AVX512 extensions, neither it defines the
+ggml/src/ggml-cpu/CMakeLists.txt:267:                list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:268:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:269:                    list(APPEND ARCH_DEFINITIONS __AVX512VBMI__)
+ggml/src/ggml-cpu/CMakeLists.txt:274:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:275:                    list(APPEND ARCH_DEFINITIONS __AVX512VNNI__ GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:280:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:281:                    list(APPEND ARCH_DEFINITIONS __AVX512BF16__ GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:295:            elseif (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:296:                list(APPEND ARCH_FLAGS /arch:AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:297:                list(APPEND ARCH_DEFINITIONS GGML_AVX2 GGML_FMA GGML_F16C)
+ggml/src/ggml-cpu/CMakeLists.txt:305:            if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:306:                list(APPEND ARCH_DEFINITIONS __AVXVNNI__ GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:336:                if (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:338:                    list(APPEND ARCH_DEFINITIONS GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:340:                if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:342:                    list(APPEND ARCH_DEFINITIONS GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:344:                if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:350:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:352:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:354:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:356:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:358:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:360:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:362:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_BF16)
+ggml/src/ggml-cpu/amx/amx.cpp:19:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.cpp:30:        if (op->op == GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:146:        if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:193:        if (op->op == GGML_OP_MUL_MAT && op->src[0]->buffer &&
+ggml/src/ggml-cpu/amx/amx.cpp:249:#endif  // defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.h:6:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/common.h:19:#define VNNI_BLK 4
+ggml/src/ggml-cpu/amx/mmq.cpp:35:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/mmq.cpp:1986:#define LAUNCH_TINYGEMM_KERNEL_VNNI(NB_SIZE)                                                   \
+ggml/src/ggml-cpu/amx/mmq.cpp:2030:            _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2032:            _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2047:            _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2049:            _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2068:                    _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2070:                    _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2088:                    _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2090:                    _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2128:                _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2130:                _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2135:                _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2137:                _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2215:                _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2218:                _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2459:                        //case 160: LAUNCH_TINYGEMM_KERNEL_VNNI(160); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2460:                        case 128: LAUNCH_TINYGEMM_KERNEL_VNNI(128); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2461:                        case 96: LAUNCH_TINYGEMM_KERNEL_VNNI(96); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2462:                        case 64: LAUNCH_TINYGEMM_KERNEL_VNNI(64); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2463:                        case 32: LAUNCH_TINYGEMM_KERNEL_VNNI(32); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2512:#endif // if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/arch-fallback.h:16:#define ggml_vec_dot_q8_0_q8_0_generic ggml_vec_dot_q8_0_q8_0
+ggml/src/ggml-cpu/arch/arm/quants.c:1076:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:56:    block_q8_0x4 * GGML_RESTRICT y = (block_q8_0x4 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:124:    block_q8_0x4 * GGML_RESTRICT y = (block_q8_0x4 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1719:    const block_q8_0x4 * b_ptr = (const block_q8_0x4 *) vx;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1777:    const block_q8_0x4 * b_ptr = (const block_q8_0x4 *) vx;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3190:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3266:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4960:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4962:            const block_q8_0x4 * b_ptr = (const block_q8_0x4 *) vx + (x * nb);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5028:        const block_q8_0x4 * b_ptr_base = (const block_q8_0x4 *) vx;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5038:            const block_q8_0x4 * a_ptr_base = (const block_q8_0x4 *) vy + (y / 4) * nb;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5041:                const block_q8_0x4 * b_ptr = b_ptr_base + (x / 4) * nb;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5042:                const block_q8_0x4 * a_ptr = a_ptr_base;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5092:    const block_q8_0x4 * b_ptr_base = (const block_q8_0x4 *) vx;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5095:        const block_q8_0x4 * a_ptr_base = (const block_q8_0x4 *) vy + (y / 4) * nb;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5098:            const block_q8_0x4 * b_ptr = b_ptr_base + (x / 4) * nb;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5099:            const block_q8_0x4 * a_ptr = a_ptr_base;
+ggml/src/ggml-cpu/arch/loongarch/quants.c:943:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/loongarch/quants.c:986:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/powerpc/quants.c:495:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/powerpc/quants.c:560:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/riscv/quants.c:435:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/riscv/quants.c:479:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:33:    block_q8_0x4 * GGML_RESTRICT y = (block_q8_0x4 *) vy;
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:695:            const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:918:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:1274:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:1357:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/s390/quants.c:655:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/s390/quants.c:701:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/wasm/quants.c:544:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/wasm/quants.c:608:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:47:    bool AVX2(void) { return f_7_ebx[5]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:52:    bool AVX512F(void) { return f_7_ebx[16]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:53:    bool AVX512DQ(void) { return f_7_ebx[17]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:56:    bool AVX512PF(void) { return f_7_ebx[26]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:57:    bool AVX512ER(void) { return f_7_ebx[27]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:58:    bool AVX512CD(void) { return f_7_ebx[28]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:59:    bool AVX512BW(void) { return f_7_ebx[30]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:60:    bool AVX512VL(void) { return f_7_ebx[31]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:79:    bool AVX512_VBMI(void) { return f_7_ecx[1]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:80:    bool AVX512_VNNI(void) { return f_7_ecx[11]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:81:    bool AVX512_FP16(void) { return f_7_edx[23]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:82:    bool AVX512_BF16(void) { return f_7_1_eax[5]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:83:    bool AVX_VNNI(void) { return f_7_1_eax[4]; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:228:    printf("avx2: %d\n", is.AVX2());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:233:    printf("avx512f: %d\n", is.AVX512F());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:236:    printf("avx512pf: %d\n", is.AVX512PF());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:237:    printf("avx512er: %d\n", is.AVX512ER());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:238:    printf("avx512cd: %d\n", is.AVX512CD());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:252:    printf("avx512_vbmi: %d\n", is.AVX512_VBMI());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:253:    printf("avx512_vnni: %d\n", is.AVX512_VNNI());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:254:    printf("avx512_fp16: %d\n", is.AVX512_FP16());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:255:    printf("avx512_bf16: %d\n", is.AVX512_BF16());
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:289:#ifdef GGML_AVX2
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:290:    if (!is.AVX2()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:293:#ifdef GGML_AVX_VNNI
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:294:    if (!is.AVX_VNNI()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:297:#ifdef GGML_AVX512
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:298:    if (!is.AVX512F()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:299:    if (!is.AVX512CD()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:300:    if (!is.AVX512VL()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:301:    if (!is.AVX512DQ()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:302:    if (!is.AVX512BW()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:305:#ifdef GGML_AVX512_VBMI
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:306:    if (!is.AVX512_VBMI()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:309:#ifdef GGML_AVX512_BF16
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:310:    if (!is.AVX512_BF16()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:313:#ifdef GGML_AVX512_VNNI
+ggml/src/ggml-cpu/arch/x86/cpu-feats.cpp:314:    if (!is.AVX512_VNNI()) { return 0; }
+ggml/src/ggml-cpu/arch/x86/quants.c:28:#if defined(__AVX__) || defined(__AVX2__) || defined(__AVX512F__) || defined(__SSSE3__)
+ggml/src/ggml-cpu/arch/x86/quants.c:41:#if __AVX__ || __AVX2__ || __AVX512F__
+ggml/src/ggml-cpu/arch/x86/quants.c:68:#if defined(__AVX2__) || defined(__AVX512F__)
+ggml/src/ggml-cpu/arch/x86/quants.c:106:#if defined(__AVX512VNNI__) && defined(__AVX512VL__)
+ggml/src/ggml-cpu/arch/x86/quants.c:110:#elif defined(__AVXVNNI__)
+ggml/src/ggml-cpu/arch/x86/quants.c:123:#if __AVXVNNIINT8__
+ggml/src/ggml-cpu/arch/x86/quants.c:139:#if __AVX512F__
+ggml/src/ggml-cpu/arch/x86/quants.c:299:#endif // __AVX__ || __AVX2__ || __AVX512F__
+ggml/src/ggml-cpu/arch/x86/quants.c:300:#endif // defined(__AVX__) || defined(__AVX2__) || defined(__AVX512F__) || defined(__SSSE3__)
+ggml/src/ggml-cpu/arch/x86/quants.c:309:#if defined(__AVX2__) || defined(__AVX__)
+ggml/src/ggml-cpu/arch/x86/quants.c:354:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:362:        // These AVX2 pack instructions process 16-byte pieces independently
+ggml/src/ggml-cpu/arch/x86/quants.c:370:        // we split the registers in half and call AVX2 analogs from SSE
+ggml/src/ggml-cpu/arch/x86/quants.c:405:#if defined(__AVX2__) || defined(__AVX__)
+ggml/src/ggml-cpu/arch/x86/quants.c:450:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:461:        // These AVX2 pack instructions process 16-byte pieces independently
+ggml/src/ggml-cpu/arch/x86/quants.c:469:        // we split the registers in half and call AVX2 analogs from SSE
+ggml/src/ggml-cpu/arch/x86/quants.c:515:#if __AVX__ || __AVX2__ || __AVX512F__
+ggml/src/ggml-cpu/arch/x86/quants.c:569:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:718:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:875:#if defined(__AVX2__) || defined(__AVX__)
+ggml/src/ggml-cpu/arch/x86/quants.c:901:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:935:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:1021:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1101:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1170:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/x86/quants.c:1187:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1250:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1382:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1448:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:1644:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:1919:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:2097:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:2301:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:2485:#if defined (__AVX__) || defined (__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:2535:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:2653:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:2860:            // AVX2 full_signs_1 is full_sign_bits_0 here
+ggml/src/ggml-cpu/arch/x86/quants.c:2861:            // AVX2 full_signs_2 is full_sign_bits_1 here
+ggml/src/ggml-cpu/arch/x86/quants.c:2950:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:3135:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:3259:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:3469:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:3590:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:3799:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:3879:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/repack.cpp:29:#if defined(__AVX512F__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:38:#if defined(__AVX512F__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:101:#if defined(__AVX512F__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:115:#if defined(__AVX2__) || defined(__AVX512F__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:116:#if defined(__AVX512F__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:124:#if defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:152:#if defined(__AVX512VNNI__) && defined(__AVX512VL__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:154:#elif defined(__AVXVNNI__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:166:#if defined(__AVXVNNIINT8__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:183:    block_q8_0x4 * GGML_RESTRICT y = (block_q8_0x4 *) vy;
+ggml/src/ggml-cpu/arch/x86/repack.cpp:185:#if defined(__AVX2__) || defined(__AVX__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:245:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:259:            // we split the registers in half and call AVX2 analogs from SSE
+ggml/src/ggml-cpu/arch/x86/repack.cpp:297:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:518:#if defined(__AVX2__) || defined(__AVX512F__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:652:    const block_q8_0x4 * a_ptr_start = (const block_q8_0x4 *)vy;
+ggml/src/ggml-cpu/arch/x86/repack.cpp:663:#if defined(__AVX512BW__) && defined(__AVX512DQ__)
+ggml/src/ggml-cpu/arch/x86/repack.cpp:670:    // Take group of four block_q8_0x4 structures at each pass of the loop and perform dot product operation

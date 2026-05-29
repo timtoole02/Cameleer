@@ -1,0 +1,54 @@
+{
+  "schema": "camelid.llama3_8b_context_1024_2048_current_head_summary.v1",
+  "source_manifest": "manifest.json",
+  "passed": true,
+  "generated_utc": "20260507T040332Z",
+  "git_head": "78d58b866692d056bbb3a33c0d68e20482389040",
+  "rows": [
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "context_window": 1024,
+      "prompt_pack_id": "llama3-context-1024-smoke-v1",
+      "prompt_id": "roughly-1024-token-recall",
+      "max_tokens": 5,
+      "reference_prompt_token_count": 881,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "generated_text": "CMLD-102",
+      "max_resident_set_kib": 17373436,
+      "passed": true,
+      "generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "elapsed_wall_clock": "2:07.26"
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "context_window": 2048,
+      "prompt_pack_id": "llama3-context-2048-smoke-v1",
+      "prompt_id": "roughly-2048-token-recall",
+      "max_tokens": 5,
+      "reference_prompt_token_count": 1910,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "generated_text": "CMLD-204",
+      "max_resident_set_kib": 17507296,
+      "passed": true,
+      "generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "elapsed_wall_clock": "4:42.41"
+    }
+  ],
+  "claim_boundary": "Closes only current-head bounded 1024/2048 context parity packs for the exact Llama 3 8B Instruct Q8_0 row at 78d58b866692. This does not promote neighboring rows, other quantizations, model-native/larger context buckets beyond these checked packs, arbitrary GGUF/Jinja template execution, broad/full Llama-family support, production throughput, or portability support."
+}

@@ -1,0 +1,232 @@
+[
+  {
+    "prompt": "Hello",
+    "code": 0,
+    "seconds": 38.229,
+    "prompt_match": true,
+    "generated_tokens_match": true,
+    "generated_text_match": true,
+    "backend": [
+      22557,
+      28808,
+      1602,
+      541,
+      315
+    ],
+    "llama": [
+      22557,
+      28808,
+      1602,
+      541,
+      315
+    ],
+    "backend_text": " Hello! How can I",
+    "llama_text": " Hello! How can I",
+    "backend_usage": {
+      "prompt_tokens": 9,
+      "completion_tokens": 5,
+      "total_tokens": 14
+    },
+    "llama_usage": {
+      "predicted_ms": 807.018,
+      "predicted_n": 5,
+      "predicted_per_second": 6.195648672024664,
+      "predicted_per_token_ms": 161.4036,
+      "prompt_ms": 1201.548,
+      "prompt_n": 9,
+      "prompt_per_second": 7.490337464670574,
+      "prompt_per_token_ms": 133.50533333333334
+    }
+  },
+  {
+    "prompt": "What is 2+2?",
+    "code": 0,
+    "seconds": 54.314,
+    "prompt_match": true,
+    "generated_tokens_match": true,
+    "generated_text_match": true,
+    "backend": [
+      415,
+      2648,
+      302,
+      28705,
+      28750
+    ],
+    "llama": [
+      415,
+      2648,
+      302,
+      28705,
+      28750
+    ],
+    "backend_text": " The sum of 2",
+    "llama_text": " The sum of 2",
+    "backend_usage": {
+      "prompt_tokens": 15,
+      "completion_tokens": 5,
+      "total_tokens": 20
+    },
+    "llama_usage": {
+      "predicted_ms": 805.108,
+      "predicted_n": 5,
+      "predicted_per_second": 6.2103469348211675,
+      "predicted_per_token_ms": 161.02159999999998,
+      "prompt_ms": 1763.924,
+      "prompt_n": 15,
+      "prompt_per_second": 8.503767736024908,
+      "prompt_per_token_ms": 117.59493333333333
+    }
+  },
+  {
+    "prompt": "Name a color.",
+    "code": 0,
+    "seconds": 46.225,
+    "prompt_match": true,
+    "generated_tokens_match": true,
+    "generated_text_match": true,
+    "backend": [
+      8836,
+      28723,
+      13,
+      13,
+      27955
+    ],
+    "llama": [
+      8836,
+      28723,
+      13,
+      13,
+      27955
+    ],
+    "backend_text": " Blue.\n\nHowever",
+    "llama_text": " Blue.\n\nHowever",
+    "backend_usage": {
+      "prompt_tokens": 12,
+      "completion_tokens": 5,
+      "total_tokens": 17
+    },
+    "llama_usage": {
+      "predicted_ms": 805.728,
+      "predicted_n": 5,
+      "predicted_per_second": 6.205568132173637,
+      "predicted_per_token_ms": 161.1456,
+      "prompt_ms": 1497.16,
+      "prompt_n": 12,
+      "prompt_per_second": 8.015175398754975,
+      "prompt_per_token_ms": 124.76333333333334
+    }
+  },
+  {
+    "prompt": "Say yes.",
+    "code": 0,
+    "seconds": 37.454,
+    "prompt_match": true,
+    "generated_tokens_match": true,
+    "generated_text_match": true,
+    "backend": [
+      5592,
+      28723,
+      2
+    ],
+    "llama": [
+      5592,
+      28723,
+      2
+    ],
+    "backend_text": " Yes.",
+    "llama_text": " Yes.",
+    "backend_usage": {
+      "prompt_tokens": 11,
+      "completion_tokens": 3,
+      "total_tokens": 14
+    },
+    "llama_usage": {
+      "predicted_ms": 404.299,
+      "predicted_n": 3,
+      "predicted_per_second": 7.420250853947204,
+      "predicted_per_token_ms": 134.76633333333334,
+      "prompt_ms": 1406.978,
+      "prompt_n": 11,
+      "prompt_per_second": 7.818174839976176,
+      "prompt_per_token_ms": 127.90709090909091
+    }
+  },
+  {
+    "prompt": "Count to three.",
+    "code": 0,
+    "seconds": 46.674,
+    "prompt_match": true,
+    "generated_tokens_match": true,
+    "generated_text_match": true,
+    "backend": [
+      28705,
+      28740,
+      28723,
+      12875,
+      28725
+    ],
+    "llama": [
+      28705,
+      28740,
+      28723,
+      12875,
+      28725
+    ],
+    "backend_text": " 1. Sure,",
+    "llama_text": " 1. Sure,",
+    "backend_usage": {
+      "prompt_tokens": 12,
+      "completion_tokens": 5,
+      "total_tokens": 17
+    },
+    "llama_usage": {
+      "predicted_ms": 805.545,
+      "predicted_n": 5,
+      "predicted_per_second": 6.206977884537798,
+      "predicted_per_token_ms": 161.10899999999998,
+      "prompt_ms": 1523.466,
+      "prompt_n": 12,
+      "prompt_per_second": 7.876775720626519,
+      "prompt_per_token_ms": 126.95549999999999
+    }
+  },
+  {
+    "prompt": "Write OK.",
+    "code": 0,
+    "seconds": 43.973,
+    "prompt_match": true,
+    "generated_tokens_match": true,
+    "generated_text_match": true,
+    "backend": [
+      12206,
+      28723,
+      1691,
+      736,
+      2424
+    ],
+    "llama": [
+      12206,
+      28723,
+      1691,
+      736,
+      2424
+    ],
+    "backend_text": " OK. Is there anything",
+    "llama_text": " OK. Is there anything",
+    "backend_usage": {
+      "prompt_tokens": 11,
+      "completion_tokens": 5,
+      "total_tokens": 16
+    },
+    "llama_usage": {
+      "predicted_ms": 837.592,
+      "predicted_n": 5,
+      "predicted_per_second": 5.969493500415477,
+      "predicted_per_token_ms": 167.51839999999999,
+      "prompt_ms": 1394.18,
+      "prompt_n": 11,
+      "prompt_per_second": 7.889942475146682,
+      "prompt_per_token_ms": 126.74363636363637
+    }
+  }
+]

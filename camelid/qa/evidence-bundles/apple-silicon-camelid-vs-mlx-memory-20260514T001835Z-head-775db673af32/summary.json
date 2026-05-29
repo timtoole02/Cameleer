@@ -1,0 +1,92 @@
+{
+  "artifact": "apple-silicon-camelid-vs-mlx-memory-20260514T001835Z-head-775db673af32",
+  "captured_at_utc": "20260514T001835Z",
+  "source_head": "775db673af32",
+  "scope": "Same-host Apple Silicon memory profile. This compares Camelid memory-first lazy GGUF Q8_0 serving against MLX-LM public 4-bit weights. It is a resident-memory comparison, not a strict quant-equivalent speed claim.",
+  "privacy": "Local filesystem paths, hostnames, usernames, and raw cache locations are intentionally omitted.",
+  "method": {
+    "camelid": "target/release/camelid serve via scripts/bench-unique-chat.mjs with CAMELID_LAZY_Q8_0_LINEAR=1, CAMELID_RETAIN_Q8_0_BLOCKS=0, CAMELID_FORWARD_RSS_TIMINGS=on, one local server at a time.",
+    "mlx": "scripts/bench-mlx-memory.mjs using mlx-lm in an isolated Python environment; model cache already warm for the committed MLX timing rows.",
+    "memory_metric": "Observed process RSS sampled from ps. Camelid also reports structured forward-pass RSS and Q8 file-read counters."
+  },
+  "claim_boundary": [
+    "Camelid wins the resident-memory comparison in this memory-first profile.",
+    "MLX is much faster in this short generation probe; this artifact must not be used as a speed-win claim.",
+    "Camelid uses GGUF Q8_0 while the MLX rows use 4-bit MLX weights, so this is directional same-host evidence rather than quant-equivalent benchmarking.",
+    "The Camelid memory-first profile trades latency for low RSS by reading Q8_0 weights from file-backed storage during generation."
+  ],
+  "comparisons": [
+    {
+      "model_label": "Llama 3.2 1B Instruct",
+      "camelid_observed_process_rss_mib": 257.72,
+      "mlx_observed_process_rss_mib": 1062.06,
+      "mlx_to_camelid_rss_ratio": 4.12,
+      "camelid_rss_reduction_vs_mlx_percent": 75.73
+    },
+    {
+      "model_label": "Llama 3.2 3B Instruct",
+      "camelid_observed_process_rss_mib": 328.92,
+      "mlx_observed_process_rss_mib": 2139.7,
+      "mlx_to_camelid_rss_ratio": 6.51,
+      "camelid_rss_reduction_vs_mlx_percent": 84.63
+    }
+  ],
+  "rows": [
+    {
+      "runtime": "Camelid",
+      "profile": "memory-first lazy GGUF Q8_0",
+      "model_label": "Llama 3.2 1B Instruct",
+      "exact_row": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "quantization": "GGUF Q8_0",
+      "max_tokens": 4,
+      "measured_repeats": 2,
+      "observed_process_rss_mib": 257.72,
+      "structured_forward_peak_rss_mib": 257.72,
+      "avg_generate_ms": 21803,
+      "avg_prompt_token_count": 16.5,
+      "q8_file_read_mib_per_request": 5994.67,
+      "notes": "Model file path intentionally omitted from public artifact."
+    },
+    {
+      "runtime": "MLX-LM",
+      "profile": "public mlx-community 4-bit model",
+      "model_label": "Llama 3.2 1B Instruct",
+      "exact_row": "mlx-community/Llama-3.2-1B-Instruct-4bit",
+      "quantization": "MLX 4-bit",
+      "max_tokens": 4,
+      "measured_repeats": 2,
+      "observed_process_rss_mib": 1062.06,
+      "avg_generate_ms": 136.16,
+      "avg_ttft_ms": 101.94,
+      "avg_prompt_token_count": 42.5
+    },
+    {
+      "runtime": "Camelid",
+      "profile": "memory-first lazy GGUF Q8_0",
+      "model_label": "Llama 3.2 3B Instruct",
+      "exact_row": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "quantization": "GGUF Q8_0",
+      "max_tokens": 1,
+      "measured_repeats": 1,
+      "observed_process_rss_mib": 328.92,
+      "structured_forward_peak_rss_mib": 272.67,
+      "avg_generate_ms": 21205,
+      "avg_prompt_token_count": 16,
+      "q8_file_read_mib_per_request": 6111.28,
+      "notes": "Model file path intentionally omitted from public artifact."
+    },
+    {
+      "runtime": "MLX-LM",
+      "profile": "public mlx-community 4-bit model",
+      "model_label": "Llama 3.2 3B Instruct",
+      "exact_row": "mlx-community/Llama-3.2-3B-Instruct-4bit",
+      "quantization": "MLX 4-bit",
+      "max_tokens": 1,
+      "measured_repeats": 1,
+      "observed_process_rss_mib": 2139.7,
+      "avg_generate_ms": 211.14,
+      "avg_ttft_ms": 192.53,
+      "avg_prompt_token_count": 43
+    }
+  ]
+}

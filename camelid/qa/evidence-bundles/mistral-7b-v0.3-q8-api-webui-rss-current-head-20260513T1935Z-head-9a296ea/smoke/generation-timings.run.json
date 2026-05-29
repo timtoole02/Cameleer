@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "<canonical-ubuntu-current-main-snapshot>/scripts/summarize-generation-timings.mjs",
+    "--out",
+    "smoke/generation-timings.summary.json",
+    "smoke/completion.response.json",
+    "smoke/chat.response.json"
+  ],
+  "exit_code": 0,
+  "summary_path": "smoke/generation-timings.summary.json"
+}

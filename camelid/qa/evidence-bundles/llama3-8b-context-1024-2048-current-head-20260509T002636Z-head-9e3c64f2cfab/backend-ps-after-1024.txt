@@ -1,0 +1,20 @@
+ 879194  879064     134 1018  0.6 884592 $CAMELID_SHARED_TARGET/release/camelid serve --addr 127.0.0.1:19321
+  25775       1  345823  1.4  1.1 1437276 ./target/release/backendinference serve --addr 127.0.0.1:8181
+ 657396       1  106309  0.6  0.5 701880 $CAMELID_SHARED_TARGET/release/backendinference serve --addr 127.0.0.1:8461
+ 664414       1  105501  0.3 24.7 32092324 $CAMELID_SHARED_TARGET/release/backendinference serve --addr 127.0.0.1:8477
+ 663967       1  105580  0.1  0.4 635372 $CAMELID_SHARED_TARGET/release/backendinference serve --addr 127.0.0.1:8475
+ 661394       1  106079  0.0 10.1 13175508 $CAMELID_SHARED_TARGET/release/backendinference serve --addr 127.0.0.1:8466
+ 713121       1   86329  0.0  0.2 343080 $CAMELID_SHARED_TARGET/release/backendinference serve --addr 127.0.0.1:8672
+ 495627  495625  176269  0.0  0.2 275884 ./target/release/backendinference serve --addr 127.0.0.1:8313
+ 495594  495593  176270  0.0  0.0 102540 ./target/release/backendinference serve --addr 127.0.0.1:8312
+ 157357       1  315552  0.0  0.0 103052 node ${CANONICAL_WORK}/Camelid-8b-checkmark-current-main-20260505T084931Z/frontend/node_modules/.bin/vite preview --host 127.0.0.1 --port 4175 --host 127.0.0.1 --port 4397
+  16324   16323  349024  0.0  0.0 103800 node ${CANONICAL_WORK}/Camelid-validation-cb8943d-20260504T233108Z/frontend/node_modules/.bin/vite preview --host 127.0.0.1 --port 4175 --host 127.0.0.1 --port 4492
+  43280       1  341420  0.0  0.0 103888 node ${CANONICAL_WORK}/Camelid-clean-8b-api-rss-20260505T013823Z/frontend/node_modules/.bin/vite preview --host 127.0.0.1 --port 4175 --host 127.0.0.1 --port 4391
+ 112181  112180  327716  0.0  0.0 103352 node ${CANONICAL_WORK}/Camelid-8b-checkmark-20260505T0524Z/frontend/node_modules/.bin/vite preview --host 127.0.0.1 --port 4175 --host 127.0.0.1 --port 4618
+  70404       1  334291  0.0  0.0 89304 node ${CANONICAL_WORK}/Camelid-public-scrub-audit-20260505T0322Z/frontend/node_modules/.bin/vite preview --host 127.0.0.1 --port 4175 --host 127.0.0.1 --port 4598
+  48167   48166  340217  0.0  0.0 103980 node ${CANONICAL_WORK}/Camelid-clean-8b-api-rss-20260505T015740Z/frontend/node_modules/.bin/vite preview --host 127.0.0.1 --port 4394
+  80549   80548  332079  0.0  0.0 103376 node ${CANONICAL_WORK}/Camelid-watchdog-20260505T041404Z/frontend/node_modules/.bin/vite preview --host 127.0.0.1 --port 4175 --host 127.0.0.1 --port 4601
+  45687       1  341075  0.0  0.0 102208 node ${CANONICAL_WORK}/Camelid-clean-8b-api-rss-20260505T014408Z/frontend/node_modules/.bin/vite preview --host 127.0.0.1 --port 4175 --host 127.0.0.1 --port 4391
+ 495568  495567  176271  0.0  0.0 40832 ./target/release/backendinference serve --addr 127.0.0.1:8311
+ 879064  879063     151  0.0  0.0  3640 bash /tmp/run-camelid-9e3c64f-8b.sh
+ 879300  879064       0  0.0  0.0  2456 grep -E -i (camelid|backendinference|llama-server|run-llama3|chat-parity|prompt-pack|cargo|node).*

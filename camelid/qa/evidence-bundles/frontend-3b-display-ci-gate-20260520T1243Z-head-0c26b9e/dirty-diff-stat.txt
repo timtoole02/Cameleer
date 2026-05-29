@@ -1,0 +1,5 @@
+ .github/workflows/ci.yml                       |  6 +++++
+ frontend/scripts/frontend-3b-closure-smoke.mjs | 31 +++++++++++++++++++++++++-
+ frontend/scripts/ui-regression-smoke.mjs       |  3 ++-
+ frontend/src/hooks/useDashboardData.js         | 22 ++----------------
+ 4 files changed, 40 insertions(+), 22 deletions(-)

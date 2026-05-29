@@ -1,0 +1,15 @@
+# git status
+ M src/inference.rs
+ M src/tensor/mod.rs
+ M tests/tensor_store.rs
+?? qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/
+?? target
+# diff stat
+ src/inference.rs      | 206 +++++++++++++++++++++++++++++++-------------
+ src/tensor/mod.rs     | 231 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ tests/tensor_store.rs |  68 ++++++++++++++-
+ 3 files changed, 439 insertions(+), 66 deletions(-)
+# runtime owner trace summary
+packed_tensors=28 packed_bytes=297271296 pack_micros=133812
+# benchmark summary: camelid_ttft_ms llama_cpp_ttft_ms ttft_delta_pct camelid_text llama_text
+4555.23	979.23	365.18	Exact	Exact

@@ -1,0 +1,13 @@
+0c5ef9bc35b14105fdcf91eaf26f340a3c74243c16b5893c6080d063f59e453a  ./README.md
+60945c0bfab2b9bc9ec509b83ea7449e3278c17e3c27b0243de78a2c9b86eab4  ./commands/local-gates.command.txt
+89c530200ba0bc3546a0225e65ea9eafe885ac3f746723a19aef82396a648c93  ./commands/ubuntu-canonical-ssh.command.txt
+3743fc3725d27709eb8295275805550c991b22ba96ca4994b20c38150f524dd5  ./commands/ubuntu-gates.command.txt
+1db7198a9ec4970bfa1793e5464289b872b4acccce406dbcac9ea4329885f391  ./logs/final-privacy-audit-after-stage.log
+0e45fec94667adf3d652d7a435e61c4b6c17ecd1e67dbb6ce3eb859364082abe  ./logs/final-privacy-audit.log
+9e414a99d7b01131f347f9ec110f60f4891c43bcf3db413d9ee0aac50f7136fd  ./logs/local-gates-redacted.log
+0caf8e160728e51b0dd4dfd63299477718df71423306be9ed28040a377129a09  ./logs/local-gates.log
+921d5a9cc57344a0f7f67c32d5f92d056fb5d602f76de94b1a5d4436ca2cc14c  ./logs/local-repo-state.log
+bfb2b08c57cce160c75c5ea50f68dc7d0944297e69b53138d6e957402707aa45  ./logs/ubuntu-canonical-ssh.log
+ef10ca67f3574d4cfcdd67492e01f28444852920ace8e6f2242000b6e7213c27  ./logs/ubuntu-canonical-ssh.stderr.log
+b87ed7cacdb2bb9d1757d2a1da8648a6dfdac5956f9516c11c24304a06796a8f  ./logs/ubuntu-gates.log
+ff08e9c2b8a25df5a1ff2eb9cacab7619fc42591d0bfd0e71b005d7d59fe3c46  ./logs/ubuntu-gates.stderr.log

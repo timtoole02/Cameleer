@@ -1,0 +1,85 @@
+{
+  "schema": "camelid.normalized.four_row_evidence_manifest.v1",
+  "generated_utc": "2026-05-03T02:43:28.345356Z",
+  "bundle_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+  "ubuntu_target": "canonical-private-ubuntu-validation-host",
+  "host_facts": {
+    "captured_at": "Sat May  2 21:27:51 UTC 2026",
+    "artifact_git_head": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+    "uname": "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+    "hostname": "canonical-private-ubuntu-validation-host",
+    "memory": {
+      "total": "123Gi",
+      "used": "2.3Gi",
+      "free": "101Gi",
+      "available": "121Gi"
+    },
+    "disk_root": {
+      "size": "193G",
+      "used": "29G",
+      "avail": "165G",
+      "use_percent": "15%",
+      "mount": "/"
+    },
+    "raw_excerpt": [
+      "Sat May  2 21:27:51 UTC 2026",
+      "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+      " M COMPATIBILITY.md",
+      " M README.md",
+      " M ROADMAP.md",
+      " M STATUS.md",
+      " M frontend/README.md",
+      " M frontend/scripts/model-state-smoke.mjs",
+      " M frontend/src/lib/acceptanceTargets.js",
+      " M frontend/src/views/ChatWorkspace.jsx",
+      " M frontend/src/views/ModelsView.jsx",
+      " M src/api/mod.rs",
+      " M tests/api_vertical_slice.rs",
+      "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+      "               total        used        free      shared  buff/cache   available",
+      "Mem:           123Gi       2.3Gi       101Gi       3.0Mi        20Gi       121Gi",
+      "Swap:             0B          0B          0B",
+      "Filesystem      Size  Used Avail Use% Mounted on",
+      "/dev/root       193G   29G  165G  15% /",
+      "/dev/root       193G   29G  165G  15% /"
+    ]
+  },
+  "source_smoke_commit": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+  "current_head_rebuild": {
+    "attempted": true,
+    "attempted_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+    "status": "blocked",
+    "reason": "Ubuntu host cargo 1.75.0 cannot parse Cargo.lock v4 (cargo build --release --bin backendinference failed before rerun).",
+    "failed_artifact_root": "target/full-support-20260503T023129Z"
+  },
+  "rows": [
+    {
+      "row_id": "tinyllama_1_1b_chat_q8_0",
+      "bundle_path": "qa/evidence-bundles/four-row-public-20260503T024327Z/tinyllama_1_1b_chat_q8_0.bundle.json",
+      "bundle_sha256": "f15d03a75c11f83e914a0dbdb4a3c9320768c5215b6f0e35548cde9e99bd0d6a",
+      "model_sha256": "a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59",
+      "smoke_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8"
+    },
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "bundle_path": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama32_1b_instruct_q8_0.bundle.json",
+      "bundle_sha256": "fd94e57632d91c13f7f886de1259b78ce8c1d22a8074ee07e86d371a5c8928e0",
+      "model_sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+      "smoke_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8"
+    },
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "bundle_path": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama32_3b_instruct_q8_0.bundle.json",
+      "bundle_sha256": "0d10b5587f4f26e1ef17aa7386abc85d36bb84ab9f56766f73a521b6c7eb1464",
+      "model_sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+      "smoke_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-3b-q8"
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "bundle_path": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama3_8b_instruct_q8_0.bundle.json",
+      "bundle_sha256": "3a8a0292f433fdb51071b016c1ae86264c566e5feae7dfeed4e42dc7e2c75f66",
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+      "smoke_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8"
+    }
+  ]
+}

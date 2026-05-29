@@ -1,0 +1,119 @@
+# UBUNTU_X86_Q8 follow-on slice: FFN down runtime-owned packed storage
+
+Scope:
+- Ubuntu x86_64 dense Llama Q8_0 only.
+- Small technical slice: widen default-off `CAMELID_X86_Q8_REPACK=on` runtime-packed Q8_0 load gate to include `blk.*.ffn_down.weight` alongside the existing dense attention projection family and gate/up FFN rows.
+- Fallback: unchanged when `CAMELID_X86_Q8_REPACK` is unset/off, when `CAMELID_Q8_0_BLOCK_DOT=off`, when shape is not rows4/block aligned, or when a tensor is outside the selected dense Llama family.
+- Claim boundary: loader/runtime-storage correctness only; no support-contract, production-throughput, portability, accelerator, VNNI/AVX512, or non-Llama-family claim.
+
+llama.cpp-informed notes:
+- The lane still tracks llama.cpp's CPU `GGML_OP_MUL_MAT` Q8_0 x Q8_0 path, where x86 evidence points at AVX2-era tinyBLAS/llamafile code rather than VNNI/AVX512 as selected hot evidence.
+- `blk.*.ffn_down.weight` is the large dense Llama FFN projection that maps FFN width back to hidden width. Camelid stores the GGUF descriptor shape, but the runtime hot path consumes transposed rows. This slice makes the backend-owned packed runtime storage directly match that transposed consumption shape instead of keeping a duplicate row-major packed sidecar.
+
+Implementation evidence:
+- `src/tensor/mod.rs`:
+  - `q8_repack_x86_tensor_enabled` now includes `*.ffn_down.weight`.
+  - `q8_repack_linear_shape` treats gate/up/down FFN descriptors as transposed runtime rows `[output, input]`.
+  - Existing runtime storage remains `Q8_0RuntimeStorage::PackedRows4`; no q8_0 block copy, file backing, or old packed sidecar is retained when this path succeeds.
+- `tests/tensor_store.rs`:
+  - `x86_q8_repack_loads_dense_ffn_family_as_transposed_packed_runtime` covers gate/up/down.
+  - The down case uses descriptor dims `[64,32]` and verifies runtime packed rows `[32,64]` (`rows=32`, `blocks_per_row=2`).
+
+Ubuntu x86_64 validation:
+- Command class: canonical Ubuntu x86_64 host, synchronized scratch checkout, `<ubuntu-cargo> test --test tensor_store x86_q8_repack_loads_dense_ffn_family_as_transposed_packed_runtime -- --nocapture`.
+- Result: PASS, 1 test passed, 0 failed, 23 filtered out.
+- Host architecture observed by the validation shell: `x86_64`.
+- Build warning observed: three pre-existing dead-code warnings for q8 schedule helpers; no test failure.
+
+Files/functions touched:
+- `src/tensor/mod.rs`: `q8_repack_x86_tensor_enabled`, `q8_repack_linear_shape`.
+- `tests/tensor_store.rs`: `x86_q8_repack_loads_dense_ffn_family_as_transposed_packed_runtime`.
+- `docs/CONFIGURATION.md`: x86 Q8 default-off lane coverage wording.
+- `qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md`: lane report updated with FFN-down slice.
+src/tensor/mod.rs:294:            || (x86_q8_repack_enabled() && q8_repack_x86_tensor_enabled(name)))
+src/tensor/mod.rs:303:fn q8_repack_x86_tensor_enabled(name: &str) -> bool {
+src/tensor/mod.rs:317:fn q8_repack_linear_shape(name: &str, shape: &TensorShape) -> Option<(usize, usize)> {
+src/tensor/mod.rs:354:    let Some((rows, cols)) = q8_repack_linear_shape(name, shape) else {
+tests/tensor_store.rs:296:fn x86_q8_repack_loads_dense_ffn_family_as_transposed_packed_runtime() {
+
+llama.cpp grep excerpts:
+docs/android.md:73:  - While later versions of Android NDK ship with OpenMP, it must still be installed by CMake as a dependency, which is not supported at this time
+docs/backend/ZenDNN.md:55:- ZenDNN leverages AMD's advanced CPU features including AVX2 and AVX-512 instruction sets.
+ggml/CMakeLists.txt:156:option(GGML_AVX_VNNI         "ggml: enable AVX-VNNI"         OFF)
+ggml/CMakeLists.txt:157:option(GGML_AVX2             "ggml: enable AVX2"             ${INS_ENB})
+ggml/CMakeLists.txt:159:option(GGML_AVX512           "ggml: enable AVX512F"          OFF)
+ggml/CMakeLists.txt:160:option(GGML_AVX512_VBMI      "ggml: enable AVX512-VBMI"      OFF)
+ggml/CMakeLists.txt:161:option(GGML_AVX512_VNNI      "ggml: enable AVX512-VNNI"      OFF)
+ggml/CMakeLists.txt:162:option(GGML_AVX512_BF16      "ggml: enable AVX512-BF16"      OFF)
+ggml/CMakeLists.txt:164:    # in MSVC F16C and FMA is implied with AVX2/AVX512
+ggml/CMakeLists.txt:246:option(GGML_OPENMP                          "ggml: use OpenMP"                                ON)
+ggml/CMakeLists.txt:447:    # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/cmake/ggml-config.cmake.in:22:        find_dependency(OpenMP)
+ggml/cmake/ggml-config.cmake.in:23:        list(APPEND GGML_CPU_INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/include/ggml.h:511:        GGML_OP_MUL_MAT,
+ggml/include/ggml.h:512:        GGML_OP_MUL_MAT_ID,
+ggml/src/CMakeLists.txt:314:                      AVX AVX2 BMI2 AVX_VNNI FMA F16C
+ggml/src/CMakeLists.txt:315:                      AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16
+ggml/src/CMakeLists.txt:365:            # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/src/CMakeLists.txt:369:        ggml_add_cpu_backend_variant(haswell            SSE42 AVX F16C FMA AVX2 BMI2)
+ggml/src/CMakeLists.txt:370:        ggml_add_cpu_backend_variant(skylakex           SSE42 AVX F16C FMA AVX2 BMI2 AVX512)
+ggml/src/CMakeLists.txt:371:        ggml_add_cpu_backend_variant(cannonlake         SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI)
+ggml/src/CMakeLists.txt:372:        ggml_add_cpu_backend_variant(cascadelake        SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI)
+ggml/src/CMakeLists.txt:373:        ggml_add_cpu_backend_variant(icelake            SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI)
+ggml/src/CMakeLists.txt:378:            ggml_add_cpu_backend_variant(cooperlake     SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:379:            ggml_add_cpu_backend_variant(zen4           SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:381:        ggml_add_cpu_backend_variant(alderlake          SSE42 AVX F16C FMA AVX2 BMI2 AVX_VNNI)
+ggml/src/CMakeLists.txt:384:            ggml_add_cpu_backend_variant(sapphirerapids SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16 AMX_TILE AMX_INT8)
+ggml/src/ggml-backend-meta.cpp:845:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-backend-meta.cpp:846:            case GGML_OP_MUL_MAT_ID: {
+ggml/src/ggml-backend.cpp:1581:                    (node->src[0] == input_cpy && node->op == GGML_OP_MUL_MAT_ID)
+ggml/src/ggml-backend.cpp:1585:                    const int64_t n_expert   = node->op == GGML_OP_MUL_MAT_ID ? input->ne[2] : input->ne[1];
+ggml/src/ggml-backend.cpp:1586:                    const size_t expert_size = node->op == GGML_OP_MUL_MAT_ID ? input->nb[2] : input->nb[1];
+ggml/src/ggml-blas/ggml-blas.cpp:236:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-blas/ggml-blas.cpp:297:        GGML_LOG_DEBUG("%s: warning: ggml is using OpenMP, but OpenBLAS was compiled without OpenMP support\n", __func__);
+ggml/src/ggml-blas/ggml-blas.cpp:302:    GGML_LOG_DEBUG("%s: warning: ggml is using OpenMP, but BLIS was compiled without OpenMP support\n", __func__);
+ggml/src/ggml-blas/ggml-blas.cpp:404:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/aclnn_ops.h:573: *            multiplication. dst->op is `GGML_OP_MUL_MAT`.
+ggml/src/ggml-cann/ggml-cann.cpp:1915:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:1918:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cann/ggml-cann.cpp:2436:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:2457:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/CMakeLists.txt:76:        find_package(OpenMP)
+ggml/src/ggml-cpu/CMakeLists.txt:77:        if (OpenMP_FOUND)
+ggml/src/ggml-cpu/CMakeLists.txt:81:            target_link_libraries(${GGML_CPU_NAME} PRIVATE OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/src/ggml-cpu/CMakeLists.txt:84:            message(WARNING "OpenMP not found")
+ggml/src/ggml-cpu/CMakeLists.txt:260:            if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:261:                list(APPEND ARCH_FLAGS /arch:AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:262:                # /arch:AVX512 includes: __AVX512F__, __AVX512CD__, __AVX512BW__, __AVX512DQ__, and __AVX512VL__
+ggml/src/ggml-cpu/CMakeLists.txt:264:                # AVX512 extensions, neither it defines the
+ggml/src/ggml-cpu/CMakeLists.txt:267:                list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:268:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:269:                    list(APPEND ARCH_DEFINITIONS __AVX512VBMI__)
+ggml/src/ggml-cpu/CMakeLists.txt:274:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:275:                    list(APPEND ARCH_DEFINITIONS __AVX512VNNI__ GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:280:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:281:                    list(APPEND ARCH_DEFINITIONS __AVX512BF16__ GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:295:            elseif (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:296:                list(APPEND ARCH_FLAGS /arch:AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:297:                list(APPEND ARCH_DEFINITIONS GGML_AVX2 GGML_FMA GGML_F16C)
+ggml/src/ggml-cpu/CMakeLists.txt:305:            if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:306:                list(APPEND ARCH_DEFINITIONS __AVXVNNI__ GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:336:                if (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:338:                    list(APPEND ARCH_DEFINITIONS GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:340:                if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:342:                    list(APPEND ARCH_DEFINITIONS GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:344:                if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:350:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:352:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:354:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:356:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:358:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:360:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:362:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_BF16)
+ggml/src/ggml-cpu/amx/amx.cpp:19:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.cpp:30:        if (op->op == GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:146:        if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:193:        if (op->op == GGML_OP_MUL_MAT && op->src[0]->buffer &&
+ggml/src/ggml-cpu/amx/amx.cpp:249:#endif  // defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.h:6:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/common.h:19:#define VNNI_BLK 4

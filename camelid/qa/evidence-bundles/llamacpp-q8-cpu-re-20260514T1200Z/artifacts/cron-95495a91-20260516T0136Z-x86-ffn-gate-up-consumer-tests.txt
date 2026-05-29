@@ -1,0 +1,19 @@
+host:
+Linux canonical-private-ubuntu-validation-host 6.17.0-1013-aws #13~24.04.1-Ubuntu SMP Fri Apr 24 21:50:45 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+cargo fmt --check:
+
+cargo test -q q8_ffn_gate_up_consumer --lib:
+
+running 2 tests
+..
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 243 filtered out; finished in 0.00s
+
+
+cargo test -q --lib:
+
+running 245 tests
+....................................................................................... 87/245
+....................................................................................... 174/245
+.......................................................................
+test result: ok. 245 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s

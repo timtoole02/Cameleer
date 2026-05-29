@@ -1,0 +1,456 @@
+=== llama.cpp HEAD ===
+3e037f3
+=== llama.cpp q8_0/dot/repack/scheduler grep ===
+examples/convert_legacy_llama.py:105:        def quantize_blocks_q8_0(blocks: NDArray) -> Iterable[tuple[Any, Any]]:
+examples/convert_legacy_llama.py:111:        return np.fromiter(quantize_blocks_q8_0(blocks), count = n_blocks, dtype = self.quantized_dtype)
+examples/convert_legacy_llama.py:1059:    if output_type_str == "q8_0":
+examples/convert_legacy_llama.py:1313:        output_choices.append("q8_0")
+examples/convert_legacy_llama.py:1319:    parser.add_argument("--outtype",      choices=output_choices, help="output format - note: q8_0 may be very slow (default: f16 or f32 based on input)")
+examples/convert_legacy_llama.py:1400:                "q8_0": GGMLFileType.MostlyQ8_0,
+examples/diffusion/README.md:24:Choose one of the following scheduling methods:
+examples/diffusion/README.md:26:**Timestep-based scheduling:**
+examples/diffusion/README.md:27:- `--diffusion-eps`: Epsilon value for timestep scheduling (e.g., 0.001)
+examples/diffusion/README.md:29:**Block-based scheduling:**
+examples/diffusion/README.md:30:- `--diffusion-block-length`: Block size for block-based scheduling (e.g., 32)
+examples/diffusion/diffusion-cli.cpp:195:        diff_params.schedule = DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED;
+examples/diffusion/diffusion-cli.cpp:198:        diff_params.schedule     = DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED;
+examples/diffusion/diffusion-cli.cpp:224:    const char * sched_names[] = {
+examples/diffusion/diffusion-cli.cpp:230:    const char * sched_name =
+examples/diffusion/diffusion-cli.cpp:231:        (diff_params.schedule >= 0 && diff_params.schedule <= 1) ? sched_names[diff_params.schedule] : "UNKNOWN";
+examples/diffusion/diffusion-cli.cpp:237:    LOG_INF("diffusion_params: - %-25s enum             = %d (%s)\n", "schedule", diff_params.schedule, sched_name);
+examples/diffusion/diffusion-cli.cpp:239:    if (diff_params.schedule == DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED) {
+examples/diffusion/diffusion-cli.cpp:243:    if (diff_params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:52:                                        diffusion_transfer_schedule  schedule,
+examples/diffusion/diffusion.cpp:55:    switch (schedule) {
+examples/diffusion/diffusion.cpp:164:    if (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:178:        int32_t block_start = (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) ? n_input + block_num * params.block_length : 0;
+examples/diffusion/diffusion.cpp:179:        int32_t block_end   = (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) ?
+examples/diffusion/diffusion.cpp:184:        if (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:273:                    if (params.schedule != DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED || (i >= block_start && i < block_end)) {
+examples/diffusion/diffusion.cpp:289:                    step, steps_per_block, mask_positions.size(), params.schedule, params.eps, num_transfer_tokens);
+examples/diffusion/diffusion.cpp:343:                    step, steps_per_block, mask_positions.size(), params.schedule, params.eps, num_transfer_tokens);
+examples/diffusion/diffusion.h:15:// Unified transfer scheduling methods
+examples/diffusion/diffusion.h:16:enum diffusion_transfer_schedule {
+examples/diffusion/diffusion.h:41:    diffusion_transfer_schedule schedule  = DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED;
+examples/diffusion/diffusion.h:44:    float   eps              = 0.;     // Timestep scheduling
+examples/diffusion/diffusion.h:45:    int32_t block_length     = 0;      // Block size (for block scheduling)
+examples/eval-callback/README.md:53:ggml_debug:                   wqkv-0 = (f32)    MUL_MAT(blk.0.attn_qkv.weight{2560, 7680, 1, 1}, attn_norm-0{2560, 1, 1, 1}}) = {7680, 1, 1, 1}
+examples/eval-callback/eval-callback.cpp:53:    // pass the callback to the backend scheduler
+examples/gguf-hash/deps/xxhash/xxhash.h:61: * | XXH3_64bits()        | @b AVX2 |    64 |        59.4 GB/s |               133.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:63: * | XXH3_128bits()       | @b AVX2 |   128 |        57.9 GB/s |               118.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:79: * | Blake3*              | @b AVX2 |   256 |         4.4 GB/s |                 8.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:1088: *   - AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:1089: *   - AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:3406:#if (defined(__AVX512F__)) && !defined(XXH_ENABLE_AUTOVECTORIZE)
+examples/gguf-hash/deps/xxhash/xxhash.h:3411:     * reason) without globally disabling AVX512.
+examples/gguf-hash/deps/xxhash/xxhash.h:3750:#  elif defined(__AVX2__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3867:    XXH_AVX2   = 2,  /*!< AVX2 for Haswell and Bulldozer */
+examples/gguf-hash/deps/xxhash/xxhash.h:3868:    XXH_AVX512 = 3,  /*!< AVX512 for Skylake and Icelake */
+examples/gguf-hash/deps/xxhash/xxhash.h:3882: * type, so, for example, 32 for AVX2.
+examples/gguf-hash/deps/xxhash/xxhash.h:3893:#  define XXH_AVX2   2
+examples/gguf-hash/deps/xxhash/xxhash.h:3894:#  define XXH_AVX512 3
+examples/gguf-hash/deps/xxhash/xxhash.h:3912:#  elif defined(__AVX512F__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3913:#    define XXH_VECTOR XXH_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:3914:#  elif defined(__AVX2__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3915:#    define XXH_VECTOR XXH_AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:3949:#  elif XXH_VECTOR == XXH_AVX2  /* avx2 */
+examples/gguf-hash/deps/xxhash/xxhash.h:3955:#  elif XXH_VECTOR == XXH_AVX512  /* avx512 */
+examples/gguf-hash/deps/xxhash/xxhash.h:3963:    || XXH_VECTOR == XXH_AVX2 || XXH_VECTOR == XXH_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:3981: * However, when targeting AVX2, it is overzealous in its unrolling resulting
+examples/gguf-hash/deps/xxhash/xxhash.h:3986: * only applies to Sandy and Ivy Bridge... which don't even support AVX2.
+examples/gguf-hash/deps/xxhash/xxhash.h:3988: * That is why when compiling the AVX2 version, it is recommended to use either
+examples/gguf-hash/deps/xxhash/xxhash.h:3998:#if XXH_VECTOR == XXH_AVX2 /* AVX2 */ \
+examples/gguf-hash/deps/xxhash/xxhash.h:4800:#    if (XXH_VECTOR == XXH_AVX512)
+examples/gguf-hash/deps/xxhash/xxhash.h:4881:#if (XXH_VECTOR == XXH_AVX512) \
+examples/gguf-hash/deps/xxhash/xxhash.h:4882:     || (defined(XXH_DISPATCH_AVX512) && XXH_DISPATCH_AVX512 != 0)
+examples/gguf-hash/deps/xxhash/xxhash.h:4884:#ifndef XXH_TARGET_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:4885:# define XXH_TARGET_AVX512  /* disable attribute target */
+examples/gguf-hash/deps/xxhash/xxhash.h:4888:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4915:XXH_FORCE_INLINE XXH_TARGET_AVX512 XXH3_ACCUMULATE_TEMPLATE(avx512)
+examples/gguf-hash/deps/xxhash/xxhash.h:4938:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4961:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4984:#if (XXH_VECTOR == XXH_AVX2) \
+examples/gguf-hash/deps/xxhash/xxhash.h:4985:    || (defined(XXH_DISPATCH_AVX2) && XXH_DISPATCH_AVX2 != 0)
+examples/gguf-hash/deps/xxhash/xxhash.h:4987:#ifndef XXH_TARGET_AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:4988:# define XXH_TARGET_AVX2  /* disable attribute target */
+examples/gguf-hash/deps/xxhash/xxhash.h:4991:XXH_FORCE_INLINE XXH_TARGET_AVX2 void
+examples/gguf-hash/deps/xxhash/xxhash.h:5024:XXH_FORCE_INLINE XXH_TARGET_AVX2 XXH3_ACCUMULATE_TEMPLATE(avx2)
+examples/gguf-hash/deps/xxhash/xxhash.h:5026:XXH_FORCE_INLINE XXH_TARGET_AVX2 void
+examples/gguf-hash/deps/xxhash/xxhash.h:5055:XXH_FORCE_INLINE XXH_TARGET_AVX2 void XXH3_initCustomSecret_avx2(void* XXH_RESTRICT customSecret, xxh_u64 seed64)
+examples/gguf-hash/deps/xxhash/xxhash.h:5102:    /* SSE2 is just a half-scale version of the AVX2 version. */
+examples/gguf-hash/deps/xxhash/xxhash.h:5785:#if (XXH_VECTOR == XXH_AVX512)
+examples/gguf-hash/deps/xxhash/xxhash.h:5792:#elif (XXH_VECTOR == XXH_AVX2)
+examples/gguf-hash/deps/xxhash/xxhash.h:6067: * alignment on 32-bit. This isn't enough for the 32 byte aligned loads in AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:7075:#if XXH_VECTOR == XXH_AVX2 /* AVX2 */ \
+examples/llama.swiftui/llama.swiftui/Models/LlamaState.swift:88:            url: "https://huggingface.co/ggml-org/models/resolve/main/phi-2/ggml-model-q8_0.gguf?download=true",
+examples/llama.swiftui/llama.swiftui/Models/LlamaState.swift:89:            filename: "phi-2-q8_0.gguf", status: "download"
+examples/speculative-simple/README.md:7:    -m  ../models/qwen2.5-32b-coder-instruct/ggml-model-q8_0.gguf \
+ggml/CMakeLists.txt:156:option(GGML_AVX_VNNI         "ggml: enable AVX-VNNI"         OFF)
+ggml/CMakeLists.txt:157:option(GGML_AVX2             "ggml: enable AVX2"             ${INS_ENB})
+ggml/CMakeLists.txt:159:option(GGML_AVX512           "ggml: enable AVX512F"          OFF)
+ggml/CMakeLists.txt:160:option(GGML_AVX512_VBMI      "ggml: enable AVX512-VBMI"      OFF)
+ggml/CMakeLists.txt:161:option(GGML_AVX512_VNNI      "ggml: enable AVX512-VNNI"      OFF)
+ggml/CMakeLists.txt:162:option(GGML_AVX512_BF16      "ggml: enable AVX512-BF16"      OFF)
+ggml/CMakeLists.txt:164:    # in MSVC F16C and FMA is implied with AVX2/AVX512
+ggml/CMakeLists.txt:246:option(GGML_OPENMP                          "ggml: use OpenMP"                                ON)
+ggml/CMakeLists.txt:447:    # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/CMakeLists.txt:475:        configure_msvc_target(gpt-2-sched)
+ggml/cmake/ggml-config.cmake.in:22:        find_dependency(OpenMP)
+ggml/cmake/ggml-config.cmake.in:23:        list(APPEND GGML_CPU_INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/include/ggml-backend.h:261:    // Backend scheduler
+ggml/include/ggml-backend.h:264:    // The backend scheduler allows for multiple backend devices to be used together
+ggml/include/ggml-backend.h:276:        sched = ggml_backend_sched_new({backend_gpu, backend_gpu2, backend_cpu}, NULL, num_backends, GGML_DEFAULT_GRAPH_SIZE, false, true);
+ggml/include/ggml-backend.h:279:        reserve_graph = build_graph(sched, max_batch_size);
+ggml/include/ggml-backend.h:283:        ggml_backend_sched_set_tensor_backend(sched, node, backend_gpu);
+ggml/include/ggml-backend.h:285:        ggml_backend_sched_reserve(sched, reserve_graph);
+ggml/include/ggml-backend.h:288:        graph = build_graph(sched); // the graph and its tensors are single-use in terms of allocation, multi-use in terms of computation
+ggml/include/ggml-backend.h:290:            ggml_backend_sched_graph_compute(sched, graph); // on the first iteration the graph is allocated automatically
+ggml/include/ggml-backend.h:294:        graph = build_graph(sched); // get a new graph that is not allocated (the metadata for the old graph is freed once ggml_free is called)
+ggml/include/ggml-backend.h:295:        ggml_backend_sched_reset(sched); // clear the allocation of the previous graph
+ggml/include/ggml-backend.h:296:        ggml_backend_sched_alloc_graph(sched, graph); // explicitly allocate the new graph but do not execute it
+ggml/include/ggml-backend.h:298:        ggml_backend_sched_graph_compute(sched, graph); // execute the graph
+ggml/include/ggml-backend.h:305:    typedef struct ggml_backend_sched * ggml_backend_sched_t;
+ggml/include/ggml-backend.h:307:    // Evaluation callback for each node in the graph (set with ggml_backend_sched_set_eval_callback)
+ggml/include/ggml-backend.h:308:    // when ask == true, the scheduler wants to know if the user wants to observe this node
+ggml/include/ggml-backend.h:309:    // this allows the scheduler to batch nodes together in order to evaluate them in a single call
+ggml/include/ggml-backend.h:311:    // when ask == false, the scheduler is passing the node tensor to the user for observation
+ggml/include/ggml-backend.h:312:    // if the user returns false, the scheduler will cancel the graph compute
+ggml/include/ggml-backend.h:314:    typedef bool (*ggml_backend_sched_eval_callback)(struct ggml_tensor * t, bool ask, void * user_data);
+ggml/include/ggml-backend.h:316:    // Initialize a backend scheduler, backends with low index are given priority over backends with high index
+ggml/include/ggml-backend.h:317:    GGML_API ggml_backend_sched_t ggml_backend_sched_new(ggml_backend_t * backends, ggml_backend_buffer_type_t * bufts, int n_backends, size_t graph_size, bool parallel, bool op_offload);
+ggml/include/ggml-backend.h:318:    GGML_API void                 ggml_backend_sched_free(ggml_backend_sched_t sched);
+ggml/include/ggml-backend.h:321:    GGML_API void                 ggml_backend_sched_reserve_size(ggml_backend_sched_t sched, struct ggml_cgraph * measure_graph, size_t * sizes);
+ggml/include/ggml-backend.h:322:    GGML_API bool                 ggml_backend_sched_reserve(ggml_backend_sched_t sched, struct ggml_cgraph * measure_graph); // returns success
+ggml/include/ggml-backend.h:324:    GGML_API int                  ggml_backend_sched_get_n_backends(ggml_backend_sched_t sched);
+ggml/include/ggml-backend.h:325:    GGML_API ggml_backend_t       ggml_backend_sched_get_backend(ggml_backend_sched_t sched, int i);
+ggml/include/ggml-backend.h:328:    GGML_API int                  ggml_backend_sched_get_n_splits(ggml_backend_sched_t sched);
+ggml/include/ggml-backend.h:329:    GGML_API int                  ggml_backend_sched_get_n_copies(ggml_backend_sched_t sched);
+ggml/include/ggml-backend.h:331:    GGML_API ggml_backend_buffer_type_t ggml_backend_sched_get_buffer_type(ggml_backend_sched_t sched, ggml_backend_t backend);
+ggml/include/ggml-backend.h:332:    GGML_API size_t                     ggml_backend_sched_get_buffer_size(ggml_backend_sched_t sched, ggml_backend_t backend);
+ggml/include/ggml-backend.h:334:    GGML_API void                 ggml_backend_sched_set_tensor_backend(ggml_backend_sched_t sched, struct ggml_tensor * node, ggml_backend_t backend);
+ggml/include/ggml-backend.h:335:    GGML_API ggml_backend_t       ggml_backend_sched_get_tensor_backend(ggml_backend_sched_t sched, struct ggml_tensor * node);
+ggml/include/ggml-backend.h:338:    GGML_API void                 ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgraph * graph);
+ggml/include/ggml-backend.h:340:    // Allocate and compute graph on the backend scheduler
+ggml/include/ggml-backend.h:341:    GGML_API bool                 ggml_backend_sched_alloc_graph(ggml_backend_sched_t sched, struct ggml_cgraph * graph); // returns success
+ggml/include/ggml-backend.h:342:    GGML_API enum ggml_status     ggml_backend_sched_graph_compute(ggml_backend_sched_t sched, struct ggml_cgraph * graph);
+ggml/include/ggml-backend.h:343:    GGML_API enum ggml_status     ggml_backend_sched_graph_compute_async(ggml_backend_sched_t sched, struct ggml_cgraph * graph);
+ggml/include/ggml-backend.h:344:    GGML_API void                 ggml_backend_sched_synchronize(ggml_backend_sched_t sched);
+ggml/include/ggml-backend.h:349:    GGML_API void                 ggml_backend_sched_reset(ggml_backend_sched_t sched);
+ggml/include/ggml-backend.h:352:    GGML_API void                 ggml_backend_sched_set_eval_callback(ggml_backend_sched_t sched, ggml_backend_sched_eval_callback callback, void * user_data);
+ggml/include/ggml-cpp.h:34:struct ggml_backend_sched_deleter  { void operator()(ggml_backend_sched_t sched)   { ggml_backend_sched_free(sched); } };
+ggml/include/ggml-cpp.h:39:typedef std::unique_ptr<ggml_backend_sched,  ggml_backend_sched_deleter>  ggml_backend_sched_ptr;
+ggml/include/ggml-opt.h:112:        ggml_backend_sched_t backend_sched; // defines which backends are used to construct the compute graphs
+ggml/include/ggml-opt.h:135:            ggml_backend_sched_t    backend_sched,
+ggml/include/ggml-opt.h:240:            ggml_backend_sched_t            backend_sched,  // backend scheduler for constructing the compute graphs
+ggml/include/ggml.h:511:        GGML_OP_MUL_MAT,
+ggml/include/ggml.h:512:        GGML_OP_MUL_MAT_ID,
+ggml/include/ggml.h:2810:    // scheduling priorities
+ggml/include/ggml.h:2811:    enum ggml_sched_priority {
+ggml/include/ggml.h:2824:        enum ggml_sched_priority prio;                   // thread priority
+ggml/src/CMakeLists.txt:314:                      AVX AVX2 BMI2 AVX_VNNI FMA F16C
+ggml/src/CMakeLists.txt:315:                      AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16
+ggml/src/CMakeLists.txt:365:            # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/src/CMakeLists.txt:369:        ggml_add_cpu_backend_variant(haswell            SSE42 AVX F16C FMA AVX2 BMI2)
+ggml/src/CMakeLists.txt:370:        ggml_add_cpu_backend_variant(skylakex           SSE42 AVX F16C FMA AVX2 BMI2 AVX512)
+ggml/src/CMakeLists.txt:371:        ggml_add_cpu_backend_variant(cannonlake         SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI)
+ggml/src/CMakeLists.txt:372:        ggml_add_cpu_backend_variant(cascadelake        SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI)
+ggml/src/CMakeLists.txt:373:        ggml_add_cpu_backend_variant(icelake            SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI)
+ggml/src/CMakeLists.txt:378:            ggml_add_cpu_backend_variant(cooperlake     SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:379:            ggml_add_cpu_backend_variant(zen4           SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:381:        ggml_add_cpu_backend_variant(alderlake          SSE42 AVX F16C FMA AVX2 BMI2 AVX_VNNI)
+ggml/src/CMakeLists.txt:384:            ggml_add_cpu_backend_variant(sapphirerapids SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16 AMX_TILE AMX_INT8)
+ggml/src/ggml-backend-meta.cpp:845:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-backend-meta.cpp:846:            case GGML_OP_MUL_MAT_ID: {
+ggml/src/ggml-backend.cpp:750:// scheduler
+ggml/src/ggml-backend.cpp:764:struct ggml_backend_sched_split {
+ggml/src/ggml-backend.cpp:774:struct ggml_backend_sched {
+ggml/src/ggml-backend.cpp:775:    bool is_reset; // true if the scheduler has been reset since the last graph split
+ggml/src/ggml-backend.cpp:799:    struct ggml_backend_sched_split * splits;
+ggml/src/ggml-backend.cpp:813:    ggml_backend_sched_eval_callback callback_eval;
+ggml/src/ggml-backend.cpp:830:#define hash_id(tensor) ggml_hash_find_or_insert(&sched->hash_set, tensor)
+ggml/src/ggml-backend.cpp:831:#define tensor_backend_id(tensor) sched->hv_tensor_backend_ids[hash_id(tensor)]
+ggml/src/ggml-backend.cpp:832:#define tensor_id_copy(id, backend_id, copy_id) sched->hv_tensor_copies[(id) * sched->n_backends * sched->n_copies + (backend_id) * sched->n_copies + (copy_id)]
+ggml/src/ggml-backend.cpp:836:static int ggml_backend_sched_backend_id(ggml_backend_sched_t sched, ggml_backend_t backend) {
+ggml/src/ggml-backend.cpp:837:    for (int i = 0; i < sched->n_backends; i++) {
+ggml/src/ggml-backend.cpp:838:        if (sched->backends[i] == backend) {
+ggml/src/ggml-backend.cpp:845:static int ggml_backend_sched_backend_from_buffer(ggml_backend_sched_t sched, const struct ggml_tensor * tensor, const struct ggml_tensor * op) {
+ggml/src/ggml-backend.cpp:852:    for (int i = 0; i < sched->n_backends; i++) {
+ggml/src/ggml-backend.cpp:853:        if (ggml_backend_supports_buft(sched->backends[i], buffer->buft) &&
+ggml/src/ggml-backend.cpp:854:            ggml_backend_supports_op(sched->backends[i], op)) {
+ggml/src/ggml-backend.cpp:878:static int ggml_backend_sched_backend_id_from_cur(ggml_backend_sched_t sched, struct ggml_tensor * tensor) {
+ggml/src/ggml-backend.cpp:880:    int cur_backend_id = ggml_backend_sched_backend_from_buffer(sched, tensor, tensor);
+ggml/src/ggml-backend.cpp:888:        cur_backend_id = ggml_backend_sched_backend_from_buffer(sched, tensor->view_src, tensor);
+ggml/src/ggml-backend.cpp:903:        cur_backend_id = sched->n_backends - 1; // last backend (assumed CPU)
+ggml/src/ggml-backend.cpp:917:            int src_backend_id = ggml_backend_sched_backend_from_buffer(sched, src, tensor);
+ggml/src/ggml-backend.cpp:919:            if (sched->op_offload && src_backend_id == sched->n_backends - 1 && ggml_backend_buffer_is_host(src->buffer)) {
+ggml/src/ggml-backend.cpp:921:                    if (ggml_backend_supports_op(sched->backends[b], tensor) && ggml_backend_offload_op(sched->backends[b], tensor)) {
+ggml/src/ggml-backend.cpp:945:static void ggml_backend_sched_print_assignments(ggml_backend_sched_t sched, struct ggml_cgraph * graph) {
+ggml/src/ggml-backend.cpp:948:        if (cur_split < sched->n_splits && i == sched->splits[cur_split].i_start) {
+ggml/src/ggml-backend.cpp:949:            ggml_backend_t split_backend = sched->backends[sched->splits[cur_split].backend_id];
+ggml/src/ggml-backend.cpp:951:                sched->splits[cur_split].n_inputs);
+ggml/src/ggml-backend.cpp:952:            for (int j = 0; j < sched->splits[cur_split].n_inputs; j++) {
+ggml/src/ggml-backend.cpp:956:                GGML_LOG_DEBUG("[%s (%5.5s)] ", sched->splits[cur_split].inputs[j]->name,
+ggml/src/ggml-backend.cpp:957:                    fmt_size(ggml_nbytes(sched->splits[cur_split].inputs[j])));
+ggml/src/ggml-backend.cpp:966:        if (sched->debug > 1) {
+ggml/src/ggml-backend.cpp:967:            ggml_backend_t tensor_backend = ggml_backend_sched_get_tensor_backend(sched, node);
+ggml/src/ggml-backend.cpp:976:                ggml_backend_t src_backend = ggml_backend_sched_get_tensor_backend(sched, src);
+ggml/src/ggml-backend.cpp:985:static bool ggml_backend_sched_buffer_supported(ggml_backend_sched_t sched, struct ggml_tensor * t, int backend_id) {
+ggml/src/ggml-backend.cpp:999:            buft = sched->bufts[tensor_backend_id];
+ggml/src/ggml-backend.cpp:1003:    return buft != NULL && ggml_backend_supports_buft(sched->backends[backend_id], buft);
+ggml/src/ggml-backend.cpp:1006:static void ggml_backend_sched_set_if_supported(ggml_backend_sched_t sched, struct ggml_tensor * node, int cur_backend_id, int * node_backend_id) {
+ggml/src/ggml-backend.cpp:1007:    if (ggml_backend_supports_op(sched->backends[cur_backend_id], node)) {
+ggml/src/ggml-backend.cpp:1014:void ggml_backend_sched_split_graph(ggml_backend_sched_t sched, struct ggml_cgraph * graph) {
+ggml/src/ggml-backend.cpp:1016:    sched->n_splits = 0;
+ggml/src/ggml-backend.cpp:1017:    sched->n_graph_inputs = 0;
+ggml/src/ggml-backend.cpp:1018:    sched->is_reset = false;
+ggml/src/ggml-backend.cpp:1021:        /* .mem_size =   */ sched->context_buffer_size,
+ggml/src/ggml-backend.cpp:1022:        /* .mem_buffer = */ sched->context_buffer,
+ggml/src/ggml-backend.cpp:1026:    ggml_free(sched->ctx);
+ggml/src/ggml-backend.cpp:1028:    sched->ctx = ggml_init(params);
+ggml/src/ggml-backend.cpp:1029:    if (sched->ctx == NULL) {
+ggml/src/ggml-backend.cpp:1041:            *leaf_backend_id = ggml_backend_sched_backend_id_from_cur(sched, leaf);
+ggml/src/ggml-backend.cpp:1050:            *node_backend_id = ggml_backend_sched_backend_id_from_cur(sched, node);
+ggml/src/ggml-backend.cpp:1065:                    *src_backend_id = ggml_backend_sched_backend_id_from_cur(sched, src);
+ggml/src/ggml-backend.cpp:1087:                if (*node_backend_id == sched->n_backends - 1) {
+ggml/src/ggml-backend.cpp:1094:                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+ggml/src/ggml-backend.cpp:1108:                if (*node_backend_id == sched->n_backends - 1) {
+ggml/src/ggml-backend.cpp:1115:                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+ggml/src/ggml-backend.cpp:1131:                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+ggml/src/ggml-backend.cpp:1147:                ggml_backend_sched_set_if_supported(sched, node, cur_backend_id, node_backend_id);
+ggml/src/ggml-backend.cpp:1169:            for (int b = 0; b < sched->n_backends; b++) {
+ggml/src/ggml-backend.cpp:1170:                if (ggml_backend_supports_op(sched->backends[b], node)) {
+ggml/src/ggml-backend.cpp:1177:                        if ((tensor_backend_id(src) != -1 || tensor_backend_id(src->view_src) != -1) && ggml_backend_sched_buffer_supported(sched, src, b)) {
+ggml/src/ggml-backend.cpp:1191:                if (sched->bufts[b] == sched->bufts[*node_backend_id] && ggml_backend_supports_op(sched->backends[b], node)) {
+=== Camelid relevant symbols ===
+qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/logs/current-head-grep-evidence-20260514T204932Z.txt:217:src/tensor/mod.rs:293:fn q8_0_runtime_packed_rows4_for_tensor(
+qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/logs/current-head-grep-evidence-20260514T204932Z.txt:224:src/tensor/mod.rs:2410:            q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/logs/current-head-grep-evidence-20260514T204932Z.txt:227:src/tensor/mod.rs:2488:                q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260515T1235Z-x86-ffn-down-runtime.txt:16:  - `q8_repack_linear_shape` treats gate/up/down FFN descriptors as transposed runtime rows `[output, input]`.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260515T1235Z-x86-ffn-down-runtime.txt:29:- `src/tensor/mod.rs`: `q8_repack_x86_tensor_enabled`, `q8_repack_linear_shape`.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260515T1235Z-x86-ffn-down-runtime.txt:35:src/tensor/mod.rs:317:fn q8_repack_linear_shape(name: &str, shape: &TensorShape) -> Option<(usize, usize)> {
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260515T1235Z-x86-ffn-down-runtime.txt:36:src/tensor/mod.rs:354:    let Some((rows, cols)) = q8_repack_linear_shape(name, shape) else {
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260515T1933Z-x86-output-decode-owner.txt:610:src/tensor/mod.rs:3016:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes)
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260515T1933Z-x86-output-decode-owner.txt:611:src/tensor/mod.rs:3023:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes).unwrap()
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T0320Z-x86-ffndown-consumer-planner.txt:11:- src/execution_plan.rs: MANAGED_ENV_KEYS; select_linux_x86_q8_plan; clear_profile_env; ubuntu_experimental_validated_gates_select_rust_avx2_q8_path; planner_env_apply_clears_stale_x86_q8_decode_consumer_flags.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T0320Z-x86-ffndown-consumer-planner.txt:28:src/execution_plan.rs:155:            select_linux_x86_q8_plan(&profile, &platform, &mut env_updates, &mut reasons)
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T0320Z-x86-ffndown-consumer-planner.txt:29:src/execution_plan.rs:287:fn select_linux_x86_q8_plan(
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/REPORT.md:11:- src/tensor/mod.rs:q8_repack_linear_shape maps output.weight [hidden, vocab] to runtime rows [vocab, hidden].
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:1:$ git grep -n "CAMELID_X86_Q8_REPACK\|CAMELID_X86_Q8_KERNEL\|select_linux_x86_q8_plan\|q8_0_runtime_packed_rows4_for_tensor\|q8_repack_tensor_enabled\|q8_repack_x86_tensor_enabled\|q8_repack_linear_shape\|Q8_0RuntimeStorage" -- src tests
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:4:src/execution_plan.rs:150:                select_linux_x86_q8_plan(&profile, &platform, &mut env_updates, &mut reasons)
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:5:src/execution_plan.rs:282:fn select_linux_x86_q8_plan(
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:37:src/tensor/mod.rs:318:fn q8_repack_linear_shape(name: &str, shape: &TensorShape) -> Option<(usize, usize)> {
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:39:src/tensor/mod.rs:357:fn q8_0_runtime_packed_rows4_for_tensor(
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:41:src/tensor/mod.rs:365:    let Some((rows, cols)) = q8_repack_linear_shape(name, shape) else {
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:46:src/tensor/mod.rs:2495:            q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:49:src/tensor/mod.rs:2573:                q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:60:src/tensor/mod.rs:3016:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes)
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-grep.txt:63:src/tensor/mod.rs:3023:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes).unwrap()
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-output-repack.diff:34:@@ -320,7 +321,17 @@ fn q8_repack_linear_shape(name: &str, shape: &TensorShape) -> Option<(usize, usi
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-output-repack.diff:87:+            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes)
+qa/evidence-bundles/ubuntu-x86-q8-output-repack-20260515T1557Z-head-be1ab5e6b090/camelid-output-repack.diff:94:+            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes).unwrap()
+src/execution_plan.rs:16:    "CAMELID_X86_Q8_ATTENTION_OUTPUT_DECODE_CONSUMER",
+src/execution_plan.rs:156:            select_linux_x86_q8_plan(&profile, &platform, &mut env_updates, &mut reasons)
+src/execution_plan.rs:288:fn select_linux_x86_q8_plan(
+src/execution_plan.rs:349:        "CAMELID_X86_Q8_ATTENTION_OUTPUT_DECODE_CONSUMER",
+src/execution_plan.rs:722:            "CAMELID_X86_Q8_ATTENTION_OUTPUT_DECODE_CONSUMER",
+src/execution_plan.rs:940:                .get("CAMELID_X86_Q8_ATTENTION_OUTPUT_DECODE_CONSUMER"),
+src/inference.rs:710:                "CAMELID_X86_Q8_ATTENTION_OUTPUT_DECODE_CONSUMER",
+src/inference.rs:4676:        if let Some(output) = try_x86_q8_attention_output_decode_consumer_path(
+src/inference.rs:7395:fn try_x86_q8_attention_output_decode_consumer_path(
+src/inference.rs:13150:        std::env::set_var("CAMELID_X86_Q8_ATTENTION_OUTPUT_DECODE_CONSUMER", "on");
+src/inference.rs:13171:        std::env::remove_var("CAMELID_X86_Q8_ATTENTION_OUTPUT_DECODE_CONSUMER");
+src/inference.rs:14003:            try_x86_q8_attention_output_decode_consumer_path(
+src/inference.rs:14015:            try_x86_q8_attention_output_decode_consumer_path(
+src/inference.rs:14028:            try_x86_q8_attention_output_decode_consumer_path(
+src/tensor/mod.rs:318:fn q8_repack_linear_shape(name: &str, shape: &TensorShape) -> Option<(usize, usize)> {
+src/tensor/mod.rs:361:fn q8_0_runtime_packed_rows4_for_tensor(
+src/tensor/mod.rs:369:    let Some((rows, cols)) = q8_repack_linear_shape(name, shape) else {
+src/tensor/mod.rs:2499:            q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+src/tensor/mod.rs:2577:                q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+src/tensor/mod.rs:3020:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes)
+src/tensor/mod.rs:3027:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes).unwrap()
+src/tensor/mod.rs:3036:            super::q8_0_runtime_packed_rows4_for_tensor("blk.0.attn_output.weight", &shape, &bytes)
+
+=== llama.cpp focused x86/common Q8 refs ===
+ggml/src/ggml-cpu/CMakeLists.txt:76:        find_package(OpenMP)
+ggml/src/ggml-cpu/CMakeLists.txt:77:        if (OpenMP_FOUND)
+ggml/src/ggml-cpu/CMakeLists.txt:81:            target_link_libraries(${GGML_CPU_NAME} PRIVATE OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/src/ggml-cpu/CMakeLists.txt:84:            message(WARNING "OpenMP not found")
+ggml/src/ggml-cpu/CMakeLists.txt:260:            if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:261:                list(APPEND ARCH_FLAGS /arch:AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:262:                # /arch:AVX512 includes: __AVX512F__, __AVX512CD__, __AVX512BW__, __AVX512DQ__, and __AVX512VL__
+ggml/src/ggml-cpu/CMakeLists.txt:264:                # AVX512 extensions, neither it defines the
+ggml/src/ggml-cpu/CMakeLists.txt:267:                list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:268:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:269:                    list(APPEND ARCH_DEFINITIONS __AVX512VBMI__)
+ggml/src/ggml-cpu/CMakeLists.txt:274:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:275:                    list(APPEND ARCH_DEFINITIONS __AVX512VNNI__ GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:280:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:281:                    list(APPEND ARCH_DEFINITIONS __AVX512BF16__ GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:295:            elseif (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:296:                list(APPEND ARCH_FLAGS /arch:AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:297:                list(APPEND ARCH_DEFINITIONS GGML_AVX2 GGML_FMA GGML_F16C)
+ggml/src/ggml-cpu/CMakeLists.txt:305:            if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:306:                list(APPEND ARCH_DEFINITIONS __AVXVNNI__ GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:336:                if (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:338:                    list(APPEND ARCH_DEFINITIONS GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:340:                if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:342:                    list(APPEND ARCH_DEFINITIONS GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:344:                if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:350:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:352:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:354:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:356:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:358:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:360:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:362:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_BF16)
+ggml/src/ggml-cpu/arch/x86/quants.c:28:#if defined(__AVX__) || defined(__AVX2__) || defined(__AVX512F__) || defined(__SSSE3__)
+ggml/src/ggml-cpu/arch/x86/quants.c:41:#if __AVX__ || __AVX2__ || __AVX512F__
+ggml/src/ggml-cpu/arch/x86/quants.c:68:#if defined(__AVX2__) || defined(__AVX512F__)
+ggml/src/ggml-cpu/arch/x86/quants.c:106:#if defined(__AVX512VNNI__) && defined(__AVX512VL__)
+ggml/src/ggml-cpu/arch/x86/quants.c:110:#elif defined(__AVXVNNI__)
+ggml/src/ggml-cpu/arch/x86/quants.c:123:#if __AVXVNNIINT8__
+ggml/src/ggml-cpu/arch/x86/quants.c:139:#if __AVX512F__
+ggml/src/ggml-cpu/arch/x86/quants.c:299:#endif // __AVX__ || __AVX2__ || __AVX512F__
+ggml/src/ggml-cpu/arch/x86/quants.c:300:#endif // defined(__AVX__) || defined(__AVX2__) || defined(__AVX512F__) || defined(__SSSE3__)
+ggml/src/ggml-cpu/arch/x86/quants.c:307:    block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/x86/quants.c:309:#if defined(__AVX2__) || defined(__AVX__)
+ggml/src/ggml-cpu/arch/x86/quants.c:354:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:362:        // These AVX2 pack instructions process 16-byte pieces independently
+ggml/src/ggml-cpu/arch/x86/quants.c:370:        // we split the registers in half and call AVX2 analogs from SSE
+ggml/src/ggml-cpu/arch/x86/quants.c:405:#if defined(__AVX2__) || defined(__AVX__)
+ggml/src/ggml-cpu/arch/x86/quants.c:450:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:461:        // These AVX2 pack instructions process 16-byte pieces independently
+ggml/src/ggml-cpu/arch/x86/quants.c:469:        // we split the registers in half and call AVX2 analogs from SSE
+ggml/src/ggml-cpu/arch/x86/quants.c:515:#if __AVX__ || __AVX2__ || __AVX512F__
+ggml/src/ggml-cpu/arch/x86/quants.c:567:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/x86/quants.c:569:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:584:        const block_q8_0 * GGML_RESTRICT y_ptr = &y[ib * 4];
+ggml/src/ggml-cpu/arch/x86/quants.c:615:        const block_q8_0 * GGML_RESTRICT y_ptr = &y[ib * 4];
+ggml/src/ggml-cpu/arch/x86/quants.c:668:        const block_q8_0 * GGML_RESTRICT y_ptr = &y[ib * 4];
+ggml/src/ggml-cpu/arch/x86/quants.c:713:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/x86/quants.c:718:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:783:        _mm_prefetch(&y[ib] + sizeof(block_q8_0), _MM_HINT_T0);
+ggml/src/ggml-cpu/arch/x86/quants.c:801:        _mm_prefetch(&y[ib] + 2 * sizeof(block_q8_0), _MM_HINT_T0);
+ggml/src/ggml-cpu/arch/x86/quants.c:875:#if defined(__AVX2__) || defined(__AVX__)
+ggml/src/ggml-cpu/arch/x86/quants.c:901:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:928:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/x86/quants.c:935:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:1019:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/x86/quants.c:1021:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1101:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1170:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/x86/quants.c:1181:    const block_q8_0 * GGML_RESTRICT x = vx;
+ggml/src/ggml-cpu/arch/x86/quants.c:1182:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/x86/quants.c:1187:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1250:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1382:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:1448:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:1644:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:1919:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:2097:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:2301:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:2485:#if defined (__AVX__) || defined (__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:2535:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:2653:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:2860:            // AVX2 full_signs_1 is full_sign_bits_0 here
+ggml/src/ggml-cpu/arch/x86/quants.c:2861:            // AVX2 full_signs_2 is full_sign_bits_1 here
+ggml/src/ggml-cpu/arch/x86/quants.c:2950:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:3135:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:3259:#if defined(__AVX2__)
+ggml/src/ggml-cpu/arch/x86/quants.c:3469:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:3590:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:3792:    const block_q8_0   * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/x86/quants.c:3799:#if defined __AVX2__
+ggml/src/ggml-cpu/arch/x86/quants.c:3879:#if defined __AVX2__
+ggml/src/ggml-cpu/ggml-cpu.c:1261:    const int nth = params->nth;
+ggml/src/ggml-cpu/ggml-cpu.c:1327:                for (int64_t i11 = ith; i11 < ne11; i11 += nth) {
+ggml/src/ggml-cpu/ggml-cpu.c:1339:                    int64_t ne10_block_start = (ith * ne10/bs) / nth;
+ggml/src/ggml-cpu/ggml-cpu.c:1340:                    int64_t ne10_block_end   = ((ith + 1) * ne10/bs) / nth;
+ggml/src/ggml-cpu/ggml-cpu.c:1351:        // Every thread starts at ith, so the first unprocessed chunk is nth.  This save a bit of coordination right at the start.
+ggml/src/ggml-cpu/ggml-cpu.c:1352:        atomic_store_explicit(&params->threadpool->current_chunk, nth, memory_order_relaxed);
+ggml/src/ggml-cpu/ggml-cpu.c:1404:    if (nchunk0 * nchunk1 < nth * 4 || ggml_is_numa()) {
+ggml/src/ggml-cpu/ggml-cpu.c:1406:        nchunk0 = nr0 > nr1 ? nth : 1; // parallelize by src0 rows
+ggml/src/ggml-cpu/ggml-cpu.c:1407:        nchunk1 = nr0 > nr1 ? 1 : nth; // parallelize by src1 rows
+ggml/src/ggml-cpu/ggml-cpu.c:1437:        if (nth >= nchunk0 * nchunk1) {
+ggml/src/ggml-cpu/ggml-cpu.c:1536:    const int nth = params->nth;
+ggml/src/ggml-cpu/ggml-cpu.c:1589:            for (int64_t i12 = ith; i12 < ne12; i12 += nth) {
+ggml/src/ggml-cpu/ggml-cpu.c:1602:                    int64_t ne10_block_start = (ith * ne10/bs) / nth;
+ggml/src/ggml-cpu/ggml-cpu.c:1603:                    int64_t ne10_block_end   = ((ith + 1) * ne10/bs) / nth;
+ggml/src/ggml-cpu/ggml-cpu.c:1631:    for (int cur_a = ith; cur_a < n_as; cur_a += nth) {
+ggml/src/ggml-cpu/ggml-cpu.c:1633:        *current_chunk_ctr = nth;
+ggml/src/ggml-cpu/ggml-cpu.c:1663:        if (nchunk0 * nchunk1 < nth * 4 || disable_chunking) {
+ggml/src/ggml-cpu/ggml-cpu.c:1664:            nchunk0 = nr0 > nr1 ? nth : 1;
+ggml/src/ggml-cpu/ggml-cpu.c:1665:            nchunk1 = nr0 > nr1 ? 1 : nth;
+ggml/src/ggml-cpu/ggml-cpu.c:1691:            if (nth >= nchunk0 * nchunk1) {
+ggml/src/ggml-cpu/ggml-cpu.c:1827:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:1831:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.c:2298:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:2299:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.c:2814:                case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:2822:                case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.c:3026:        /*.nth        =*/ atomic_load_explicit(&tp->n_graph, memory_order_relaxed) & GGML_THREADPOOL_N_THREADS_MASK,
+ggml/src/ggml-cpu/ggml-cpu.c:3335:                // update the number of threads from the actual number of threads that we got from OpenMP
+ggml/src/ggml-cpu/ggml-cpu.c:3393:#if defined(__AVX512F__)
+ggml/src/ggml-cpu/ggml-cpu.c:3426:#if defined(__AVX512F__)
+ggml/src/ggml-cpu/ggml-cpu.c:3493:#if defined(__AVX2__)
+ggml/src/ggml-cpu/ggml-cpu.c:3494:#if defined(__AVX512F__)
+ggml/src/ggml-cpu/ggml-cpu.c:3554:#if defined(__AVXVNNI__)
+ggml/src/ggml-cpu/ggml-cpu.c:3562:#if defined(__AVX2__)
+ggml/src/ggml-cpu/ggml-cpu.c:3570:#if defined(__AVX512F__)
+ggml/src/ggml-cpu/ggml-cpu.c:3578:#if defined(__AVX512VBMI__)
+ggml/src/ggml-cpu/ggml-cpu.c:3586:#if defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/ggml-cpu.c:3594:#if defined(__AVX512BF16__)
+ggml/src/ggml-cpu/ggml-cpu.c:3800:            //    // set the wait policy to active, so that OpenMP threads don't sleep
+ggml/src/ggml-cpu/ggml-cpu.cpp:46:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/ggml-cpu.cpp:452:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.cpp:543:            features.push_back({ "AVX_VNNI", "1" });
+ggml/src/ggml-cpu/ggml-cpu.cpp:546:            features.push_back({ "AVX2", "1" });
+ggml/src/ggml-cpu/ggml-cpu.cpp:558:            features.push_back({ "AVX512", "1" });
+ggml/src/ggml-cpu/ggml-cpu.cpp:561:            features.push_back({ "AVX512_VBMI", "1" });
+ggml/src/ggml-cpu/ggml-cpu.cpp:564:            features.push_back({ "AVX512_VNNI", "1" });
+ggml/src/ggml-cpu/ggml-cpu.cpp:567:            features.push_back({ "AVX512_BF16", "1" });
+ggml/src/ggml-cpu/quants.c:135:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/quants.c:145:            const block_q8_0 * GGML_RESTRICT yb = &y[i * 4 + k];
+ggml/src/ggml-cpu/quants.c:186:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/quants.c:257:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/quants.c:288:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/quants.c:330:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/quants.c:400:void ggml_vec_dot_q8_0_q8_0_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/quants.c:411:    const block_q8_0 * GGML_RESTRICT x = vx;
+ggml/src/ggml-cpu/quants.c:412:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/quants.c:1213:    const block_q8_0   * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/quants.h:45:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+ggml/src/ggml-cpu/quants.h:78:void ggml_vec_dot_q8_0_q8_0_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+
+=== Local validation commands ===
+$ cargo fmt --all
+$ cargo test q8_attention_output_consumer --lib
+result: 2 passed; 0 failed
+$ cargo test q8_x86_repack --lib
+result: 2 passed; 0 failed (q8_x86_repack_family_includes_output_projection_only, q8_x86_repack_includes_output_projection_runtime_storage)
+$ cargo test resolved_runtime_plan_captures_q8_env_once --lib
+result: 1 passed; 0 failed
+$ cargo test runtime_profile_defaults_keep_experimental_q8_gates_closed --lib
+result: 1 passed; 0 failed
+$ cargo test ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib
+result: 1 passed; 0 failed
+
+=== Canonical Ubuntu x86_64 validation ===
+host: SSH to the canonical validation host
+remote workdir: <ubuntu-workdir>/camelid-x86-q8-attn-output-consumer-20260517T0503Z
+toolchain: ~/.cargo/bin rustc 1.95.0, cargo 1.95.0
+commands:
+$ cargo fmt --all -- --check
+$ cargo test q8_attention_output_consumer --lib
+result: 2 passed; 0 failed
+$ cargo test q8_x86_repack --lib
+result: 2 passed; 0 failed
+$ cargo test resolved_runtime_plan_captures_q8_env_once --lib
+result: 1 passed; 0 failed
+$ cargo test runtime_profile_defaults_keep_experimental_q8_gates_closed --lib
+result: 1 passed; 0 failed
+$ cargo test ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib
+result: 1 passed; 0 failed
+
+Scope guardrail: default-off Ubuntu x86_64 dense Llama Q8_0 developer slice only. No throughput/support promotion.

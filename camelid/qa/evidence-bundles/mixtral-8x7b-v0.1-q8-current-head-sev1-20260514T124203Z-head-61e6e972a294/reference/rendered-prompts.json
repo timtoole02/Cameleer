@@ -1,0 +1,5 @@
+{
+  "single_user_turn": "<s> [INST] Hello [/INST]",
+  "system_user_turn": "<s> [INST] Be brief.\n\nHello there. [/INST]",
+  "assistant_then_user": "<s> [INST] Complete cam [/INST] elid</s> [INST] Now say hi [/INST]"
+}

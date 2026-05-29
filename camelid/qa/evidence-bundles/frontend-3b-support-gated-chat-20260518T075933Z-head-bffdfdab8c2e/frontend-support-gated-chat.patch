@@ -1,0 +1,52 @@
+diff --git a/frontend/scripts/frontend-integration-smoke.mjs b/frontend/scripts/frontend-integration-smoke.mjs
+index f591003..81fca71 100644
+--- a/frontend/scripts/frontend-integration-smoke.mjs
++++ b/frontend/scripts/frontend-integration-smoke.mjs
+@@ -509,6 +509,47 @@ try {
+   assert.match(liveBackendIdChatMarkup, /Message Camelid…/, 'ready 3B live-backend-id chat should enable the composer instead of showing load-first copy')
+   assert.doesNotMatch(liveBackendIdChatMarkup, /Load a model first|Choose a supported model/, 'ready 3B live-backend-id chat should not fall back to blocked chat UX')
+ 
++  const backendReadyButUnsupported3BCapabilities = {
++    ...capabilities,
++    model_compatibility: capabilities.model_compatibility.map((target) => target.id === 'llama32_3b_instruct_q8_0'
++      ? {
++        ...target,
++        status: 'groundwork_backend_evidence_only',
++        full_support_status: 'blocked_pending_frontend_api_alignment',
++        evidence: 'Backend can load this fixture, but /api/capabilities has not promoted WebUI chat support.',
++      }
++      : target),
++  }
++  const backendReadyButUnsupported3BGate = getChatGateState(backendReadyButUnsupported3BCapabilities, liveBackendIdModel, liveBackendIdRuntime)
++  assert.equal(backendReadyButUnsupported3BGate.runtimeReady, true, '3B runtime health should remain visible even when the support contract row is not promoted')
++  assert.equal(backendReadyButUnsupported3BGate.contractSupported, false, '3B chat must stay support-contract blocked when /api/capabilities downgrades the exact row')
++  assert.equal(backendReadyButUnsupported3BGate.chatUnlocked, false, 'runtime-ready 3B rows must not unlock WebUI chat without an exact supported compatibility status')
++
++  const backendReadyButUnsupported3BChatMarkup = renderToStaticMarkup(React.createElement(ChatWorkspace, {
++    selectedConversation: null,
++    selectedModel: liveBackendIdModel,
++    selectedModelId: liveBackendIdModel.id,
++    setSelectedModelId: noop,
++    models: [liveBackendIdModel],
++    runtime: liveBackendIdRuntime,
++    capabilities: backendReadyButUnsupported3BCapabilities,
++    pendingConversation: null,
++    composer: 'This should remain blocked',
++    setComposer: noop,
++    saveToMemory: noop,
++    sendMessage: noop,
++    sending: false,
++    selectedModelRunnable: backendReadyButUnsupported3BGate.chatUnlocked,
++    setTab: noop,
++  }))
++
++  assert.match(backendReadyButUnsupported3BChatMarkup, /Choose a supported model\./, 'runtime-ready 3B rows should render support-gated chat UX when the exact row is downgraded')
++  assert.match(backendReadyButUnsupported3BChatMarkup, /Runtime ready, support gated/, 'support-gated 3B UX should still expose that loaded_now and generation_ready are green')
++  assert.match(backendReadyButUnsupported3BChatMarkup, /llama32_3b_instruct_q8_0: groundwork backend evidence only/, 'support-gated 3B UX should name the exact unpromoted capabilities row rather than hiding behind generic load-first copy')
++  assert.match(backendReadyButUnsupported3BChatMarkup, /Chat unlocks only after loaded_now=true, generation_ready=true, and an exact supported compatibility row all match\./, 'support-gated 3B UX should preserve the exact-row frontend readiness rule')
++  assert.match(backendReadyButUnsupported3BChatMarkup, /Load a model first/, 'support-gated 3B composer should stay disabled instead of accepting prompts')
++  assert.doesNotMatch(backendReadyButUnsupported3BChatMarkup, /Local chat ready|Message Camelid…|Demo starters/, 'support-gated 3B rows must not render the live-chat ready UX')
++
+   assert.match(exactReadyMarkup, /responses stream/, 'API view should normalize provider-scoped dotted feature ids before rendering')
+   assert.match(exactReadyMarkup, /hosted model-style streamed response compatibility stays provider-neutral/, 'API view should neutralize hosted-brand feature notes before rendering')
+   assert.match(exactReadyMarkup, /Guarded feature row; do not label it hosted model or hosted model compatible from API metadata\./, 'API view should also neutralize guarded feature metadata before rendering')

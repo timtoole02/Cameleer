@@ -1,0 +1,36 @@
+{
+  "generated_utc": "20260514T205551Z",
+  "commit": "6be2ad2e5f74c862a3c19779e124adc6e81817bf",
+  "pack_trace_total": 84,
+  "pack_trace_attn_q": 28,
+  "pack_trace_ffn_gate": 28,
+  "pack_trace_ffn_up": 28,
+  "first_token": {
+    "wall_ms": 6203,
+    "generate_ms": 2587,
+    "layers_ms": 2523.53,
+    "logits_ms": 42.094,
+    "attention_projection_ms": 747,
+    "ffn_total_ms": 1684,
+    "token_hash": "f0d8e0796b2c65713be5643bc086c99aeab367a8aa5b67144b5590647c9c870f"
+  },
+  "full_512": {
+    "wall_ms": 49455,
+    "generate_ms": 49421,
+    "decode_tps_including_prompt": 10.359968434471176,
+    "layers_ms": 47186.388,
+    "logits_ms": 2133.923,
+    "attention_projection_ms": 7335,
+    "ffn_total_ms": 26640,
+    "token_hash": "674f404ffc27265139853544848e9bd44d9631cc583614a45e77e2a134017e52",
+    "completion_tokens": 512
+  },
+  "baseline_compare": {
+    "baseline_generate_ms": 54070,
+    "new_generate_ms": 49421,
+    "delta_ms": -4649,
+    "speedup_pct": 8.598,
+    "llamacpp_decode_ms": 48711,
+    "llamacpp_tok_s": 10.511
+  }
+}

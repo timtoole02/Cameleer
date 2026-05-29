@@ -1,0 +1,45 @@
+{
+  "schema": "camelid.llama3.prompt-pack.v1",
+  "pack_id": "llama3-chat-template-shapes-v1",
+  "description": "Bounded Llama 3 Instruct compact-header chat-template shape coverage. These cases intentionally exercise Camelid's explicit compact renderer rather than arbitrary GGUF tokenizer.chat_template/Jinja execution.",
+  "defaults": {
+    "max_tokens": 5,
+    "render_mode": "compact"
+  },
+  "prompts": [
+    {
+      "id": "single-system-user",
+      "note": "System + user message shape.",
+      "messages": [
+        { "role": "system", "content": "Answer briefly and stay factual." },
+        { "role": "user", "content": "Name one primary color." }
+      ]
+    },
+    {
+      "id": "multi-turn-user-assistant-user",
+      "note": "Multi-turn user/assistant history followed by a new user turn.",
+      "messages": [
+        { "role": "user", "content": "Say alpha." },
+        { "role": "assistant", "content": "alpha" },
+        { "role": "user", "content": "Now say beta." }
+      ]
+    },
+    {
+      "id": "assistant-final-no-generation-header",
+      "note": "Assistant-final messages should not append another assistant generation header.",
+      "messages": [
+        { "role": "user", "content": "Complete the word: cam" },
+        { "role": "assistant", "content": "elid" }
+      ],
+      "max_tokens": 1
+    },
+    {
+      "id": "multiline-whitespace-preservation",
+      "note": "Whitespace and multiline content are preserved inside message content.",
+      "messages": [
+        { "role": "system", "content": "Preserve line breaks in reasoning inputs." },
+        { "role": "user", "content": "Line one.\n\n  Indented line two.  " }
+      ]
+    }
+  ]
+}

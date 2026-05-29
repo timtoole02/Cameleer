@@ -1,0 +1,125 @@
+{
+  "target_row": "mistral_7b_instruct_v0_3_q8_0",
+  "model_name": "Mistral-7B-Instruct-v0.3",
+  "quantization": "Q8_0",
+  "status": "reference_capture",
+  "notes": "Tokenizer/chat-template reference pack generated from llama.cpp llama-tokenize for the exact chosen GGUF row. Do not promote support from this file alone.",
+  "reference": {
+    "tool": "llama.cpp llama-tokenize --ids",
+    "binary": "<llama.cpp>/llama-tokenize",
+    "model": "Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+    "generated_at_utc": "2026-05-08T18:28:49.793Z",
+    "local_paths_redacted": true
+  },
+  "expected_artifacts": {
+    "gguf_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+    "tokenizer_fixture_id": "mistral-instruct-v0.3-tokenizer-v1",
+    "chat_template_fixture_id": "mistral-instruct-v0.3-chat-template-pack-v1",
+    "prompt_token_reference_source": "llama.cpp llama-tokenize --ids",
+    "prompt_cases": [
+      {
+        "id": "hello",
+        "text": "hello",
+        "add_special": true,
+        "parse_special": false,
+        "expected_tokens": [
+          1,
+          7080,
+          29477
+        ]
+      },
+      {
+        "id": "single_user_turn",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Hello"
+          }
+        ],
+        "rendered_prompt": "<s>[INST] Hello [/INST]",
+        "add_special": false,
+        "parse_special": true,
+        "expected_tokens": [
+          1,
+          3,
+          29473,
+          23325,
+          29473,
+          4
+        ]
+      },
+      {
+        "id": "system_and_user_turn",
+        "messages": [
+          {
+            "role": "system",
+            "content": " Be brief. "
+          },
+          {
+            "role": "user",
+            "content": " Hello there. "
+          }
+        ],
+        "rendered_prompt": "<s>[INST] Be brief.\n\nHello there. [/INST]",
+        "add_special": false,
+        "parse_special": true,
+        "expected_tokens": [
+          1,
+          3,
+          29473,
+          2507,
+          7585,
+          29491,
+          781,
+          781,
+          16998,
+          1504,
+          29491,
+          29473,
+          4
+        ]
+      },
+      {
+        "id": "assistant_turn_then_next_user",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Complete cam"
+          },
+          {
+            "role": "assistant",
+            "content": " elid "
+          },
+          {
+            "role": "user",
+            "content": "Now say hi"
+          }
+        ],
+        "rendered_prompt": "<s>[INST] Complete cam [/INST] elid</s><s>[INST] Now say hi [/INST]",
+        "add_special": false,
+        "parse_special": true,
+        "expected_tokens": [
+          1,
+          3,
+          29473,
+          22697,
+          4498,
+          29473,
+          4,
+          29473,
+          1407,
+          1081,
+          2,
+          1,
+          3,
+          29473,
+          3729,
+          2083,
+          12782,
+          29473,
+          4
+        ]
+      }
+    ]
+  }
+}

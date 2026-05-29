@@ -1,0 +1,439 @@
+{
+  "schema": "camelid.full_support.execution_bundle.v1",
+  "generated_utc": "2026-05-03T04:25:35.979Z",
+  "bundle_root": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1",
+  "purpose": "Current-head full-support execution scaffold plus durable exact-row carry-forward references.",
+  "git": {
+    "repo_root": ".",
+    "branch": "main",
+    "head": "33f38ba9287506dc680b5c0f327251cd9ad6cf94",
+    "head_short": "33f38ba92875",
+    "origin_main": "e7837a49d3e1b2eb4f93ed6777b77200fad8307f",
+    "dirty_paths": [
+      "M scripts/chat-parity-llama3.mjs",
+      " M scripts/prepare-full-support-bundle.mjs",
+      " M scripts/run-llama3-prompt-pack.mjs",
+      " M src/api/mod.rs",
+      " M tests/api_vertical_slice.rs",
+      "?? qa/prompt-packs/tinyllama-chat-template-shapes.json",
+      "?? qa/prompt-packs/tinyllama-context-512-smoke.json",
+      "?? scripts/lib/",
+      "?? scripts/test-chat-parity-harness.mjs"
+    ]
+  },
+  "host": {
+    "hostname": "redacted-local-docs-host",
+    "platform": "darwin",
+    "release": "25.5.0",
+    "arch": "arm64",
+    "node": "v22.22.2"
+  },
+  "ubuntu_validation_guardrail": "Use the canonical Ubuntu validation host for promotion-grade Llama runtime evidence. Local Mac work is for docs/recon/light prep only.",
+  "required_tracks": [
+    "compact-parity",
+    "broader-parity",
+    "chat-template-shapes",
+    "context-512",
+    "api-webui-smoke",
+    "perf-rss-portability"
+  ],
+  "prerequisites": {
+    "build_command": "cd \"$REPO_ROOT\" && ./scripts/with-rustup-cargo.sh +1.87.0 build --release --bin backendinference",
+    "backend_binary": "target/release/backendinference",
+    "reference_llama_server": "${CAMELID_LLAMA_SERVER_BIN:-target/reference/llama.cpp/build/bin/llama-server}",
+    "reference_llama_tokenize": "${CAMELID_LLAMA_TOKENIZE_BIN:-target/reference/llama.cpp/build/bin/llama-tokenize}",
+    "required_env": {
+      "CAMELID_MODEL_DIR": "Directory containing the exact GGUF rows.",
+      "CAMELID_API_BASE": "Camelid API base URL (default http://127.0.0.1:8181).",
+      "CAMELID_FRONTEND_URL": "Camelid frontend URL (default http://127.0.0.1:4175).",
+      "LLAMA3_LLAMA_SERVER_URL": "Reference llama.cpp server URL for Llama 3 rows (default http://127.0.0.1:8183).",
+      "TINYLLAMA_LLAMA_SERVER_URL": "Reference llama.cpp server URL for TinyLlama (default http://127.0.0.1:8183).",
+      "CAMELID_LLAMA_SERVER_BIN": "Path to llama.cpp llama-server binary.",
+      "CAMELID_LLAMA_TOKENIZE_BIN": "Path to llama.cpp llama-tokenize binary."
+    }
+  },
+  "carry_forward_public_refs": {
+    "normalized_bundle_root": "qa/evidence-bundles/four-row-public-20260503T024327Z",
+    "perf_portability_envelope": "qa/evidence-bundles/four-row-perf-portability-public-20260503T025639Z/compact-perf-portability-envelope.json",
+    "validation_note": "qa/validation-notes/2026-05-03-ubuntu-toolchain-and-8b-context.md"
+  },
+  "rows": [
+    {
+      "row_id": "tinyllama_1_1b_chat_q8_0",
+      "display_name": "TinyLlama 1.1B Chat Q8_0",
+      "public_status": "supported_current_gate",
+      "model_file": "tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+      "model_id": "tinyllama-q8",
+      "model_path_env": "${CAMELID_MODEL_DIR:?set CAMELID_MODEL_DIR to the GGUF directory}/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+      "expected_model_sha256": "a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59",
+      "template_family": "tinyllama_marker",
+      "compatibility_row": "tinyllama_1_1b_chat_q8_0",
+      "expected_compatibility_status": "supported_current_gate",
+      "expect_contract_supported": true,
+      "expect_webui_chat": "enabled",
+      "row_root": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/tinyllama_1_1b_chat_q8_0",
+      "carry_forward_bundle": "qa/evidence-bundles/four-row-public-20260503T024327Z/tinyllama_1_1b_chat_q8_0.bundle.json",
+      "notes": [
+        "Current public support is already a real TinyLlama gate, but this row still needs the same durable current-head bundle shape as the three Llama rows.",
+        "The Llama-3-specific template/context packs do not apply unchanged here; keep TinyLlama evidence exact-row and marker-template scoped."
+      ],
+      "blockers": [
+        "Fresh current-head API/WebUI/perf artifacts are still needed in a durable target/full-support root.",
+        "Do not imply support for adjacent TinyLlama quantizations or other families."
+      ],
+      "tracks": [
+        {
+          "index": 1,
+          "id": "compact-parity",
+          "kind": "parity",
+          "status": "ready_to_run",
+          "description": "Refresh bounded TinyLlama hello parity on current head.",
+          "pack_path": "qa/prompt-packs/tinyllama-hello-5tok.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/tinyllama_1_1b_chat_q8_0/commands/01-compact-parity.sh"
+        },
+        {
+          "index": 2,
+          "id": "broader-parity",
+          "kind": "parity",
+          "status": "carry_forward_only",
+          "description": "Preserve the existing five-prompt/50-token TinyLlama gate while a fresh current-head rerun is scheduled.",
+          "pack_path": null,
+          "carry_forward_artifacts": [
+            "target/edge-prompt-audit-fixed-20260428T1530/short.json",
+            "target/edge-prompt-audit-fixed-20260428T1530/trailing-spaces.json",
+            "target/edge-prompt-audit-fixed-20260428T1530/special-chars.json",
+            "target/edge-prompt-audit-fixed-20260428T1530/longer.json",
+            "target/edge-prompt-dequant-default-20260428T1604/multiline-long-default-50.json"
+          ],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/tinyllama_1_1b_chat_q8_0/commands/02-broader-parity.sh"
+        },
+        {
+          "index": 3,
+          "id": "chat-template-shapes",
+          "kind": "template",
+          "status": "ready_to_run",
+          "description": "Run the exact-row TinyLlama marker-template shape pack.",
+          "pack_path": "qa/prompt-packs/tinyllama-chat-template-shapes.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/tinyllama_1_1b_chat_q8_0/commands/03-chat-template-shapes.sh"
+        },
+        {
+          "index": 4,
+          "id": "context-512",
+          "kind": "context",
+          "status": "ready_to_run",
+          "description": "Run the bounded TinyLlama 512-context pack and preserve success or failure durably.",
+          "pack_path": "qa/prompt-packs/tinyllama-context-512-smoke.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/tinyllama_1_1b_chat_q8_0/commands/04-context-512.sh"
+        },
+        {
+          "index": 5,
+          "id": "api-webui-smoke",
+          "kind": "api_webui",
+          "status": "ready_to_run",
+          "description": "Refresh current-head TinyLlama load/completions/chat/frontend smoke.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/tinyllama_1_1b_chat_q8_0/commands/05-api-webui-smoke.sh"
+        },
+        {
+          "index": 6,
+          "id": "perf-rss-portability",
+          "kind": "perf",
+          "status": "ready_to_run",
+          "description": "Capture host facts plus RSS after load/1tok/5tok/API-WebUI smoke.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/tinyllama_1_1b_chat_q8_0/commands/06-perf-rss-portability.sh"
+        }
+      ]
+    },
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "display_name": "Llama 3.2 1B Instruct Q8_0",
+      "public_status": "supported_exact_row_smoke",
+      "model_file": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "model_id": "llama32-1b-q8",
+      "model_path_env": "${CAMELID_MODEL_DIR:?set CAMELID_MODEL_DIR to the GGUF directory}/Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "expected_model_sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+      "template_family": "llama3_instruct",
+      "compatibility_row": "llama32_1b_instruct_q8_0",
+      "expected_compatibility_status": "supported_exact_row_smoke",
+      "expect_contract_supported": true,
+      "expect_webui_chat": "enabled",
+      "row_root": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_1b_instruct_q8_0",
+      "carry_forward_bundle": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama32_1b_instruct_q8_0.bundle.json",
+      "notes": [
+        "Broader prompt-pack evidence exists, but the public claim remains exact-row short-chat smoke.",
+        "Promotion-grade longer-context, broader template coverage, and portability still need Ubuntu current-head reruns."
+      ],
+      "blockers": [
+        "No durable current-head target/full-support evidence root exists yet for compact/broader/template/512/API-WebUI/perf together.",
+        "Do not imply neighboring Llama 3.2 rows or other quantizations are supported."
+      ],
+      "tracks": [
+        {
+          "index": 1,
+          "id": "compact-parity",
+          "kind": "parity",
+          "status": "ready_to_run",
+          "description": "Refresh compact-header hello parity at 5 tokens on current head.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_1b_instruct_q8_0/commands/01-compact-parity.sh"
+        },
+        {
+          "index": 2,
+          "id": "broader-parity",
+          "kind": "parity",
+          "status": "ready_to_run",
+          "description": "Run the broader three-prompt pack and require prompt/generated parity.",
+          "pack_path": "qa/prompt-packs/llama3-broader-repro-3prompt.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_1b_instruct_q8_0/commands/02-broader-parity.sh"
+        },
+        {
+          "index": 3,
+          "id": "chat-template-shapes",
+          "kind": "template",
+          "status": "ready_to_run",
+          "description": "Run the chat-template-shapes pack to broaden template coverage on the exact row.",
+          "pack_path": "qa/prompt-packs/llama3-chat-template-shapes.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_1b_instruct_q8_0/commands/03-chat-template-shapes.sh"
+        },
+        {
+          "index": 4,
+          "id": "context-512",
+          "kind": "context",
+          "status": "ready_to_run",
+          "description": "Run the bounded 512-context pack and preserve success or failure durably.",
+          "pack_path": "qa/prompt-packs/llama3-context-512-smoke.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_1b_instruct_q8_0/commands/04-context-512.sh"
+        },
+        {
+          "index": 5,
+          "id": "api-webui-smoke",
+          "kind": "api_webui",
+          "status": "ready_to_run",
+          "description": "Refresh exact-row /api/models/load, /v1/models, /v1/completions, /v1/chat/completions, and frontend smoke.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_1b_instruct_q8_0/commands/05-api-webui-smoke.sh"
+        },
+        {
+          "index": 6,
+          "id": "perf-rss-portability",
+          "kind": "perf",
+          "status": "ready_to_run",
+          "description": "Capture host facts, versions, model SHA, smoke timing, and backend RSS snapshots in one portable note.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_1b_instruct_q8_0/commands/06-perf-rss-portability.sh"
+        }
+      ]
+    },
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "display_name": "Llama 3.2 3B Instruct Q8_0",
+      "public_status": "supported_exact_row_smoke",
+      "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "model_id": "llama32-3b-q8",
+      "model_path_env": "${CAMELID_MODEL_DIR:?set CAMELID_MODEL_DIR to the GGUF directory}/Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "expected_model_sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+      "template_family": "llama3_instruct",
+      "compatibility_row": "llama32_3b_instruct_q8_0",
+      "expected_compatibility_status": "supported_exact_row_smoke",
+      "expect_contract_supported": true,
+      "expect_webui_chat": "enabled",
+      "row_root": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_3b_instruct_q8_0",
+      "carry_forward_bundle": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama32_3b_instruct_q8_0.bundle.json",
+      "notes": [
+        "The post-Q8-dot broader three-prompt pack passed for prompt tokens, generated token IDs, and generated text.",
+        "Longer context, broader template behavior, and stronger portability/perf evidence remain the release blocker."
+      ],
+      "blockers": [
+        "Current public support is still exact-row smoke only.",
+        "Do not broaden beyond the exact 3B Instruct Q8_0 row without fresh Ubuntu artifacts and synchronized docs/API/frontend changes."
+      ],
+      "tracks": [
+        {
+          "index": 1,
+          "id": "compact-parity",
+          "kind": "parity",
+          "status": "ready_to_run",
+          "description": "Refresh compact-header hello parity at 5 tokens on current head.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_3b_instruct_q8_0/commands/01-compact-parity.sh"
+        },
+        {
+          "index": 2,
+          "id": "broader-parity",
+          "kind": "parity",
+          "status": "ready_to_run",
+          "description": "Run the broader three-prompt pack and require prompt/generated parity.",
+          "pack_path": "qa/prompt-packs/llama3-broader-repro-3prompt.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_3b_instruct_q8_0/commands/02-broader-parity.sh"
+        },
+        {
+          "index": 3,
+          "id": "chat-template-shapes",
+          "kind": "template",
+          "status": "ready_to_run",
+          "description": "Run the chat-template-shapes pack to broaden template coverage on the exact row.",
+          "pack_path": "qa/prompt-packs/llama3-chat-template-shapes.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_3b_instruct_q8_0/commands/03-chat-template-shapes.sh"
+        },
+        {
+          "index": 4,
+          "id": "context-512",
+          "kind": "context",
+          "status": "ready_to_run",
+          "description": "Run the bounded 512-context pack and preserve success or failure durably.",
+          "pack_path": "qa/prompt-packs/llama3-context-512-smoke.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_3b_instruct_q8_0/commands/04-context-512.sh"
+        },
+        {
+          "index": 5,
+          "id": "api-webui-smoke",
+          "kind": "api_webui",
+          "status": "ready_to_run",
+          "description": "Refresh exact-row /api/models/load, /v1/models, /v1/completions, /v1/chat/completions, and frontend smoke.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_3b_instruct_q8_0/commands/05-api-webui-smoke.sh"
+        },
+        {
+          "index": 6,
+          "id": "perf-rss-portability",
+          "kind": "perf",
+          "status": "ready_to_run",
+          "description": "Capture host facts, versions, model SHA, smoke timing, and backend RSS snapshots in one portable note.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama32_3b_instruct_q8_0/commands/06-perf-rss-portability.sh"
+        }
+      ]
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "display_name": "Llama 3 8B Instruct Q8_0",
+      "public_status": "supported_exact_row_smoke",
+      "model_file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "model_id": "llama3-8b-q8",
+      "model_path_env": "${CAMELID_MODEL_DIR:?set CAMELID_MODEL_DIR to the GGUF directory}/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "expected_model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+      "template_family": "llama3_instruct",
+      "compatibility_row": "llama3_8b_instruct_q8_0",
+      "expected_compatibility_status": "supported_exact_row_smoke",
+      "expect_contract_supported": true,
+      "expect_webui_chat": "enabled",
+      "row_root": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama3_8b_instruct_q8_0",
+      "carry_forward_bundle": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama3_8b_instruct_q8_0.bundle.json",
+      "notes": [
+        "Short smoke is supported for the exact row only; the broader 5-token Ubuntu pack passed on the tracked GGUF.",
+        "The first bounded 512-context pack timed out at /v1/chat/completions after 300000 ms on current head and remains the blocker."
+      ],
+      "blockers": [
+        "512-context parity on Ubuntu current head was not completed in this bundle; keep that failure preserved side-by-side with passing short smoke.",
+        "Do not broaden to neighboring Llama sizes, quantizations, longer contexts, or other template families."
+      ],
+      "tracks": [
+        {
+          "index": 1,
+          "id": "compact-parity",
+          "kind": "parity",
+          "status": "ready_to_run",
+          "description": "Refresh compact-header hello parity at 5 tokens on current head.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama3_8b_instruct_q8_0/commands/01-compact-parity.sh"
+        },
+        {
+          "index": 2,
+          "id": "broader-parity",
+          "kind": "parity",
+          "status": "ready_to_run",
+          "description": "Run the broader three-prompt pack and require prompt/generated parity.",
+          "pack_path": "qa/prompt-packs/llama3-broader-repro-3prompt.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama3_8b_instruct_q8_0/commands/02-broader-parity.sh"
+        },
+        {
+          "index": 3,
+          "id": "chat-template-shapes",
+          "kind": "template",
+          "status": "ready_to_run",
+          "description": "Run the chat-template-shapes pack to broaden template coverage on the exact row.",
+          "pack_path": "qa/prompt-packs/llama3-chat-template-shapes.json",
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama3_8b_instruct_q8_0/commands/03-chat-template-shapes.sh"
+        },
+        {
+          "index": 4,
+          "id": "context-512",
+          "kind": "context",
+          "status": "known_blocker",
+          "description": "Run the bounded 512-context pack and preserve success or failure durably.",
+          "pack_path": "qa/prompt-packs/llama3-context-512-smoke.json",
+          "carry_forward_artifacts": [],
+          "notes": [
+            "Known blocker from qa/validation-notes/2026-05-03-ubuntu-toolchain-and-8b-context.md: Camelid timed out at POST /v1/chat/completions after 300000 ms while llama.cpp finished the same 512-context reference prompt + 5-token completion.",
+            "Keep the failure durable inside the new bundle instead of papering over it."
+          ],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama3_8b_instruct_q8_0/commands/04-context-512.sh"
+        },
+        {
+          "index": 5,
+          "id": "api-webui-smoke",
+          "kind": "api_webui",
+          "status": "ready_to_run",
+          "description": "Refresh exact-row /api/models/load, /v1/models, /v1/completions, /v1/chat/completions, and frontend smoke.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama3_8b_instruct_q8_0/commands/05-api-webui-smoke.sh"
+        },
+        {
+          "index": 6,
+          "id": "perf-rss-portability",
+          "kind": "perf",
+          "status": "ready_to_run",
+          "description": "Capture host facts, versions, model SHA, smoke timing, and backend RSS snapshots in one portable note.",
+          "pack_path": null,
+          "carry_forward_artifacts": [],
+          "notes": [],
+          "command_file": "qa/evidence-bundles/four-row-current-head-20260503T035707Z-head-e7837a49d3e1/llama3_8b_instruct_q8_0/commands/06-perf-rss-portability.sh"
+        }
+      ]
+    }
+  ]
+}

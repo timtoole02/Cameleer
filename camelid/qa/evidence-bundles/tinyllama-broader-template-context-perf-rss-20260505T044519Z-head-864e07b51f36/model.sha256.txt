@@ -1,0 +1,1 @@
+a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59  $CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf

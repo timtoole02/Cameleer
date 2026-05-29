@@ -1,0 +1,36 @@
+{
+  "bundle": "mixtral-8x7b-v0.1-q8-backend-parity-refresh-20260511",
+  "created_utc": "2026-05-11T23:49:00Z",
+  "scope": "Mixtral-8x7B-Instruct-v0.1.Q8_0 exact-row backend parity refresh",
+  "model_sha256": "not recomputed in Gate 3; see prior model manifest",
+  "model_path": "<MODEL:Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf>",
+  "backend": "http://127.0.0.1:9221",
+  "reference": "<REFERENCE:llama.cpp-mixtral-split-807179ec5> commit 807179ec5 plus local compatibility patches for split prompt arrays and sampled token ids",
+  "prompts": [
+    "Hello",
+    "What is 2+2?",
+    "Name a color.",
+    "Say yes.",
+    "Count to three.",
+    "Write OK."
+  ],
+  "max_tokens": 5,
+  "all_prompt_tokens_match": true,
+  "all_generated_tokens_match": true,
+  "all_generated_text_match": true,
+  "files": [
+    "summary.json",
+    "Hello.json",
+    "What_is_2_2.json",
+    "Name_a_color.json",
+    "Say_yes.json",
+    "Count_to_three.json",
+    "Write_OK.json",
+    "Hello.out",
+    "What_is_2_2.out",
+    "Name_a_color.out",
+    "Say_yes.out",
+    "Count_to_three.out",
+    "Write_OK.out"
+  ]
+}

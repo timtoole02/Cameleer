@@ -1,0 +1,5 @@
+cd frontend
+npm run smoke:model-state
+npm run smoke:integration
+npm run smoke:ui
+npm run build

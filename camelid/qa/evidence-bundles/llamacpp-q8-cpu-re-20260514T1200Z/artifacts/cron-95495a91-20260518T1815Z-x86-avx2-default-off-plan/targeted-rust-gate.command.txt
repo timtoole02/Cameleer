@@ -1,0 +1,1 @@
+cargo test execution_plan::tests:: -- --nocapture

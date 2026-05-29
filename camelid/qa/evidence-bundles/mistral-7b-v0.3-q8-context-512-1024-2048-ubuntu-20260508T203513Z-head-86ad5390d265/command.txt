@@ -1,0 +1,9 @@
+Generated from clean Ubuntu worktree at pushed head 86ad5390d265. Paths redacted.
+
+Command shape:
+node scripts/run-llama3-prompt-pack.mjs --chat-parity-script scripts/chat-parity-mistral.mjs --pack qa/prompt-packs/mistral-context-{512,1024,2048}-smoke.json --out-dir <target>/pack-{ctx} --model <model-store>/Mistral-7B-Instruct-v0.3-Q8_0.gguf --model-id mistral-7b-instruct-v0.3-q8_0-ubuntu-head-86ad5390d265 --require-prompt-match --require-generated-match --start-llama-server --llama-server <llama.cpp>/llama-server --llama-tokenize <llama.cpp>/llama-tokenize
+
+Runtime summary:
+512 wall: 1:04.68, max RSS: 15968748 KiB
+1024 wall: 2:14.04, max RSS: 16061168 KiB
+2048 wall: 4:25.20, max RSS: 16250640 KiB

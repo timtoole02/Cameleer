@@ -1,0 +1,150 @@
+{
+  "api": "http://127.0.0.1:8181",
+  "model": "<ubuntu-model-path>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+  "model_id": "llama32-3b-q8-x86-baseline",
+  "repeats": 1,
+  "warmup": 0,
+  "max_tokens": 1,
+  "message_prefix": "unique perf prompt",
+  "notes": [
+    "Every warmup/measured request uses a different chat message so exact prompt-cache hits should stay false.",
+    "Ordinary non-diagnostic /v1/chat/completions, temperature=0.",
+    "Measured summary excludes warmup; use warmup to load weights before collecting hot-path evidence.",
+    "memory_samples report backend process RSS/VSZ in MiB before model load, after model load, after the first generated token, and after the first 10 generated tokens when this script starts the backend or --backend-pid is provided; vm/swap/page-in and storage_io fields are best-effort host pressure context.",
+    "forward_memory is present only when the backend is run with CAMELID_FORWARD_RSS_TIMINGS=on or CAMELID_FORWARD_MEMORY_TRACE=on; it keeps a compact per-request view of structured forward-pass RSS/KV/Q8 file-read counters."
+  ],
+  "memory_samples": [
+    {
+      "label": "before_model_load",
+      "pid": 504975,
+      "rss_kib": 6800,
+      "rss_mib": 6.64,
+      "vsz_kib": 1092180,
+      "vsz_mib": 1066.58,
+      "swapusage": null,
+      "vm_pressure": null,
+      "storage_io": {
+        "available": false,
+        "path": "<ubuntu-model-path>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+        "mount_point": "/",
+        "mount_device": "/dev/root",
+        "whole_device": "root",
+        "reason": "Usage: iostat [ options ] [ <interval> [ <count> ] ]\nOptions are:\n[ -c ] [ -d ] [ -h ] [ -k | -m ] [ -N ] [ -s ] [ -t ] [ -V ] [ -x ] [ -y ] [ -z ]\n[ { -f | +f } <directory> ] [ -j { ID | LABEL | PATH | UUID | ... } ]\n[ --compact ] [ --dec={ 0 | 1 | 2 } ] [ --human ] [ --pretty ] [ -o JSON ]\n[ [ -H ] -g <group_name> ] [ -p [ <device> [,...] | ALL ] ]\n[ <device> [...] | ALL ]"
+      },
+      "available": true
+    },
+    {
+      "label": "after_model_load",
+      "pid": 504975,
+      "rss_kib": 188812,
+      "rss_mib": 184.39,
+      "vsz_kib": 1233008,
+      "vsz_mib": 1204.11,
+      "swapusage": null,
+      "vm_pressure": null,
+      "storage_io": {
+        "available": false,
+        "path": "<ubuntu-model-path>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+        "mount_point": "/",
+        "mount_device": "/dev/root",
+        "whole_device": "root",
+        "reason": "Usage: iostat [ options ] [ <interval> [ <count> ] ]\nOptions are:\n[ -c ] [ -d ] [ -h ] [ -k | -m ] [ -N ] [ -s ] [ -t ] [ -V ] [ -x ] [ -y ] [ -z ]\n[ { -f | +f } <directory> ] [ -j { ID | LABEL | PATH | UUID | ... } ]\n[ --compact ] [ --dec={ 0 | 1 | 2 } ] [ --human ] [ --pretty ] [ -o JSON ]\n[ [ -H ] -g <group_name> ] [ -p [ <device> [,...] | ALL ] ]\n[ <device> [...] | ALL ]"
+      },
+      "available": true
+    },
+    {
+      "label": "after_first_generated_token",
+      "pid": 504975,
+      "rss_kib": 3900228,
+      "rss_mib": 3808.82,
+      "vsz_kib": 6110204,
+      "vsz_mib": 5967,
+      "swapusage": null,
+      "vm_pressure": null,
+      "storage_io": {
+        "available": false,
+        "path": "<ubuntu-model-path>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+        "mount_point": "/",
+        "mount_device": "/dev/root",
+        "whole_device": "root",
+        "reason": "Usage: iostat [ options ] [ <interval> [ <count> ] ]\nOptions are:\n[ -c ] [ -d ] [ -h ] [ -k | -m ] [ -N ] [ -s ] [ -t ] [ -V ] [ -x ] [ -y ] [ -z ]\n[ { -f | +f } <directory> ] [ -j { ID | LABEL | PATH | UUID | ... } ]\n[ --compact ] [ --dec={ 0 | 1 | 2 } ] [ --human ] [ --pretty ] [ -o JSON ]\n[ [ -H ] -g <group_name> ] [ -p [ <device> [,...] | ALL ] ]\n[ <device> [...] | ALL ]"
+      },
+      "available": true
+    },
+    {
+      "label": "after_1_generated_tokens_total",
+      "pid": 504975,
+      "rss_kib": 3900228,
+      "rss_mib": 3808.82,
+      "vsz_kib": 6110204,
+      "vsz_mib": 5967,
+      "swapusage": null,
+      "vm_pressure": null,
+      "storage_io": {
+        "available": false,
+        "path": "<ubuntu-model-path>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+        "mount_point": "/",
+        "mount_device": "/dev/root",
+        "whole_device": "root",
+        "reason": "Usage: iostat [ options ] [ <interval> [ <count> ] ]\nOptions are:\n[ -c ] [ -d ] [ -h ] [ -k | -m ] [ -N ] [ -s ] [ -t ] [ -V ] [ -x ] [ -y ] [ -z ]\n[ { -f | +f } <directory> ] [ -j { ID | LABEL | PATH | UUID | ... } ]\n[ --compact ] [ --dec={ 0 | 1 | 2 } ] [ --human ] [ --pretty ] [ -o JSON ]\n[ [ -H ] -g <group_name> ] [ -p [ <device> [,...] | ALL ] ]\n[ <device> [...] | ALL ]"
+      },
+      "available": true
+    }
+  ],
+  "warmup_runs": [],
+  "summary": {
+    "count": 1,
+    "avg_prompt_token_count": 17,
+    "all_weight_cache_hit": false,
+    "any_prompt_cache_hit": false,
+    "all_forward_memory_reported": false,
+    "forward_memory_count": 0,
+    "max_forward_peak_rss_mib": null,
+    "avg_q8_file_read_mib": null,
+    "max_q8_file_read_mib": null,
+    "avg_q8_file_read_calls": null,
+    "avg_q8_file_cache_hit_mib": null,
+    "avg_q8_file_cache_miss_mib": null,
+    "avg_q8_file_cache_insert_mib": null,
+    "avg_q8_file_cache_evicted_mib": null,
+    "avg_wall_ms": 147425.3,
+    "avg_generate_ms": 144962,
+    "avg_layers_ms": 144515.97,
+    "avg_logits_ms": 423.04,
+    "avg_attention_projection_ms": 36277.35,
+    "avg_attention_context_ms": 8.75,
+    "avg_ffn_gate_ms": 35464.56,
+    "avg_ffn_up_ms": 35772.57,
+    "avg_ffn_activation_ms": 11.77,
+    "avg_ffn_down_ms": 36891.29,
+    "avg_ffn_total_ms": 108140.19,
+    "avg_generate_ms_per_prompt_token": 8527.18
+  },
+  "runs": [
+    {
+      "phase": "measure",
+      "index": 1,
+      "message": "unique perf prompt measure 1 amber",
+      "wall_ms": 147425.3,
+      "text": "Here",
+      "usage_prompt_tokens": 17,
+      "prompt_token_count": 17,
+      "generated_token_ids": [
+        8586
+      ],
+      "weight_cache_hit": false,
+      "prompt_cache_hit": false,
+      "generate_ms": 144962,
+      "layers_ms": 144515.97,
+      "logits_ms": 423.04,
+      "forward_memory": null,
+      "attention_projection_ms": 36277.35,
+      "attention_context_ms": 8.75,
+      "ffn_gate_ms": 35464.56,
+      "ffn_up_ms": 35772.57,
+      "ffn_activation_ms": 11.77,
+      "ffn_down_ms": 36891.29,
+      "ffn_total_ms": 108140.19
+    }
+  ]
+}

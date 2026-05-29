@@ -1,0 +1,9 @@
+# repo/head
+branch=ubuntu-x86-q8-f23-plus-qkv-consumers
+head=3f99f5be4bd100587d8dac155695388fd7b704d1
+# frontend status
+
+# worktree note
+Full worktree had unrelated dirty/untracked files from other Camelid lanes; this slice touched only this evidence bundle, and frontend/ was clean before local gates.
+# dirty entry count at capture
+114 entries

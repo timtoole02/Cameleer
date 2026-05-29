@@ -1,0 +1,6 @@
+ssh -o IdentitiesOnly=yes -i <ubuntu-identity> ubuntu@<canonical-ubuntu-host>
+# stdin payload for connection proof only:
+echo CANONICAL_SSH_OK
+hostname
+uname -m
+exit

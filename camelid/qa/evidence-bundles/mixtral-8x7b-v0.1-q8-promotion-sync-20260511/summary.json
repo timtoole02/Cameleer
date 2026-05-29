@@ -1,0 +1,38 @@
+{
+  "schema": "camelid.mixtral_exact_row_promotion_sync.v1",
+  "created_utc": "2026-05-12T00:19:38Z",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+  "scope": "validated exact row only; checked short-prompt MoE/API/WebUI/RSS envelope only",
+  "updated_surfaces": [
+    "README.md",
+    "STATUS.md",
+    "COMPATIBILITY.md",
+    "/api/capabilities model_compatibility",
+    "frontend compatibility/readiness smoke fixture"
+  ],
+  "support_label": "supported_exact_row_smoke",
+  "required_prior_gates": [
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-backend-parity-refresh-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-api-smoke-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-webui-readiness-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-rss-timing-runtime-20260511",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-manifest-checksum-20260511"
+  ],
+  "non_claims": [
+    "neighboring rows",
+    "broad-family behavior",
+    "long context",
+    "arbitrary templates",
+    "production throughput",
+    "portability",
+    "broader/full support"
+  ],
+  "checks_recorded": [
+    "cargo fmt --all -- --check",
+    "relevant cargo tests",
+    "frontend smoke:model-state",
+    "privacy audit",
+    "check-public-scrub.sh",
+    "git diff --check"
+  ]
+}

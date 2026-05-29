@@ -1,0 +1,69 @@
+{
+  "schema": "camelid.mistral.broader_50tok_ubuntu_summary.v1",
+  "run_id": "mistral-7b-v0.3-q8-broader-50tok-ubuntu-20260509T000633Z-head-d330e97ae992",
+  "repo_head": "d330e97ae99280207b52535f44e9c2bdb086a081",
+  "model": "Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+  "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+  "prompt_pack": "qa/prompt-packs/mistral-broader-50tok-5prompt.json",
+  "prompt_count": 5,
+  "max_tokens": 50,
+  "target_context_window": 2048,
+  "passed": true,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "max_resident_set_kib": 16073372,
+  "elapsed_wall_clock": "6:13.77",
+  "rows": [
+    {
+      "id": "mistral-short-local-model-note",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 39,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "mistral-step-list-rust-test",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 29,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "mistral-json-ish-summary",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 34,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "mistral-tokenizer-stress-words",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 38,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "mistral-longer-chat-natural",
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 34,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    }
+  ]
+}

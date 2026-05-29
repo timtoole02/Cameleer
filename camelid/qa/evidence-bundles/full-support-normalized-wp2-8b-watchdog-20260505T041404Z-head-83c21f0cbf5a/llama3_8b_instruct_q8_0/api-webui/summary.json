@@ -1,0 +1,56 @@
+{
+  "schema": "camelid.model-promotion.smoke-bundle.v1",
+  "generated_utc": "2026-05-05T04:14:29.995Z",
+  "api_base": "http://127.0.0.1:8391",
+  "frontend_url": "http://127.0.0.1:4601",
+  "model_path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+  "model_id": "llama3_8b_instruct_q8_0",
+  "message": "hello",
+  "max_tokens": 1,
+  "temperature": 0,
+  "allow_guarded_chat": false,
+  "skip_frontend": false,
+  "steps": {
+    "health_before": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/health-before.json"
+    },
+    "load": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/load.response.json"
+    },
+    "current_model": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/current-model.json"
+    },
+    "v1_models": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/v1-models.json"
+    },
+    "capabilities": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/capabilities.json"
+    },
+    "v1_completions": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/completion.response.json"
+    },
+    "v1_chat_completions": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/chat.response.json"
+    },
+    "generation_timings": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/generation-timings.run.json"
+    },
+    "health_after": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/health-after.json"
+    },
+    "frontend_smoke": {
+      "ok": true,
+      "path": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/frontend.summary.json"
+    }
+  },
+  "passed": true
+}

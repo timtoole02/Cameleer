@@ -1,0 +1,12 @@
+# Feedback-loop commands for the retained tracer bullet
+cargo fmt --all -- --check
+node scripts/test-bench-llama3-same-host.mjs && node scripts/test-summarize-same-host-stream-timing.mjs
+cargo test --all-features api::tests::stream_timing_diagnostics -- --nocapture
+for f in scripts/test-*.mjs; do node "$f"; done
+bash scripts/check-public-scrub.sh
+node scripts/audit-evidence-bundle-privacy.mjs --strict
+node scripts/check-public-evidence-claims.mjs
+node scripts/test-readme-screenshot.mjs
+bash scripts/check-evidence-bundle-checksums.sh
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-targets --all-features

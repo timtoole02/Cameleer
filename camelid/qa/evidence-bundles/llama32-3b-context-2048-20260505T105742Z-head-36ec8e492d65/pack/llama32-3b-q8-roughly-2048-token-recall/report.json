@@ -1,0 +1,41 @@
+{
+  "reference_context": 2048,
+  "reference_prompt_token_count": 1910,
+  "prompt_tokens_match": true,
+  "generated_tokens_match": true,
+  "generated_text_match": true,
+  "first_generated_token_diff_index": -1,
+  "first_generated_text_diff_index": -1,
+  "backend_generated_tokens": [
+    34,
+    2735,
+    35,
+    12,
+    7854
+  ],
+  "llama_generated_tokens": [
+    34,
+    2735,
+    35,
+    12,
+    7854
+  ],
+  "backend_text": "CMLD-204",
+  "llama_text": "CMLD-204",
+  "backend_usage": {
+    "prompt_tokens": 1910,
+    "completion_tokens": 5,
+    "total_tokens": 1915
+  },
+  "llama_usage": {
+    "cache_n": 0,
+    "prompt_n": 1910,
+    "prompt_ms": 7667.435,
+    "prompt_per_token_ms": 4.01436387434555,
+    "prompt_per_second": 249.10547008223742,
+    "predicted_n": 5,
+    "predicted_ms": 219.024,
+    "predicted_per_token_ms": 43.8048,
+    "predicted_per_second": 22.828548469574113
+  }
+}

@@ -1,0 +1,1172 @@
+# cron 95495a91 2026-05-15T17:59Z x86 FFN-down decode-owner grep evidence
+
+## Camelid status
+e0d5da9e15bf903d64ca862245eb6f47d75f5f80
+ M README.md
+ M qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md
+ M src/execution_plan.rs
+ M src/inference.rs
+?? qa/evidence-bundles/appliance-smoke-mac-20260515T125500Z/
+?? qa/evidence-bundles/appliance-smoke-mac-20260515T125539Z/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260515T1759Z-x86-ffn-down-decode-owner-grep.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260515T1759Z-x86-ffn-down-decode-owner-tests.txt
+?? qa/evidence-bundles/ollama-runtime-rust-port-20260515/
+?? qa/evidence-bundles/ubuntu-x86-q8-avx2-hsum-blocked-20260515T112422Z-head-2cc6c65/
+
+## Camelid grep: new default-off flag and direct runtime-packed FFN-down path
+src/execution_plan.rs:15:    "CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER",
+src/execution_plan.rs:655:            "CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER",
+src/inference.rs:3437:        let k = linear_for_role_runtime(
+src/inference.rs:3447:        let v = linear_for_role_runtime(
+src/inference.rs:3702:        let ffn_out = linear_for_role_runtime(
+src/inference.rs:3887:    let k = linear_for_role_runtime(
+src/inference.rs:3897:    let v = linear_for_role_runtime(
+src/inference.rs:4035:        let ffn_out = linear_for_role_runtime(
+src/inference.rs:4497:    linear_for_role_runtime(input, weight, name, "linear", collect_diagnostics)
+src/inference.rs:4515:fn linear_for_role_runtime(
+src/inference.rs:4526:        if let Some(output) = try_x86_q8_ffn_down_decode_owner_path(
+src/inference.rs:6017:        linear_for_role_runtime(input, gate_weight, "ffn_gate_prefill", "ffn gate", false)?;
+src/inference.rs:6021:    let up = linear_for_role_runtime(input, up_weight, "ffn_up_prefill", "ffn up", false)?;
+src/inference.rs:6157:            accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:6163:            accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:6334:    let logits = linear_for_role_runtime(input, router, "mixtral_router", "linear", false)?;
+src/inference.rs:6364:            let expert_out = linear_for_role_runtime(
+src/inference.rs:6601:        && (weight.q8_0_blocks.is_some() || q8_0_selected_borrowed_packed_rows4(weight).is_some())
+src/inference.rs:6844:fn x86_q8_ffn_down_decode_owner_enabled() -> bool {
+src/inference.rs:6847:        env_flag_enabled("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER")
+src/inference.rs:6855:fn try_x86_q8_ffn_down_decode_owner_path(
+src/inference.rs:6861:    if !x86_q8_ffn_down_decode_owner_enabled()
+src/inference.rs:6878:    let Some((packed, interleave)) = q8_0_selected_borrowed_packed_rows4(borrowed) else {
+src/inference.rs:6895:        let sums = q8_0_packed_rows4_dot(group_blocks, &quantized_input.blocks, interleave);
+src/inference.rs:6962:                accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:8336:    if q8_0_selected_borrowed_packed_rows4(weight).is_some() {
+src/inference.rs:8689:    if let Some((packed, interleave)) = q8_0_selected_borrowed_packed_rows4(weight) {
+src/inference.rs:8742:    if let Some((packed, interleave)) = q8_0_selected_borrowed_packed_rows4(weight) {
+src/inference.rs:8744:            accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:8833:fn q8_0_selected_borrowed_packed_rows4(
+src/inference.rs:8852:fn accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:8880:    accumulate_q8_0_packed_rows4_dot_quantized_cpu_serial(
+src/inference.rs:8888:fn accumulate_q8_0_packed_rows4_dot_quantized_cpu_serial(
+src/inference.rs:8921:    let sums = q8_0_packed_rows4_dot(group_blocks, quantized_input, interleave);
+src/inference.rs:9025:            accumulate_q8_0_packed_rows4_dot_quantized_cpu(
+src/inference.rs:9320:fn q8_0_packed_rows4_dot(
+src/inference.rs:11061:        let actual = q8_0_packed_rows4_dot(
+src/inference.rs:12410:        let actual = q8_0_packed_rows4_dot(&packed.blocks, &input, interleave);
+src/inference.rs:12594:        let actual = linear_for_role_runtime(&input, &packed_weight, "actual", "ffn gate", false)
+src/inference.rs:12642:            linear_for_role_runtime(&input, &packed_weight, "actual", "attention k", false)
+src/inference.rs:12703:            linear_for_role_runtime(&input, &packed_weight, "actual", role_name, false).unwrap();
+src/inference.rs:12769:        std::env::set_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER", "on");
+src/inference.rs:12803:        std::env::remove_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER");
+src/inference.rs:12804:        let baseline = linear_for_role_runtime(&input, &packed_weight, "baseline", "ffn_down", false)
+src/inference.rs:12806:        std::env::set_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER", "on");
+src/inference.rs:12807:        let owned = linear_for_role_runtime(&input, &packed_weight, "owned", "ffn_down", false)
+src/inference.rs:12811:        std::env::remove_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER");
+
+## Camelid grep: existing x86 Q8 packed runtime/fallback/load allowlist
+src/api/mod.rs:30:        diagnostic_attention_score_scale, diagnostic_ffn_gate_up_order,
+src/api/mod.rs:461:    pub ffn_gate_up_order: &'static str,
+src/api/mod.rs:482:    pub ffn_gate: LinearProjectionOrientation,
+src/api/mod.rs:483:    pub ffn_up: LinearProjectionOrientation,
+src/api/mod.rs:484:    pub ffn_down: LinearProjectionOrientation,
+src/api/mod.rs:564:    pub ffn_gate: f64,
+src/api/mod.rs:565:    pub ffn_up: f64,
+src/api/mod.rs:567:    pub ffn_down: f64,
+src/api/mod.rs:2363:        ffn_gate_up_order: diagnostic_ffn_gate_up_order()
+src/api/mod.rs:2411:            ffn_gate: linear_projection_orientation(
+src/api/mod.rs:2412:                &first_layer.ffn_gate,
+src/api/mod.rs:2415:                "ffn_gate",
+src/api/mod.rs:2417:            ffn_up: linear_projection_orientation(
+src/api/mod.rs:2418:                &first_layer.ffn_up,
+src/api/mod.rs:2421:                "ffn_up",
+src/api/mod.rs:2423:            ffn_down: linear_projection_orientation(
+src/api/mod.rs:2424:                &first_layer.ffn_down,
+src/api/mod.rs:2427:                "ffn_down",
+src/api/mod.rs:3226:            ffn_gate: micros_to_ms(layer.ffn_gate),
+src/api/mod.rs:3227:            ffn_up: micros_to_ms(layer.ffn_up),
+src/api/mod.rs:3229:            ffn_down: micros_to_ms(layer.ffn_down),
+src/api/mod.rs:5920:                attention_q: desc("blk.0.attn_q.weight"),
+src/api/mod.rs:5921:                attention_k: desc("blk.0.attn_k.weight"),
+src/api/mod.rs:5922:                attention_v: desc("blk.0.attn_v.weight"),
+src/api/mod.rs:5923:                attention_output: desc("blk.0.attn_output.weight"),
+src/api/mod.rs:5926:                    gate: desc("blk.0.ffn_gate.weight"),
+src/api/mod.rs:5927:                    up: desc("blk.0.ffn_up.weight"),
+src/api/mod.rs:5928:                    down: desc("blk.0.ffn_down.weight"),
+src/api/mod.rs:6006:            ffn_gate_up_order: "gate_up",
+src/api/mod.rs:6023:                ffn_gate: orientation.clone(),
+src/api/mod.rs:6024:                ffn_up: orientation.clone(),
+src/api/mod.rs:6025:                ffn_down: orientation,
+src/api/mod.rs:6090:                attention_q: select_rows("blk.0.attn_q.weight", hidden, hidden, &[0, 1, 2, 3]),
+src/api/mod.rs:6091:                attention_k: select_rows("blk.0.attn_k.weight", 2, hidden, &[0, 1]),
+src/api/mod.rs:6092:                attention_v: scaled_select_rows("blk.0.attn_v.weight", 2, hidden, &[0, 1], 0.5),
+src/api/mod.rs:6094:                    "blk.0.attn_output.weight",
+src/api/mod.rs:6100:                ffn_gate: select_rows("blk.0.ffn_gate.weight", ffn, hidden, &[0, 1, 2, 3, 0, 1]),
+src/api/mod.rs:6101:                ffn_up: select_rows("blk.0.ffn_up.weight", ffn, hidden, &[0, 1, 2, 3, 0, 1]),
+src/api/mod.rs:6102:                ffn_down: select_rows("blk.0.ffn_down.weight", hidden, ffn, &[0, 1, 2, 3]),
+src/execution_plan.rs:13:    "CAMELID_X86_Q8_REPACK",
+src/execution_plan.rs:14:    "CAMELID_X86_Q8_KERNEL",
+src/execution_plan.rs:300:    if env_flag_disabled("CAMELID_X86_Q8_REPACK") || env_flag_disabled("CAMELID_X86_Q8_KERNEL") {
+src/execution_plan.rs:304:        if env_flag_disabled("CAMELID_X86_Q8_REPACK") {
+src/execution_plan.rs:305:            env_updates.insert("CAMELID_X86_Q8_REPACK", Some("off"));
+src/execution_plan.rs:307:        if env_flag_disabled("CAMELID_X86_Q8_KERNEL") {
+src/execution_plan.rs:308:            env_updates.insert("CAMELID_X86_Q8_KERNEL", Some("off"));
+src/execution_plan.rs:314:            "invalid CAMELID_X86_Q8_KERNEL={invalid}; failing closed to safe path"
+src/execution_plan.rs:316:        env_updates.insert("CAMELID_X86_Q8_KERNEL", Some("off"));
+src/execution_plan.rs:581:    let value = env::var("CAMELID_X86_Q8_KERNEL").ok()?;
+src/execution_plan.rs:637:                name: "blk.0.attn_q.weight".into(),
+src/execution_plan.rs:653:            "CAMELID_X86_Q8_REPACK",
+src/execution_plan.rs:654:            "CAMELID_X86_Q8_KERNEL",
+src/execution_plan.rs:709:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_KERNEL"));
+src/execution_plan.rs:786:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_KERNEL"));
+src/execution_plan.rs:787:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_REPACK"));
+src/execution_plan.rs:842:        env::set_var("CAMELID_X86_Q8_KERNEL", "amx_now_please");
+src/execution_plan.rs:851:            outcome.env_updates.get("CAMELID_X86_Q8_KERNEL"),
+src/inference.rs:34:        Q8_0Block, Q8_0FileBacking, Q8_0FileReadStats, Q8_0PackedRows4, Q8_0PackedRows4Block,
+src/inference.rs:35:        Q8_0PackedRows4Interleave, Q8_0RuntimeStorage, TensorShape, TensorStore,
+src/inference.rs:233:    pub ffn_gate: CpuTensor,
+src/inference.rs:234:    pub ffn_up: CpuTensor,
+src/inference.rs:235:    pub ffn_down: CpuTensor,
+src/inference.rs:562:pub fn diagnostic_ffn_gate_up_order() -> Result<FfnGateUpOrder> {
+src/inference.rs:706:                    || tensor_has_q8_0_file_backing(&layer.ffn_gate)
+src/inference.rs:707:                    || tensor_has_q8_0_file_backing(&layer.ffn_up)
+src/inference.rs:708:                    || tensor_has_q8_0_file_backing(&layer.ffn_down)
+src/inference.rs:725:                    &layer.ffn_gate,
+src/inference.rs:726:                    &layer.ffn_up,
+src/inference.rs:727:                    &layer.ffn_down,
+src/inference.rs:742:                store.load_q8_0_block_backed_linear(name)
+src/inference.rs:744:                store.load_q8_0_file_backed_linear(name)
+src/inference.rs:784:            let (ffn_gate, ffn_up, ffn_down, moe_router) = match &layer.ffn {
+src/inference.rs:810:                ffn_gate,
+src/inference.rs:811:                ffn_up,
+src/inference.rs:812:                ffn_down,
+src/inference.rs:900:                    &layer.ffn_gate,
+src/inference.rs:909:                    &layer.ffn_up,
+src/inference.rs:918:                    &layer.ffn_down,
+src/inference.rs:928:                    &layer.ffn_gate,
+src/inference.rs:934:                    &layer.ffn_up,
+src/inference.rs:940:                    &layer.ffn_down,
+src/inference.rs:1104:    pub ffn_gate: LlamaTensorStats,
+src/inference.rs:1105:    pub ffn_gate_reconstruction: LlamaLinearProjectionDiagnostic,
+src/inference.rs:1106:    pub ffn_up: LlamaTensorStats,
+src/inference.rs:1107:    pub ffn_up_reconstruction: LlamaLinearProjectionDiagnostic,
+src/inference.rs:1111:    pub ffn_down_reconstruction: LlamaLinearProjectionDiagnostic,
+src/inference.rs:1415:    packed_inputs: &mut Vec<Q8_0PackedRows4Block>,
+src/inference.rs:1425:    let requested_bytes = requested_blocks.saturating_mul(mem::size_of::<Q8_0PackedRows4Block>());
+src/inference.rs:1427:        before_capacity.saturating_mul(mem::size_of::<Q8_0PackedRows4Block>());
+src/inference.rs:1430:        .saturating_mul(mem::size_of::<Q8_0PackedRows4Block>());
+src/inference.rs:1464:    pub ffn_gate: u128,
+src/inference.rs:1465:    pub ffn_up: u128,
+src/inference.rs:1467:    pub ffn_down: u128,
+src/inference.rs:1486:            ffn_gate: value.ffn_gate,
+src/inference.rs:1487:            ffn_up: value.ffn_up,
+src/inference.rs:1489:            ffn_down: value.ffn_down,
+src/inference.rs:1561:    pub after_ffn_down: Option<LlamaMemorySample>,
+src/inference.rs:1616:    pub ffn_gate: u128,
+src/inference.rs:1617:    pub ffn_up: u128,
+src/inference.rs:1619:    pub ffn_down: u128,
+src/inference.rs:2549:        record_tensor_materialization(&mut stats, &layer.ffn_gate);
+src/inference.rs:2550:        record_tensor_materialization(&mut stats, &layer.ffn_up);
+src/inference.rs:2551:        record_tensor_materialization(&mut stats, &layer.ffn_down);
+src/inference.rs:2873:            after_ffn_down: None,
+src/inference.rs:2946:    fn record_after_ffn_down(&mut self, sample: LlamaMemorySample) {
+src/inference.rs:2947:        self.record("ffn_down_done", sample, |this, sample| {
+src/inference.rs:2948:            this.after_ffn_down = Some(sample)
+src/inference.rs:3018:        self.after_ffn_down = other.after_ffn_down.clone();
+src/inference.rs:3104:        self.ffn_gate += other.ffn_gate;
+src/inference.rs:3105:        self.ffn_up += other.ffn_up;
+src/inference.rs:3107:        self.ffn_down += other.ffn_down;
+src/inference.rs:3649:        ffn_gate_stats,
+src/inference.rs:3650:        ffn_up_stats,
+src/inference.rs:3651:        ffn_gate_diagnostic,
+src/inference.rs:3652:        ffn_up_diagnostic,
+src/inference.rs:3655:        ffn_down_diagnostic,
+src/inference.rs:3666:            &layer.ffn_gate,
+src/inference.rs:3667:            &layer.ffn_up,
+src/inference.rs:3668:            &layer.ffn_down,
+src/inference.rs:3672:        timings.ffn_gate = gate;
+src/inference.rs:3673:        timings.ffn_up = up;
+src/inference.rs:3675:        timings.ffn_down = down;
+src/inference.rs:3680:            &layer.ffn_gate,
+src/inference.rs:3681:            &layer.ffn_up,
+src/inference.rs:3685:        timings.ffn_gate = activated.gate;
+src/inference.rs:3686:        timings.ffn_up = activated.up;
+src/inference.rs:3688:        let ffn_gate_stats = activated.gate_stats;
+src/inference.rs:3689:        let ffn_up_stats = activated.up_stats;
+src/inference.rs:3690:        let ffn_gate_diagnostic = activated.gate_diagnostic;
+src/inference.rs:3691:        let ffn_up_diagnostic = activated.up_diagnostic;
+src/inference.rs:3700:        trace_forward_layer_memory(layer_idx, "ffn_gate_up_activation_done");
+src/inference.rs:3704:            &layer.ffn_down,
+src/inference.rs:3705:            format!("layer_{layer_idx}_ffn_down"),
+src/inference.rs:3706:            "ffn_down",
+src/inference.rs:3712:        let ffn_down_diagnostic = collect_diagnostics
+src/inference.rs:3714:                linear_projection_diagnostics(&activated, &layer.ffn_down, &ffn_out, "ffn_down")
+src/inference.rs:3717:        timings.ffn_down = started.elapsed().as_micros();
+src/inference.rs:3720:            ffn_gate_stats,
+src/inference.rs:3721:            ffn_up_stats,
+src/inference.rs:3722:            ffn_gate_diagnostic,
+src/inference.rs:3723:            ffn_up_diagnostic,
+src/inference.rs:3726:            ffn_down_diagnostic,
+src/inference.rs:3731:        ffn_out = zero_like(&ffn_out, format!("layer_{layer_idx}_ffn_down_zeroed"))?;
+src/inference.rs:3734:        memory.record_after_ffn_down(capture_memory_sample(kv_cache));
+src/inference.rs:3736:    trace_forward_layer_memory(layer_idx, "ffn_down_done");
+src/inference.rs:3801:            ffn_gate: ffn_gate_stats.expect("ffn gate diagnostics collected"),
+src/inference.rs:3802:            ffn_gate_reconstruction: ffn_gate_diagnostic
+src/inference.rs:3804:            ffn_up: ffn_up_stats.expect("ffn up diagnostics collected"),
+src/inference.rs:3805:            ffn_up_reconstruction: ffn_up_diagnostic
+src/inference.rs:3811:            ffn_down_reconstruction: ffn_down_diagnostic
+src/inference.rs:4008:            &layer.ffn_gate,
+src/inference.rs:4009:            &layer.ffn_up,
+src/inference.rs:4010:            &layer.ffn_down,
+src/inference.rs:4014:        timings.ffn_gate = gate;
+src/inference.rs:4015:        timings.ffn_up = up;
+src/inference.rs:4017:        timings.ffn_down = down;
+src/inference.rs:4022:            &layer.ffn_gate,
+src/inference.rs:4023:            &layer.ffn_up,
+src/inference.rs:4026:        timings.ffn_gate = activated.gate;
+src/inference.rs:4027:        timings.ffn_up = activated.up;
+src/inference.rs:4033:        trace_chunk_memory("ffn_gate_up_activation_done");
+src/inference.rs:4037:            &layer.ffn_down,
+src/inference.rs:4038:            format!("layer_{layer_idx}_prefill_ffn_down"),
+src/inference.rs:4039:            "ffn_down",
+src/inference.rs:4042:        timings.ffn_down = started.elapsed().as_micros();
+src/inference.rs:4046:        memory.record_after_ffn_down(capture_memory_sample(kv_cache));
+src/inference.rs:4048:    trace_chunk_memory("ffn_down_done");
+src/inference.rs:4526:        if let Some(output) = try_x86_q8_ffn_down_decode_owner_path(
+src/inference.rs:4836:    storage: Option<&Q8_0RuntimeStorage>,
+src/inference.rs:4840:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = storage else {
+src/inference.rs:4855:    q8_0_packed_rows4_4x4: Option<&'a Q8_0PackedRows4>,
+src/inference.rs:4856:    q8_0_packed_rows4_4x8: Option<&'a Q8_0PackedRows4>,
+src/inference.rs:4857:    q8_0_runtime_storage: Option<&'a Q8_0RuntimeStorage>,
+src/inference.rs:5821:            if let Some(total_elapsed) = try_gated_ffn_gate_up_hybrid_q8_0(
+src/inference.rs:5877:        .then(|| CpuTensor::from_f32("ffn_gate_diagnostic", vec![1, gate_width], gate.clone()))
+src/inference.rs:5880:        .then(|| CpuTensor::from_f32("ffn_up_diagnostic", vec![1, up_width], up.clone()))
+src/inference.rs:5893:    let order = diagnostic_ffn_gate_up_order()?;
+src/inference.rs:5931:fn try_gated_ffn_gate_up_hybrid_q8_0(
+src/inference.rs:6017:        linear_for_role_runtime(input, gate_weight, "ffn_gate_prefill", "ffn gate", false)?;
+src/inference.rs:6021:    let up = linear_for_role_runtime(input, up_weight, "ffn_up_prefill", "ffn up", false)?;
+src/inference.rs:6025:    let order = diagnostic_ffn_gate_up_order()?;
+src/inference.rs:6075:    let Some((gate_packed, Q8_0PackedRows4Interleave::I8)) =
+src/inference.rs:6080:    let Some((up_packed, Q8_0PackedRows4Interleave::I8)) = q8_0_selected_packed_rows4(up_weight)
+src/inference.rs:6160:                Q8_0PackedRows4Interleave::I8,
+src/inference.rs:6166:                Q8_0PackedRows4Interleave::I8,
+src/inference.rs:6176:    let order = diagnostic_ffn_gate_up_order()?;
+src/inference.rs:6368:                "ffn_down",
+src/inference.rs:6844:fn x86_q8_ffn_down_decode_owner_enabled() -> bool {
+src/inference.rs:6855:fn try_x86_q8_ffn_down_decode_owner_path(
+src/inference.rs:6861:    if !x86_q8_ffn_down_decode_owner_enabled()
+src/inference.rs:6862:        || rectangular_role != "ffn_down"
+src/inference.rs:6881:    if interleave != Q8_0PackedRows4Interleave::I8
+src/inference.rs:6941:        if let Some((packed, Q8_0PackedRows4Interleave::I8)) = q8_0_selected_packed_rows4(weight) {
+src/inference.rs:7668:    packed: &Q8_0PackedRows4,
+src/inference.rs:7669:    interleave: Q8_0PackedRows4Interleave,
+src/inference.rs:7921:        env::var("CAMELID_X86_Q8_KERNEL").as_deref(),
+src/inference.rs:8476:    static Q8_0_PREFILL_PACKED_INPUTS: RefCell<Vec<Q8_0PackedRows4Block>> = const { RefCell::new(Vec::new()) };
+src/inference.rs:8816:) -> Option<(&Q8_0PackedRows4, Q8_0PackedRows4Interleave)> {
+src/inference.rs:8817:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() {
+src/inference.rs:8822:            return Some((packed, Q8_0PackedRows4Interleave::I8));
+src/inference.rs:8827:            return Some((packed, Q8_0PackedRows4Interleave::I4));
+src/inference.rs:8835:) -> Option<(&Q8_0PackedRows4, Q8_0PackedRows4Interleave)> {
+src/inference.rs:8836:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage {
+src/inference.rs:8841:            return Some((packed, Q8_0PackedRows4Interleave::I8));
+src/inference.rs:8846:            return Some((packed, Q8_0PackedRows4Interleave::I4));
+src/inference.rs:8854:    packed: &Q8_0PackedRows4,
+src/inference.rs:8855:    interleave: Q8_0PackedRows4Interleave,
+src/inference.rs:8890:    packed: &Q8_0PackedRows4,
+src/inference.rs:8891:    interleave: Q8_0PackedRows4Interleave,
+src/inference.rs:8913:    packed: &Q8_0PackedRows4,
+src/inference.rs:8914:    interleave: Q8_0PackedRows4Interleave,
+src/inference.rs:8946:    packed_weight: &Q8_0PackedRows4,
+src/inference.rs:9028:                Q8_0PackedRows4Interleave::I8,
+src/inference.rs:9044:    output: &mut Vec<Q8_0PackedRows4Block>,
+src/inference.rs:9068:            output.push(Q8_0PackedRows4Block { scales, quants });
+src/inference.rs:9075:    packed_weight: &Q8_0PackedRows4,
+src/inference.rs:9076:    packed_inputs: &[Q8_0PackedRows4Block],
+src/inference.rs:9133:    gate_weight: &Q8_0PackedRows4,
+src/inference.rs:9134:    up_weight: &Q8_0PackedRows4,
+src/inference.rs:9135:    packed_inputs: &[Q8_0PackedRows4Block],
+src/inference.rs:9274:    packed: &Q8_0PackedRows4,
+src/inference.rs:9275:    interleave: Q8_0PackedRows4Interleave,
+src/inference.rs:9321:    packed_blocks: &[Q8_0PackedRows4Block],
+src/inference.rs:9323:    interleave: Q8_0PackedRows4Interleave,
+src/inference.rs:9334:                    Q8_0PackedRows4Interleave::I4 => q8_0_packed_4x4_block_dotprod(
+src/inference.rs:9338:                    Q8_0PackedRows4Interleave::I8 => q8_0_packed_4x8_block_dotprod(
+src/inference.rs:9355:                if interleave == Q8_0PackedRows4Interleave::I8
+src/inference.rs:9394:    interleave: Q8_0PackedRows4Interleave,
+src/inference.rs:11024:        std::env::set_var("CAMELID_X86_Q8_KERNEL", "avx2");
+src/inference.rs:11035:        std::env::remove_var("CAMELID_X86_Q8_KERNEL");
+src/inference.rs:11042:        std::env::set_var("CAMELID_X86_Q8_KERNEL", "avx2");
+src/inference.rs:11046:            q8_0_packed_rows4_block_dot_scalar(&packed, &input, Q8_0PackedRows4Interleave::I8);
+src/inference.rs:11053:        let packed_block = Q8_0PackedRows4Block {
+src/inference.rs:11064:            Q8_0PackedRows4Interleave::I8,
+src/inference.rs:11072:        std::env::remove_var("CAMELID_X86_Q8_KERNEL");
+src/inference.rs:11258:                attention_k: CpuTensor::from_f32("blk.0.attn_k.weight", vec![2, 2], vec![1.0; 4])
+src/inference.rs:11260:                attention_v: CpuTensor::from_f32("blk.0.attn_v.weight", vec![2, 2], vec![1.0; 4])
+src/inference.rs:11263:                    "blk.0.attn_output.weight",
+src/inference.rs:11270:                ffn_gate: CpuTensor::from_f32("blk.0.ffn_gate.weight", vec![2, 2], vec![1.0; 4])
+src/inference.rs:11272:                ffn_up: CpuTensor::from_f32("blk.0.ffn_up.weight", vec![2, 2], vec![1.0; 4])
+src/inference.rs:11274:                ffn_down: CpuTensor::from_f32("blk.0.ffn_down.weight", vec![2, 2], vec![1.0; 4])
+src/inference.rs:11422:            CpuTensor::from_f32("blk.0.attn_q.weight", vec![2, 2], vec![1.0; 4]).unwrap(),
+src/inference.rs:11427:            "blk.0.attn_q.weight",
+src/inference.rs:11454:            CpuTensor::from_f32("blk.0.attn_q.weight", vec![2, 2], vec![1.0; 4]).unwrap(),
+src/inference.rs:11462:            "blk.0.attn_q.weight",
+src/inference.rs:11483:            "blk.0.attn_q.weight",
+src/inference.rs:11555:            "blk.0.attn_q.weight",
+src/inference.rs:11572:                attention_k: dense_matrix("blk.0.attn_k.weight"),
+src/inference.rs:11573:                attention_v: dense_matrix("blk.0.attn_v.weight"),
+src/inference.rs:11574:                attention_output: dense_matrix("blk.0.attn_output.weight"),
+src/inference.rs:11576:                ffn_gate: dense_matrix("blk.0.ffn_gate.weight"),
+src/inference.rs:11577:                ffn_up: dense_matrix("blk.0.ffn_up.weight"),
+src/inference.rs:11578:                ffn_down: dense_matrix("blk.0.ffn_down.weight"),
+src/inference.rs:11607:            "blk.0.attn_q.weight",
+src/inference.rs:11848:            phase: "ffn_down_done".to_string(),
+src/inference.rs:11886:        assert_eq!(first.q8_file_read_phases[1].phase, "ffn_down_done");
+src/inference.rs:12352:    fn assert_packed_rows4_matches_retained(interleave: Q8_0PackedRows4Interleave) {
+src/inference.rs:12357:            Q8_0PackedRows4Interleave::I4 => {
+src/inference.rs:12361:            Q8_0PackedRows4Interleave::I8 => {
+src/inference.rs:12391:            Q8_0PackedRows4Interleave::I4 => weight.q8_0_packed_rows4_4x4.as_ref(),
+src/inference.rs:12392:            Q8_0PackedRows4Interleave::I8 => weight.q8_0_packed_rows4_4x8.as_ref(),
+src/inference.rs:12417:        assert_packed_rows4_matches_retained(Q8_0PackedRows4Interleave::I4);
+src/inference.rs:12422:        assert_packed_rows4_matches_retained(Q8_0PackedRows4Interleave::I8);
+src/inference.rs:12459:            "blk.0.attn_q.weight",
+src/inference.rs:12463:            Q8_0PackedRows4::from_rows(
+src/inference.rs:12466:                Q8_0PackedRows4Interleave::I8,
+src/inference.rs:12521:            "blk.0.attn_q.weight",
+src/inference.rs:12525:            Q8_0PackedRows4::from_rows(
+src/inference.rs:12528:                Q8_0PackedRows4Interleave::I8,
+src/inference.rs:12573:            "retained_ffn_gate_transposed",
+src/inference.rs:12583:            "blk.0.ffn_gate.weight",
+src/inference.rs:12587:            Q8_0PackedRows4::from_rows(rows, 1, Q8_0PackedRows4Interleave::I8, &row_blocks)
+src/inference.rs:12626:            "blk.0.attn_k.weight",
+src/inference.rs:12630:            Q8_0PackedRows4::from_rows(rows, 1, Q8_0PackedRows4Interleave::I8, &blocks).unwrap(),
+src/inference.rs:12654:                "matmul rhs-transposed rhs cannot read tensor blk.0.attn_k.weight as row-major f32"
+src/inference.rs:12658:        assert!(err_text.contains("storage=no-row-major-data"), "{err_text}");
+src/inference.rs:12694:            Q8_0PackedRows4::from_rows(
+src/inference.rs:12697:                Q8_0PackedRows4Interleave::I8,
+src/inference.rs:12714:    fn q8_0_runtime_packed_ffn_gate_transposed_view_matches_retained_blocks() {
+src/inference.rs:12726:            "blk.0.ffn_gate.weight",
+src/inference.rs:12739:    fn q8_0_runtime_packed_ffn_down_transposed_view_matches_retained_blocks() {
+src/inference.rs:12751:            "blk.0.ffn_down.weight",
+src/inference.rs:12752:            "ffn_down",
+src/inference.rs:12764:    fn x86_q8_ffn_down_decode_owner_path_matches_runtime_packed_baseline() {
+src/inference.rs:12768:        std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+src/inference.rs:12782:            "blk.0.ffn_down.weight",
+src/inference.rs:12786:            Q8_0PackedRows4::from_rows(
+src/inference.rs:12789:                Q8_0PackedRows4Interleave::I8,
+src/inference.rs:12804:        let baseline = linear_for_role_runtime(&input, &packed_weight, "baseline", "ffn_down", false)
+src/inference.rs:12807:        let owned = linear_for_role_runtime(&input, &packed_weight, "owned", "ffn_down", false)
+src/inference.rs:12812:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/inference.rs:12817:    fn q8_0_runtime_packed_ffn_gate_up_activation_matches_retained_blocks() {
+src/inference.rs:12867:            "blk.0.ffn_gate.weight",
+src/inference.rs:12871:            Q8_0PackedRows4::from_rows(rows, 1, Q8_0PackedRows4Interleave::I8, &gate_blocks)
+src/inference.rs:12875:            "blk.0.ffn_up.weight",
+src/inference.rs:12879:            Q8_0PackedRows4::from_rows(rows, 1, Q8_0PackedRows4Interleave::I8, &up_blocks).unwrap(),
+src/inference.rs:12920:            "blk.0.attn_q.weight",
+src/inference.rs:12924:            Q8_0PackedRows4::from_rows(
+src/inference.rs:12927:                Q8_0PackedRows4Interleave::I8,
+src/inference.rs:12996:            "blk.0.ffn_gate.weight",
+
+## llama.cpp reference
+3e037f313c2c4cfce897d9be8f43954283a61de1
+
+## llama.cpp grep: q8_0/tinyBLAS/vec dot/repack/MUL_MAT/scheduling/OpenMP/AVX2/AVX512/VNNI
+ggml/CMakeLists.txt:152:option(GGML_CPU_REPACK       "ggml: use runtime weight conversion of Q4_0 to Q4_X_X" ON)
+ggml/CMakeLists.txt:156:option(GGML_AVX_VNNI         "ggml: enable AVX-VNNI"         OFF)
+ggml/CMakeLists.txt:157:option(GGML_AVX2             "ggml: enable AVX2"             ${INS_ENB})
+ggml/CMakeLists.txt:159:option(GGML_AVX512           "ggml: enable AVX512F"          OFF)
+ggml/CMakeLists.txt:160:option(GGML_AVX512_VBMI      "ggml: enable AVX512-VBMI"      OFF)
+ggml/CMakeLists.txt:161:option(GGML_AVX512_VNNI      "ggml: enable AVX512-VNNI"      OFF)
+ggml/CMakeLists.txt:162:option(GGML_AVX512_BF16      "ggml: enable AVX512-BF16"      OFF)
+ggml/CMakeLists.txt:164:    # in MSVC F16C and FMA is implied with AVX2/AVX512
+ggml/CMakeLists.txt:246:option(GGML_OPENMP                          "ggml: use OpenMP"                                ON)
+ggml/CMakeLists.txt:447:    # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/cmake/ggml-config.cmake.in:22:        find_dependency(OpenMP)
+ggml/cmake/ggml-config.cmake.in:23:        list(APPEND GGML_CPU_INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/include/ggml-alloc.h:27:    ggml_gallocr_t galloc = ggml_gallocr_new(ggml_backend_cpu_buffer_type());
+ggml/include/ggml-backend.h:426:    GGML_API ggml_backend_buffer_t      ggml_backend_cpu_buffer_from_ptr(void * ptr, size_t size);
+ggml/include/ggml-backend.h:427:    GGML_API ggml_backend_buffer_type_t ggml_backend_cpu_buffer_type(void);
+ggml/include/ggml-cpu.h:131:    GGML_BACKEND_API ggml_backend_t ggml_backend_cpu_init(void);
+ggml/include/ggml-cpu.h:134:    GGML_BACKEND_API void ggml_backend_cpu_set_n_threads     (ggml_backend_t backend_cpu, int n_threads);
+ggml/include/ggml-cpu.h:135:    GGML_BACKEND_API void ggml_backend_cpu_set_threadpool    (ggml_backend_t backend_cpu, ggml_threadpool_t threadpool);
+ggml/include/ggml-cpu.h:136:    GGML_BACKEND_API void ggml_backend_cpu_set_abort_callback(ggml_backend_t backend_cpu, ggml_abort_callback abort_callback, void * abort_callback_data);
+ggml/include/ggml-cpu.h:138:    GGML_BACKEND_API void ggml_backend_cpu_set_use_ref(ggml_backend_t backend_cpu, bool use_ref);
+ggml/include/ggml-cpu.h:140:    GGML_BACKEND_API ggml_backend_reg_t ggml_backend_cpu_reg(void);
+ggml/include/ggml.h:511:        GGML_OP_MUL_MAT,
+ggml/include/ggml.h:512:        GGML_OP_MUL_MAT_ID,
+ggml/src/CMakeLists.txt:314:                      AVX AVX2 BMI2 AVX_VNNI FMA F16C
+ggml/src/CMakeLists.txt:315:                      AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16
+ggml/src/CMakeLists.txt:365:            # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/src/CMakeLists.txt:369:        ggml_add_cpu_backend_variant(haswell            SSE42 AVX F16C FMA AVX2 BMI2)
+ggml/src/CMakeLists.txt:370:        ggml_add_cpu_backend_variant(skylakex           SSE42 AVX F16C FMA AVX2 BMI2 AVX512)
+ggml/src/CMakeLists.txt:371:        ggml_add_cpu_backend_variant(cannonlake         SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI)
+ggml/src/CMakeLists.txt:372:        ggml_add_cpu_backend_variant(cascadelake        SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI)
+ggml/src/CMakeLists.txt:373:        ggml_add_cpu_backend_variant(icelake            SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI)
+ggml/src/CMakeLists.txt:378:            ggml_add_cpu_backend_variant(cooperlake     SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:379:            ggml_add_cpu_backend_variant(zen4           SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:381:        ggml_add_cpu_backend_variant(alderlake          SSE42 AVX F16C FMA AVX2 BMI2 AVX_VNNI)
+ggml/src/CMakeLists.txt:384:            ggml_add_cpu_backend_variant(sapphirerapids SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16 AMX_TILE AMX_INT8)
+ggml/src/ggml-backend-meta.cpp:845:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-backend-meta.cpp:846:            case GGML_OP_MUL_MAT_ID: {
+ggml/src/ggml-backend-reg.cpp:165:        register_backend(ggml_backend_cpu_reg());
+ggml/src/ggml-backend.cpp:1581:                    (node->src[0] == input_cpy && node->op == GGML_OP_MUL_MAT_ID)
+ggml/src/ggml-backend.cpp:1585:                    const int64_t n_expert   = node->op == GGML_OP_MUL_MAT_ID ? input->ne[2] : input->ne[1];
+ggml/src/ggml-backend.cpp:1586:                    const size_t expert_size = node->op == GGML_OP_MUL_MAT_ID ? input->nb[2] : input->nb[1];
+ggml/src/ggml-backend.cpp:2213:static void * ggml_backend_cpu_buffer_get_base(ggml_backend_buffer_t buffer) {
+ggml/src/ggml-backend.cpp:2225:static void ggml_backend_cpu_buffer_free_buffer(ggml_backend_buffer_t buffer) {
+ggml/src/ggml-backend.cpp:2230:static void ggml_backend_cpu_buffer_memset_tensor(ggml_backend_buffer_t buffer, struct ggml_tensor * tensor, uint8_t value, size_t offset, size_t size) {
+ggml/src/ggml-backend.cpp:2237:static void ggml_backend_cpu_buffer_set_tensor(ggml_backend_buffer_t buffer, struct ggml_tensor * tensor, const void * data, size_t offset, size_t size) {
+ggml/src/ggml-backend.cpp:2244:static void ggml_backend_cpu_buffer_get_tensor(ggml_backend_buffer_t buffer, const struct ggml_tensor * tensor, void * data, size_t offset, size_t size) {
+ggml/src/ggml-backend.cpp:2251:static bool ggml_backend_cpu_buffer_cpy_tensor(ggml_backend_buffer_t buffer, const struct ggml_tensor * src, struct ggml_tensor * dst) {
+ggml/src/ggml-backend.cpp:2262:static void ggml_backend_cpu_buffer_clear(ggml_backend_buffer_t buffer, uint8_t value) {
+ggml/src/ggml-backend.cpp:2267:static const struct ggml_backend_buffer_i ggml_backend_cpu_buffer_i = {
+ggml/src/ggml-backend.cpp:2268:    /* .free_buffer     = */ ggml_backend_cpu_buffer_free_buffer,
+ggml/src/ggml-backend.cpp:2269:    /* .get_base        = */ ggml_backend_cpu_buffer_get_base,
+ggml/src/ggml-backend.cpp:2271:    /* .memset_tensor   = */ ggml_backend_cpu_buffer_memset_tensor,
+ggml/src/ggml-backend.cpp:2272:    /* .set_tensor      = */ ggml_backend_cpu_buffer_set_tensor,
+ggml/src/ggml-backend.cpp:2273:    /* .get_tensor      = */ ggml_backend_cpu_buffer_get_tensor,
+ggml/src/ggml-backend.cpp:2276:    /* .cpy_tensor      = */ ggml_backend_cpu_buffer_cpy_tensor,
+ggml/src/ggml-backend.cpp:2277:    /* .clear           = */ ggml_backend_cpu_buffer_clear,
+ggml/src/ggml-backend.cpp:2281:static const struct ggml_backend_buffer_i ggml_backend_cpu_buffer_from_ptr_i = {
+ggml/src/ggml-backend.cpp:2283:    /* .get_base        = */ ggml_backend_cpu_buffer_get_base,
+ggml/src/ggml-backend.cpp:2285:    /* .memset_tensor   = */ ggml_backend_cpu_buffer_memset_tensor,
+ggml/src/ggml-backend.cpp:2286:    /* .set_tensor      = */ ggml_backend_cpu_buffer_set_tensor,
+ggml/src/ggml-backend.cpp:2287:    /* .get_tensor      = */ ggml_backend_cpu_buffer_get_tensor,
+ggml/src/ggml-backend.cpp:2290:    /* .cpy_tensor      = */ ggml_backend_cpu_buffer_cpy_tensor,
+ggml/src/ggml-backend.cpp:2291:    /* .clear           = */ ggml_backend_cpu_buffer_clear,
+ggml/src/ggml-backend.cpp:2299:static const char * ggml_backend_cpu_buffer_type_get_name(ggml_backend_buffer_type_t buft) {
+ggml/src/ggml-backend.cpp:2305:static ggml_backend_buffer_t ggml_backend_cpu_buffer_type_alloc_buffer(ggml_backend_buffer_type_t buft, size_t size) {
+ggml/src/ggml-backend.cpp:2313:    return ggml_backend_buffer_init(buft, ggml_backend_cpu_buffer_i, data, size);
+ggml/src/ggml-backend.cpp:2316:static size_t ggml_backend_cpu_buffer_type_get_alignment(ggml_backend_buffer_type_t buft) {
+ggml/src/ggml-backend.cpp:2322:static bool ggml_backend_cpu_buffer_type_is_host(ggml_backend_buffer_type_t buft) {
+ggml/src/ggml-backend.cpp:2328:ggml_backend_buffer_type_t ggml_backend_cpu_buffer_type(void) {
+ggml/src/ggml-backend.cpp:2329:    static struct ggml_backend_buffer_type ggml_backend_cpu_buffer_type = {
+ggml/src/ggml-backend.cpp:2331:            /* .get_name         = */ ggml_backend_cpu_buffer_type_get_name,
+ggml/src/ggml-backend.cpp:2332:            /* .alloc_buffer     = */ ggml_backend_cpu_buffer_type_alloc_buffer,
+ggml/src/ggml-backend.cpp:2333:            /* .get_alignment    = */ ggml_backend_cpu_buffer_type_get_alignment,
+ggml/src/ggml-backend.cpp:2336:            /* .is_host          = */ ggml_backend_cpu_buffer_type_is_host,
+ggml/src/ggml-backend.cpp:2338:        /* .device  = */ NULL, // FIXME ggml_backend_reg_dev_get(ggml_backend_cpu_reg(), 0),
+ggml/src/ggml-backend.cpp:2342:    return &ggml_backend_cpu_buffer_type;
+ggml/src/ggml-backend.cpp:2345:static const char * ggml_backend_cpu_buffer_from_ptr_type_get_name(ggml_backend_buffer_type_t buft) {
+ggml/src/ggml-backend.cpp:2351:static ggml_backend_buffer_type_t ggml_backend_cpu_buffer_from_ptr_type(void) {
+ggml/src/ggml-backend.cpp:2352:    static struct ggml_backend_buffer_type ggml_backend_cpu_buffer_type = {
+ggml/src/ggml-backend.cpp:2354:            /* .get_name         = */ ggml_backend_cpu_buffer_from_ptr_type_get_name,
+ggml/src/ggml-backend.cpp:2355:            /* .alloc_buffer     = */ ggml_backend_cpu_buffer_type_alloc_buffer,
+ggml/src/ggml-backend.cpp:2356:            /* .get_alignment    = */ ggml_backend_cpu_buffer_type_get_alignment,
+ggml/src/ggml-backend.cpp:2359:            /* .is_host          = */ ggml_backend_cpu_buffer_type_is_host,
+ggml/src/ggml-backend.cpp:2361:        /* .device  = */ NULL, // FIXME ggml_backend_reg_dev_get(ggml_backend_cpu_reg(), 0),
+ggml/src/ggml-backend.cpp:2365:    return &ggml_backend_cpu_buffer_type;
+ggml/src/ggml-backend.cpp:2368:ggml_backend_buffer_t ggml_backend_cpu_buffer_from_ptr(void * ptr, size_t size) {
+ggml/src/ggml-backend.cpp:2370:    return ggml_backend_buffer_init(ggml_backend_cpu_buffer_from_ptr_type(), ggml_backend_cpu_buffer_from_ptr_i, ptr, size);
+ggml/src/ggml-blas/ggml-blas.cpp:236:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-blas/ggml-blas.cpp:297:        GGML_LOG_DEBUG("%s: warning: ggml is using OpenMP, but OpenBLAS was compiled without OpenMP support\n", __func__);
+ggml/src/ggml-blas/ggml-blas.cpp:302:    GGML_LOG_DEBUG("%s: warning: ggml is using OpenMP, but BLIS was compiled without OpenMP support\n", __func__);
+ggml/src/ggml-blas/ggml-blas.cpp:380:    return ggml_backend_cpu_buffer_type();
+ggml/src/ggml-blas/ggml-blas.cpp:386:    return ggml_backend_cpu_buffer_from_ptr(ptr, size);
+ggml/src/ggml-blas/ggml-blas.cpp:404:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/acl_tensor.h:336:#define BCAST_MUL_MAT_SHAPE(input, weight, dst)                                                                  \
+ggml/src/ggml-cann/acl_tensor.h:347:#define BCAST_MUL_MAT_PARAM(tensor) bcast_##tensor##_ne, bcast_##tensor##_nb, bcast_dims
+ggml/src/ggml-cann/aclnn_ops.cpp:2163:    BCAST_MUL_MAT_SHAPE(input, weight, dst);
+ggml/src/ggml-cann/aclnn_ops.cpp:2233:        GGML_ABORT("Only support Q4_0 and Q8_0 MUL_MAT");
+ggml/src/ggml-cann/aclnn_ops.cpp:3625: * This function implements MUL_MAT_ID operation for quantized weight matrices
+ggml/src/ggml-cann/aclnn_ops.cpp:3673:                                   (GGML_ABORT("MUL_MAT_ID only supports Q4_0 and Q8_0"), 0.0f);
+ggml/src/ggml-cann/aclnn_ops.h:573: *            multiplication. dst->op is `GGML_OP_MUL_MAT`.
+ggml/src/ggml-cann/ggml-cann.cpp:1017:static void ggml_backend_cann_transform_q8_0(ggml_tensor * tensor, const void * src, void * dst) {
+ggml/src/ggml-cann/ggml-cann.cpp:1026:        const block_q8_0 * group = (const block_q8_0 *) ((const char *) src + i * sizeof(block_q8_0));
+ggml/src/ggml-cann/ggml-cann.cpp:1040: * ggml_backend_cann_transform_q8_0(), converting the data back into its
+ggml/src/ggml-cann/ggml-cann.cpp:1048:static void ggml_backend_cann_transform_back_q8_0(const ggml_tensor * tensor, const void * src, void * dst) {
+ggml/src/ggml-cann/ggml-cann.cpp:1057:        block_q8_0 * group = (block_q8_0 *) ((char *) dst + i * sizeof(block_q8_0));
+ggml/src/ggml-cann/ggml-cann.cpp:1084:            ggml_backend_cann_transform_q8_0(tensor, src, dst);
+ggml/src/ggml-cann/ggml-cann.cpp:1109:            ggml_backend_cann_transform_back_q8_0(tensor, src, dst);
+ggml/src/ggml-cann/ggml-cann.cpp:1726:        return ggml_backend_buft_alloc_buffer(ggml_backend_cpu_buffer_type(), size);
+ggml/src/ggml-cann/ggml-cann.cpp:1729:    ggml_backend_buffer_t buffer = ggml_backend_cpu_buffer_from_ptr(hostPtr, size);
+ggml/src/ggml-cann/ggml-cann.cpp:1747:                           /* .get_alignment    = */ ggml_backend_cpu_buffer_type()->iface.get_alignment,
+ggml/src/ggml-cann/ggml-cann.cpp:1749:            /* .get_alloc_size   = */ ggml_backend_cpu_buffer_type()->iface.get_alloc_size,
+ggml/src/ggml-cann/ggml-cann.cpp:1750:                           /* .is_host          = */ ggml_backend_cpu_buffer_type()->iface.is_host,
+ggml/src/ggml-cann/ggml-cann.cpp:1915:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:1918:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cann/ggml-cann.cpp:2436:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:2457:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-common.h:245:} block_q8_0;
+ggml/src/ggml-common.h:246:static_assert(sizeof(block_q8_0) == sizeof(ggml_half) + QK8_0, "wrong q8_0 block size/padding");
+ggml/src/ggml-cpu/CMakeLists.txt:32:        ggml-cpu/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:33:        ggml-cpu/repack.h
+ggml/src/ggml-cpu/CMakeLists.txt:76:        find_package(OpenMP)
+ggml/src/ggml-cpu/CMakeLists.txt:77:        if (OpenMP_FOUND)
+ggml/src/ggml-cpu/CMakeLists.txt:81:            target_link_libraries(${GGML_CPU_NAME} PRIVATE OpenMP::OpenMP_C OpenMP::OpenMP_CXX)
+ggml/src/ggml-cpu/CMakeLists.txt:84:            message(WARNING "OpenMP not found")
+ggml/src/ggml-cpu/CMakeLists.txt:110:            ggml-cpu/arch/arm/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:252:            ggml-cpu/arch/x86/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:260:            if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:261:                list(APPEND ARCH_FLAGS /arch:AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:262:                # /arch:AVX512 includes: __AVX512F__, __AVX512CD__, __AVX512BW__, __AVX512DQ__, and __AVX512VL__
+ggml/src/ggml-cpu/CMakeLists.txt:264:                # AVX512 extensions, neither it defines the
+ggml/src/ggml-cpu/CMakeLists.txt:267:                list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:268:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:269:                    list(APPEND ARCH_DEFINITIONS __AVX512VBMI__)
+ggml/src/ggml-cpu/CMakeLists.txt:274:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:275:                    list(APPEND ARCH_DEFINITIONS __AVX512VNNI__ GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:280:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:281:                    list(APPEND ARCH_DEFINITIONS __AVX512BF16__ GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:295:            elseif (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:296:                list(APPEND ARCH_FLAGS /arch:AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:297:                list(APPEND ARCH_DEFINITIONS GGML_AVX2 GGML_FMA GGML_F16C)
+ggml/src/ggml-cpu/CMakeLists.txt:305:            if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:306:                list(APPEND ARCH_DEFINITIONS __AVXVNNI__ GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:336:                if (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:338:                    list(APPEND ARCH_DEFINITIONS GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:340:                if (GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:342:                    list(APPEND ARCH_DEFINITIONS GGML_AVX_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:344:                if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:350:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:352:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:354:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:356:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:358:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:360:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:362:                    list(APPEND ARCH_DEFINITIONS GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:450:            ggml-cpu/arch/riscv/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:460:                ggml-cpu/spacemit/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:461:                ggml-cpu/spacemit/repack.h
+ggml/src/ggml-cpu/CMakeLists.txt:582:    if (GGML_CPU_REPACK)
+ggml/src/ggml-cpu/amx/amx.cpp:19:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.cpp:30:        if (op->op == GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:70:        GGML_LOG_DEBUG("%s: amx repack tensor %s of type %s\n", __func__, tensor->name, ggml_type_name(tensor->type));
+ggml/src/ggml-cpu/amx/amx.cpp:146:        if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:193:        if (op->op == GGML_OP_MUL_MAT && op->src[0]->buffer &&
+ggml/src/ggml-cpu/amx/amx.cpp:238:        /* .device  = */ ggml_backend_reg_dev_get(ggml_backend_cpu_reg(), 0),
+ggml/src/ggml-cpu/amx/amx.cpp:249:#endif  // defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/amx.h:6:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/common.h:19:#define VNNI_BLK 4
+ggml/src/ggml-cpu/amx/mmq.cpp:35:#if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/amx/mmq.cpp:61:template <> struct PackedTypes<block_q8_0> { using type = int8_t; };
+ggml/src/ggml-cpu/amx/mmq.cpp:66:    std::is_same<T, block_q8_0>::value> {};
+ggml/src/ggml-cpu/amx/mmq.cpp:103:                using vec_dot_type = block_q8_0;                                       \
+ggml/src/ggml-cpu/amx/mmq.cpp:114:                using type = block_q8_0;                                               \
+ggml/src/ggml-cpu/amx/mmq.cpp:115:                using vec_dot_type = block_q8_0;                                       \
+ggml/src/ggml-cpu/amx/mmq.cpp:180:// Block B needs to be prepacked to vnni format before feeding into  TMUL:
+ggml/src/ggml-cpu/amx/mmq.cpp:433:            __m128i q8_0 = _mm512_cvtepi32_epi8(_mm512_cvtps_epi32(v[j * 4 + 0]));
+ggml/src/ggml-cpu/amx/mmq.cpp:438:            __m256i q8_01 = _mm256_insertf128_si256(_mm256_castsi128_si256(q8_0), (q8_1), 1);
+ggml/src/ggml-cpu/amx/mmq.cpp:441:            vq[j] = _mm512_inserti32x8(_mm512_castsi256_si512(q8_01), q8_23, 1);
+ggml/src/ggml-cpu/amx/mmq.cpp:462:inline void from_float<block_q8_0>(const float * x, char * vy, int64_t k) {
+ggml/src/ggml-cpu/amx/mmq.cpp:463:    quantize_row_q8_0(x, (block_q8_0 *)vy, k);
+ggml/src/ggml-cpu/amx/mmq.cpp:482:void unpack_A(int8_t * RESTRICT tile, const block_q8_0 * RESTRICT A, int lda, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:613:inline void pack_qs<block_q8_0>(void * RESTRICT packed_B, const block_q8_0 * RESTRICT B, int KB) {
+ggml/src/ggml-cpu/amx/mmq.cpp:785:void pack_B(void * RESTRICT packed_B, const block_q8_0 * RESTRICT B, int KB) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1052:struct acc_C<block_q8_0, block_q4_0, is_acc> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1053:    static void apply(float * RESTRICT C, int ldc, const int32_t * RESTRICT tile, const block_q8_0 * A, int lda, const void * packed_B, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1099:struct acc_C<block_q8_0, block_q8_0, is_acc> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1100:    static void apply(float * RESTRICT C, int ldc, const int32_t * RESTRICT tile, const block_q8_0 * A, int lda, const void * packed_B, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1366:struct tinygemm_kernel_vnni<block_q8_0, block_q4_0, float, BLOCK_M, BLOCK_N, BLOCK_K> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1372:        const block_q8_0 * RESTRICT A = static_cast<const block_q8_0 *>(_A);
+ggml/src/ggml-cpu/amx/mmq.cpp:1503:struct tinygemm_kernel_vnni<block_q8_0, block_q8_0, float, BLOCK_M, BLOCK_N, BLOCK_K> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1507:        const int TILE_SIZE = TILE_N * sizeof(block_q8_0) + TILE_N * sizeof(int32_t);
+ggml/src/ggml-cpu/amx/mmq.cpp:1509:        const block_q8_0 * RESTRICT A = static_cast<const block_q8_0 *>(_A);
+ggml/src/ggml-cpu/amx/mmq.cpp:1986:#define LAUNCH_TINYGEMM_KERNEL_VNNI(NB_SIZE)                                                   \
+ggml/src/ggml-cpu/amx/mmq.cpp:2030:            _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2032:            _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2047:            _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2049:            _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2068:                    _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2070:                    _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2088:                    _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2090:                    _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2128:                _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2130:                _tile_loadd(TMM0, B_blk0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2135:                _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2137:                _tile_loadd(TMM1, B_blk1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2215:                _tile_loadd(TMM0, Tile0, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2218:                _tile_loadd(TMM1, Tile1, TILE_N * VNNI_BLK);
+ggml/src/ggml-cpu/amx/mmq.cpp:2459:                        //case 160: LAUNCH_TINYGEMM_KERNEL_VNNI(160); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2460:                        case 128: LAUNCH_TINYGEMM_KERNEL_VNNI(128); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2461:                        case 96: LAUNCH_TINYGEMM_KERNEL_VNNI(96); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2462:                        case 64: LAUNCH_TINYGEMM_KERNEL_VNNI(64); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2463:                        case 32: LAUNCH_TINYGEMM_KERNEL_VNNI(32); break;
+ggml/src/ggml-cpu/amx/mmq.cpp:2512:#endif // if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
+ggml/src/ggml-cpu/arch-fallback.h:9:#define quantize_row_q8_0_generic quantize_row_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:12:#define ggml_vec_dot_q4_0_q8_0_generic ggml_vec_dot_q4_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:14:#define ggml_vec_dot_q5_0_q8_0_generic ggml_vec_dot_q5_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:16:#define ggml_vec_dot_q8_0_q8_0_generic ggml_vec_dot_q8_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:17:#define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:18:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:19:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:34:#define ggml_vec_dot_iq4_nl_q8_0_generic ggml_vec_dot_iq4_nl_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:36:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:37:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:38:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:41:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:42:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:43:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:51:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:52:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:53:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:54:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:55:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:56:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:57:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:58:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:59:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:67:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:68:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:69:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:70:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:71:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:72:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:74:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:77:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:78:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:80:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:81:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:85:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:86:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:87:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:89:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:90:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:96:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:97:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:98:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:99:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:100:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:101:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:107:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:108:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:109:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:110:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:115:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:116:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:120:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:121:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:122:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:125:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:126:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:127:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:135:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:136:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:137:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:138:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:139:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:140:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:141:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:142:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:143:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:151:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:152:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:153:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:154:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:155:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:156:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:163:#define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:164:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:165:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:166:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:167:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:168:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:171:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:172:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:173:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:181:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:182:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:183:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:184:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:185:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:186:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:187:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:188:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:189:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:197:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:198:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:199:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:200:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:201:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:202:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:205:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:206:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:207:#define ggml_quantize_mat_q8_0_4x1_generic ggml_quantize_mat_q8_0_4x1
+ggml/src/ggml-cpu/arch-fallback.h:208:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:212:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:213:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:221:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:222:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:223:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:224:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:225:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:226:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:227:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:228:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:236:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:237:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:238:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:239:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:240:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:241:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:245:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:246:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:257:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:258:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:259:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:262:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:263:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:264:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:272:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:273:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:274:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:275:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:276:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:277:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:278:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:279:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:280:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:288:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:289:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:290:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:291:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:292:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:293:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:306:#define ggml_vec_dot_iq4_nl_q8_0_generic ggml_vec_dot_iq4_nl_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:308:#define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:309:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:310:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:311:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:312:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:313:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:316:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:317:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:318:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:326:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:327:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:328:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:329:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:330:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:331:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:332:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:333:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:334:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:342:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:343:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:344:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:345:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:346:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:347:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch/arm/cpu-feats.cpp:64:static int ggml_backend_cpu_aarch64_score() {
+ggml/src/ggml-cpu/arch/arm/cpu-feats.cpp:96:GGML_BACKEND_DL_SCORE_IMPL(ggml_backend_cpu_aarch64_score)
+ggml/src/ggml-cpu/arch/arm/quants.c:41:void quantize_row_q8_0(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/arm/quants.c:46:    block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:81:    quantize_row_q8_0_ref(x, y, k);
+ggml/src/ggml-cpu/arch/arm/quants.c:140:void ggml_vec_dot_q1_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/quants.c:152:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:162:            const block_q8_0 * GGML_RESTRICT yb = &y[i * 4 + k];
+ggml/src/ggml-cpu/arch/arm/quants.c:218:    ggml_vec_dot_q1_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/arm/quants.c:223:void ggml_vec_dot_q4_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/quants.c:239:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:245:        const block_q8_0 * GGML_RESTRICT vy0 = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:246:        const block_q8_0 * GGML_RESTRICT vy1 = (const block_q8_0 *) ((const uint8_t*)vy + by);
+ggml/src/ggml-cpu/arch/arm/quants.c:253:            const block_q8_0 * GGML_RESTRICT b_y0 = &vy0[i];
+ggml/src/ggml-cpu/arch/arm/quants.c:254:            const block_q8_0 * GGML_RESTRICT b_y1 = &vy1[i];
+ggml/src/ggml-cpu/arch/arm/quants.c:333:                    const block_q8_0 * GGML_RESTRICT y0 = &y[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:334:                    const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:379:                    const block_q8_0 * GGML_RESTRICT y0 = &y[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:380:                    const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:420:                    const block_q8_0 * GGML_RESTRICT y0 = &y[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:421:                    const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:460:        const block_q8_0 * GGML_RESTRICT y0 = &y[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:461:        const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:675:void ggml_vec_dot_mxfp4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/quants.c:685:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:736:void ggml_vec_dot_nvfp4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/quants.c:745:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:747:    // Each NVFP4 super-block (64 elements) spans 2 q8_0 blocks
+ggml/src/ggml-cpu/arch/arm/quants.c:767:        const int8x16_t q8_0a = vld1q_s8(y[2*ib].qs);
+ggml/src/ggml-cpu/arch/arm/quants.c:768:        const int8x16_t q8_0b = vld1q_s8(y[2*ib].qs + 16);
+ggml/src/ggml-cpu/arch/arm/quants.c:769:        const int8x16_t q8_lo_0 = vcombine_s8(vget_low_s8(q8_0a), vget_low_s8(q8_0b));
+ggml/src/ggml-cpu/arch/arm/quants.c:770:        const int8x16_t q8_hi_0 = vcombine_s8(vget_high_s8(q8_0a), vget_high_s8(q8_0b));
+ggml/src/ggml-cpu/arch/arm/quants.c:795:        const int8x8_t q8_0_lo = vld1_s8(y[2*ib].qs);
+ggml/src/ggml-cpu/arch/arm/quants.c:796:        const int8x8_t q8_0_hi = vld1_s8(y[2*ib].qs + 8);
+ggml/src/ggml-cpu/arch/arm/quants.c:805:            vaddvq_s32(ggml_nvfp4_dot8(q4_0_lo, q8_0_lo, q4_0_hi, q8_0_hi)),
+ggml/src/ggml-cpu/arch/arm/quants.c:846:void ggml_vec_dot_q5_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/quants.c:862:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:877:        const block_q8_0 * GGML_RESTRICT y0 = &y[ib];
+ggml/src/ggml-cpu/arch/arm/quants.c:878:        const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:1076:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/quants.c:1091:    const block_q8_0 * GGML_RESTRICT x = vx;
+ggml/src/ggml-cpu/arch/arm/quants.c:1092:    const block_q8_0 * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:1096:        const block_q8_0 * GGML_RESTRICT vx0 = vx;
+ggml/src/ggml-cpu/arch/arm/quants.c:1097:        const block_q8_0 * GGML_RESTRICT vx1 = (const block_q8_0 *) ((const uint8_t*)vx + bx);
+ggml/src/ggml-cpu/arch/arm/quants.c:1098:        const block_q8_0 * GGML_RESTRICT vy0 = vy;
+ggml/src/ggml-cpu/arch/arm/quants.c:1099:        const block_q8_0 * GGML_RESTRICT vy1 = (const block_q8_0 *) ((const uint8_t*)vy + by);
+ggml/src/ggml-cpu/arch/arm/quants.c:1104:            const block_q8_0 * GGML_RESTRICT b_x0 = &vx0[i];
+ggml/src/ggml-cpu/arch/arm/quants.c:1105:            const block_q8_0 * GGML_RESTRICT b_y0 = &vy0[i];
+ggml/src/ggml-cpu/arch/arm/quants.c:1107:            const block_q8_0 * GGML_RESTRICT b_x1 = &vx1[i];
+ggml/src/ggml-cpu/arch/arm/quants.c:1108:            const block_q8_0 * GGML_RESTRICT b_y1 = &vy1[i];
+ggml/src/ggml-cpu/arch/arm/quants.c:1173:                    const block_q8_0 * GGML_RESTRICT x0 = &x[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:1174:                    const block_q8_0 * GGML_RESTRICT x1 = &x[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:1175:                    const block_q8_0 * GGML_RESTRICT y0 = &y[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:1176:                    const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:1204:                    const block_q8_0 * GGML_RESTRICT x0 = &x[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:1205:                    const block_q8_0 * GGML_RESTRICT x1 = &x[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:1206:                    const block_q8_0 * GGML_RESTRICT y0 = &y[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:1207:                    const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:1240:                    const block_q8_0 * GGML_RESTRICT x0 = &x[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:1241:                    const block_q8_0 * GGML_RESTRICT x1 = &x[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:1242:                    const block_q8_0 * GGML_RESTRICT y0 = &y[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:1243:                    const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:1283:        const block_q8_0 * GGML_RESTRICT x0 = &x[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:1284:        const block_q8_0 * GGML_RESTRICT x1 = &x[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:1285:        const block_q8_0 * GGML_RESTRICT y0 = &y[ib + 0];
+ggml/src/ggml-cpu/arch/arm/quants.c:1286:        const block_q8_0 * GGML_RESTRICT y1 = &y[ib + 1];
+ggml/src/ggml-cpu/arch/arm/quants.c:2318:                        const int8_t  * GGML_RESTRICT q8_0 = vy0[i].qs;
+ggml/src/ggml-cpu/arch/arm/quants.c:2361:                            q8bytes_0_h = svld1_s8(pg128_all, q8_0);
+ggml/src/ggml-cpu/arch/arm/quants.c:2363:                            q8bytes_0_l = svld1_s8(pg128_all, q8_0+16);
+ggml/src/ggml-cpu/arch/arm/quants.c:2381:                            q8bytes_0_h = svld1_s8(pg128_all, q8_0+32);
+ggml/src/ggml-cpu/arch/arm/quants.c:2383:                            q8bytes_0_l = svld1_s8(pg128_all, q8_0+48);
+ggml/src/ggml-cpu/arch/arm/quants.c:2392:                            q4_0 += 32; q4_1 += 32; q8_0 += 64; q8_1 += 64;
+ggml/src/ggml-cpu/arch/arm/quants.c:2413:                        const int8_t  * GGML_RESTRICT q8_0 = vy0[i].qs;
+ggml/src/ggml-cpu/arch/arm/quants.c:2456:                            svint8_t q8bytes_0 = svld1_s8(pg256_all, q8_0);
+ggml/src/ggml-cpu/arch/arm/quants.c:2458:                            svint8_t q8bytes_2 = svld1_s8(pg256_all, q8_0+32);
+ggml/src/ggml-cpu/arch/arm/quants.c:2470:                            q4_0 += 32; q4_1 += 32; q8_0 += 64; q8_1 += 64;
+ggml/src/ggml-cpu/arch/arm/quants.c:4122:void ggml_vec_dot_iq4_nl_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/quants.c:4132:    const block_q8_0   * GGML_RESTRICT y = vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:19:#include "../../repack.h"
+ggml/src/ggml-cpu/arch/arm/repack.cpp:51:void ggml_quantize_mat_q8_0_4x4(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:56:    block_q8_0x4 * GGML_RESTRICT y = (block_q8_0x4 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:115:    ggml_quantize_mat_q8_0_4x4_generic(x, vy, k);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:119:void ggml_quantize_mat_q8_0_4x8(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:124:    block_q8_0x4 * GGML_RESTRICT y = (block_q8_0x4 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:208:    ggml_quantize_mat_q8_0_4x8_generic(x, vy, k);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:212:void ggml_gemv_q4_0_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:235:        const block_q8_0 * a_ptr = (const block_q8_0 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:270:    ggml_gemv_q4_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:273:void ggml_gemv_q4_0_4x8_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:296:        const block_q8_0 * a_ptr = (const block_q8_0 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:336:    ggml_gemv_q4_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:339:void ggml_gemv_q4_0_8x8_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:428:    ggml_gemv_q4_0_8x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:431:void ggml_gemv_iq4_nl_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:452:    const block_q8_0 * a_ptr = (const block_q8_0 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:498:    ggml_gemv_iq4_nl_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:501:void ggml_gemv_mxfp4_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:522:    const block_q8_0 * a_ptr = (const block_q8_0 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:573:    ggml_gemv_mxfp4_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1699:void ggml_gemv_q8_0_4x4_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1719:    const block_q8_0x4 * b_ptr = (const block_q8_0x4 *) vx;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1722:        const block_q8_0 * a_ptr = (const block_q8_0 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1754:    ggml_gemv_q8_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1757:void ggml_gemv_q8_0_4x8_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1777:    const block_q8_0x4 * b_ptr = (const block_q8_0x4 *) vx;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1780:        const block_q8_0 * a_ptr = (const block_q8_0 *) vy;
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1823:    ggml_gemv_q8_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1826:void ggml_gemm_q4_0_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:2304:    ggml_gemm_q4_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:2307:void ggml_gemm_q4_0_4x8_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:2725:    ggml_gemm_q4_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:2728:void ggml_gemm_q4_0_8x8_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3163:    ggml_gemm_q4_0_8x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3166:void ggml_gemm_iq4_nl_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3190:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3239:    ggml_gemm_iq4_nl_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3242:void ggml_gemm_mxfp4_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3266:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3320:    ggml_gemm_mxfp4_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4938:void ggml_gemm_q8_0_4x4_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4960:        const block_q8_0x4 * a_ptr = (const block_q8_0x4 *) vy + (y * nb);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4962:            const block_q8_0x4 * b_ptr = (const block_q8_0x4 *) vx + (x * nb);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5003:    ggml_gemm_q8_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5006:void ggml_gemm_q8_0_4x8_q8_0(int                        n,
+
+## llama.cpp selected exact source hits
+ggml/CMakeLists.txt:152:option(GGML_CPU_REPACK       "ggml: use runtime weight conversion of Q4_0 to Q4_X_X" ON)
+ggml/src/ggml-backend.cpp:1581:                    (node->src[0] == input_cpy && node->op == GGML_OP_MUL_MAT_ID)
+ggml/src/ggml-backend.cpp:1585:                    const int64_t n_expert   = node->op == GGML_OP_MUL_MAT_ID ? input->ne[2] : input->ne[1];
+ggml/src/ggml-backend.cpp:1586:                    const size_t expert_size = node->op == GGML_OP_MUL_MAT_ID ? input->nb[2] : input->nb[1];
+ggml/src/ggml-cpu/CMakeLists.txt:582:    if (GGML_CPU_REPACK)
+ggml/src/ggml-cpu/amx/amx.cpp:30:        if (op->op == GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:146:        if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:193:        if (op->op == GGML_OP_MUL_MAT && op->src[0]->buffer &&
+ggml/src/ggml-cpu/amx/mmq.cpp:463:    quantize_row_q8_0(x, (block_q8_0 *)vy, k);
+ggml/src/ggml-cpu/arch-fallback.h:9:#define quantize_row_q8_0_generic quantize_row_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:16:#define ggml_vec_dot_q8_0_q8_0_generic ggml_vec_dot_q8_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:37:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:38:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:41:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:42:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:43:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:44:#define ggml_gemv_q2_K_8x8_q8_K_generic ggml_gemv_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:45:#define ggml_gemv_q4_K_8x4_q8_K_generic ggml_gemv_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:46:#define ggml_gemv_q4_K_8x8_q8_K_generic ggml_gemv_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:47:#define ggml_gemv_q5_K_8x4_q8_K_generic ggml_gemv_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:48:#define ggml_gemv_q5_K_8x8_q8_K_generic ggml_gemv_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:49:#define ggml_gemv_q6_K_8x4_q8_K_generic ggml_gemv_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:50:#define ggml_gemv_q6_K_8x8_q8_K_generic ggml_gemv_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:51:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:52:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:53:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:54:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:55:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:56:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:57:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:58:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:59:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:60:#define ggml_gemm_q2_K_8x8_q8_K_generic ggml_gemm_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:61:#define ggml_gemm_q4_K_8x4_q8_K_generic ggml_gemm_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:62:#define ggml_gemm_q4_K_8x8_q8_K_generic ggml_gemm_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:63:#define ggml_gemm_q5_K_8x4_q8_K_generic ggml_gemm_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:64:#define ggml_gemm_q5_K_8x8_q8_K_generic ggml_gemm_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:65:#define ggml_gemm_q6_K_8x4_q8_K_generic ggml_gemm_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:66:#define ggml_gemm_q6_K_8x8_q8_K_generic ggml_gemm_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:67:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:68:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:69:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:70:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:71:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:72:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:77:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:78:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:79:#define ggml_gemv_q2_K_8x8_q8_K_generic ggml_gemv_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:80:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:81:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:82:#define ggml_gemm_q2_K_8x8_q8_K_generic ggml_gemm_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:87:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:89:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:90:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:91:#define ggml_gemv_q4_K_8x4_q8_K_generic ggml_gemv_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:92:#define ggml_gemv_q5_K_8x4_q8_K_generic ggml_gemv_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:93:#define ggml_gemv_q5_K_8x8_q8_K_generic ggml_gemv_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:94:#define ggml_gemv_q6_K_8x4_q8_K_generic ggml_gemv_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:95:#define ggml_gemv_q6_K_8x8_q8_K_generic ggml_gemv_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:96:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:97:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:98:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:99:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:100:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:101:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:102:#define ggml_gemm_q4_K_8x4_q8_K_generic ggml_gemm_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:103:#define ggml_gemm_q5_K_8x4_q8_K_generic ggml_gemm_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:104:#define ggml_gemm_q5_K_8x8_q8_K_generic ggml_gemm_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:105:#define ggml_gemm_q6_K_8x4_q8_K_generic ggml_gemm_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:106:#define ggml_gemm_q6_K_8x8_q8_K_generic ggml_gemm_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:107:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:108:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:109:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:110:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:121:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:122:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:125:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:126:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:127:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:128:#define ggml_gemv_q2_K_8x8_q8_K_generic ggml_gemv_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:129:#define ggml_gemv_q4_K_8x4_q8_K_generic ggml_gemv_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:130:#define ggml_gemv_q4_K_8x8_q8_K_generic ggml_gemv_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:131:#define ggml_gemv_q5_K_8x4_q8_K_generic ggml_gemv_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:132:#define ggml_gemv_q5_K_8x8_q8_K_generic ggml_gemv_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:133:#define ggml_gemv_q6_K_8x4_q8_K_generic ggml_gemv_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:134:#define ggml_gemv_q6_K_8x8_q8_K_generic ggml_gemv_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:135:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:136:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:137:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:138:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:139:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:140:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:141:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:142:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:143:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:144:#define ggml_gemm_q2_K_8x8_q8_K_generic ggml_gemm_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:145:#define ggml_gemm_q4_K_8x4_q8_K_generic ggml_gemm_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:146:#define ggml_gemm_q4_K_8x8_q8_K_generic ggml_gemm_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:147:#define ggml_gemm_q5_K_8x4_q8_K_generic ggml_gemm_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:148:#define ggml_gemm_q5_K_8x8_q8_K_generic ggml_gemm_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:149:#define ggml_gemm_q6_K_8x4_q8_K_generic ggml_gemm_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:150:#define ggml_gemm_q6_K_8x8_q8_K_generic ggml_gemm_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:151:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:152:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:153:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:154:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:155:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:156:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:167:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:168:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:171:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:172:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:173:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:174:#define ggml_gemv_q2_K_8x8_q8_K_generic ggml_gemv_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:175:#define ggml_gemv_q4_K_8x4_q8_K_generic ggml_gemv_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:176:#define ggml_gemv_q4_K_8x8_q8_K_generic ggml_gemv_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:177:#define ggml_gemv_q5_K_8x4_q8_K_generic ggml_gemv_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:178:#define ggml_gemv_q5_K_8x8_q8_K_generic ggml_gemv_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:179:#define ggml_gemv_q6_K_8x4_q8_K_generic ggml_gemv_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:180:#define ggml_gemv_q6_K_8x8_q8_K_generic ggml_gemv_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:181:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:182:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:183:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:184:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:185:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:186:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:187:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:188:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:189:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:190:#define ggml_gemm_q2_K_8x8_q8_K_generic ggml_gemm_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:191:#define ggml_gemm_q4_K_8x4_q8_K_generic ggml_gemm_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:192:#define ggml_gemm_q4_K_8x8_q8_K_generic ggml_gemm_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:193:#define ggml_gemm_q5_K_8x4_q8_K_generic ggml_gemm_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:194:#define ggml_gemm_q5_K_8x8_q8_K_generic ggml_gemm_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:195:#define ggml_gemm_q6_K_8x4_q8_K_generic ggml_gemm_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:196:#define ggml_gemm_q6_K_8x8_q8_K_generic ggml_gemm_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:197:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:198:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:199:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:200:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:201:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:202:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:208:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:212:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:213:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:214:#define ggml_gemv_q2_K_8x8_q8_K_generic ggml_gemv_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:215:#define ggml_gemv_q4_K_8x4_q8_K_generic ggml_gemv_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:216:#define ggml_gemv_q4_K_8x8_q8_K_generic ggml_gemv_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:217:#define ggml_gemv_q5_K_8x4_q8_K_generic ggml_gemv_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:218:#define ggml_gemv_q5_K_8x8_q8_K_generic ggml_gemv_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:219:#define ggml_gemv_q6_K_8x4_q8_K_generic ggml_gemv_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:220:#define ggml_gemv_q6_K_8x8_q8_K_generic ggml_gemv_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:221:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:222:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:223:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:224:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:225:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:226:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:227:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:228:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:229:#define ggml_gemm_q2_K_8x8_q8_K_generic ggml_gemm_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:230:#define ggml_gemm_q4_K_8x4_q8_K_generic ggml_gemm_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:231:#define ggml_gemm_q4_K_8x8_q8_K_generic ggml_gemm_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:232:#define ggml_gemm_q5_K_8x4_q8_K_generic ggml_gemm_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:233:#define ggml_gemm_q5_K_8x8_q8_K_generic ggml_gemm_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:234:#define ggml_gemm_q6_K_8x4_q8_K_generic ggml_gemm_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:235:#define ggml_gemm_q6_K_8x8_q8_K_generic ggml_gemm_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:236:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:237:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:238:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:239:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:240:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:241:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:258:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:259:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:262:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:263:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:264:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:265:#define ggml_gemv_q2_K_8x8_q8_K_generic ggml_gemv_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:266:#define ggml_gemv_q4_K_8x4_q8_K_generic ggml_gemv_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:267:#define ggml_gemv_q4_K_8x8_q8_K_generic ggml_gemv_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:268:#define ggml_gemv_q5_K_8x4_q8_K_generic ggml_gemv_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:269:#define ggml_gemv_q5_K_8x8_q8_K_generic ggml_gemv_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:270:#define ggml_gemv_q6_K_8x4_q8_K_generic ggml_gemv_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:271:#define ggml_gemv_q6_K_8x8_q8_K_generic ggml_gemv_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:272:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:273:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:274:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:275:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:276:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:277:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:278:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:279:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:280:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:281:#define ggml_gemm_q2_K_8x8_q8_K_generic ggml_gemm_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:282:#define ggml_gemm_q4_K_8x4_q8_K_generic ggml_gemm_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:283:#define ggml_gemm_q4_K_8x8_q8_K_generic ggml_gemm_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:284:#define ggml_gemm_q5_K_8x4_q8_K_generic ggml_gemm_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:285:#define ggml_gemm_q5_K_8x8_q8_K_generic ggml_gemm_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:286:#define ggml_gemm_q6_K_8x4_q8_K_generic ggml_gemm_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:287:#define ggml_gemm_q6_K_8x8_q8_K_generic ggml_gemm_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:288:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:289:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:290:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:291:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:292:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:293:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:312:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:313:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:316:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:317:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:318:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:319:#define ggml_gemv_q2_K_8x8_q8_K_generic ggml_gemv_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:320:#define ggml_gemv_q4_K_8x4_q8_K_generic ggml_gemv_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:321:#define ggml_gemv_q4_K_8x8_q8_K_generic ggml_gemv_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:322:#define ggml_gemv_q5_K_8x4_q8_K_generic ggml_gemv_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:323:#define ggml_gemv_q5_K_8x8_q8_K_generic ggml_gemv_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:324:#define ggml_gemv_q6_K_8x4_q8_K_generic ggml_gemv_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:325:#define ggml_gemv_q6_K_8x8_q8_K_generic ggml_gemv_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:326:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:327:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:328:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:329:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:330:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:331:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:332:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:333:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:334:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:335:#define ggml_gemm_q2_K_8x8_q8_K_generic ggml_gemm_q2_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:336:#define ggml_gemm_q4_K_8x4_q8_K_generic ggml_gemm_q4_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:337:#define ggml_gemm_q4_K_8x8_q8_K_generic ggml_gemm_q4_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:338:#define ggml_gemm_q5_K_8x4_q8_K_generic ggml_gemm_q5_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:339:#define ggml_gemm_q5_K_8x8_q8_K_generic ggml_gemm_q5_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:340:#define ggml_gemm_q6_K_8x4_q8_K_generic ggml_gemm_q6_K_8x4_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:341:#define ggml_gemm_q6_K_8x8_q8_K_generic ggml_gemm_q6_K_8x8_q8_K
+ggml/src/ggml-cpu/arch-fallback.h:342:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:343:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:344:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:345:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:346:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:347:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch/arm/quants.c:41:void quantize_row_q8_0(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/arm/quants.c:81:    quantize_row_q8_0_ref(x, y, k);
+ggml/src/ggml-cpu/arch/arm/quants.c:1076:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:51:void ggml_quantize_mat_q8_0_4x4(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:115:    ggml_quantize_mat_q8_0_4x4_generic(x, vy, k);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:119:void ggml_quantize_mat_q8_0_4x8(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:208:    ggml_quantize_mat_q8_0_4x8_generic(x, vy, k);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:212:void ggml_gemv_q4_0_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:270:    ggml_gemv_q4_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:273:void ggml_gemv_q4_0_4x8_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:336:    ggml_gemv_q4_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:339:void ggml_gemv_q4_0_8x8_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:428:    ggml_gemv_q4_0_8x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:431:void ggml_gemv_iq4_nl_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:498:    ggml_gemv_iq4_nl_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:501:void ggml_gemv_mxfp4_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:573:    ggml_gemv_mxfp4_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:576:void ggml_gemv_q4_K_8x4_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:706:    ggml_gemv_q4_K_8x4_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:709:void ggml_gemv_q4_K_8x8_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:860:    ggml_gemv_q4_K_8x8_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:863:void ggml_gemv_q5_K_8x4_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1019:    ggml_gemv_q5_K_8x4_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1022:void ggml_gemv_q5_K_8x8_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1306:    ggml_gemv_q5_K_8x8_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1309:void ggml_gemv_q6_K_8x4_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1495:    ggml_gemv_q6_K_8x4_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1498:void ggml_gemv_q6_K_8x8_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1696:    ggml_gemv_q6_K_8x8_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1699:void ggml_gemv_q8_0_4x4_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1754:    ggml_gemv_q8_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1757:void ggml_gemv_q8_0_4x8_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1823:    ggml_gemv_q8_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:1826:void ggml_gemm_q4_0_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:2304:    ggml_gemm_q4_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:2307:void ggml_gemm_q4_0_4x8_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:2725:    ggml_gemm_q4_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:2728:void ggml_gemm_q4_0_8x8_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3163:    ggml_gemm_q4_0_8x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3166:void ggml_gemm_iq4_nl_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3239:    ggml_gemm_iq4_nl_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3242:void ggml_gemm_mxfp4_4x4_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3320:    ggml_gemm_mxfp4_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3323:void ggml_gemm_q4_K_8x4_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3520:    ggml_gemm_q4_K_8x4_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3523:void ggml_gemm_q5_K_8x4_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3749:    ggml_gemm_q5_K_8x4_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:3752:void ggml_gemm_q4_K_8x8_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4269:    ggml_gemm_q4_K_8x8_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4272:void ggml_gemm_q5_K_8x8_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4516:    ggml_gemm_q5_K_8x8_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4519:void ggml_gemm_q6_K_8x4_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4718:    ggml_gemm_q6_K_8x4_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4721:void ggml_gemm_q6_K_8x8_q8_K(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4935:    ggml_gemm_q6_K_8x8_q8_K_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:4938:void ggml_gemm_q8_0_4x4_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5003:    ggml_gemm_q8_0_4x4_q8_0_generic(n, s, bs, vx, vy, nr, nc);
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5006:void ggml_gemm_q8_0_4x8_q8_0(int                        n,
+ggml/src/ggml-cpu/arch/arm/repack.cpp:5155:    ggml_gemm_q8_0_4x8_q8_0_generic(n, s, bs, vx, vy, nr, nc);

@@ -1,0 +1,2138 @@
+{
+  "backend": "http://127.0.0.1:8281",
+  "llama_server": "http://127.0.0.1:8283",
+  "model": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+  "model_id": "tinyllama-q8",
+  "message": "hello",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Answer briefly and stay factual."
+    },
+    {
+      "role": "user",
+      "content": "Name one primary color."
+    }
+  ],
+  "render_mode": "tinyllama-marker",
+  "expected_prompt": "<|system|>\nAnswer briefly and stay factual.</s>\n<|user|>\nName one primary color.</s>\n<|assistant|>\n",
+  "expected_prompt_char_count": 99,
+  "reference_prompt_token_count": 38,
+  "reference_context": 512,
+  "prompt_tokens_match": true,
+  "generated_tokens_match": true,
+  "generated_text_match": true,
+  "first_generated_token_diff_index": -1,
+  "first_generated_token_logit_comparison": {
+    "backend_token_id": 6716,
+    "llama_token_id": 6716,
+    "token_ids_match": true,
+    "backend_margin_llama_minus_backend": 0,
+    "llama_margin_llama_minus_backend": 0,
+    "margin_disagreement": 0,
+    "backend_rows": [
+      {
+        "token_id": 6716,
+        "logit": 17.301743,
+        "probability": 0.4016999,
+        "rank": 1,
+        "selected": true,
+        "text": "One"
+      },
+      {
+        "token_id": 6716,
+        "logit": 17.301743,
+        "probability": 0.4016999,
+        "rank": 1,
+        "selected": true,
+        "text": "One"
+      }
+    ],
+    "llama_rows": [
+      {
+        "id": 6716,
+        "token": "One",
+        "bytes": [
+          79,
+          110,
+          101
+        ],
+        "logprob": -0.8827741742134094
+      },
+      {
+        "id": 6716,
+        "token": "One",
+        "bytes": [
+          79,
+          110,
+          101
+        ],
+        "logprob": -0.8827741742134094
+      }
+    ]
+  },
+  "first_generated_text_diff_index": -1,
+  "backend_prompt_tokens": [
+    1,
+    529,
+    29989,
+    5205,
+    29989,
+    29958,
+    13,
+    22550,
+    23359,
+    322,
+    7952,
+    2114,
+    950,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    1170,
+    697,
+    7601,
+    2927,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13
+  ],
+  "reference_prompt_tokens": [
+    1,
+    529,
+    29989,
+    5205,
+    29989,
+    29958,
+    13,
+    22550,
+    23359,
+    322,
+    7952,
+    2114,
+    950,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    1792,
+    29989,
+    29958,
+    13,
+    1170,
+    697,
+    7601,
+    2927,
+    29889,
+    2,
+    29871,
+    13,
+    29966,
+    29989,
+    465,
+    22137,
+    29989,
+    29958,
+    13
+  ],
+  "backend_generated_tokens": [
+    6716,
+    7601,
+    2927,
+    338,
+    2654
+  ],
+  "llama_generated_tokens": [
+    6716,
+    7601,
+    2927,
+    338,
+    2654
+  ],
+  "llama_top_logprobs": [
+    {
+      "id": 6716,
+      "token": "One",
+      "bytes": [
+        79,
+        110,
+        101
+      ],
+      "logprob": -0.8827741742134094
+    },
+    {
+      "id": 8241,
+      "token": "Yes",
+      "bytes": [
+        89,
+        101,
+        115
+      ],
+      "logprob": -1.1159380674362183
+    },
+    {
+      "id": 1576,
+      "token": "The",
+      "bytes": [
+        84,
+        104,
+        101
+      ],
+      "logprob": -2.532102346420288
+    },
+    {
+      "id": 26666,
+      "token": "Primary",
+      "bytes": [
+        80,
+        114,
+        105,
+        109,
+        97,
+        114,
+        121
+      ],
+      "logprob": -2.8236043453216553
+    },
+    {
+      "id": 29903,
+      "token": "S",
+      "bytes": [
+        83
+      ],
+      "logprob": -3.154499053955078
+    },
+    {
+      "id": 22550,
+      "token": "Answer",
+      "bytes": [
+        65,
+        110,
+        115,
+        119,
+        101,
+        114
+      ],
+      "logprob": -3.5540826320648193
+    },
+    {
+      "id": 29907,
+      "token": "C",
+      "bytes": [
+        67
+      ],
+      "logprob": -4.752608299255371
+    },
+    {
+      "id": 8439,
+      "token": "There",
+      "bytes": [
+        84,
+        104,
+        101,
+        114,
+        101
+      ],
+      "logprob": -5.396722793579102
+    },
+    {
+      "id": 5103,
+      "token": "Response",
+      "bytes": [
+        82,
+        101,
+        115,
+        112,
+        111,
+        110,
+        115,
+        101
+      ],
+      "logprob": -5.9385881423950195
+    },
+    {
+      "id": 9039,
+      "token": "Red",
+      "bytes": [
+        82,
+        101,
+        100
+      ],
+      "logprob": -6.114596366882324
+    },
+    {
+      "id": 7504,
+      "token": "Acc",
+      "bytes": [
+        65,
+        99,
+        99
+      ],
+      "logprob": -6.424541473388672
+    },
+    {
+      "id": 18213,
+      "token": "Prim",
+      "bytes": [
+        80,
+        114,
+        105,
+        109
+      ],
+      "logprob": -6.546387672424316
+    },
+    {
+      "id": 2525,
+      "token": "Un",
+      "bytes": [
+        85,
+        110
+      ],
+      "logprob": -6.662735939025879
+    },
+    {
+      "id": 2776,
+      "token": "Of",
+      "bytes": [
+        79,
+        102
+      ],
+      "logprob": -6.667756080627441
+    },
+    {
+      "id": 29909,
+      "token": "A",
+      "bytes": [
+        65
+      ],
+      "logprob": -6.720993995666504
+    },
+    {
+      "id": 29896,
+      "token": "1",
+      "bytes": [
+        49
+      ],
+      "logprob": -6.959245681762695
+    },
+    {
+      "id": 797,
+      "token": "In",
+      "bytes": [
+        73,
+        110
+      ],
+      "logprob": -6.971512794494629
+    },
+    {
+      "id": 29908,
+      "token": "\"",
+      "bytes": [
+        34
+      ],
+      "logprob": -7.06761360168457
+    },
+    {
+      "id": 16072,
+      "token": "primary",
+      "bytes": [
+        112,
+        114,
+        105,
+        109,
+        97,
+        114,
+        121
+      ],
+      "logprob": -7.10072135925293
+    },
+    {
+      "id": 29902,
+      "token": "I",
+      "bytes": [
+        73
+      ],
+      "logprob": -7.127910614013672
+    },
+    {
+      "id": 7601,
+      "token": " primary",
+      "bytes": [
+        32,
+        112,
+        114,
+        105,
+        109,
+        97,
+        114,
+        121
+      ],
+      "logprob": -0.0021496256813406944
+    },
+    {
+      "id": 310,
+      "token": " of",
+      "bytes": [
+        32,
+        111,
+        102
+      ],
+      "logprob": -6.469980239868164
+    },
+    {
+      "id": 1667,
+      "token": " main",
+      "bytes": [
+        32,
+        109,
+        97,
+        105,
+        110
+      ],
+      "logprob": -9.054999351501465
+    },
+    {
+      "id": 28267,
+      "token": " Primary",
+      "bytes": [
+        32,
+        80,
+        114,
+        105,
+        109,
+        97,
+        114,
+        121
+      ],
+      "logprob": -9.09177017211914
+    },
+    {
+      "id": 3619,
+      "token": " common",
+      "bytes": [
+        32,
+        99,
+        111,
+        109,
+        109,
+        111,
+        110
+      ],
+      "logprob": -9.905033111572266
+    },
+    {
+      "id": 1950,
+      "token": " possible",
+      "bytes": [
+        32,
+        112,
+        111,
+        115,
+        115,
+        105,
+        98,
+        108,
+        101
+      ],
+      "logprob": -10.708963394165039
+    },
+    {
+      "id": 1565,
+      "token": " true",
+      "bytes": [
+        32,
+        116,
+        114,
+        117,
+        101
+      ],
+      "logprob": -10.89395809173584
+    },
+    {
+      "id": 1342,
+      "token": " example",
+      "bytes": [
+        32,
+        101,
+        120,
+        97,
+        109,
+        112,
+        108,
+        101
+      ],
+      "logprob": -10.985490798950195
+    },
+    {
+      "id": 338,
+      "token": " is",
+      "bytes": [
+        32,
+        105,
+        115
+      ],
+      "logprob": -11.08129596710205
+    },
+    {
+      "id": 6019,
+      "token": " prime",
+      "bytes": [
+        32,
+        112,
+        114,
+        105,
+        109,
+        101
+      ],
+      "logprob": -11.124282836914062
+    },
+    {
+      "id": 2854,
+      "token": " valid",
+      "bytes": [
+        32,
+        118,
+        97,
+        108,
+        105,
+        100
+      ],
+      "logprob": -11.223379135131836
+    },
+    {
+      "id": 2560,
+      "token": " simple",
+      "bytes": [
+        32,
+        115,
+        105,
+        109,
+        112,
+        108,
+        101
+      ],
+      "logprob": -11.384515762329102
+    },
+    {
+      "id": 1532,
+      "token": " well",
+      "bytes": [
+        32,
+        119,
+        101,
+        108,
+        108
+      ],
+      "logprob": -11.536803245544434
+    },
+    {
+      "id": 15574,
+      "token": " commonly",
+      "bytes": [
+        32,
+        99,
+        111,
+        109,
+        109,
+        111,
+        110,
+        108,
+        121
+      ],
+      "logprob": -11.565898895263672
+    },
+    {
+      "id": 1903,
+      "token": " prim",
+      "bytes": [
+        32,
+        112,
+        114,
+        105,
+        109
+      ],
+      "logprob": -11.72883415222168
+    },
+    {
+      "id": 1959,
+      "token": " correct",
+      "bytes": [
+        32,
+        99,
+        111,
+        114,
+        114,
+        101,
+        99,
+        116
+      ],
+      "logprob": -11.808223724365234
+    },
+    {
+      "id": 8210,
+      "token": " appropriate",
+      "bytes": [
+        32,
+        97,
+        112,
+        112,
+        114,
+        111,
+        112,
+        114,
+        105,
+        97,
+        116,
+        101
+      ],
+      "logprob": -11.827986717224121
+    },
+    {
+      "id": 2927,
+      "token": " color",
+      "bytes": [
+        32,
+        99,
+        111,
+        108,
+        111,
+        114
+      ],
+      "logprob": -11.867098808288574
+    },
+    {
+      "id": 2821,
+      "token": " clear",
+      "bytes": [
+        32,
+        99,
+        108,
+        101,
+        97,
+        114
+      ],
+      "logprob": -11.882291793823242
+    },
+    {
+      "id": 19555,
+      "token": " prominent",
+      "bytes": [
+        32,
+        112,
+        114,
+        111,
+        109,
+        105,
+        110,
+        101,
+        110,
+        116
+      ],
+      "logprob": -12.002684593200684
+    },
+    {
+      "id": 2927,
+      "token": " color",
+      "bytes": [
+        32,
+        99,
+        111,
+        108,
+        111,
+        114
+      ],
+      "logprob": -0.0006768609746359289
+    },
+    {
+      "id": 313,
+      "token": " (",
+      "bytes": [
+        32,
+        40
+      ],
+      "logprob": -7.911992073059082
+    },
+    {
+      "id": 470,
+      "token": " or",
+      "bytes": [
+        32,
+        111,
+        114
+      ],
+      "logprob": -8.98913860321045
+    },
+    {
+      "id": 2780,
+      "token": "color",
+      "bytes": [
+        99,
+        111,
+        108,
+        111,
+        114
+      ],
+      "logprob": -9.063947677612305
+    },
+    {
+      "id": 11955,
+      "token": " colors",
+      "bytes": [
+        32,
+        99,
+        111,
+        108,
+        111,
+        114,
+        115
+      ],
+      "logprob": -10.260326385498047
+    },
+    {
+      "id": 12384,
+      "token": " colour",
+      "bytes": [
+        32,
+        99,
+        111,
+        108,
+        111,
+        117,
+        114
+      ],
+      "logprob": -11.450697898864746
+    },
+    {
+      "id": 28684,
+      "token": " colored",
+      "bytes": [
+        32,
+        99,
+        111,
+        108,
+        111,
+        114,
+        101,
+        100
+      ],
+      "logprob": -11.979894638061523
+    },
+    {
+      "id": 29892,
+      "token": ",",
+      "bytes": [
+        44
+      ],
+      "logprob": -12.090941429138184
+    },
+    {
+      "id": 9159,
+      "token": " Color",
+      "bytes": [
+        32,
+        67,
+        111,
+        108,
+        111,
+        114
+      ],
+      "logprob": -13.084949493408203
+    },
+    {
+      "id": 2654,
+      "token": " red",
+      "bytes": [
+        32,
+        114,
+        101,
+        100
+      ],
+      "logprob": -13.27535343170166
+    },
+    {
+      "id": 3306,
+      "token": "Color",
+      "bytes": [
+        67,
+        111,
+        108,
+        111,
+        114
+      ],
+      "logprob": -13.408184051513672
+    },
+    {
+      "id": 29914,
+      "token": "/",
+      "bytes": [
+        47
+      ],
+      "logprob": -13.940125465393066
+    },
+    {
+      "id": 322,
+      "token": " and",
+      "bytes": [
+        32,
+        97,
+        110,
+        100
+      ],
+      "logprob": -14.067893028259277
+    },
+    {
+      "id": 4852,
+      "token": " (\"",
+      "bytes": [
+        32,
+        40,
+        34
+      ],
+      "logprob": -14.10396957397461
+    },
+    {
+      "id": 5199,
+      "token": " human",
+      "bytes": [
+        32,
+        104,
+        117,
+        109,
+        97,
+        110
+      ],
+      "logprob": -14.130134582519531
+    },
+    {
+      "id": 784,
+      "token": " col",
+      "bytes": [
+        32,
+        99,
+        111,
+        108
+      ],
+      "logprob": -14.28225326538086
+    },
+    {
+      "id": 4163,
+      "token": " component",
+      "bytes": [
+        32,
+        99,
+        111,
+        109,
+        112,
+        111,
+        110,
+        101,
+        110,
+        116
+      ],
+      "logprob": -14.362211227416992
+    },
+    {
+      "id": 7254,
+      "token": " blue",
+      "bytes": [
+        32,
+        98,
+        108,
+        117,
+        101
+      ],
+      "logprob": -14.990681648254395
+    },
+    {
+      "id": 7773,
+      "token": " solid",
+      "bytes": [
+        32,
+        115,
+        111,
+        108,
+        105,
+        100
+      ],
+      "logprob": -15.149782180786133
+    },
+    {
+      "id": 376,
+      "token": " \"",
+      "bytes": [
+        32,
+        34
+      ],
+      "logprob": -15.38643741607666
+    },
+    {
+      "id": 338,
+      "token": " is",
+      "bytes": [
+        32,
+        105,
+        115
+      ],
+      "logprob": -0.040137603878974915
+    },
+    {
+      "id": 29892,
+      "token": ",",
+      "bytes": [
+        44
+      ],
+      "logprob": -4.498365879058838
+    },
+    {
+      "id": 297,
+      "token": " in",
+      "bytes": [
+        32,
+        105,
+        110
+      ],
+      "logprob": -4.704921245574951
+    },
+    {
+      "id": 313,
+      "token": " (",
+      "bytes": [
+        32,
+        40
+      ],
+      "logprob": -5.084635257720947
+    },
+    {
+      "id": 393,
+      "token": " that",
+      "bytes": [
+        32,
+        116,
+        104,
+        97,
+        116
+      ],
+      "logprob": -5.36208963394165
+    },
+    {
+      "id": 470,
+      "token": " or",
+      "bytes": [
+        32,
+        111,
+        114
+      ],
+      "logprob": -6.315357685089111
+    },
+    {
+      "id": 14637,
+      "token": " refers",
+      "bytes": [
+        32,
+        114,
+        101,
+        102,
+        101,
+        114,
+        115
+      ],
+      "logprob": -6.709645748138428
+    },
+    {
+      "id": 723,
+      "token": " would",
+      "bytes": [
+        32,
+        119,
+        111,
+        117,
+        108,
+        100
+      ],
+      "logprob": -6.797272205352783
+    },
+    {
+      "id": 1304,
+      "token": " used",
+      "bytes": [
+        32,
+        117,
+        115,
+        101,
+        100
+      ],
+      "logprob": -6.9154887199401855
+    },
+    {
+      "id": 15574,
+      "token": " commonly",
+      "bytes": [
+        32,
+        99,
+        111,
+        109,
+        109,
+        111,
+        110,
+        108,
+        121
+      ],
+      "logprob": -7.694057941436768
+    },
+    {
+      "id": 310,
+      "token": " of",
+      "bytes": [
+        32,
+        111,
+        102
+      ],
+      "logprob": -7.9127631187438965
+    },
+    {
+      "id": 363,
+      "token": " for",
+      "bytes": [
+        32,
+        102,
+        111,
+        114
+      ],
+      "logprob": -7.976449489593506
+    },
+    {
+      "id": 12992,
+      "token": " referred",
+      "bytes": [
+        32,
+        114,
+        101,
+        102,
+        101,
+        114,
+        114,
+        101,
+        100
+      ],
+      "logprob": -8.6008882522583
+    },
+    {
+      "id": 2998,
+      "token": " known",
+      "bytes": [
+        32,
+        107,
+        110,
+        111,
+        119,
+        110
+      ],
+      "logprob": -9.019426345825195
+    },
+    {
+      "id": 607,
+      "token": " which",
+      "bytes": [
+        32,
+        119,
+        104,
+        105,
+        99,
+        104
+      ],
+      "logprob": -9.098374366760254
+    },
+    {
+      "id": 1476,
+      "token": " found",
+      "bytes": [
+        32,
+        102,
+        111,
+        117,
+        110,
+        100
+      ],
+      "logprob": -9.342886924743652
+    },
+    {
+      "id": 29914,
+      "token": "/",
+      "bytes": [
+        47
+      ],
+      "logprob": -9.588533401489258
+    },
+    {
+      "id": 5034,
+      "token": " according",
+      "bytes": [
+        32,
+        97,
+        99,
+        99,
+        111,
+        114,
+        100,
+        105,
+        110,
+        103
+      ],
+      "logprob": -9.59122371673584
+    },
+    {
+      "id": 508,
+      "token": " can",
+      "bytes": [
+        32,
+        99,
+        97,
+        110
+      ],
+      "logprob": -9.793508529663086
+    },
+    {
+      "id": 29898,
+      "token": "(",
+      "bytes": [
+        40
+      ],
+      "logprob": -9.955668449401855
+    },
+    {
+      "id": 2654,
+      "token": " red",
+      "bytes": [
+        32,
+        114,
+        101,
+        100
+      ],
+      "logprob": -0.1747598797082901
+    },
+    {
+      "id": 7254,
+      "token": " blue",
+      "bytes": [
+        32,
+        98,
+        108,
+        117,
+        101
+      ],
+      "logprob": -2.3816099166870117
+    },
+    {
+      "id": 7933,
+      "token": " green",
+      "bytes": [
+        32,
+        103,
+        114,
+        101,
+        101,
+        110
+      ],
+      "logprob": -4.119305610656738
+    },
+    {
+      "id": 4367,
+      "token": " Red",
+      "bytes": [
+        32,
+        82,
+        101,
+        100
+      ],
+      "logprob": -4.663244247436523
+    },
+    {
+      "id": 2000,
+      "token": " called",
+      "bytes": [
+        32,
+        99,
+        97,
+        108,
+        108,
+        101,
+        100
+      ],
+      "logprob": -4.687326431274414
+    },
+    {
+      "id": 278,
+      "token": " the",
+      "bytes": [
+        32,
+        116,
+        104,
+        101
+      ],
+      "logprob": -4.739315986633301
+    },
+    {
+      "id": 5491,
+      "token": " usually",
+      "bytes": [
+        32,
+        117,
+        115,
+        117,
+        97,
+        108,
+        108,
+        121
+      ],
+      "logprob": -5.503866195678711
+    },
+    {
+      "id": 13328,
+      "token": " yellow",
+      "bytes": [
+        32,
+        121,
+        101,
+        108,
+        108,
+        111,
+        119
+      ],
+      "logprob": -6.073063850402832
+    },
+    {
+      "id": 4628,
+      "token": " black",
+      "bytes": [
+        32,
+        98,
+        108,
+        97,
+        99,
+        107
+      ],
+      "logprob": -6.229588508605957
+    },
+    {
+      "id": 10924,
+      "token": " Blue",
+      "bytes": [
+        32,
+        66,
+        108,
+        117,
+        101
+      ],
+      "logprob": -6.241120338439941
+    },
+    {
+      "id": 12234,
+      "token": " typically",
+      "bytes": [
+        32,
+        116,
+        121,
+        112,
+        105,
+        99,
+        97,
+        108,
+        108,
+        121
+      ],
+      "logprob": -6.448910713195801
+    },
+    {
+      "id": 4796,
+      "token": " white",
+      "bytes": [
+        32,
+        119,
+        104,
+        105,
+        116,
+        101
+      ],
+      "logprob": -6.745258331298828
+    },
+    {
+      "id": 263,
+      "token": " a",
+      "bytes": [
+        32,
+        97
+      ],
+      "logprob": -6.856690406799316
+    },
+    {
+      "id": 4049,
+      "token": " often",
+      "bytes": [
+        32,
+        111,
+        102,
+        116,
+        101,
+        110
+      ],
+      "logprob": -6.879746437072754
+    },
+    {
+      "id": 376,
+      "token": " \"",
+      "bytes": [
+        32,
+        34
+      ],
+      "logprob": -6.98792839050293
+    },
+    {
+      "id": 2998,
+      "token": " known",
+      "bytes": [
+        32,
+        107,
+        110,
+        111,
+        119,
+        110
+      ],
+      "logprob": -7.289462089538574
+    },
+    {
+      "id": 24841,
+      "token": " orange",
+      "bytes": [
+        32,
+        111,
+        114,
+        97,
+        110,
+        103,
+        101
+      ],
+      "logprob": -7.446249961853027
+    },
+    {
+      "id": 2845,
+      "token": " either",
+      "bytes": [
+        32,
+        101,
+        105,
+        116,
+        104,
+        101,
+        114
+      ],
+      "logprob": -7.47187614440918
+    },
+    {
+      "id": 2927,
+      "token": " color",
+      "bytes": [
+        32,
+        99,
+        111,
+        108,
+        111,
+        114
+      ],
+      "logprob": -8.009269714355469
+    },
+    {
+      "id": 2337,
+      "token": " always",
+      "bytes": [
+        32,
+        97,
+        108,
+        119,
+        97,
+        121,
+        115
+      ],
+      "logprob": -8.03368091583252
+    }
+  ],
+  "backend_diagnostic_token_ids": [
+    6716,
+    7601,
+    2927,
+    338,
+    2654,
+    8241,
+    1576,
+    26666,
+    29903,
+    22550,
+    29907,
+    8439,
+    5103,
+    9039,
+    7504,
+    18213
+  ],
+  "backend_text": "One primary color is red",
+  "llama_text": "One primary color is red",
+  "backend_usage": {
+    "prompt_tokens": 38,
+    "completion_tokens": 5,
+    "total_tokens": 43
+  },
+  "llama_usage": {
+    "cache_n": 0,
+    "prompt_n": 38,
+    "prompt_ms": 94.009,
+    "prompt_per_token_ms": 2.473921052631579,
+    "prompt_per_second": 404.21661755789336,
+    "predicted_n": 5,
+    "predicted_ms": 65.725,
+    "predicted_per_token_ms": 13.145,
+    "predicted_per_second": 76.07455306200077
+  },
+  "backendinference": {
+    "prompt_token_ids": [
+      1,
+      529,
+      29989,
+      5205,
+      29989,
+      29958,
+      13,
+      22550,
+      23359,
+      322,
+      7952,
+      2114,
+      950,
+      29889,
+      2,
+      29871,
+      13,
+      29966,
+      29989,
+      1792,
+      29989,
+      29958,
+      13,
+      1170,
+      697,
+      7601,
+      2927,
+      29889,
+      2,
+      29871,
+      13,
+      29966,
+      29989,
+      465,
+      22137,
+      29989,
+      29958,
+      13
+    ],
+    "generated_token_ids": [
+      6716,
+      7601,
+      2927,
+      338,
+      2654
+    ],
+    "dense_metadata": {
+      "embedding_length": 2048,
+      "attention_head_count": 32,
+      "attention_head_count_kv": 4,
+      "head_dim": 64,
+      "rope_dimension_count": 64,
+      "rope_freq_base": 10000,
+      "rope_pairing": "adjacent_even_odd",
+      "rope_direction": "forward",
+      "rope_position_mode": "zero_based",
+      "gqa_head_mapping": "grouped",
+      "attention_score_scale": "head_dim",
+      "linear_accumulation": "f32",
+      "ffn_gate_up_order": "gate_up",
+      "rms_norm_epsilon": 0.00001,
+      "rms_norm_effective_epsilon": 0.00001,
+      "square_linear_diagnostic_layout": "transposed",
+      "rectangular_linear_diagnostic_layout": "auto",
+      "token_embedding_shape": [
+        32000,
+        2048
+      ],
+      "output_shape": [
+        2048,
+        32000
+      ],
+      "output_is_tied_embedding": false,
+      "output_projection_layout": "input_output",
+      "output_projection_diagnostic_layout": "token_major",
+      "zero_attention_delta": "none",
+      "zero_ffn_delta": "none",
+      "projection_orientations": {
+        "attention_q": {
+          "shape": [
+            2048,
+            2048
+          ],
+          "input_width": 2048,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "attention_k": {
+          "shape": [
+            2048,
+            256
+          ],
+          "input_width": 2048,
+          "output_width": 256,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_v": {
+          "shape": [
+            2048,
+            256
+          ],
+          "input_width": 2048,
+          "output_width": 256,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "attention_output": {
+          "shape": [
+            2048,
+            2048
+          ],
+          "input_width": 2048,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "rhs_transposed",
+          "square_diagnostic_applies": true
+        },
+        "ffn_gate": {
+          "shape": [
+            2048,
+            5632
+          ],
+          "input_width": 2048,
+          "output_width": 5632,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_up": {
+          "shape": [
+            2048,
+            5632
+          ],
+          "input_width": 2048,
+          "output_width": 5632,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        },
+        "ffn_down": {
+          "shape": [
+            5632,
+            2048
+          ],
+          "input_width": 5632,
+          "output_width": 2048,
+          "descriptor_layout": "input_output",
+          "runtime_interpretation": "descriptor",
+          "square_diagnostic_applies": false
+        }
+      }
+    },
+    "top_logits": [
+      {
+        "token_id": 6716,
+        "logit": 17.301743,
+        "probability": 0.4016999,
+        "rank": 1,
+        "selected": true,
+        "text": "One"
+      },
+      {
+        "token_id": 8241,
+        "logit": 17.038631,
+        "probability": 0.30876923,
+        "rank": 2,
+        "selected": true,
+        "text": "Yes"
+      },
+      {
+        "token_id": 1576,
+        "logit": 15.885703,
+        "probability": 0.09748181,
+        "rank": 3,
+        "selected": true,
+        "text": "The"
+      },
+      {
+        "token_id": 26666,
+        "logit": 15.615359,
+        "probability": 0.07439004,
+        "rank": 4,
+        "selected": true,
+        "text": "Primary"
+      },
+      {
+        "token_id": 29903,
+        "logit": 14.978445,
+        "probability": 0.03934653,
+        "rank": 5,
+        "selected": true,
+        "text": "S"
+      },
+      {
+        "token_id": 22550,
+        "logit": 14.603713,
+        "probability": 0.027049696,
+        "rank": 6,
+        "selected": true,
+        "text": "Answer"
+      },
+      {
+        "token_id": 29907,
+        "logit": 13.430258,
+        "probability": 0.008366373,
+        "rank": 7,
+        "selected": true,
+        "text": "C"
+      },
+      {
+        "token_id": 8439,
+        "logit": 12.656379,
+        "probability": 0.003858743,
+        "rank": 8,
+        "selected": true,
+        "text": "There"
+      },
+      {
+        "token_id": 7601,
+        "logit": 10.783733,
+        "probability": 0.00059315236,
+        "rank": 27,
+        "selected": true,
+        "text": " primary"
+      },
+      {
+        "token_id": 2927,
+        "logit": 2.8921707,
+        "probability": 2.2177075e-7,
+        "rank": 1351,
+        "selected": true,
+        "text": " color"
+      },
+      {
+        "token_id": 338,
+        "logit": -3.406949,
+        "probability": 4.075976e-10,
+        "rank": 23995,
+        "selected": true,
+        "text": " is"
+      },
+      {
+        "token_id": 2654,
+        "logit": 4.133509,
+        "probability": 7.673799e-7,
+        "rank": 759,
+        "selected": true,
+        "text": " red"
+      },
+      {
+        "token_id": 5103,
+        "logit": 12.245462,
+        "probability": 0.00255851,
+        "rank": 10,
+        "selected": true,
+        "text": "Response"
+      },
+      {
+        "token_id": 9039,
+        "logit": 12.488395,
+        "probability": 0.0032620553,
+        "rank": 9,
+        "selected": true,
+        "text": "Red"
+      },
+      {
+        "token_id": 7504,
+        "logit": 11.85563,
+        "probability": 0.0017325472,
+        "rank": 12,
+        "selected": true,
+        "text": "Acc"
+      },
+      {
+        "token_id": 18213,
+        "logit": 11.860137,
+        "probability": 0.0017403734,
+        "rank": 11,
+        "selected": true,
+        "text": "Prim"
+      }
+    ],
+    "output_projection": [],
+    "timings_ms": {
+      "tokenize": 24,
+      "weight_load": 0,
+      "weight_cache_hit": false,
+      "prompt_cache_hit": false,
+      "session_create": 0,
+      "generate": 10644,
+      "generation": {
+        "forward_total": 10642.643,
+        "embedding": 0.232,
+        "layers_total": 10559.468,
+        "final_norm": 0.019,
+        "logits": 82.851,
+        "sample": 0.292
+      },
+      "layers": [
+        {
+          "layer_index": 0,
+          "total": 484.147,
+          "attention_norm": 0.109,
+          "attention_q": 46.512,
+          "attention_k": 6.147,
+          "attention_v": 5.942,
+          "attention_rope": 0.732,
+          "kv_cache_write": 0.977,
+          "attention_context": 1.406,
+          "attention_output": 49.736,
+          "attention_residual": 0.049,
+          "ffn_norm": 0.102,
+          "ffn_gate": 123.816,
+          "ffn_up": 123.154,
+          "ffn_activation": 0.558,
+          "ffn_down": 124.132,
+          "ffn_residual": 0.049
+        },
+        {
+          "layer_index": 1,
+          "total": 476.527,
+          "attention_norm": 0.103,
+          "attention_q": 45.837,
+          "attention_k": 6.214,
+          "attention_v": 5.868,
+          "attention_rope": 0.68,
+          "kv_cache_write": 0.128,
+          "attention_context": 1.38,
+          "attention_output": 45.213,
+          "attention_residual": 0.045,
+          "ffn_norm": 0.096,
+          "ffn_gate": 122.875,
+          "ffn_up": 123.17,
+          "ffn_activation": 0.574,
+          "ffn_down": 123.601,
+          "ffn_residual": 0.051
+        },
+        {
+          "layer_index": 2,
+          "total": 481.704,
+          "attention_norm": 0.114,
+          "attention_q": 45.912,
+          "attention_k": 6.261,
+          "attention_v": 5.944,
+          "attention_rope": 0.714,
+          "kv_cache_write": 0.128,
+          "attention_context": 1.412,
+          "attention_output": 45.531,
+          "attention_residual": 0.046,
+          "ffn_norm": 0.094,
+          "ffn_gate": 124.314,
+          "ffn_up": 124.763,
+          "ffn_activation": 0.566,
+          "ffn_down": 125.156,
+          "ffn_residual": 0.062
+        },
+        {
+          "layer_index": 3,
+          "total": 481.042,
+          "attention_norm": 0.114,
+          "attention_q": 45.716,
+          "attention_k": 6.288,
+          "attention_v": 5.988,
+          "attention_rope": 0.707,
+          "kv_cache_write": 0.128,
+          "attention_context": 1.442,
+          "attention_output": 45.289,
+          "attention_residual": 0.044,
+          "ffn_norm": 0.092,
+          "ffn_gate": 124.212,
+          "ffn_up": 124.405,
+          "ffn_activation": 0.582,
+          "ffn_down": 125.295,
+          "ffn_residual": 0.057
+        },
+        {
+          "layer_index": 4,
+          "total": 480.048,
+          "attention_norm": 0.133,
+          "attention_q": 45.903,
+          "attention_k": 6.216,
+          "attention_v": 6.029,
+          "attention_rope": 0.699,
+          "kv_cache_write": 0.133,
+          "attention_context": 1.417,
+          "attention_output": 46.108,
+          "attention_residual": 0.044,
+          "ffn_norm": 0.104,
+          "ffn_gate": 124.113,
+          "ffn_up": 123.545,
+          "ffn_activation": 0.563,
+          "ffn_down": 124.295,
+          "ffn_residual": 0.047
+        },
+        {
+          "layer_index": 5,
+          "total": 476.509,
+          "attention_norm": 0.114,
+          "attention_q": 45.721,
+          "attention_k": 6.189,
+          "attention_v": 5.891,
+          "attention_rope": 0.699,
+          "kv_cache_write": 0.126,
+          "attention_context": 1.421,
+          "attention_output": 45.566,
+          "attention_residual": 0.043,
+          "ffn_norm": 0.094,
+          "ffn_gate": 122.666,
+          "ffn_up": 122.736,
+          "ffn_activation": 0.574,
+          "ffn_down": 123.951,
+          "ffn_residual": 0.045
+        },
+        {
+          "layer_index": 6,
+          "total": 478.883,
+          "attention_norm": 0.109,
+          "attention_q": 45.432,
+          "attention_k": 6.158,
+          "attention_v": 5.917,
+          "attention_rope": 0.684,
+          "kv_cache_write": 0.137,
+          "attention_context": 1.425,
+          "attention_output": 45.205,
+          "attention_residual": 0.044,
+          "ffn_norm": 0.098,
+          "ffn_gate": 123.529,
+          "ffn_up": 123.929,
+          "ffn_activation": 0.575,
+          "ffn_down": 124.917,
+          "ffn_residual": 0.045
+        },
+        {
+          "layer_index": 7,
+          "total": 480.831,
+          "attention_norm": 0.114,
+          "attention_q": 45.534,
+          "attention_k": 6.173,
+          "attention_v": 5.941,
+          "attention_rope": 0.689,
+          "kv_cache_write": 0.127,
+          "attention_context": 1.398,
+          "attention_output": 45.524,
+          "attention_residual": 0.042,
+          "ffn_norm": 0.087,
+          "ffn_gate": 123.979,
+          "ffn_up": 124.466,
+          "ffn_activation": 0.565,
+          "ffn_down": 125.465,
+          "ffn_residual": 0.046
+        },
+        {
+          "layer_index": 8,
+          "total": 483.174,
+          "attention_norm": 0.116,
+          "attention_q": 46.402,
+          "attention_k": 6.243,
+          "attention_v": 5.941,
+          "attention_rope": 0.694,
+          "kv_cache_write": 0.127,
+          "attention_context": 1.41,
+          "attention_output": 45.657,
+          "attention_residual": 0.045,
+          "ffn_norm": 0.094,
+          "ffn_gate": 124.49,
+          "ffn_up": 125.128,
+          "ffn_activation": 0.573,
+          "ffn_down": 125.531,
+          "ffn_residual": 0.046
+        },
+        {
+          "layer_index": 9,
+          "total": 478.724,
+          "attention_norm": 0.101,
+          "attention_q": 46.028,
+          "attention_k": 6.264,
+          "attention_v": 5.97,
+          "attention_rope": 0.699,
+          "kv_cache_write": 0.125,
+          "attention_context": 1.417,
+          "attention_output": 45.479,
+          "attention_residual": 0.042,
+          "ffn_norm": 0.09,
+          "ffn_gate": 124.07,
+          "ffn_up": 123.361,
+          "ffn_activation": 0.561,
+          "ffn_down": 123.788,
+          "ffn_residual": 0.046
+        },
+        {
+          "layer_index": 10,
+          "total": 478.824,
+          "attention_norm": 0.122,
+          "attention_q": 45.599,
+          "attention_k": 6.251,
+          "attention_v": 5.964,
+          "attention_rope": 0.696,
+          "kv_cache_write": 0.126,
+          "attention_context": 1.461,
+          "attention_output": 45.344,
+          "attention_residual": 0.042,
+          "ffn_norm": 0.088,
+          "ffn_gate": 123.254,
+          "ffn_up": 123.592,
+          "ffn_activation": 0.591,
+          "ffn_down": 124.946,
+          "ffn_residual": 0.049
+        },
+        {
+          "layer_index": 11,
+          "total": 481.207,
+          "attention_norm": 0.127,
+          "attention_q": 45.917,
+          "attention_k": 6.26,
+          "attention_v": 5.909,
+          "attention_rope": 0.701,
+          "kv_cache_write": 0.127,
+          "attention_context": 1.43,
+          "attention_output": 46.047,
+          "attention_residual": 0.045,
+          "ffn_norm": 0.095,
+          "ffn_gate": 123.963,
+          "ffn_up": 124.298,
+          "ffn_activation": 0.591,
+          "ffn_down": 124.97,
+          "ffn_residual": 0.049
+        },
+        {
+          "layer_index": 12,
+          "total": 482.672,
+          "attention_norm": 0.118,
+          "attention_q": 46.171,
+          "attention_k": 6.185,
+          "attention_v": 5.942,
+          "attention_rope": 0.677,
+          "kv_cache_write": 0.124,
+          "attention_context": 1.399,
+          "attention_output": 46.091,
+          "attention_residual": 0.045,
+          "ffn_norm": 0.09,
+          "ffn_gate": 123.771,
+          "ffn_up": 124.828,
+          "ffn_activation": 0.587,
+          "ffn_down": 125.905,
+          "ffn_residual": 0.047
+        },
+        {
+          "layer_index": 13,
+          "total": 479.207,
+          "attention_norm": 0.113,
+          "attention_q": 45.919,
+          "attention_k": 6.33,
+          "attention_v": 5.96,
+          "attention_rope": 0.686,
+          "kv_cache_write": 0.126,
+          "attention_context": 1.432,
+          "attention_output": 45.802,
+          "attention_residual": 0.045,
+          "ffn_norm": 0.092,
+          "ffn_gate": 123.748,
+          "ffn_up": 123.477,
+          "ffn_activation": 0.585,
+          "ffn_down": 124.167,
+          "ffn_residual": 0.045
+        },
+        {
+          "layer_index": 14,
+          "total": 475.693,
+          "attention_norm": 0.121,
+          "attention_q": 45.471,
+          "attention_k": 6.073,
+          "attention_v": 5.909,
+          "attention_rope": 0.688,
+          "kv_cache_write": 0.129,
+          "attention_context": 1.389,
+          "attention_output": 45.219,
+          "attention_residual": 0.042,
+          "ffn_norm": 0.088,
+          "ffn_gate": 122.666,
+          "ffn_up": 122.718,
+          "ffn_activation": 0.57,
+          "ffn_down": 123.893,
+          "ffn_residual": 0.046
+        },
+        {
+          "layer_index": 15,
+          "total": 479.466,
+          "attention_norm": 0.128,
+          "attention_q": 45.805,
+          "attention_k": 6.128,
+          "attention_v": 5.906,
+          "attention_rope": 0.688,
+          "kv_cache_write": 0.127,
+          "attention_context": 1.424,
+          "attention_output": 45.477,
+          "attention_residual": 0.046,
+          "ffn_norm": 0.091,
+          "ffn_gate": 123.562,
+          "ffn_up": 123.83,
+          "ffn_activation": 0.563,
+          "ffn_down": 124.979,
+          "ffn_residual": 0.05
+        },
+        {
+          "layer_index": 16,
+          "total": 480.525,
+          "attention_norm": 0.121,
+          "attention_q": 45.89,
+          "attention_k": 6.134,
+          "attention_v": 5.938,
+          "attention_rope": 0.669,
+          "kv_cache_write": 0.129,
+          "attention_context": 1.412,
+          "attention_output": 45.398,
+          "attention_residual": 0.043,
+          "ffn_norm": 0.098,
+          "ffn_gate": 125.005,
+          "ffn_up": 123.459,
+          "ffn_activation": 0.595,
+          "ffn_down": 124.901,
+          "ffn_residual": 0.047
+        },
+        {
+          "layer_index": 17,
+          "total": 480.379,
+          "attention_norm": 0.115,
+          "attention_q": 46.247,
+          "attention_k": 6.231,
+          "attention_v": 5.936,
+          "attention_rope": 0.693,
+          "kv_cache_write": 0.128,
+          "attention_context": 1.427,
+          "attention_output": 45.749,
+          "attention_residual": 0.045,
+          "ffn_norm": 0.096,
+          "ffn_gate": 124.451,
+          "ffn_up": 123.707,
+          "ffn_activation": 0.591,
+          "ffn_down": 124.229,
+          "ffn_residual": 0.053
+        },
+        {
+          "layer_index": 18,
+          "total": 476.055,
+          "attention_norm": 0.12,
+          "attention_q": 45.801,
+          "attention_k": 6.157,
+          "attention_v": 5.965,
+          "attention_rope": 0.686,
+          "kv_cache_write": 0.125,
+          "attention_context": 1.43,
+          "attention_output": 45.235,
+          "attention_residual": 0.059,
+          "ffn_norm": 0.09,
+          "ffn_gate": 122.69,
+          "ffn_up": 122.522,
+          "ffn_activation": 0.585,
+          "ffn_down": 123.828,
+          "ffn_residual": 0.063
+        },
+        {
+          "layer_index": 19,
+          "total": 478.061,
+          "attention_norm": 0.115,
+          "attention_q": 45.745,
+          "attention_k": 6.126,
+          "attention_v": 5.812,
+          "attention_rope": 0.677,
+          "kv_cache_write": 0.126,
+          "attention_context": 1.403,
+          "attention_output": 45.487,
+          "attention_residual": 0.042,
+          "ffn_norm": 0.091,
+          "ffn_gate": 123.03,
+          "ffn_up": 123.185,
+          "ffn_activation": 0.563,
+          "ffn_down": 124.918,
+          "ffn_residual": 0.052
+        },
+        {
+          "layer_index": 20,
+          "total": 479.225,
+          "attention_norm": 0.128,
+          "attention_q": 46.04,
+          "attention_k": 6.189,
+          "attention_v": 6.014,
+          "attention_rope": 0.698,
+          "kv_cache_write": 0.139,
+          "attention_context": 1.419,
+          "attention_output": 45.639,
+          "attention_residual": 0.046,
+          "ffn_norm": 0.097,
+          "ffn_gate": 123.458,
+          "ffn_up": 123.356,
+          "ffn_activation": 0.567,
+          "ffn_down": 124.695,
+          "ffn_residual": 0.054
+        },
+        {
+          "layer_index": 21,
+          "total": 481.183,
+          "attention_norm": 0.109,
+          "attention_q": 45.711,
+          "attention_k": 6.239,
+          "attention_v": 5.935,
+          "attention_rope": 0.678,
+          "kv_cache_write": 0.131,
+          "attention_context": 1.419,
+          "attention_output": 45.67,
+          "attention_residual": 0.047,
+          "ffn_norm": 0.094,
+          "ffn_gate": 124.399,
+          "ffn_up": 124.456,
+          "ffn_activation": 0.558,
+          "ffn_down": 125.009,
+          "ffn_residual": 0.051
+        }
+      ]
+    }
+  }
+}

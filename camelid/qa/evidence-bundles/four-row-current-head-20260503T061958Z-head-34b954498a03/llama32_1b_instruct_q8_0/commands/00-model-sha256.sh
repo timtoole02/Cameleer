@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROW_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+BUNDLE_ROOT="$(cd -- "$ROW_ROOT/.." && pwd)"
+REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+export ROW_ROOT BUNDLE_ROOT REPO_ROOT
+set -euo pipefail
+cd "$REPO_ROOT"
+MODEL="${CAMELID_MODEL_DIR:?set CAMELID_MODEL_DIR to the GGUF directory}/Llama-3.2-1B-Instruct-Q8_0.gguf"
+mkdir -p "$ROW_ROOT/evidence"
+if command -v sha256sum >/dev/null 2>&1; then
+  sha256sum "$MODEL" | tee "$ROW_ROOT/evidence/model.sha256.txt"
+elif command -v shasum >/dev/null 2>&1; then
+  shasum -a 256 "$MODEL" | tee "$ROW_ROOT/evidence/model.sha256.txt"
+else
+  echo "sha256 tool unavailable" >&2
+  exit 1
+fi

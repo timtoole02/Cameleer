@@ -1,0 +1,259 @@
+{
+  "engine": "backendinference",
+  "gguf_metadata": true,
+  "tensor_loading": true,
+  "tokenization": true,
+  "inference": true,
+  "streaming": true,
+  "support_contract": {
+    "current_gate": "TinyLlama Q8_0 current gate; exact Llama 3.2 1B/3B and Llama 3 8B Q8_0 rows are supported for exact-row smoke; broader/full support still requires normalized current-head bundles, and the passing 8B broader 50-token, 512-context, compact chat-template-shapes, and lazy-Q8 hot-path reruns are bounded packs/measurements only",
+    "support_policy": "A model, tokenizer, quantization, API feature, or context length is supported only after tests, docs, and real-model evidence exist for that lane.",
+    "unsupported_policy": "Unsupported combinations should return typed errors instead of silently falling back to best-effort behavior."
+  },
+  "supported_quantization": [
+    {
+      "id": "F32",
+      "status": "supported",
+      "notes": "reference dense tensor path"
+    },
+    {
+      "id": "F16",
+      "status": "supported",
+      "notes": "decoded into the reference CPU tensor path"
+    },
+    {
+      "id": "BF16",
+      "status": "supported",
+      "notes": "decoded into the reference CPU tensor path"
+    },
+    {
+      "id": "Q8_0",
+      "status": "supported_current_gate",
+      "notes": "TinyLlama remains the current support gate; exact Llama 3.2 1B/3B and Llama 3 8B Q8_0 rows are supported for exact-row smoke only, while broader family support and full-support normalization still require broader context/template coverage, performance, and current-head durable-bundle evidence"
+    }
+  ],
+  "planned_quantization": [
+    {
+      "id": "Q4_0/Q5_0",
+      "status": "planned",
+      "notes": "legacy smaller GGUF quantization lane"
+    },
+    {
+      "id": "Q4_K_M/Q5_K_M",
+      "status": "planned",
+      "notes": "K-quant lane after simpler quant validation"
+    }
+  ],
+  "supported_model_families": [
+    {
+      "id": "llama_spm_decoder",
+      "status": "supported_current_gate",
+      "notes": "LLaMA-style decoder path validated on TinyLlama Q8_0 gate"
+    },
+    {
+      "id": "llama_bpe_decoder_exact_1b_3b_8b_q8_0",
+      "status": "supported_exact_row_smoke_lanes",
+      "notes": "exact Llama 3.2 1B/3B and Llama 3 8B Instruct Q8_0 have row-specific smoke support; the 8B broader 50-token, first 512-context, compact chat-template-shapes, and retained-block lazy-Q8 hot-path passes are bounded pack/measurement evidence only; broader Llama-family/full support still waits on normalized current-head bundles, broader context/template coverage, and production performance evidence"
+    }
+  ],
+  "planned_model_families": [
+    {
+      "id": "larger_llama_instruct",
+      "status": "planned",
+      "notes": "broader LLaMA-family instruct support after row-specific parity, API, WebUI, memory/perf, and portability evidence"
+    },
+    {
+      "id": "mistral",
+      "status": "planned",
+      "notes": "next likely GGUF architecture family to evaluate"
+    },
+    {
+      "id": "qwen_gemma_phi_falcon_mamba",
+      "status": "future",
+      "notes": "tracked as future lanes, not implied support"
+    }
+  ],
+  "model_compatibility": [
+    {
+      "id": "tinyllama_1_1b_chat_q8_0",
+      "family": "llama_spm_decoder",
+      "quantization": "Q8_0",
+      "status": "supported_current_gate",
+      "metadata_parses": "validated",
+      "tokenizer_works": "validated",
+      "tensors_load": "validated",
+      "generation_runs": "validated",
+      "parity_audited": "validated",
+      "performance_measured": "measured",
+      "frontend_load_path_verified": "validated",
+      "tested_context": "short_prompt_50_token_gate",
+      "chat_template_renderer": "tinyllama-marker",
+      "chat_template_shape_pack": "ready_to_run",
+      "chat_template_shape_pack_id": "tinyllama-chat-template-shapes-v1",
+      "bounded_context_512_pack": "ready_to_run",
+      "bounded_context_512_pack_id": "tinyllama-context-512-smoke-v1",
+      "bounded_context_window": 512,
+      "evidence": "five-prompt TinyLlama Q8_0 parity gate plus current performance artifacts recorded in STATUS.md",
+      "next_step": "extend to larger contexts and additional LLaMA-family/quant targets before broadening support claims"
+    },
+    {
+      "id": "llama32_1b_instruct_q8_0",
+      "family": "llama_bpe_decoder",
+      "quantization": "Q8_0",
+      "status": "supported_exact_row_smoke",
+      "metadata_parses": "validated",
+      "tokenizer_works": "validated_for_compact_and_prompt_pack",
+      "tensors_load": "validated",
+      "generation_runs": "api_completion_and_chat_smoke_validated",
+      "parity_audited": "compact_50_token_plus_prompt_pack_match",
+      "performance_measured": "bounded_smoke_runs_only",
+      "frontend_load_path_verified": "validated",
+      "tested_context": "short_api_webui_smoke",
+      "chat_template_renderer": "compact",
+      "chat_template_shape_pack": "ready_to_run_on_validation_host",
+      "chat_template_shape_pack_id": "llama3-chat-template-shapes-v1",
+      "bounded_context_512_pack": "ready_to_run_on_validation_host",
+      "bounded_context_512_pack_id": "llama3-context-512-smoke-v1",
+      "bounded_context_window": 512,
+      "evidence": "the exact bartowski Llama-3.2-1B-Instruct-Q8_0 GGUF has exact-row load, completion, chat-completion, frontend-smoke evidence, and compact/prompt-pack parity; Camelid supports exact-row smoke for this row only, not broader/full support",
+      "next_step": "preserve exact-row smoke support while normalizing current-head backend parity, repeated 50-token output, API/WebUI evidence, memory bounds, and durable bundle evidence on the approved Ubuntu validation lane before any broader/full-support claim"
+    },
+    {
+      "id": "llama32_3b_instruct_q8_0",
+      "family": "llama_bpe_decoder",
+      "quantization": "Q8_0",
+      "status": "supported_exact_row_smoke",
+      "metadata_parses": "validated",
+      "tokenizer_works": "validated_for_compact_and_small_prompt_pack",
+      "tensors_load": "validated",
+      "generation_runs": "api_completion_and_chat_smoke_plus_five_prompt_api_smoke",
+      "parity_audited": "compact_and_broader_prompt_pack_50_token_match",
+      "performance_measured": "bounded_smoke_runs_only",
+      "frontend_load_path_verified": "validated",
+      "tested_context": "short_api_webui_smoke_with_broader_prompt_pack_parity",
+      "chat_template_renderer": "compact",
+      "chat_template_shape_pack": "ready_to_run_on_validation_host",
+      "chat_template_shape_pack_id": "llama3-chat-template-shapes-v1",
+      "bounded_context_512_pack": "ready_to_run_on_validation_host",
+      "bounded_context_512_pack_id": "llama3-context-512-smoke-v1",
+      "bounded_context_window": 512,
+      "evidence": "the exact tracked Llama-3.2-3B-Instruct-Q8_0 GGUF has exact-row load, completion, chat-completion, frontend-smoke, five-prompt API smoke evidence, compact prompt-token/deterministic 1-token/5-token/bounded 50-token parity, and a broader three-prompt 50-token pack; Camelid supports exact-row smoke for this row only, not broader/full support",
+      "next_step": "preserve exact-row smoke support while normalizing current-head repeated parity, API/WebUI evidence, memory/performance bounds, and durable bundle evidence on the approved Ubuntu validation lane before any broader/full-support claim"
+    },
+    {
+      "id": "llama3_8b_instruct_q8_0",
+      "family": "llama_bpe_decoder",
+      "quantization": "Q8_0",
+      "status": "supported_exact_row_smoke",
+      "metadata_parses": "real_artifact_inspected_and_config_guarded",
+      "tokenizer_works": "validated_for_compact_llama3_bpe",
+      "tensors_load": "validated_for_lazy_file_backed_q8_backend_runs",
+      "generation_runs": "api_completion_and_chat_smoke_validated",
+      "parity_audited": "compact_50_token_plus_broader_50_token_prompt_pack_match",
+      "performance_measured": "bounded_ubuntu_backend_memory_gate_plus_lazy_q8_hotpath_costs",
+      "frontend_load_path_verified": "validated",
+      "tested_context": "short_api_webui_smoke_with_broader_50_token_and_first_512_context_pack",
+      "chat_template_renderer": "compact",
+      "chat_template_shape_pack": "validated_compact_pack",
+      "chat_template_shape_pack_id": "llama3-chat-template-shapes-v1",
+      "bounded_context_512_pack": "validated_first_pack",
+      "bounded_context_512_pack_id": "llama3-context-512-smoke-v1",
+      "bounded_context_window": 512,
+      "evidence": "the exact tracked Llama 3 8B Instruct Q8_0 GGUF has compact prompt-token/1-token/5-token/50-token parity, a three-prompt 50-token Ubuntu parity run, API/frontend smoke, bounded-memory evidence, one passing bounded 512-context pack, one passing compact chat-template-shapes pack, and retained-block lazy-Q8 hot-path cost probes; exact-row smoke is supported without broad 8B/full-context, arbitrary-template, or performance-portability promotion",
+      "next_step": "preserve exact-row smoke support while broadening context/template coverage, refreshing API/WebUI evidence as needed, and closing production performance/RSS portability evidence on the approved Ubuntu validation lane before any broader/full-support claim; treat the passing broader 50-token, 512-context, compact chat-template-shapes, and lazy-Q8 hot-path artifacts as bounded packs/measurements only"
+    },
+    {
+      "id": "llama_spm_q4_0_q5_0",
+      "family": "llama_spm_decoder",
+      "quantization": "Q4_0/Q5_0",
+      "status": "planned_phase_10",
+      "metadata_parses": "descriptor_guarded",
+      "tokenizer_works": "planned_per_model",
+      "tensors_load": "unsupported_typed_error",
+      "generation_runs": "blocked_until_dequant",
+      "parity_audited": "not_started",
+      "performance_measured": "not_started",
+      "frontend_load_path_verified": "not_started",
+      "tested_context": "not_started",
+      "chat_template_renderer": "not_selected",
+      "chat_template_shape_pack": "not_started",
+      "chat_template_shape_pack_id": "not_selected",
+      "bounded_context_512_pack": "not_started",
+      "bounded_context_512_pack_id": "not_selected",
+      "bounded_context_window": 512,
+      "evidence": "planned quant tensor fixtures parse descriptors but reject CPU f32 loading until dequant/matmul support exists",
+      "next_step": "implement legacy smaller-quant dequant tests before any real-model support claim"
+    },
+    {
+      "id": "llama_spm_q4_k_q5_k",
+      "family": "llama_spm_decoder",
+      "quantization": "Q4_K_M/Q5_K_M",
+      "status": "planned_phase_10",
+      "metadata_parses": "descriptor_guarded",
+      "tokenizer_works": "planned_per_model",
+      "tensors_load": "unsupported_typed_error",
+      "generation_runs": "blocked_until_dequant",
+      "parity_audited": "not_started",
+      "performance_measured": "not_started",
+      "frontend_load_path_verified": "not_started",
+      "tested_context": "not_started",
+      "chat_template_renderer": "not_selected",
+      "chat_template_shape_pack": "not_started",
+      "chat_template_shape_pack_id": "not_selected",
+      "bounded_context_512_pack": "not_started",
+      "bounded_context_512_pack_id": "not_selected",
+      "bounded_context_window": 512,
+      "evidence": "planned K-quant tensor fixtures parse descriptors but reject CPU f32 loading until dequant/matmul support exists",
+      "next_step": "start after simpler Q4_0/Q5_0 support has loader, matmul, and parity evidence"
+    },
+    {
+      "id": "mistral_gguf",
+      "family": "mistral",
+      "quantization": "not_selected",
+      "status": "planned_model_family",
+      "metadata_parses": "not_started",
+      "tokenizer_works": "not_started",
+      "tensors_load": "not_started",
+      "generation_runs": "not_started",
+      "parity_audited": "not_started",
+      "performance_measured": "not_started",
+      "frontend_load_path_verified": "not_started",
+      "tested_context": "not_started",
+      "chat_template_renderer": "not_selected",
+      "chat_template_shape_pack": "not_started",
+      "chat_template_shape_pack_id": "not_selected",
+      "bounded_context_512_pack": "not_started",
+      "bounded_context_512_pack_id": "not_selected",
+      "bounded_context_window": 512,
+      "evidence": "tracked as the next likely GGUF family after LLaMA-family breadth stabilizes",
+      "next_step": "choose a concrete Mistral GGUF target and add tokenizer/chat-template fixtures before generation work"
+    }
+  ],
+  "api_features": [
+    {
+      "id": "openai_chat_completions",
+      "status": "supported_current_gate",
+      "notes": "non-streaming and SSE streaming for loaded supported dense GGUF models"
+    },
+    {
+      "id": "tokenizer_encode_decode",
+      "status": "supported_current_gate",
+      "notes": "loaded-model tokenizer APIs for supported tokenizer families"
+    },
+    {
+      "id": "multi_choice_generation",
+      "status": "unsupported",
+      "notes": "typed unsupported until implemented and tested"
+    },
+    {
+      "id": "rich_logprobs",
+      "status": "partial",
+      "notes": "diagnostic logit surfaces exist; full OpenAI-compatible logprobs remain planned"
+    }
+  ],
+  "notes": [
+    "GGUF metadata, tokenizer metadata, tensor loading, Camelid dense config extraction, and tensor binding are available",
+    "public completion endpoints can generate small OpenAI-compatible non-streaming responses and SSE token streams from a loaded Camelid-supported dense GGUF model",
+    "capability fields are intentionally explicit so the frontend and providers do not infer unsupported model families or quantization formats"
+  ]
+}

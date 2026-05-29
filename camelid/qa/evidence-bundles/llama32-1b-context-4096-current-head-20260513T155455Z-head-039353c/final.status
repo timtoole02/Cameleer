@@ -1,0 +1,23 @@
+artifact=$CAMELID_CHECKOUT/target/tpm-llama32-1b-context4096-head-039353c-20260513T1550Z
+finished_utc=2026-05-13T15:57:16Z
+pack_exit=0
+result=PASS
+{
+  "passed": true,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "prompts": [
+    {
+      "id": "roughly-4096-token-recall",
+      "exit_code": 0,
+      "reference_prompt_token_count": 3755,
+      "reference_context": 4096,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    }
+  ]
+}

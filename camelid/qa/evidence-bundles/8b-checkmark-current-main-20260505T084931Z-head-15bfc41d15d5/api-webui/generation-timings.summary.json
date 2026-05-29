@@ -1,0 +1,695 @@
+{
+  "schema": "camelid.generation_timing_summary.v1",
+  "generated_utc": "2026-05-05T08:50:23.014Z",
+  "inputs": [
+    {
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/completion.response.json",
+      "file": "completion.response.json",
+      "model": "llama3-8b-q8",
+      "object": "text_completion",
+      "prompt_tokens": 2,
+      "completion_tokens": 1,
+      "timings_ms": {
+        "tokenize": 138,
+        "weight_load": 0,
+        "weight_cache_hit": false,
+        "prompt_cache_hit": false,
+        "session_create": 0,
+        "generate": 3849,
+        "forward_total": 3843.897,
+        "embedding": 0.039,
+        "layers_total": 3704.566,
+        "final_norm": 0.006,
+        "logits": 139.278,
+        "sample": 0.216
+      },
+      "layer_count": 32,
+      "buckets_ms": {
+        "linear_hot_path": 3696.5850000000005,
+        "attention_projection": 713.947,
+        "ffn_projection": 2982.6380000000004,
+        "non_linear_layer": 7.588999999999999,
+        "attention_context": 0.34000000000000014,
+        "ffn_activation": 2.194000000000001
+      },
+      "shares": {
+        "linear_hot_path_of_forward": 0.9616763924735758,
+        "linear_hot_path_of_layers": 0.9978456315800557,
+        "attention_projection_of_forward": 0.185735205704003,
+        "ffn_projection_of_forward": 0.7759411867695728,
+        "logits_of_forward": 0.03623354111725678
+      },
+      "slowest_layers": [
+        {
+          "layer_index": 0,
+          "total_ms": 117.926,
+          "linear_hot_path_ms": 117.402,
+          "attention_projection_ms": 24.098,
+          "ffn_projection_ms": 93.304,
+          "non_linear_layer_ms": 0.5240000000000009,
+          "attention_context_ms": 0.016,
+          "ffn_activation_ms": 0.071,
+          "components_ms": {
+            "attention_norm": 0.015,
+            "attention_q": 10.476,
+            "attention_k": 2.292,
+            "attention_v": 2.317,
+            "attention_rope": 0.063,
+            "kv_cache_write": 0.281,
+            "attention_context": 0.016,
+            "attention_output": 9.013,
+            "attention_residual": 0.009,
+            "ffn_norm": 0.013,
+            "ffn_gate": 31.057,
+            "ffn_up": 31.027,
+            "ffn_activation": 0.071,
+            "ffn_down": 31.22,
+            "ffn_residual": 0.007
+          }
+        },
+        {
+          "layer_index": 9,
+          "total_ms": 116.007,
+          "linear_hot_path_ms": 115.78200000000001,
+          "attention_projection_ms": 22.426000000000002,
+          "ffn_projection_ms": 93.35600000000001,
+          "non_linear_layer_ms": 0.22499999999999432,
+          "attention_context_ms": 0.011,
+          "ffn_activation_ms": 0.067,
+          "components_ms": {
+            "attention_norm": 0.009,
+            "attention_q": 8.941,
+            "attention_k": 2.338,
+            "attention_v": 2.215,
+            "attention_rope": 0.06,
+            "kv_cache_write": 0.024,
+            "attention_context": 0.011,
+            "attention_output": 8.932,
+            "attention_residual": 0.004,
+            "ffn_norm": 0.009,
+            "ffn_gate": 31.084,
+            "ffn_up": 31.018,
+            "ffn_activation": 0.067,
+            "ffn_down": 31.254,
+            "ffn_residual": 0.006
+          }
+        },
+        {
+          "layer_index": 31,
+          "total_ms": 115.97,
+          "linear_hot_path_ms": 115.748,
+          "attention_projection_ms": 22.306,
+          "ffn_projection_ms": 93.44200000000001,
+          "non_linear_layer_ms": 0.2219999999999942,
+          "attention_context_ms": 0.01,
+          "ffn_activation_ms": 0.067,
+          "components_ms": {
+            "attention_norm": 0.01,
+            "attention_q": 8.945,
+            "attention_k": 2.207,
+            "attention_v": 2.358,
+            "attention_rope": 0.056,
+            "kv_cache_write": 0.023,
+            "attention_context": 0.01,
+            "attention_output": 8.796,
+            "attention_residual": 0.004,
+            "ffn_norm": 0.009,
+            "ffn_gate": 31.146,
+            "ffn_up": 31.122,
+            "ffn_activation": 0.067,
+            "ffn_down": 31.174,
+            "ffn_residual": 0.005
+          }
+        },
+        {
+          "layer_index": 13,
+          "total_ms": 115.932,
+          "linear_hot_path_ms": 115.69800000000001,
+          "attention_projection_ms": 22.21,
+          "ffn_projection_ms": 93.488,
+          "non_linear_layer_ms": 0.23399999999999466,
+          "attention_context_ms": 0.01,
+          "ffn_activation_ms": 0.066,
+          "components_ms": {
+            "attention_norm": 0.023,
+            "attention_q": 8.757,
+            "attention_k": 2.26,
+            "attention_v": 2.211,
+            "attention_rope": 0.057,
+            "kv_cache_write": 0.023,
+            "attention_context": 0.01,
+            "attention_output": 8.982,
+            "attention_residual": 0.004,
+            "ffn_norm": 0.009,
+            "ffn_gate": 31.084,
+            "ffn_up": 31.14,
+            "ffn_activation": 0.066,
+            "ffn_down": 31.264,
+            "ffn_residual": 0.005
+          }
+        },
+        {
+          "layer_index": 26,
+          "total_ms": 115.932,
+          "linear_hot_path_ms": 115.71,
+          "attention_projection_ms": 22.307,
+          "ffn_projection_ms": 93.40299999999999,
+          "non_linear_layer_ms": 0.2220000000000084,
+          "attention_context_ms": 0.01,
+          "ffn_activation_ms": 0.067,
+          "components_ms": {
+            "attention_norm": 0.01,
+            "attention_q": 8.882,
+            "attention_k": 2.298,
+            "attention_v": 2.238,
+            "attention_rope": 0.06,
+            "kv_cache_write": 0.023,
+            "attention_context": 0.01,
+            "attention_output": 8.889,
+            "attention_residual": 0.004,
+            "ffn_norm": 0.008,
+            "ffn_gate": 31.043,
+            "ffn_up": 31.165,
+            "ffn_activation": 0.067,
+            "ffn_down": 31.195,
+            "ffn_residual": 0.005
+          }
+        },
+        {
+          "layer_index": 1,
+          "total_ms": 115.887,
+          "linear_hot_path_ms": 115.645,
+          "attention_projection_ms": 22.275999999999996,
+          "ffn_projection_ms": 93.369,
+          "non_linear_layer_ms": 0.24200000000000443,
+          "attention_context_ms": 0.011,
+          "ffn_activation_ms": 0.067,
+          "components_ms": {
+            "attention_norm": 0.011,
+            "attention_q": 8.91,
+            "attention_k": 2.222,
+            "attention_v": 2.21,
+            "attention_rope": 0.057,
+            "kv_cache_write": 0.023,
+            "attention_context": 0.011,
+            "attention_output": 8.934,
+            "attention_residual": 0.005,
+            "ffn_norm": 0.01,
+            "ffn_gate": 30.99,
+            "ffn_up": 31.018,
+            "ffn_activation": 0.067,
+            "ffn_down": 31.361,
+            "ffn_residual": 0.007
+          }
+        },
+        {
+          "layer_index": 19,
+          "total_ms": 115.876,
+          "linear_hot_path_ms": 115.644,
+          "attention_projection_ms": 22.32,
+          "ffn_projection_ms": 93.324,
+          "non_linear_layer_ms": 0.23199999999999932,
+          "attention_context_ms": 0.01,
+          "ffn_activation_ms": 0.075,
+          "components_ms": {
+            "attention_norm": 0.01,
+            "attention_q": 8.912,
+            "attention_k": 2.222,
+            "attention_v": 2.328,
+            "attention_rope": 0.057,
+            "kv_cache_write": 0.022,
+            "attention_context": 0.01,
+            "attention_output": 8.858,
+            "attention_residual": 0.004,
+            "ffn_norm": 0.008,
+            "ffn_gate": 31.105,
+            "ffn_up": 31.001,
+            "ffn_activation": 0.075,
+            "ffn_down": 31.218,
+            "ffn_residual": 0.005
+          }
+        },
+        {
+          "layer_index": 11,
+          "total_ms": 115.853,
+          "linear_hot_path_ms": 115.62700000000001,
+          "attention_projection_ms": 22.29,
+          "ffn_projection_ms": 93.337,
+          "non_linear_layer_ms": 0.22599999999998488,
+          "attention_context_ms": 0.01,
+          "ffn_activation_ms": 0.066,
+          "components_ms": {
+            "attention_norm": 0.01,
+            "attention_q": 8.815,
+            "attention_k": 2.313,
+            "attention_v": 2.221,
+            "attention_rope": 0.06,
+            "kv_cache_write": 0.023,
+            "attention_context": 0.01,
+            "attention_output": 8.941,
+            "attention_residual": 0.004,
+            "ffn_norm": 0.008,
+            "ffn_gate": 30.947,
+            "ffn_up": 31.096,
+            "ffn_activation": 0.066,
+            "ffn_down": 31.294,
+            "ffn_residual": 0.005
+          }
+        }
+      ],
+      "top_bottlenecks": [
+        {
+          "path": "generation.logits",
+          "ms": 139.278
+        },
+        {
+          "path": "layers.1.ffn_down",
+          "ms": 31.361
+        },
+        {
+          "path": "layers.20.ffn_down",
+          "ms": 31.336
+        },
+        {
+          "path": "layers.11.ffn_down",
+          "ms": 31.294
+        },
+        {
+          "path": "layers.13.ffn_down",
+          "ms": 31.264
+        },
+        {
+          "path": "layers.3.ffn_down",
+          "ms": 31.261
+        },
+        {
+          "path": "layers.21.ffn_down",
+          "ms": 31.261
+        },
+        {
+          "path": "layers.9.ffn_down",
+          "ms": 31.254
+        },
+        {
+          "path": "layers.15.ffn_up",
+          "ms": 31.247
+        },
+        {
+          "path": "layers.10.ffn_down",
+          "ms": 31.244
+        },
+        {
+          "path": "layers.17.ffn_down",
+          "ms": 31.234
+        },
+        {
+          "path": "layers.25.ffn_down",
+          "ms": 31.225
+        }
+      ]
+    },
+    {
+      "path": "target/8b-checkmark-current-main-20260505T084931Z-head-15bfc41d15d5/api-webui/chat.response.json",
+      "file": "chat.response.json",
+      "model": "llama3-8b-q8",
+      "object": "chat.completion",
+      "prompt_tokens": 11,
+      "completion_tokens": 1,
+      "timings_ms": {
+        "tokenize": 106,
+        "weight_load": 0,
+        "weight_cache_hit": true,
+        "prompt_cache_hit": false,
+        "session_create": 0,
+        "generate": 20524,
+        "forward_total": 20517.822,
+        "embedding": 0.091,
+        "layers_total": 20379.005,
+        "final_norm": 0.006,
+        "logits": 138.699,
+        "sample": 0.212
+      },
+      "layer_count": 32,
+      "buckets_ms": {
+        "linear_hot_path": 20328.818,
+        "attention_projection": 3918.7509999999997,
+        "ffn_projection": 16410.066999999995,
+        "non_linear_layer": 48.04400000000021,
+        "attention_context": 6.735000000000003,
+        "ffn_activation": 12.058000000000002
+      },
+      "shares": {
+        "linear_hot_path_of_forward": 0.9907883010194747,
+        "linear_hot_path_of_layers": 0.9975373184313954,
+        "attention_projection_of_forward": 0.19099254297069151,
+        "ffn_projection_of_forward": 0.7997957580487829,
+        "logits_of_forward": 0.006759928027448528
+      },
+      "slowest_layers": [
+        {
+          "layer_index": 0,
+          "total_ms": 637.996,
+          "linear_hot_path_ms": 635.358,
+          "attention_projection_ms": 123.361,
+          "ffn_projection_ms": 511.99699999999996,
+          "non_linear_layer_ms": 2.6380000000000337,
+          "attention_context_ms": 0.228,
+          "ffn_activation_ms": 0.372,
+          "components_ms": {
+            "attention_norm": 0.058,
+            "attention_q": 49.161,
+            "attention_k": 12.181,
+            "attention_v": 12.409,
+            "attention_rope": 0.352,
+            "kv_cache_write": 1.27,
+            "attention_context": 0.228,
+            "attention_output": 49.61,
+            "attention_residual": 0.029,
+            "ffn_norm": 0.057,
+            "ffn_gate": 170.377,
+            "ffn_up": 170.287,
+            "ffn_activation": 0.372,
+            "ffn_down": 171.333,
+            "ffn_residual": 0.03
+          }
+        },
+        {
+          "layer_index": 2,
+          "total_ms": 637.603,
+          "linear_hot_path_ms": 636.087,
+          "attention_projection_ms": 123.726,
+          "ffn_projection_ms": 512.361,
+          "non_linear_layer_ms": 1.5159999999999627,
+          "attention_context_ms": 0.213,
+          "ffn_activation_ms": 0.392,
+          "components_ms": {
+            "attention_norm": 0.06,
+            "attention_q": 48.789,
+            "attention_k": 12.283,
+            "attention_v": 12.754,
+            "attention_rope": 0.37,
+            "kv_cache_write": 0.133,
+            "attention_context": 0.213,
+            "attention_output": 49.9,
+            "attention_residual": 0.023,
+            "ffn_norm": 0.055,
+            "ffn_gate": 170.355,
+            "ffn_up": 170.44,
+            "ffn_activation": 0.392,
+            "ffn_down": 171.566,
+            "ffn_residual": 0.031
+          }
+        },
+        {
+          "layer_index": 1,
+          "total_ms": 637.546,
+          "linear_hot_path_ms": 636.066,
+          "attention_projection_ms": 123.035,
+          "ffn_projection_ms": 513.0310000000001,
+          "non_linear_layer_ms": 1.4800000000000182,
+          "attention_context_ms": 0.208,
+          "ffn_activation_ms": 0.382,
+          "components_ms": {
+            "attention_norm": 0.058,
+            "attention_q": 49.261,
+            "attention_k": 12.429,
+            "attention_v": 12.232,
+            "attention_rope": 0.361,
+            "kv_cache_write": 0.133,
+            "attention_context": 0.208,
+            "attention_output": 49.113,
+            "attention_residual": 0.024,
+            "ffn_norm": 0.052,
+            "ffn_gate": 170.322,
+            "ffn_up": 170.629,
+            "ffn_activation": 0.382,
+            "ffn_down": 172.08,
+            "ffn_residual": 0.034
+          }
+        },
+        {
+          "layer_index": 21,
+          "total_ms": 637.453,
+          "linear_hot_path_ms": 635.9789999999999,
+          "attention_projection_ms": 122.03999999999999,
+          "ffn_projection_ms": 513.939,
+          "non_linear_layer_ms": 1.4740000000000464,
+          "attention_context_ms": 0.206,
+          "ffn_activation_ms": 0.385,
+          "components_ms": {
+            "attention_norm": 0.058,
+            "attention_q": 48.871,
+            "attention_k": 12.208,
+            "attention_v": 12.228,
+            "attention_rope": 0.354,
+            "kv_cache_write": 0.132,
+            "attention_context": 0.206,
+            "attention_output": 48.733,
+            "attention_residual": 0.023,
+            "ffn_norm": 0.055,
+            "ffn_gate": 170.618,
+            "ffn_up": 171.164,
+            "ffn_activation": 0.385,
+            "ffn_down": 172.157,
+            "ffn_residual": 0.04
+          }
+        },
+        {
+          "layer_index": 9,
+          "total_ms": 637.37,
+          "linear_hot_path_ms": 635.8789999999999,
+          "attention_projection_ms": 122.78999999999999,
+          "ffn_projection_ms": 513.0889999999999,
+          "non_linear_layer_ms": 1.4910000000000991,
+          "attention_context_ms": 0.227,
+          "ffn_activation_ms": 0.375,
+          "components_ms": {
+            "attention_norm": 0.056,
+            "attention_q": 48.956,
+            "attention_k": 12.23,
+            "attention_v": 12.377,
+            "attention_rope": 0.361,
+            "kv_cache_write": 0.133,
+            "attention_context": 0.227,
+            "attention_output": 49.227,
+            "attention_residual": 0.025,
+            "ffn_norm": 0.052,
+            "ffn_gate": 170.405,
+            "ffn_up": 170.885,
+            "ffn_activation": 0.375,
+            "ffn_down": 171.799,
+            "ffn_residual": 0.029
+          }
+        },
+        {
+          "layer_index": 20,
+          "total_ms": 637.368,
+          "linear_hot_path_ms": 635.931,
+          "attention_projection_ms": 122.363,
+          "ffn_projection_ms": 513.568,
+          "non_linear_layer_ms": 1.4370000000000118,
+          "attention_context_ms": 0.205,
+          "ffn_activation_ms": 0.369,
+          "components_ms": {
+            "attention_norm": 0.057,
+            "attention_q": 48.845,
+            "attention_k": 12.403,
+            "attention_v": 12.248,
+            "attention_rope": 0.349,
+            "kv_cache_write": 0.127,
+            "attention_context": 0.205,
+            "attention_output": 48.867,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.053,
+            "ffn_gate": 170.445,
+            "ffn_up": 171.255,
+            "ffn_activation": 0.369,
+            "ffn_down": 171.868,
+            "ffn_residual": 0.026
+          }
+        },
+        {
+          "layer_index": 31,
+          "total_ms": 637.354,
+          "linear_hot_path_ms": 635.89,
+          "attention_projection_ms": 122.70199999999998,
+          "ffn_projection_ms": 513.188,
+          "non_linear_layer_ms": 1.4640000000000555,
+          "attention_context_ms": 0.21,
+          "ffn_activation_ms": 0.382,
+          "components_ms": {
+            "attention_norm": 0.055,
+            "attention_q": 49.111,
+            "attention_k": 12.322,
+            "attention_v": 12.362,
+            "attention_rope": 0.348,
+            "kv_cache_write": 0.129,
+            "attention_context": 0.21,
+            "attention_output": 48.907,
+            "attention_residual": 0.022,
+            "ffn_norm": 0.051,
+            "ffn_gate": 170.39,
+            "ffn_up": 171.059,
+            "ffn_activation": 0.382,
+            "ffn_down": 171.739,
+            "ffn_residual": 0.03
+          }
+        },
+        {
+          "layer_index": 10,
+          "total_ms": 637.246,
+          "linear_hot_path_ms": 635.7869999999999,
+          "attention_projection_ms": 122.516,
+          "ffn_projection_ms": 513.271,
+          "non_linear_layer_ms": 1.45900000000006,
+          "attention_context_ms": 0.212,
+          "ffn_activation_ms": 0.377,
+          "components_ms": {
+            "attention_norm": 0.064,
+            "attention_q": 48.883,
+            "attention_k": 12.214,
+            "attention_v": 12.264,
+            "attention_rope": 0.346,
+            "kv_cache_write": 0.131,
+            "attention_context": 0.212,
+            "attention_output": 49.155,
+            "attention_residual": 0.023,
+            "ffn_norm": 0.051,
+            "ffn_gate": 170.829,
+            "ffn_up": 170.685,
+            "ffn_activation": 0.377,
+            "ffn_down": 171.757,
+            "ffn_residual": 0.029
+          }
+        }
+      ],
+      "top_bottlenecks": [
+        {
+          "path": "layers.21.ffn_down",
+          "ms": 172.157
+        },
+        {
+          "path": "layers.1.ffn_down",
+          "ms": 172.08
+        },
+        {
+          "path": "layers.6.ffn_down",
+          "ms": 172.047
+        },
+        {
+          "path": "layers.26.ffn_down",
+          "ms": 171.987
+        },
+        {
+          "path": "layers.16.ffn_down",
+          "ms": 171.947
+        },
+        {
+          "path": "layers.20.ffn_down",
+          "ms": 171.868
+        },
+        {
+          "path": "layers.28.ffn_down",
+          "ms": 171.864
+        },
+        {
+          "path": "layers.12.ffn_down",
+          "ms": 171.849
+        },
+        {
+          "path": "layers.9.ffn_down",
+          "ms": 171.799
+        },
+        {
+          "path": "layers.30.ffn_down",
+          "ms": 171.795
+        },
+        {
+          "path": "layers.11.ffn_down",
+          "ms": 171.787
+        },
+        {
+          "path": "layers.23.ffn_down",
+          "ms": 171.767
+        }
+      ]
+    }
+  ],
+  "aggregate": {
+    "input_count": 2,
+    "max_forward_total_ms": 20517.822,
+    "avg_forward_total_ms": 12180.8595,
+    "avg_generate_ms": 12186.5,
+    "avg_weight_load_ms": 0,
+    "avg_linear_hot_path_ms": 12012.7015,
+    "avg_linear_hot_path_share": 0.9762323467465253,
+    "max_logits_ms": 139.278,
+    "top_bottlenecks": [
+      {
+        "path": "layers.21.ffn_down",
+        "ms": 172.157,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.1.ffn_down",
+        "ms": 172.08,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.6.ffn_down",
+        "ms": 172.047,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.26.ffn_down",
+        "ms": 171.987,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.16.ffn_down",
+        "ms": 171.947,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.20.ffn_down",
+        "ms": 171.868,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.28.ffn_down",
+        "ms": 171.864,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.12.ffn_down",
+        "ms": 171.849,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.9.ffn_down",
+        "ms": 171.799,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.30.ffn_down",
+        "ms": 171.795,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.11.ffn_down",
+        "ms": 171.787,
+        "input": "chat.response.json"
+      },
+      {
+        "path": "layers.23.ffn_down",
+        "ms": 171.767,
+        "input": "chat.response.json"
+      }
+    ]
+  },
+  "notes": [
+    "Summarizes Camelid response-local timing diagnostics; use alongside RSS/process samples for performance claims.",
+    "The linear hot-path bucket is attention Q/K/V/O plus FFN gate/up/down layer timing. On lazy Q8_0 runs this is the primary file-backed Q8 reader/dot cost surface.",
+    "This report is measurement evidence only and does not broaden support beyond exact rows validated by parity/API/frontend artifacts."
+  ]
+}

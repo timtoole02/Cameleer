@@ -1,0 +1,19 @@
+{
+  "schema": "camelid.public_8b_context_512_summary.v1",
+  "source_manifest": "manifest.json",
+  "passed": true,
+  "checks": {
+    "clean_public_checkout": true,
+    "model_sha256_matched_expected": true,
+    "prompt_tokens_all_match": true,
+    "generated_tokens_all_match": true,
+    "generated_text_all_match": true,
+    "exit_status": 0
+  },
+  "runtime": {
+    "elapsed_wall_clock": "7:35.65",
+    "max_resident_set_kib": 17262740,
+    "exit_status": 0
+  },
+  "claim_boundary": "Does not promote broad Llama-family support, neighboring sizes, other quantizations, longer contexts beyond this pack, or performance portability. Full-support promotion still requires normalized broader/current-head parity, API/WebUI recency, stronger memory/performance, portability, and docs/API/frontend synchronization."
+}

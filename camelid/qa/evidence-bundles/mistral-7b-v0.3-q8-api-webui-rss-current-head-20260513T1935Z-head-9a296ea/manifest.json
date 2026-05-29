@@ -1,0 +1,38 @@
+{
+  "schema": "camelid.remote-validation-bundle.v1",
+  "generated_utc": "2026-05-13T19:38:18.219Z",
+  "source_head": "9a296eaac6d63556d5fcbf7db74d0c1f65ab3ca9",
+  "row": "Mistral-7B-Instruct-v0.3.Q8_0.gguf",
+  "canonical_host": "canonical-ubuntu-validation-host",
+  "validation_kind": "mistral_current_head_api_webui_rss_fail_closed",
+  "model_path": "<canonical-model-store>/Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+  "smoke_exit": 0,
+  "passed": true,
+  "support_claim": "none; row remains active_validation_unsupported and WebUI chat remains blocked by support contract",
+  "expected_contract": {
+    "compatibility_row": "mistral_7b_instruct_v0_3_q8_0",
+    "compatibility_status": "active_validation_unsupported",
+    "contract_supported": false,
+    "webui_chat": "blocked"
+  },
+  "observed": {
+    "smoke_passed": true,
+    "frontend_exit_code": 0,
+    "active_model_id": "mistral-7b-v0.3-q8-remote-current-head",
+    "generation_ready": true,
+    "loaded_now": true,
+    "model_file_type": 7,
+    "compatibility_status": "active_validation_unsupported"
+  },
+  "artifacts": {
+    "smoke_summary": "smoke/summary.json",
+    "frontend_stdout": "smoke/frontend.stdout.log",
+    "frontend_summary": "smoke/frontend.summary.json",
+    "completion_response": "smoke/completion.response.json",
+    "chat_response": "smoke/chat.response.json",
+    "generation_timings": "smoke/generation-timings.summary.json",
+    "rss_samples": "rss-samples.tsv",
+    "backend_stderr": "backend.stderr.log",
+    "backend_stdout": "backend.stdout.log"
+  }
+}

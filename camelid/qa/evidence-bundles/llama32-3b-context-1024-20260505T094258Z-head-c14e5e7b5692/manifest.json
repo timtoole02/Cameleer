@@ -1,0 +1,72 @@
+{
+  "schema": "camelid.llama32_3b_context_1024_public_evidence.v1",
+  "generated_utc": "2026-05-05T09:56:00Z",
+  "git_head": "c14e5e7b5692e2f0a4ca5f7c203964865dcd6714",
+  "origin_main": "c14e5e7b5692e2f0a4ca5f7c203964865dcd6714",
+  "checkout_clean": true,
+  "validation_lane": "approved_ubuntu_validation_lane_reopened_clean_public_checkout",
+  "privacy": "Public sanitized summary plus sanitized command/report logs; operator host addresses, SSH details, key paths, API ports, and absolute model paths are intentionally omitted or replaced with placeholders.",
+  "scope": "Exact Llama 3.2 3B Instruct Q8_0 second bounded 1024-context parity pack only.",
+  "pack": {
+    "id": "llama3-context-1024-smoke-v1",
+    "target_context_window": 1024,
+    "max_tokens": 5,
+    "source_prompt_pack": "qa/prompt-packs/llama3-context-1024-smoke.json",
+    "prompt_count": 1,
+    "render_mode": "compact"
+  },
+  "method": {
+    "script": "scripts/run-llama3-prompt-pack.mjs",
+    "parity_script": "scripts/chat-parity-llama3.mjs",
+    "reference": "llama.cpp llama-server /completion plus llama-tokenize --ids",
+    "backend_endpoint": "/v1/chat/completions",
+    "requirements": [
+      "--require-prompt-match",
+      "--require-generated-match"
+    ],
+    "wait_ms": 900000,
+    "note": "The prompt pack was run from clean public origin/main head c14e5e7b5692; the actual reference prompt token count was 881, exceeding the earlier checked 512-context pack while staying bounded to a 1024 reference context."
+  },
+  "rows": [
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "display_name": "Llama 3.2 3B Instruct Q8_0",
+      "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "model_sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+      "context_window": 1024,
+      "max_tokens": 5,
+      "prompt_id": "roughly-1024-token-recall",
+      "reference_prompt_token_count": 881,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "generated_token_ids": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "generated_text": "CMLD-102",
+      "max_resident_set_kib": 7331624,
+      "elapsed_wall_clock": "12:03.73",
+      "backend_usage": {
+        "prompt_tokens": 881,
+        "completion_tokens": 5,
+        "total_tokens": 886
+      },
+      "llama_timings": {
+        "prompt_n": 881,
+        "prompt_ms": 3138.371,
+        "predicted_n": 5,
+        "predicted_ms": 200.856
+      },
+      "raw_artifact": "target/llama32-3b-context-1024-20260505T094258Z-head-c14e5e7b5692/pack/summary.json",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "claim_boundary": "Closes only the second bounded 1024-context pack for the exact Llama 3.2 3B Instruct Q8_0 row. It does not promote neighboring rows, other quantizations, model-native/larger context buckets beyond this checked pack, arbitrary GGUF/Jinja template execution, broad/full Llama-family support, production throughput, or portability support."
+}

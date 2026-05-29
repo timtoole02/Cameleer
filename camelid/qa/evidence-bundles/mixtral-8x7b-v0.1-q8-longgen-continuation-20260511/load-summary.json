@@ -1,0 +1,7 @@
+{
+  "schema": "camelid.load_summary.v1",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+  "model_id": "mixtral-v01-q8-longgen-continuation",
+  "status": "loaded",
+  "raw_load_response_omitted": true
+}

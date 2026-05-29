@@ -1,0 +1,16 @@
+# validation commands for attn_q + ffn_gate/up runtime-owned Q8 repack slice
+Thu May 14 20:55:51 UTC 2026
+$ cargo fmt --check
+$ cargo test --release -q q8_0 --lib
+
+running 43 tests
+...........................................
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 171 filtered out; finished in 0.12s
+
+$ cargo test --release -q mac_q8_repack_loads --test tensor_store
+
+running 2 tests
+..
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out; finished in 0.00s
+
+$ cargo build --release -q

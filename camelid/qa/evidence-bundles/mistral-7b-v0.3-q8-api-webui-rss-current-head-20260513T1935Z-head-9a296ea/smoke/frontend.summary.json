@@ -1,0 +1,27 @@
+{
+  "command": [
+    "node",
+    "<canonical-ubuntu-current-main-snapshot>/frontend/scripts/smoke.mjs",
+    "--api",
+    "http://127.0.0.1:19181",
+    "--frontend",
+    "http://127.0.0.1:19175",
+    "--model",
+    "<canonical-model-store>/Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+    "--model-id",
+    "mistral-7b-v0.3-q8-remote-current-head",
+    "--chat-repeats",
+    "1",
+    "--allow-guarded-chat",
+    "--expect-compatibility-row",
+    "mistral_7b_instruct_v0_3_q8_0",
+    "--expect-compatibility-status",
+    "active_validation_unsupported",
+    "--expect-contract-supported",
+    "false",
+    "--expect-webui-chat",
+    "blocked"
+  ],
+  "exit_code": 0,
+  "mode": "allow_guarded_chat"
+}

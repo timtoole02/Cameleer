@@ -1,0 +1,82 @@
+{
+  "schema": "camelid.public_8b_broader_50tok_evidence.v1",
+  "generated_utc": "2026-05-05T00:50:31Z",
+  "git_head": "d13541ad8d7e87426cddd0d0a13e292f39c73f31",
+  "origin_main": "d13541ad8d7e87426cddd0d0a13e292f39c73f31",
+  "checkout_clean": true,
+  "validation_lane": "approved_ubuntu_validation_lane_reopened_clean_public_checkout",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "scope": "Exact Llama 3 8B Instruct Q8_0 broader three-prompt 50-token pack only.",
+  "model": {
+    "row_id": "llama3_8b_instruct_q8_0",
+    "file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "model_id": "llama3-8b-q8",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+  },
+  "pack": {
+    "id": "llama3-broader-repro-3prompt",
+    "path": "qa/prompt-packs/llama3-broader-repro-3prompt.json",
+    "description": "Known broader-pack prompts recovered from STATUS.md and QA_LLAMA32_3B_Q8_ACCEPTANCE.md for local 3B blocker reproduction and 8B harness prep without inventing the unresolved p4/p5 prompts.",
+    "prompt_count": 3,
+    "default_max_tokens": 50,
+    "default_render_mode": "compact",
+    "target_context_window": null
+  },
+  "toolchain": {
+    "os": "Ubuntu 24.04 AWS x86_64 validation lane",
+    "node": "v18.19.1",
+    "cargo": "cargo 1.75.0",
+    "build_command": "./scripts/with-rustup-cargo.sh build --release --bin backendinference"
+  },
+  "wait_ms": 1200000,
+  "run_exit_code": 0,
+  "passed": true,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "prompts": [
+    {
+      "id": "p1",
+      "render_mode": "compact",
+      "max_tokens": 50,
+      "target_context_window": null,
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 11,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "p2",
+      "render_mode": "compact",
+      "max_tokens": 50,
+      "target_context_window": null,
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 20,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    },
+    {
+      "id": "p3",
+      "render_mode": "compact",
+      "max_tokens": 50,
+      "target_context_window": null,
+      "exit_code": 0,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 24,
+      "reference_context": 512,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    }
+  ],
+  "claim_boundary": "Does not promote broad Llama-family support, neighboring sizes, other quantizations, larger context buckets, arbitrary GGUF chat-template execution, or performance portability. This closes only the exact 8B three-prompt broader pack at 50 tokens; full-support promotion still requires stronger memory/performance, portability, broader context evidence, and docs/API/frontend synchronization."
+}

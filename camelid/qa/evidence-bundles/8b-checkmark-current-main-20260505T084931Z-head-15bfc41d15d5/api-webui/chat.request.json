@@ -1,0 +1,12 @@
+{
+  "model": "llama3-8b-q8",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello"
+    }
+  ],
+  "max_tokens": 1,
+  "stream": false,
+  "temperature": 0
+}

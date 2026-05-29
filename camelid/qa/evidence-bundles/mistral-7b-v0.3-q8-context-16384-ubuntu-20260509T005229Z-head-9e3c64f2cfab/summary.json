@@ -1,0 +1,67 @@
+{
+  "schema": "camelid.mistral.context_16384_ubuntu_summary.v1",
+  "run_id": "mistral-7b-v0.3-q8-context-16384-ubuntu-20260509T005229Z-head-9e3c64f2cfab",
+  "repo_head": "9e3c64f2cfab098f9cccbc8e5f879ecd99d73666",
+  "model": "Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+  "model_size_bytes": 7702565088,
+  "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+  "source": "remote Ubuntu validation lane, sanitized for public evidence",
+  "passed": true,
+  "highest_passed_context_window": 16384,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "claim_boundary": "Exact Mistral-7B-Instruct-v0.3 Q8_0 row only. This validates the checked 16384 synthetic recall prompt pack against llama.cpp; it does not imply Mistral-family support, neighboring variants, model-native/larger context beyond checked packs, arbitrary templates, production throughput, portability, API/WebUI readiness, or full support.",
+  "rows": [
+    {
+      "context_window": 16384,
+      "pack_id": "mistral-context-16384-max-ladder-v1",
+      "prompt_id": "mistral-roughly-16384-token-recall",
+      "max_tokens": 16,
+      "reference_prompt_token_count": 15819,
+      "reference_context": 16384,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        23325,
+        29491,
+        2
+      ],
+      "llama_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        23325,
+        29491,
+        2
+      ],
+      "backend_text": " The repeat marker is Hello.",
+      "llama_text": " The repeat marker is Hello.",
+      "backend_usage": {
+        "prompt_tokens": 15819,
+        "completion_tokens": 7,
+        "total_tokens": 15826
+      },
+      "llama_usage": {
+        "cache_n": 0,
+        "prompt_n": 15819,
+        "prompt_ms": 308770.263,
+        "prompt_per_token_ms": 19.518949554333396,
+        "prompt_per_second": 51.23226520035708,
+        "predicted_n": 7,
+        "predicted_ms": 1035.877,
+        "predicted_per_token_ms": 147.98242857142856,
+        "predicted_per_second": 6.757559053825889
+      },
+      "passed": true
+    }
+  ]
+}

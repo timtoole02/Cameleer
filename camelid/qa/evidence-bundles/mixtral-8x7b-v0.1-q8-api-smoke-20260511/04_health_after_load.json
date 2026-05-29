@@ -1,0 +1,16 @@
+{
+  "method": "GET",
+  "path": "/health",
+  "status": 200,
+  "elapsed_seconds": 0.001,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "ok": true,
+    "engine": "camelid",
+    "loaded_now": true,
+    "generation_ready": true,
+    "active_model_id": "mixtral-8x7b-v0.1-q8-api-smoke"
+  }
+}

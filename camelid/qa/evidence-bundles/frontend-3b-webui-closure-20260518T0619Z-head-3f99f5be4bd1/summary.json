@@ -1,0 +1,22 @@
+{
+  "target": "Llama 3.2 3B Instruct Q8_0 frontend/WebUI closure",
+  "head": "3f99f5be4bd100587d8dac155695388fd7b704d1",
+  "branch": "ubuntu-x86-q8-f23-plus-qkv-consumers",
+  "local_frontend_gates": {
+    "npm_run_smoke_model_state": "pass",
+    "npm_run_smoke_integration": "pass",
+    "npm_run_smoke_ui": "pass",
+    "npm_run_build": "pass"
+  },
+  "remote_backend_check": {
+    "host": "canonical_ubuntu_host",
+    "ssh": "pass",
+    "api_base": "http://127.0.0.1:8181",
+    "result": "blocked_backend_not_listening",
+    "curl_exit": 7
+  },
+  "retain_reject": {
+    "local_frontend_slice": "retain",
+    "live_backend_promotion": "reject_for_this_run"
+  }
+}

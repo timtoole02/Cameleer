@@ -1,0 +1,1 @@
+ssh <canonical-ubuntu-host> 'set -euo pipefail; date -u; curl -fsS --max-time 8 http://127.0.0.1:8181/v1/health; curl -fsS --max-time 8 http://127.0.0.1:8181/api/models/current; curl -fsS --max-time 8 http://127.0.0.1:8181/api/capabilities | extract llama32_3b_instruct_q8_0 row'

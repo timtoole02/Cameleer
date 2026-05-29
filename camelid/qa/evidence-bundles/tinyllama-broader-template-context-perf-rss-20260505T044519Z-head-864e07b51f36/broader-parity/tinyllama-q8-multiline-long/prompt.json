@@ -1,0 +1,19 @@
+{
+  "id": "multiline-long",
+  "note": "Harsher multiline marker-template prompt matching the old broader-gate intent.",
+  "message": null,
+  "messages": [
+    {
+      "role": "system",
+      "content": "Keep the response concise and deterministic."
+    },
+    {
+      "role": "user",
+      "content": "Line one asks for a tiny checklist.\n\n  Line two is indented and mentions TinyLlama Q8_0.\nLine three asks for exactly three terse bullets about evidence hygiene."
+    }
+  ],
+  "max_tokens": 50,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 50
+}

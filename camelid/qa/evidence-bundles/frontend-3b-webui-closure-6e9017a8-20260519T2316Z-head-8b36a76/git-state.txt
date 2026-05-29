@@ -1,0 +1,13 @@
+branch=frontend-3b-webui-closure-6e9017a8-20260519T2316Z
+base_head=8b36a7645115e68e1ae4cc5b8556a24dba25d976
+origin_main=8b36a7645115e68e1ae4cc5b8556a24dba25d976
+status_short:
+ M frontend/scripts/frontend-3b-closure-smoke.mjs
+ M frontend/scripts/frontend-integration-smoke.mjs
+ M frontend/scripts/model-state-smoke.mjs
+ M frontend/scripts/ui-regression-smoke.mjs
+ M frontend/src/components/TopBar.jsx
+ M frontend/src/styles/components.css
+ M frontend/src/views/ChatWorkspace.jsx
+ M frontend/src/views/ModelsView.jsx
+?? qa/evidence-bundles/frontend-3b-webui-closure-6e9017a8-20260519T2316Z-head-8b36a76/

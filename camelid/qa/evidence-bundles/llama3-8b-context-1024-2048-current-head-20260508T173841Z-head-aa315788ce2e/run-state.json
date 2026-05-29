@@ -1,0 +1,23 @@
+{
+  "schema": "camelid.llama3_8b_context_1024_2048_run_state.v1",
+  "started_utc": "2026-05-08T17:38:41Z",
+  "generated_utc": "2026-05-08T18:02:29Z",
+  "repo": "scrubbed-remote-checkout",
+  "git_head": "aa315788ce2e748aff2ad736311f082b5cbaa05b",
+  "artifact_root": "target/llama3-8b-context-1024-2048-current-head-20260508T173841Z-head-aa315788ce2e",
+  "local_public_bundle": "qa/evidence-bundles/llama3-8b-context-1024-2048-current-head-20260508T173841Z-head-aa315788ce2e",
+  "canonical_remote": "canonical-private-ubuntu-validation-host",
+  "model_path": "<model-store>/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+  "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+  "backend_addr": "127.0.0.1:8871",
+  "llama_ports": [
+    8873,
+    8874
+  ],
+  "pack_exit_codes": {
+    "1024": 0,
+    "2048": 0
+  },
+  "passed": true,
+  "notes": "Remote post-run publish script failed after both packs passed because a node invocation treated the artifact directory as a module; manifest/summary were reconstructed from the saved pack reports, time files, and backend RSS/Q8 trace."
+}

@@ -1,0 +1,48 @@
+{
+  "schema": "camelid.llama32_3b_context_2048_public_summary.v1",
+  "source_manifest": "manifest.json",
+  "passed": true,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "rows": [
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "display_name": "Llama 3.2 3B Instruct Q8_0",
+      "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "model_sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+      "context_window": 2048,
+      "max_tokens": 5,
+      "prompt_id": "roughly-2048-token-recall",
+      "reference_prompt_token_count": 1910,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "generated_token_ids": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "generated_text": "CMLD-204",
+      "max_resident_set_kib": 7450092,
+      "elapsed_wall_clock": "28:05.98",
+      "backend_usage": {
+        "prompt_tokens": 1910,
+        "completion_tokens": 5,
+        "total_tokens": 1915
+      },
+      "llama_timings": {
+        "prompt_n": 1910,
+        "prompt_ms": 7667.435,
+        "predicted_n": 5,
+        "predicted_ms": 219.024
+      },
+      "raw_artifact": "target/llama32-3b-context-2048-20260505T105742Z-head-36ec8e492d65/pack/summary.json",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "schema": "camelid.evidence.mixtral_larger_support_probe.v1",
+  "target_row": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+  "status": "partial_probe_only_do_not_promote_broad_support",
+  "support_boundary": "The top-k router renormalization fix improves Mixtral parity evidence, but larger support is not ready: one 5-token Hello prompt passes and Count-to-three passes at 1 token, while Count-to-three still diverges by token 3 in the 5-token run. Do not claim broad Mixtral, multi-prompt, long-context, frontend, or production support from this bundle.",
+  "code_change": "Renormalize selected Mixtral router top-k weights after truncation, matching the expected top-k expert weighting behavior instead of leaving selected weights scaled by non-selected expert mass.",
+  "cases": [
+    {
+      "id": "hello_5tok",
+      "message": "Hello",
+      "max_tokens": 5,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "backend_generated_tokens": [
+        22557,
+        28808,
+        1602,
+        541,
+        315
+      ],
+      "llama_generated_tokens": [
+        22557,
+        28808,
+        1602,
+        541,
+        315
+      ],
+      "backend_text": " Hello! How can I",
+      "llama_text": " Hello! How can I"
+    },
+    {
+      "id": "counting_1tok",
+      "message": "Count to three.",
+      "max_tokens": 1,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "backend_generated_tokens": [
+        28705
+      ],
+      "llama_generated_tokens": [
+        28705
+      ],
+      "backend_text": " ",
+      "llama_text": " "
+    },
+    {
+      "id": "counting_5tok",
+      "message": "Count to three.",
+      "max_tokens": 5,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": false,
+      "generated_text_match": false,
+      "backend_generated_tokens": [
+        28705,
+        28740,
+        28723,
+        12875,
+        28725
+      ],
+      "llama_generated_tokens": [
+        28705,
+        28740,
+        28725,
+        28705,
+        28750
+      ],
+      "backend_text": " 1. Sure,",
+      "llama_text": " 1, 2",
+      "first_generated_token_logit_comparison": {
+        "backend_token_id": 28705,
+        "llama_token_id": 28705,
+        "token_ids_match": true,
+        "backend_margin_llama_minus_backend": 0,
+        "llama_margin_llama_minus_backend": 0,
+        "margin_disagreement": 0,
+        "backend_rows": [
+          {
+            "token_id": 28705,
+            "logit": 33.543617,
+            "probability": 0.7199758,
+            "rank": 1,
+            "selected": true,
+            "text": " "
+          },
+          {
+            "token_id": 28705,
+            "logit": 33.543617,
+            "probability": 0.7199758,
+            "rank": 1,
+            "selected": true,
+            "text": " "
+          }
+        ],
+        "llama_rows": [
+          {
+            "id": 28705,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -0.39769068360328674
+          },
+          {
+            "id": 28705,
+            "token": " ",
+            "bytes": [
+              32
+            ],
+            "logprob": -0.39769068360328674
+          }
+        ]
+      },
+      "divergence_note": "First generated token matches after top-k renormalization, but the sequence still diverges later; next work should debug multi-token/cache or later-layer accumulation parity rather than promote support."
+    }
+  ],
+  "validation_commands": [
+    "cargo fmt",
+    "cargo test --lib softmax_top_k -- --nocapture",
+    "cargo test --lib mixtral_moe_ffn_routes_top_k_experts -- --nocapture",
+    "cargo check",
+    "scripts/check-public-scrub.sh",
+    "Mixtral llama.cpp parity probes for hello_5tok, counting_1tok, and counting_5tok using the exact Q8_0 row"
+  ],
+  "generated_utc": "2026-05-09T21:48:06Z"
+}

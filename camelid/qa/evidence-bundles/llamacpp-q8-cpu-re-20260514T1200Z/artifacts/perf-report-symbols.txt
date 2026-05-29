@@ -1,0 +1,160 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 22K of event 'cycles:P'
+# Event count (approx.): 787825640915
+#
+# Overhead  Shared Object                Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           IPC   [IPC Coverage]
+# ........  ...........................  ..................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................  ....................
+#
+     5.36%  libc.so.6                    [.] _IO_fflush                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      -      -
+            |
+            ---_IO_fflush
+               console::readline_advanced(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool)
+               main
+
+     4.69%  libc.so.6                    [.] 0x0000000000098601                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0x7fde7de98601
+               write
+               _IO_file_write
+               _IO_do_write
+               _IO_file_sync
+               _IO_fflush
+               console::readline_advanced(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool)
+               main
+
+     3.72%  [unknown]                    [k] 0xffffffff97200080                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0xffffffff97200080
+               |
+                --3.72%--write
+                          _IO_file_write
+                          _IO_do_write
+                          _IO_file_sync
+                          _IO_fflush
+                          console::readline_advanced(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool)
+                          main
+
+     3.42%  libggml-cpu.so.0.11.1        [.] void (anonymous namespace)::tinyBLAS_Q0_AVX<block_q8_0, block_q8_0, float>::gemm4xN<2>(long, long, long, long)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  -      -
+            |
+            ---void (anonymous namespace)::tinyBLAS_Q0_AVX<block_q8_0, block_q8_0, float>::gemm4xN<2>(long, long, long, long)
+               (anonymous namespace)::tinyBLAS_Q0_AVX<block_q8_0, block_q8_0, float>::mnpack(long, long, long, long)
+               llamafile_sgemm
+               ggml_compute_forward_mul_mat
+               ggml_graph_compute_thread.isra.0
+               |
+                --3.20%--0x7fde7e0e379e
+                          0x7fde7de9caa3
+                          0x7fde7df29c6b
+
+     3.13%  libc.so.6                    [.] write                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           -      -
+            |
+            ---write
+               _IO_file_write
+               |
+                --3.07%--_IO_do_write
+                          _IO_file_sync
+                          _IO_fflush
+                          console::readline_advanced(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool)
+                          main
+
+     2.85%  [unknown]                    [k] 0xffffffff97489c26                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0xffffffff97489c26
+               0xffffffff987721d6
+               0xffffffff9720012b
+               write
+               _IO_file_write
+               _IO_do_write
+               _IO_file_sync
+               _IO_fflush
+               console::readline_advanced(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool)
+               main
+
+     2.66%  libc.so.6                    [.] getwchar                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        -      -
+            |
+            ---getwchar
+               console::readline_advanced(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool)
+               main
+
+     2.29%  libc.so.6                    [.] 0x000000000006b6a0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0x7fde7de6b6a0
+               console::log(char const*, ...)
+               main
+
+     1.89%  libc.so.6                    [.] 0x000000000006b6e6                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0x7fde7de6b6e6
+               console::log(char const*, ...)
+               main
+
+     1.75%  libc.so.6                    [.] 0x00000000001a1bfa                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0x7fde7dfa1bfa
+               |
+                --1.54%--llama_kv_cache::clear(bool)
+                          |
+                          |--1.03%--common_context_can_seq_rm(llama_context*)
+                          |          server_context_impl::load_model(common_params&)
+                          |          main
+                          |
+                           --0.51%--common_init_from_params(common_params&)
+                                     server_context_impl::load_model(common_params&)
+                                     main
+
+     1.59%  libggml-cpu.so.0.11.1        [.] ggml_vec_dot_q8_0_q8_0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          -      -
+            |
+            ---ggml_vec_dot_q8_0_q8_0
+               ggml_compute_forward_mul_mat
+               ggml_graph_compute_thread.isra.0
+               |
+                --1.49%--0x7fde7e0e379e
+                          0x7fde7de9caa3
+                          0x7fde7df29c6b
+
+     1.04%  libc.so.6                    [.] 0x0000000000098579                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0x7fde7de98579
+               write
+               _IO_file_write
+               _IO_do_write
+               _IO_file_sync
+               _IO_fflush
+               console::readline_advanced(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool)
+               main
+
+     1.04%  [unknown]                    [k] 0xffffffff976324a9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0xffffffff976324a9
+               0xffffffff97ae238f
+               0xffffffff979da072
+               0xffffffff979da5f1
+               0xffffffff979da699
+               0xffffffff97489d39
+               0xffffffff987721a0
+               0xffffffff9720012b
+               write
+               _IO_file_write
+               _IO_do_write
+               _IO_file_sync
+               _IO_fflush
+               console::readline_advanced(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool)
+               main
+
+     1.02%  [unknown]                    [k] 0xffffffff98784fee                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -      -
+            |
+            ---0xffffffff98784fee
+               0xffffffff97ae1d46
+               0xffffffff97ae238f
+               0xffffffff979da072
+               0xffffffff979da5f1
+               0xffffffff979da699
+               0xffffffff97489d39
+               0xffffffff987721a0
+               0xffffffff9720012b
+               write
+               _IO_file_write

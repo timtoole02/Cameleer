@@ -1,0 +1,42 @@
+{
+  "schema": "camelid.mixtral_longgen_continuation.summary.v1",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+  "scope": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf exact row only; hardening continuation evidence only; no support claim change",
+  "status": "partial_failure",
+  "completed_runs": 1,
+  "attempted_runs": 2,
+  "runner_stop_reason": "manually terminated after backend /v1/chat/completions call for run 2 remained hung for hours after llama.cpp reference completion",
+  "results": [
+    {
+      "result_file": "01-9A-128-hello.json",
+      "gate": "9A",
+      "prompt": "Hello",
+      "max_tokens": 128,
+      "backend_generated_token_count": 52,
+      "llama_generated_token_count": 47,
+      "exact_parity": false,
+      "token_parity": false,
+      "text_parity": false,
+      "first_divergence_index": 9,
+      "peak_rss_kib": {
+        "backend": 130084,
+        "llama_cpp": 49531252
+      },
+      "wall_clock_seconds": 183.978
+    }
+  ],
+  "hung_run_observation": {
+    "gate": "9A",
+    "prompt": "What is 2+2?",
+    "max_tokens": 128,
+    "llama_reference_completed": true,
+    "backend_http_call_hung": true,
+    "observed_backend_socket": "127.0.0.1:47530 -> 127.0.0.1:9233 ESTAB",
+    "observed_after_minutes": 150
+  },
+  "highest_exact_parity_tokens": 9,
+  "highest_backend_generation_tokens": 52,
+  "highest_api_generation_tokens": 52,
+  "highest_webui_generation_tokens": 0,
+  "raw_logs": "omitted from bundle; temporary host logs kept outside repo during investigation"
+}

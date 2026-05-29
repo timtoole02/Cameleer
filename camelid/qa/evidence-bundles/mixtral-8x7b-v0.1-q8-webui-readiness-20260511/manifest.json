@@ -1,0 +1,17 @@
+{
+  "bundle": "mixtral-8x7b-v0.1-q8-webui-readiness-20260511",
+  "created_utc": "2026-05-12T00:04:48Z",
+  "scope": "Mixtral-8x7B-Instruct-v0.1.Q8_0 exact-row WebUI readiness gate evidence before promotion",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+  "all_passed": true,
+  "files": [
+    "frontend-build.out",
+    "frontend-runtime-smoke.out",
+    "model-state-smoke.out",
+    "npm-ci-node22.out",
+    "npm-ci.out",
+    "summary.json",
+    "manifest.json",
+    "README.md"
+  ]
+}

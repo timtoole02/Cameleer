@@ -1,0 +1,3 @@
+command=cargo build --release
+failure=Cargo.lock version 4 requires -Znext-lockfile-bump under pinned rust-toolchain channel 1.87.0
+root_cause=rust-toolchain.toml pins cargo 1.87.0 but current Cargo.lock is version 4; installed stable cargo 1.95.0 can parse it

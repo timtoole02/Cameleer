@@ -1,0 +1,18 @@
+
+> camelid-frontend@0.1.0 smoke
+> node scripts/smoke.mjs --api http://127.0.0.1:9221 --frontend http://127.0.0.1:4175 --model-id mixtral-8x7b-v0.1-q8-api-smoke --require-generation --expect-compatibility-row mixtral_8x7b_instruct_v0_1_q8_0 --expect-compatibility-status active_validation_partial_runtime --expect-contract-supported false --expect-webui-chat blocked
+
+Smoke target API: http://127.0.0.1:9221
+Smoke target frontend: http://127.0.0.1:4175
+  frontend_http_200_ms=30
+✓ frontend returned HTTP 200
+  health_ms=3
+✓ health ok; generation_ready=true; active_model_id=mixtral-8x7b-v0.1-q8-api-smoke
+  models_ms=2
+✓ /v1/models returned 1 model(s): mixtral-8x7b-v0.1-q8-api-smoke
+  current_model_ms=18
+  capabilities_ms=1
+✓ /api/capabilities returned support gate: Current exact-row support: TinyLlama Q8_0 current gate; Llama 3.2 1B/3B Q8_0 and Llama 3 8B Q8_0 have checked bounded 512/1024/2048 packs where row-specific PASS artifacts exist. These are exact bounded-pack lanes only; no model-native/larger context beyond the checked packs, arbitrary-template behavior, throughput, portability, neighboring-row, or broad-family support is implied.; compatibility_rows=10; supported_model_families=2; planned_model_families=6; guarded_api_features=2
+✓ WebUI chat gate model=mixtral-8x7b-v0.1-q8-api-smoke; quant=Q8_0; mixtral_8x7b_instruct_v0_1_q8_0: active validation partial runtime; contract_supported=false
+  WebUI contract note=mixtral_moe · Q8_0 · exact row leserg/Mixtral-8x7B-Instruct-v0.1-Q8_0-GGUF at commit 93c0492d1891b5147f42b2648d9fccc140910a2f, license apache-2.0, GGUF ETag 77b8ee314ae3e77cefaba7f33841235da3346c34171547fe10e8a85f127973a7, size 49626319776 bytes and sha256 c48f9680d5aa60703ed0fd38e29fc6556b3490f8f6c9919a31c9da7996039f81; sparse-header metadata parses with llama.expert_count=8 and expert_used_count=2 plus rank-3 expert tensors; tokenizer/template prompts match llama.cpp reference pack fixtures/tokenizer/mixtral-8x7b-instruct-v0.1-reference-pack.json; MoE top-k expert routing runs with selected-weight renormalization and lazy/file-backed Q8 experts; evidence bundles include mixtral-8x7b-v0.1-q8-moe-runtime-parity-20260509, mixtral-8x7b-v0.1-q8-larger-support-probe-20260509, mixtral-8x7b-v0.1-q8-step-logit-debug-20260509, and mixtral-8x7b-v0.1-q8-support-probe-20260509. Short-prompt probe matched llama.cpp for Hello, What is 2+2?, Name a color., Say yes., and Write OK.; Count to three. remains a known near-tie divergence at generated step 2.. Match source: Mixtral exact row + quant match; runtime generation still requires loaded_now=true and generation_ready=true.
+ℹ chat completion skipped because the active model is blocked by the WebUI chat gate; frontend should keep chat disabled

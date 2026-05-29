@@ -1,0 +1,23 @@
+	Command being timed: "timeout 7200s node scripts/run-llama3-prompt-pack.mjs --backend http://127.0.0.1:8871 --llama-url http://127.0.0.1:8873 --llama-server $LLAMA_CPP_BUILD/bin/llama-server --llama-tokenize $LLAMA_CPP_BUILD/bin/llama-tokenize --start-llama-server --pack qa/prompt-packs/llama3-context-1024-smoke.json --model $CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf --model-id meta-llama3-8b-q8 --out-dir target/llama3-8b-context-1024-2048-current-head-20260508T173841Z-head-aa315788ce2e/pack-1024 --prefix meta-llama3-8b-q8-current-head-aa315788ce2e --wait-ms 7200000 --require-prompt-match --require-generated-match"
+	User time (seconds): 226.90
+	System time (seconds): 4.08
+	Percent of CPU this job got: 63%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:06.07
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 17383668
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2487102
+	Voluntary context switches: 2956
+	Involuntary context switches: 45638
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 4040
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

@@ -1,0 +1,52 @@
+{
+  "artifact": "mixtral-8x7b-v0.1-q8-kv-cache-type-probe-20260509",
+  "created_at": "2026-05-09T23:55:00Z",
+  "branch": "mixtral-exact-row-20260509",
+  "base_commit": "a19b8d7",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+  "model_sha256": "c48f9680d5aa60703ed0fd38e29fc6556b3490f8f6c9919a31c9da7996039f81",
+  "probe": "Count to three. max_tokens=5 against llama.cpp cache type variants, plus rejected Camelid attention rounding variants",
+  "baseline": {
+    "llama_cpp_cache": { "k": "f16", "v": "f16" },
+    "camelid_tokens": [28705, 28740, 28723, 12875, 28725],
+    "llama_cpp_tokens": [28705, 28740, 28725, 28705, 28750],
+    "result": "FAIL",
+    "notes": "Camelid matches through generated tokens [28705, 28740] then picks dot while llama.cpp default f16/f16 cache picks comma."
+  },
+  "llama_cpp_cache_type_findings": [
+    {
+      "cache": { "k": "f32", "v": "f32" },
+      "llama_cpp_tokens": [28705, 28740, 28723, 12875, 28725],
+      "result_vs_camelid": "PASS",
+      "notes": "Reference flips to the Camelid dot continuation when both K and V cache are f32."
+    },
+    {
+      "cache": { "k": "f16", "v": "f32" },
+      "llama_cpp_tokens": [28705, 28740, 28723, 12875, 28725],
+      "result_vs_camelid": "PASS",
+      "notes": "Reference also matches Camelid when K is f16 and V is f32."
+    },
+    {
+      "cache": { "k": "f32", "v": "f16" },
+      "llama_cpp_tokens": [4529, 2363, 28808, 4003, 478],
+      "result_vs_camelid": "FAIL",
+      "notes": "Reference takes a different first-token path, showing V-cache precision participates strongly in this near-tie."
+    },
+    {
+      "cache": { "k": "f16", "v": "f16", "threads": 1, "batch_threads": 1 },
+      "llama_cpp_tokens": [28705, 28740, 28725, 28705, 28750],
+      "result_vs_camelid": "FAIL",
+      "notes": "Single-threaded llama.cpp still chooses comma, so this is not just thread nondeterminism."
+    }
+  ],
+  "rejected_camelid_variants": [
+    "round final attention context rows to f16",
+    "round attention context accumulation after each value contribution to f16",
+    "round attention scores to f16 before softmax",
+    "round pre-normalized attention probabilities to f16",
+    "round normalized attention probabilities to f16",
+    "combine attention score/probability f16 rounding variants"
+  ],
+  "current_localization": "The remaining Count to three. blocker is now localized to llama.cpp default f16/f16 KV-cache attention numeric path rather than prompt construction, tokenizer, router top-k selection, or simple scalar f16 rounding in Camelid attention.",
+  "support_boundary": "Evidence only; no broad Mixtral, frontend, long-context, production, neighboring-row, or full-support claim."
+}

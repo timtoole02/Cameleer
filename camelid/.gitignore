@@ -1,0 +1,15 @@
+/target/
+frontend/node_modules/
+frontend/dist/
+models/
+.env
+*.log
+.DS_Store
+
+# Internal/local harness command scratchpads
+*-harness-commands.md
+
+# Raw evidence bundle staging copies may contain private host/path details; publish only the sanitized *-public-* variants.
+qa/evidence-bundles/four-row-20260503T024119Z/
+qa/evidence-bundles/four-row-20260503T024327Z/
+qa/evidence-bundles/four-row-perf-portability-20260503T025639Z/

@@ -1,0 +1,19 @@
+{
+  "id": "roughly-512-token-recall",
+  "note": "A bounded synthetic recall prompt intended for the first TinyLlama 512-context bucket; validate actual prompt token count from the parity report.",
+  "message": null,
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are checking deterministic local TinyLlama parity. Answer with the final requested marker only."
+    },
+    {
+      "role": "user",
+      "content": "Context block start. Fact 01: alpaca wears blue. Fact 02: llama carries books. Fact 03: vicuna counts stars. Fact 04: camelid keeps evidence. Fact 05: rust code stays audited. Fact 06: parity means matching tokens. Fact 07: frontend unlocks only when ready. Fact 08: APIs report exact rows. Fact 09: longer context needs proof. Fact 10: template coverage stays bounded. Fact 11: memory samples matter. Fact 12: portability needs host facts. Fact 13: no neighboring row inherits support. Fact 14: Q8_0 is the tested quantization. Fact 15: TinyLlama claims stay exact-row. Fact 16: prompt packs must be durable. Fact 17: llama.cpp is the reference. Fact 18: generated text must match. Fact 19: token IDs must match. Fact 20: docs must agree. Repeat marker: TINY-512-CHECK. Context block end. What is the repeat marker?"
+    }
+  ],
+  "max_tokens": 5,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": 512,
+  "resolved_max_tokens": 5
+}

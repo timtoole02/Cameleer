@@ -1,0 +1,9 @@
+{
+  "schema": "camelid.evidence_bundle_privacy_audit.v1",
+  "generated_at": "2026-05-05T03:41:29.643Z",
+  "root": "qa/evidence-bundles/full-support-normalized-wp2-8b-20260505T033730Z-head-bcf9e647d6fd",
+  "strict": true,
+  "finding_count": 0,
+  "bundle_count_with_findings": 0,
+  "bundles": []
+}

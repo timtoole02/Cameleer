@@ -1,0 +1,2 @@
+ 864044       1     102  0.0  0.0 timeout 20m env RAYON_NUM_THREADS=2 CAMELID_LAZY_Q8_0_LINEAR=1 CAMELID_RETAIN_Q8_0_BLOCKS=0 CAMELID_Q8_0_FILE_CACHE_BYTES=256MiB <camelid-release-bin> serve --addr 127.0.0.1:8831
+ 864047  864044     102 30.9  0.2 <camelid-release-bin> serve --addr 127.0.0.1:8831

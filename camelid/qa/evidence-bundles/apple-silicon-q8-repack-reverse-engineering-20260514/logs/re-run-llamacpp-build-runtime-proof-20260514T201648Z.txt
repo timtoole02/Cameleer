@@ -1,0 +1,45 @@
+# cmake cache
+GGML_ACCELERATE:BOOL=ON
+GGML_BLAS:BOOL=ON
+GGML_BLAS_VENDOR:STRING=Apple
+GGML_CPU:BOOL=ON
+GGML_CPU_ALL_VARIANTS:BOOL=OFF
+GGML_CPU_ARM_ARCH:STRING=
+GGML_CPU_HBM:BOOL=OFF
+GGML_CPU_KLEIDIAI:BOOL=OFF
+GGML_CPU_POWERPC_CPUTYPE:STRING=
+GGML_CPU_REPACK:BOOL=ON
+GGML_METAL:BOOL=OFF
+GGML_METAL_EMBED_LIBRARY:BOOL=OFF
+GGML_METAL_MACOSX_VERSION_MIN:STRING=
+GGML_METAL_NDEBUG:BOOL=OFF
+GGML_METAL_SHADER_DEBUG:BOOL=OFF
+GGML_METAL_STD:STRING=
+# linked frameworks/libraries
+build-cpu-mac-q8/bin/llama-server:
+	@rpath/libllama-common.0.dylib (compatibility version 0.0.0, current version 0.0.0)
+	@rpath/libmtmd.0.dylib (compatibility version 0.0.0, current version 0.0.0)
+	@rpath/libllama.0.dylib (compatibility version 0.0.0, current version 0.0.0)
+	@rpath/libggml.0.dylib (compatibility version 0.0.0, current version 0.11.1)
+	@rpath/libggml-cpu.0.dylib (compatibility version 0.0.0, current version 0.11.1)
+	@rpath/libggml-blas.0.dylib (compatibility version 0.0.0, current version 0.11.1)
+	@rpath/libggml-base.0.dylib (compatibility version 0.0.0, current version 0.11.1)
+	/opt/homebrew/opt/openssl@3/lib/libssl.3.dylib (compatibility version 3.0.0, current version 3.0.0)
+	/opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib (compatibility version 3.0.0, current version 3.0.0)
+	/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 4109.1.255)
+	/System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 61901.40.77)
+	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 2000.63.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1356.0.0)
+# kernel symbols
+000000000001bb24 T __Z35ggml_backend_cpu_repack_buffer_typev
+00000000000af770 T _ggml_gemm_q8_0_4x4_q8_0
+0000000000017a80 T _ggml_gemm_q8_0_4x4_q8_0_generic
+00000000000af9b8 T _ggml_gemm_q8_0_4x8_q8_0
+0000000000017ec8 T _ggml_gemm_q8_0_4x8_q8_0_generic
+00000000000ab00c T _ggml_gemv_q8_0_4x4_q8_0
+0000000000010ce0 T _ggml_gemv_q8_0_4x4_q8_0_generic
+00000000000ab0e8 T _ggml_gemv_q8_0_4x8_q8_0
+0000000000010f00 T _ggml_gemv_q8_0_4x8_q8_0_generic
+# llama-server version
+version: 206 (834a243)
+built with AppleClang 17.0.0.17000404 for Darwin arm64

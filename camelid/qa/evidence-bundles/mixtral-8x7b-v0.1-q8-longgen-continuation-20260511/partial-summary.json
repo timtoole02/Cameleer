@@ -1,0 +1,178 @@
+{
+  "schema": "camelid.mixtral_longgen_continuation.partial.v1",
+  "completed_runs": 1,
+  "results": [
+    {
+      "gate": "9A",
+      "kind": "backend_long_output_parity_ladder",
+      "max_tokens": 128,
+      "prompt": "Hello",
+      "compare_llama": true,
+      "wall_clock_seconds": 183.978,
+      "rss": {
+        "peak_rss_kib": {
+          "backend": 130084,
+          "llama_cpp": 49531252
+        },
+        "samples": 182
+      },
+      "exit_status": "ok",
+      "backend_generated_token_count": 52,
+      "backend": {
+        "first_20": [
+          22557,
+          28808,
+          1602,
+          541,
+          315,
+          1316,
+          368,
+          3154,
+          28804,
+          1691,
+          736,
+          264,
+          2948,
+          9067,
+          368,
+          682,
+          737,
+          298,
+          3342,
+          442
+        ],
+        "last_20": [
+          10895,
+          28804,
+          315,
+          28742,
+          28719,
+          1236,
+          298,
+          4372,
+          707,
+          4224,
+          368,
+          506,
+          298,
+          272,
+          1489,
+          302,
+          586,
+          5537,
+          28723,
+          2
+        ],
+        "token_hash": "d5081b73f13c4a89cc228492777e456801fc50e0f7706b68f91d1a115246e18e"
+      },
+      "backend_text": {
+        "chars": 240,
+        "sha256": "e8e5b7e9b28dba46dbece3266dd862d52f21492a51514cb8d9c47b3edfb0219e",
+        "prefix": " Hello! How can I help you today? Is there a specific topic you would like to discuss or learn about related to data science, machine learning, or artificial in",
+        "suffix": "scuss or learn about related to data science, machine learning, or artificial intelligence? I'm here to answer any questions you have to the best of my ability."
+      },
+      "backend_usage": {
+        "prompt_tokens": 9,
+        "completion_tokens": 52,
+        "total_tokens": 61
+      },
+      "llama_generated_token_count": 47,
+      "llama": {
+        "first_20": [
+          22557,
+          28808,
+          1602,
+          541,
+          315,
+          1316,
+          368,
+          3154,
+          28804,
+          1047,
+          368,
+          506,
+          707,
+          4224,
+          684,
+          264,
+          2948,
+          9067,
+          442,
+          776
+        ],
+        "last_20": [
+          1460,
+          28723,
+          315,
+          28742,
+          28719,
+          1236,
+          298,
+          3084,
+          1871,
+          304,
+          1760,
+          28723,
+          1691,
+          736,
+          1545,
+          356,
+          574,
+          2273,
+          28804,
+          2
+        ],
+        "token_hash": "defc08cb6a287596d3c4ef83cbd2a783b83ec58f1eb9902b6bba4d327216d4d7"
+      },
+      "llama_text": {
+        "chars": 200,
+        "sha256": "feb7e134b106482c15c05eaf25eac7a3c00427e53f163e84fbb0a8f2c8b9187c",
+        "prefix": " Hello! How can I help you today? If you have any questions about a specific topic or just want to chat, feel free to ask. I'm here to provide information and s",
+        "suffix": " have any questions about a specific topic or just want to chat, feel free to ask. I'm here to provide information and support. Is there something on your mind?"
+      },
+      "llama_timings": {
+        "predicted_ms": 9383.62,
+        "predicted_n": 47,
+        "predicted_per_second": 5.008727974917995,
+        "predicted_per_token_ms": 199.65148936170215,
+        "prompt_ms": 1184.643,
+        "prompt_n": 9,
+        "prompt_per_second": 7.597225493249865,
+        "prompt_per_token_ms": 131.627
+      },
+      "token_parity": false,
+      "text_parity": false,
+      "exact_parity": false,
+      "first_divergence_index": 9,
+      "divergence_window": {
+        "start": 4,
+        "backend": [
+          315,
+          1316,
+          368,
+          3154,
+          28804,
+          1691,
+          736,
+          264,
+          2948,
+          9067,
+          368
+        ],
+        "llama": [
+          315,
+          1316,
+          368,
+          3154,
+          28804,
+          1047,
+          368,
+          506,
+          707,
+          4224,
+          684
+        ]
+      }
+    }
+  ]
+}

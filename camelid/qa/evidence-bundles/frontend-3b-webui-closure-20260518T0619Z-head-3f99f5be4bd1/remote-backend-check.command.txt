@@ -1,0 +1,1 @@
+ssh <canonical-ubuntu-host> 'set -euo pipefail; date -u; hostname; curl -fsS http://127.0.0.1:8181/v1/health; curl -fsS http://127.0.0.1:8181/api/capabilities'

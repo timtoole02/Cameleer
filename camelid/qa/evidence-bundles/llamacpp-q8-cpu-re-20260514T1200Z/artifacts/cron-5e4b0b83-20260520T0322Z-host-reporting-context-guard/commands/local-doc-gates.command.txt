@@ -1,0 +1,20 @@
+git diff --check
+python3 - <<'PY'
+from pathlib import Path
+paths=[Path('README.md'),Path('CONTEXT.md')]
+paths += list(Path('docs').rglob('*')) + list(Path('frontend/scripts').rglob('*')) + list(Path('src').rglob('*')) + list(Path('scripts').rglob('*'))
+needles=['Ubuntu is '+w for w in ('blocked','down','unavailable')] + ['Ubuntu host '+w for w in ('blocked','down','unavailable')] + ['Permission denied ('+'publickey'+')']
+hits=[]
+for p in paths:
+    if not p.is_file():
+        continue
+    txt=p.read_text(errors='ignore')
+    for i,line in enumerate(txt.splitlines(),1):
+        if any(n in line for n in needles):
+            hits.append(f'{p}:{i}:{line}')
+if hits:
+    print('\n'.join(hits))
+else:
+    print('PASS: no explicit stale Ubuntu host-failure reporting phrases found in public docs/source scan set.')
+PY
+git diff --stat

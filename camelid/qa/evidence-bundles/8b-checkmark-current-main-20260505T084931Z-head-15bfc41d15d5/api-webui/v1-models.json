@@ -1,0 +1,11 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "llama3-8b-q8",
+      "object": "model",
+      "created": 0,
+      "owned_by": "backendinference"
+    }
+  ]
+}

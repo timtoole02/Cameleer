@@ -1,0 +1,33 @@
+{
+  "schema": "camelid.llama32_3b_mac_streaming_role_health.v1",
+  "measured_at": "2026-05-12T14:33:00Z",
+  "privacy": "Public compact artifact; raw local model paths, hostnames, and operator-only staging details are redacted.",
+  "backend": "local release backend on loopback after streaming-responsiveness patch",
+  "model": "llama32-3b-q8-mac-polish",
+  "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+  "model_path": "redacted-private-local-gguf-path",
+  "load_elapsed_ms": "not retained exactly in compact artifact; load completed successfully before stream probe",
+  "stream_probe": {
+    "endpoint": "/v1/chat/completions",
+    "stream": true,
+    "max_tokens": 1,
+    "status": 200,
+    "content_type": "text/event-stream",
+    "headers_ms": 91.7585,
+    "first_chunk_ms": 91.815208,
+    "first_chunk_kind": "role-only assistant delta",
+    "first_chunk_text": "data: {\"id\":\"chatcmpl-43eb92ef-3c42-4bfa-a8fd-7e4c3bf289d2\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"llama32-3b-q8-mac-polish\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\"},\"finish_reason\":null}]}\\n\\n"
+  },
+  "concurrent_health_during_generation": {
+    "status": 200,
+    "elapsed_ms": 3.648292,
+    "loaded_now": true,
+    "generation_ready": true,
+    "active_model_id": "llama32-3b-q8-mac-polish"
+  },
+  "notes": [
+    "The stream was intentionally aborted after the first role-only SSE chunk to avoid waiting for another long first token.",
+    "The isolated backend was killed after the probe so no local generation was left running.",
+    "This verifies perceived-streaming plumbing and server responsiveness; it does not improve the measured 253.5s first-content latency."
+  ]
+}

@@ -1,0 +1,12 @@
+diff --git a/frontend/package.json b/frontend/package.json
+index fa616d1..03b84a6 100644
+--- a/frontend/package.json
++++ b/frontend/package.json
+@@ -9,6 +9,7 @@
+     "preview": "vite preview --host 127.0.0.1 --port 4175",
+     "smoke": "node scripts/smoke.mjs",
+     "smoke:model-state": "node scripts/model-state-smoke.mjs",
++    "smoke:3b-closure": "node scripts/frontend-3b-closure-smoke.mjs",
+     "smoke:ui": "node scripts/ui-regression-smoke.mjs",
+     "smoke:streaming": "node scripts/streaming-parser-smoke.mjs",
+     "smoke:integration": "node scripts/frontend-integration-smoke.mjs",

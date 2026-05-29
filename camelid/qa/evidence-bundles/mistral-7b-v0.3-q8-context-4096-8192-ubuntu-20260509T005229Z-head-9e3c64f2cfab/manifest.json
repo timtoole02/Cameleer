@@ -1,0 +1,11 @@
+{
+  "schema": "camelid.evidence_bundle_manifest.v1",
+  "created_utc": "2026-05-09T03:05:00Z",
+  "bundle": "mistral-7b-v0.3-q8-context-4096-8192-ubuntu-20260509T005229Z-head-9e3c64f2cfab",
+  "purpose": "Ubuntu 4096/8192 max-context ladder validation for exact Mistral-7B-Instruct-v0.3 Q8_0 against llama.cpp.",
+  "repo_head": "9e3c64f2cfab098f9cccbc8e5f879ecd99d73666",
+  "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+  "result": "PASS: 4096 and 8192 context-window buckets matched llama.cpp for prompt tokens, generated token IDs, and generated text. Highest checked passed context window in this bundle is 8192.",
+  "privacy": "Sanitized: no operator paths, host IPs, SSH commands, key paths, or machine-specific model paths are included.",
+  "next": "The 16384/32768 ladder remained in progress when this 4096/8192 evidence slice was published; publish later buckets only after row-specific PASS artifacts exist."
+}

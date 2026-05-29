@@ -1,0 +1,746 @@
+{
+  "schema": "camelid.normalized.row_evidence_bundle.v1",
+  "generated_utc": "2026-05-03T02:43:28.345356Z",
+  "bundle_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+  "current_head_rebuild_status": {
+    "attempted": true,
+    "attempted_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+    "status": "blocked",
+    "reason": "Ubuntu host cargo 1.75.0 cannot parse Cargo.lock v4 (cargo build --release --bin backendinference failed before rerun).",
+    "failed_artifact_root": "target/full-support-20260503T023129Z"
+  },
+  "row_id": "llama32_1b_instruct_q8_0",
+  "display_name": "Llama 3.2 1B Instruct Q8_0",
+  "exact_support_status": "supported_exact_row_smoke",
+  "model": {
+    "id": "llama32-1b-q8",
+    "path": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+    "sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+    "loaded_model_record": {
+      "id": "llama32-1b-q8",
+      "path": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "gguf_path": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "gguf_version": 3,
+      "gguf_tensor_count": 147,
+      "gguf_metadata": {
+        "general.name": "Llama 3.2 1B Instruct",
+        "general.architecture": "llama",
+        "general.file_type": 7,
+        "llama.context_length": 131072,
+        "llama.block_count": 16,
+        "llama.embedding_length": 2048
+      }
+    }
+  },
+  "prompt_pack": {
+    "id": "llama3-broader-repro-3prompt",
+    "path": "qa/prompt-packs/llama3-broader-repro-3prompt.json"
+  },
+  "source_artifacts": {
+    "smoke_root": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8",
+    "smoke_commit_sha": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+    "parity_paths": [
+      "target/ubuntu-followup-20260502T015231Z/llama32_1b-50tok.json",
+      "target/parity-broad-20260502T033606Z/llama32-1b-p1/report.json",
+      "target/parity-broad-20260502T033606Z/llama32-1b-p2/report.json",
+      "target/parity-broad-20260502T033606Z/llama32-1b-p3/report.json"
+    ]
+  },
+  "host_facts": {
+    "captured_at": "Sat May  2 21:27:51 UTC 2026",
+    "artifact_git_head": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+    "uname": "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+    "hostname": "canonical-private-ubuntu-validation-host",
+    "memory": {
+      "total": "123Gi",
+      "used": "2.3Gi",
+      "free": "101Gi",
+      "available": "121Gi"
+    },
+    "disk_root": {
+      "size": "193G",
+      "used": "29G",
+      "avail": "165G",
+      "use_percent": "15%",
+      "mount": "/"
+    },
+    "raw_excerpt": [
+      "Sat May  2 21:27:51 UTC 2026",
+      "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+      " M COMPATIBILITY.md",
+      " M README.md",
+      " M ROADMAP.md",
+      " M STATUS.md",
+      " M frontend/README.md",
+      " M frontend/scripts/model-state-smoke.mjs",
+      " M frontend/src/lib/acceptanceTargets.js",
+      " M frontend/src/views/ChatWorkspace.jsx",
+      " M frontend/src/views/ModelsView.jsx",
+      " M src/api/mod.rs",
+      " M tests/api_vertical_slice.rs",
+      "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+      "               total        used        free      shared  buff/cache   available",
+      "Mem:           123Gi       2.3Gi       101Gi       3.0Mi        20Gi       121Gi",
+      "Swap:             0B          0B          0B",
+      "Filesystem      Size  Used Avail Use% Mounted on",
+      "/dev/root       193G   29G  165G  15% /",
+      "/dev/root       193G   29G  165G  15% /"
+    ]
+  },
+  "api_webui_readiness": {
+    "smoke_summary_sha256": "8652ba2e9b3fd8d5dd418e8046ff6393381b5cfee76e118e06418cd917e8421b",
+    "frontend_summary_sha256": "62d86d7447f7e379efdc0801e4de219826ef3092d803b129f6d0c5cde1b6b1ef",
+    "smoke_summary": {
+      "schema": "camelid.model-promotion.smoke-bundle.v1",
+      "generated_utc": "2026-05-02T21:29:30.097Z",
+      "api_base": "http://127.0.0.1:8291",
+      "frontend_url": "http://127.0.0.1:4276",
+      "model_path": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "model_id": "llama32-1b-q8",
+      "message": "hello",
+      "max_tokens": 1,
+      "temperature": 0,
+      "allow_guarded_chat": false,
+      "skip_frontend": false,
+      "steps": {
+        "health_before": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/health-before.json"
+        },
+        "load": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/load.response.json"
+        },
+        "current_model": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/current-model.json"
+        },
+        "v1_models": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/v1-models.json"
+        },
+        "capabilities": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/capabilities.json"
+        },
+        "v1_completions": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/completion.response.json"
+        },
+        "v1_chat_completions": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/chat.response.json"
+        },
+        "health_after": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/health-after.json"
+        },
+        "frontend_smoke": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8/frontend.summary.json"
+        }
+      },
+      "passed": true
+    },
+    "frontend_summary": {
+      "command": [
+        "node",
+        "frontend/scripts/smoke.mjs",
+        "--api",
+        "http://127.0.0.1:8291",
+        "--frontend",
+        "http://127.0.0.1:4276",
+        "--model",
+        "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+        "--model-id",
+        "llama32-1b-q8",
+        "--chat-repeats",
+        "1",
+        "--require-generation",
+        "--expect-compatibility-row",
+        "llama32_1b_instruct_q8_0",
+        "--expect-compatibility-status",
+        "supported_exact_row_smoke",
+        "--expect-contract-supported",
+        "true",
+        "--expect-webui-chat",
+        "enabled"
+      ],
+      "exit_code": 0,
+      "mode": "require_generation"
+    },
+    "health_after": {
+      "active_model_id": "llama32-1b-q8",
+      "generation_ready": true,
+      "request_id": null
+    },
+    "capabilities_excerpt": {
+      "model_count": 0,
+      "keys": [
+        "api_features",
+        "engine",
+        "gguf_metadata",
+        "inference",
+        "model_compatibility",
+        "notes",
+        "planned_model_families",
+        "planned_quantization",
+        "streaming",
+        "support_contract",
+        "supported_model_families",
+        "supported_quantization",
+        "tensor_loading",
+        "tokenization"
+      ]
+    }
+  },
+  "token_parity_summary": [
+    {
+      "path": "target/ubuntu-followup-20260502T015231Z/llama32_1b-50tok.json",
+      "sha256": "4aaf39e26efed1c4a7aae0efc196f05d5c65b3f8a6e36c2f6f4fb0ff3614e908",
+      "summary": {
+        "model": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+        "model_id": "llama-3.2-1b-instruct-q8",
+        "message": "hello",
+        "expected_prompt": "<|start_header_id|>user<|end_header_id|>\n\nhello<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+        "prompt_tokens_match": true,
+        "generated_tokens_match": true,
+        "generated_text_match": true,
+        "first_generated_text_diff_index": -1,
+        "backend_prompt_tokens": {
+          "count": 11,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ],
+          "tail": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "reference_prompt_tokens": {
+          "count": 11,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ],
+          "tail": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "backend_generated_tokens": {
+          "count": 10,
+          "head": [
+            9906,
+            0,
+            2650,
+            649,
+            358,
+            7945,
+            499,
+            3432,
+            30,
+            128009
+          ],
+          "tail": [
+            9906,
+            0,
+            2650,
+            649,
+            358,
+            7945,
+            499,
+            3432,
+            30,
+            128009
+          ]
+        },
+        "llama_generated_tokens": {
+          "count": 10,
+          "head": [
+            9906,
+            0,
+            2650,
+            649,
+            358,
+            7945,
+            499,
+            3432,
+            30,
+            128009
+          ],
+          "tail": [
+            9906,
+            0,
+            2650,
+            649,
+            358,
+            7945,
+            499,
+            3432,
+            30,
+            128009
+          ]
+        }
+      }
+    },
+    {
+      "path": "target/parity-broad-20260502T033606Z/llama32-1b-p1/report.json",
+      "sha256": "cebc6e3a1ca67e517821c13ca55e5ea4ac44668fc7bc0c5ae0115ddbe72e0b89",
+      "summary": {
+        "model": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+        "model_id": "llama32-1b-q8",
+        "message": "hello",
+        "expected_prompt": "<|start_header_id|>user<|end_header_id|>\n\nhello<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+        "prompt_tokens_match": true,
+        "generated_tokens_match": true,
+        "generated_text_match": true,
+        "first_generated_text_diff_index": -1,
+        "backend_prompt_tokens": {
+          "count": 11,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ],
+          "tail": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "reference_prompt_tokens": {
+          "count": 11,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ],
+          "tail": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "backend_generated_tokens": {
+          "count": 10,
+          "head": [
+            9906,
+            0,
+            2650,
+            649,
+            358,
+            7945,
+            499,
+            3432,
+            30,
+            128009
+          ],
+          "tail": [
+            9906,
+            0,
+            2650,
+            649,
+            358,
+            7945,
+            499,
+            3432,
+            30,
+            128009
+          ]
+        },
+        "llama_generated_tokens": {
+          "count": 10,
+          "head": [
+            9906,
+            0,
+            2650,
+            649,
+            358,
+            7945,
+            499,
+            3432,
+            30,
+            128009
+          ],
+          "tail": [
+            9906,
+            0,
+            2650,
+            649,
+            358,
+            7945,
+            499,
+            3432,
+            30,
+            128009
+          ]
+        }
+      }
+    },
+    {
+      "path": "target/parity-broad-20260502T033606Z/llama32-1b-p2/report.json",
+      "sha256": "eeb7099534d2afab92d5584567b5308a6c45e33db80c33f74aa13d5acd5e3e51",
+      "summary": {
+        "model": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+        "model_id": "llama32-1b-q8",
+        "message": "give me exactly three bullet points about alpacas",
+        "expected_prompt": "<|start_header_id|>user<|end_header_id|>\n\ngive me exactly three bullet points about alpacas<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+        "prompt_tokens_match": true,
+        "generated_tokens_match": true,
+        "generated_text_match": true,
+        "first_generated_text_diff_index": -1,
+        "backend_prompt_tokens": {
+          "count": 20,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            47530,
+            757,
+            7041,
+            2380,
+            17889,
+            3585,
+            922
+          ],
+          "tail": [
+            2380,
+            17889,
+            3585,
+            922,
+            453,
+            46051,
+            300,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "reference_prompt_tokens": {
+          "count": 20,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            47530,
+            757,
+            7041,
+            2380,
+            17889,
+            3585,
+            922
+          ],
+          "tail": [
+            2380,
+            17889,
+            3585,
+            922,
+            453,
+            46051,
+            300,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "backend_generated_tokens": {
+          "count": 50,
+          "head": [
+            8586,
+            527,
+            2380,
+            17889,
+            3585,
+            922,
+            453,
+            46051,
+            300,
+            1473,
+            6806,
+            1708
+          ],
+          "tail": [
+            2435,
+            527,
+            3967,
+            369,
+            872,
+            8579,
+            11,
+            30244,
+            93090,
+            11,
+            902,
+            374
+          ]
+        },
+        "llama_generated_tokens": {
+          "count": 50,
+          "head": [
+            8586,
+            527,
+            2380,
+            17889,
+            3585,
+            922,
+            453,
+            46051,
+            300,
+            1473,
+            6806,
+            1708
+          ],
+          "tail": [
+            2435,
+            527,
+            3967,
+            369,
+            872,
+            8579,
+            11,
+            30244,
+            93090,
+            11,
+            902,
+            374
+          ]
+        }
+      }
+    },
+    {
+      "path": "target/parity-broad-20260502T033606Z/llama32-1b-p3/report.json",
+      "sha256": "05e8670ae831f8461b8088447517f62cda62cb1a76b9537af88bfa3449dc7dde",
+      "summary": {
+        "model": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+        "model_id": "llama32-1b-q8",
+        "message": "answer with valid JSON for {\"ok\":true,\"value\":2}",
+        "expected_prompt": "<|start_header_id|>user<|end_header_id|>\n\nanswer with valid JSON for {\"ok\":true,\"value\":2}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+        "prompt_tokens_match": true,
+        "generated_tokens_match": true,
+        "generated_text_match": true,
+        "first_generated_text_diff_index": -1,
+        "backend_prompt_tokens": {
+          "count": 24,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            9399,
+            449,
+            2764,
+            4823,
+            369,
+            5324,
+            564
+          ],
+          "tail": [
+            794,
+            1904,
+            1359,
+            970,
+            794,
+            17,
+            92,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "reference_prompt_tokens": {
+          "count": 24,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            9399,
+            449,
+            2764,
+            4823,
+            369,
+            5324,
+            564
+          ],
+          "tail": [
+            794,
+            1904,
+            1359,
+            970,
+            794,
+            17,
+            92,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "backend_generated_tokens": {
+          "count": 50,
+          "head": [
+            8586,
+            374,
+            279,
+            4823,
+            13340,
+            315,
+            279,
+            2728,
+            907,
+            1473,
+            14196,
+            4077
+          ],
+          "tail": [
+            264,
+            2764,
+            7698,
+            13,
+            1442,
+            499,
+            4265,
+            1093,
+            311,
+            4097,
+            433,
+            439
+          ]
+        },
+        "llama_generated_tokens": {
+          "count": 50,
+          "head": [
+            8586,
+            374,
+            279,
+            4823,
+            13340,
+            315,
+            279,
+            2728,
+            907,
+            1473,
+            14196,
+            4077
+          ],
+          "tail": [
+            264,
+            2764,
+            7698,
+            13,
+            1442,
+            499,
+            4265,
+            1093,
+            311,
+            4097,
+            433,
+            439
+          ]
+        }
+      }
+    }
+  ],
+  "performance_memory_envelope": {
+    "backend_ps_after": {
+      "rss_kib": 347316,
+      "vsz_kib": 1362500,
+      "elapsed": null,
+      "command": null
+    }
+  },
+  "artifact_checksums": {
+    "summary_json": "8652ba2e9b3fd8d5dd418e8046ff6393381b5cfee76e118e06418cd917e8421b",
+    "frontend_summary_json": "62d86d7447f7e379efdc0801e4de219826ef3092d803b129f6d0c5cde1b6b1ef",
+    "capabilities_json": "c75305e101869730deff54da3e811c19ab51aebe03450e67399de53c93013179",
+    "current_model_json": "25a8ba195e4248663055107a8e2708277fd548a1155d4156d18660b2c4f4a12e",
+    "health_after_json": "5b3c30b64d10eab4f5ad9bf83d92a3751b06f38665bf69512a1958fe61255f2c"
+  },
+  "notes": [
+    "Exact-row support claims remain limited to the listed row only.",
+    "Bundle normalized from on-disk Ubuntu artifacts; no current public-head rerun is claimed here because the historical Ubuntu cargo toolchain could not parse Cargo.lock v4."
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "path": "<ubuntu-model-path>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+  "tensor": "blk.0.ffn_gate.weight",
+  "shape": [
+    8192,
+    3072
+  ],
+  "storage_shape": [
+    3072,
+    8192
+  ],
+  "logical_shape": [
+    8192,
+    3072
+  ],
+  "swap_rank2_shape": true,
+  "tensor_n_bytes": 26738688,
+  "tensor_mib": 25.5,
+  "element_count": 25165824,
+  "block_count": 786432,
+  "f32_materialized_mib": 96.0,
+  "retained_q8_payload_mib": 25.5,
+  "dot_input_f32_mib": 0.01171875,
+  "all_rows_output_f32_mib": 0.03125,
+  "single_input_row_output_f32_mib": 0.03125,
+  "determinism": {
+    "execution": "serial_only_q8_0_block_rows",
+    "parallel_kernel_default": false,
+    "serial_vs_parallel_delta_target": 0.0,
+    "serial_vs_parallel_delta_fail_threshold": 1e-7
+  },
+  "rows": [
+    0
+  ],
+  "row_len": 3072,
+  "repeats": 5,
+  "warmup": 1,
+  "metadata_load_ms": 297.72825600000004,
+  "block_load_ms": 25.983084,
+  "checksum": 5.2432623,
+  "avg_dequant_ms": 0.0064638000000000004,
+  "min_dequant_ms": 0.00603,
+  "max_dequant_ms": 0.008143,
+  "dot_checksum": -0.05126936,
+  "avg_dot_ms": 0.0028588000000000003,
+  "min_dot_ms": 0.002798,
+  "max_dot_ms": 0.003079,
+  "all_rows_dot": true,
+  "all_rows_dot_checksum": -10.898317,
+  "avg_all_rows_dot_ms": 16.101799,
+  "min_all_rows_dot_ms": 16.051386,
+  "max_all_rows_dot_ms": 16.160479,
+  "single_input_row_dot": true,
+  "single_input_row_dot_checksum": -10.898317,
+  "avg_single_input_row_dot_ms": 16.058073999999998,
+  "min_single_input_row_dot_ms": 15.991221,
+  "max_single_input_row_dot_ms": 16.123134,
+  "dot_input_pattern": "deterministic bench_values(row_len, 0.00019)",
+  "notes": [
+    "Loads only the selected Q8_0 tensor payload as retained blocks, not full model f32 weights.",
+    "Reports the bounded f32 activation input and optional output-vector sizes so memory pressure evidence distinguishes scratch/output buffers from avoided full f32 weight materialization.",
+    "Benchmarks serial bounded row dequantization, row dot products, optional all-row dot output, and optional single-input-row lazy-linear adapter output; this is groundwork evidence for lazy/on-demand Q8_0 execution, not a generation-support claim.",
+    "When swap_rank2_shape is true, the benchmark reinterprets rank-2 rows/cols without transposing payload bytes, matching the current guarded runtime layout path for selected rectangular LLaMA tensors.",
+    "Determinism fields intentionally record that this bench path is serial-only today; any future parallel Q8 kernel must add serial-vs-parallel evidence targeting zero delta and failing above 1e-7 unless guarded off by default."
+  ]
+}

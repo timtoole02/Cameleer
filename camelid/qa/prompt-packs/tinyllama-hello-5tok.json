@@ -1,0 +1,16 @@
+{
+  "schema": "camelid.tinyllama.prompt-pack.v1",
+  "pack_id": "tinyllama-hello-5tok-v1",
+  "description": "Bounded TinyLlama exact-row smoke prompt used for durable prompt-token/generated-token parity refreshes.",
+  "defaults": {
+    "max_tokens": 5,
+    "temperature": 0
+  },
+  "prompts": [
+    {
+      "id": "hello",
+      "message": "hello",
+      "note": "Exact-row TinyLlama smoke prompt preserved from the current parity lane."
+    }
+  ]
+}

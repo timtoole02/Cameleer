@@ -1,0 +1,11 @@
+branch=
+head=e9f926ed1a65ce4025864ff0bb7e323a6c888946
+head_short=e9f926ed1a65
+utc=20260513T2005Z
+status:
+## HEAD (no branch)
+?? qa/evidence-bundles/llama32-3b-api-webui-current-head-20260513T2005Z-head-e9f926e/
+node=v22.22.2
+cargo=cargo 1.87.0 (99624be96 2025-05-06)
+rustc=rustc 1.87.0 (17067e9ac 2025-05-09)
+b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921  <canonical-model-store>/Llama-3.2-3B-Instruct-Q8_0.gguf

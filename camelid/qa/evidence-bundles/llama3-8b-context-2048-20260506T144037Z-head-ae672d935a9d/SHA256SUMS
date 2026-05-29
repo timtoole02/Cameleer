@@ -1,0 +1,9 @@
+b45044a2441b353f435e05eda30d867359e651a304c507f87d5a2280dbf9a397  ./backend-rss-summary.txt
+ac345007358c720ee07007a31d341e62ac6116b506dad9373cc88a5faf7af2c3  ./manifest.json
+3125c390efdd4ca9c36491587a23c240b3af8cef0402426b32a0fd5be3fd5e19  ./model-SHA256SUMS
+2e0a40e7a12d42908f8674cd7ed4d472d75a6fcaf707f1bcee73b90bb96c0e18  ./pack/meta-llama3-8b-q8-roughly-2048-token-recall/command.txt
+0089abc6159e488b9f5ac80bca9c6769dea0dd6c406087880c208fc51e4a1686  ./pack/meta-llama3-8b-q8-roughly-2048-token-recall/report.json
+9fc71fcfc591663dba430daa7d3c0e83c7f3dd8d2a0648bf0afc108eb2ebcc8a  ./pack.stdout.log
+c6795a3af4a3343177d323f05c7ccf9f405e09bdfd65e425e0af662b86e2c8bc  ./pack.time.txt
+6b180e2fb86e832445e5db8434b5531beede51f99aa55de09d2be96c30a0aeee  ./runtime.env.txt
+edc8a4a0a34b1a5897758c1953381813ea7a4d41c7f670a08ad40cd84e42a74d  ./summary.json

@@ -1,0 +1,12 @@
+ STATUS.md                                          |    5 +
+ docs/CONFIGURATION.md                              |    6 +
+ docs/performance/ubuntu-x86-q8.md                  |   24 +-
+ .../llamacpp-q8-cpu-re-20260514T1200Z/README.md    |  100 +
+ scripts/bench-llama3-same-host.mjs                 |   55 +-
+ src/api/mod.rs                                     |  143 +-
+ src/execution_plan.rs                              |   81 +
+ src/inference.rs                                   | 1932 +++++++++++++++++---
+ src/tensor/mod.rs                                  |   12 +-
+ tests/tensor_store.rs                              |   40 +
+ 10 files changed, 2173 insertions(+), 225 deletions(-)
+

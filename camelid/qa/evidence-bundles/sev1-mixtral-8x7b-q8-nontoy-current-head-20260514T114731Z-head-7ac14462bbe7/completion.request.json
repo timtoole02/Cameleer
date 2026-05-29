@@ -1,0 +1,7 @@
+{
+  "model": "mixtral_8x7b_instruct_v0_1_q8_0",
+  "prompt": "Write a concise validation checklist for a local inference backend beyond a five-token toy test. Include API readiness, tokenizer behavior, generation length, determinism, and failure-mode checks.",
+  "max_tokens": 50,
+  "temperature": 0,
+  "stream": false
+}

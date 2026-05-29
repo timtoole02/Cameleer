@@ -1,0 +1,98 @@
+{
+  "target_row": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+  "status": "unsupported_typed_guard_only",
+  "support_claim": "none",
+  "source": {
+    "hf_repo": "leserg/Mixtral-8x7B-Instruct-v0.1-Q8_0-GGUF",
+    "hf_commit_sha": "93c0492d1891b5147f42b2648d9fccc140910a2f",
+    "filename": "mixtral-8x7b-instruct-v0.1-q8_0.gguf",
+    "license": "apache-2.0",
+    "etag": "77b8ee314ae3e77cefaba7f33841235da3346c34171547fe10e8a85f127973a7",
+    "size_bytes": 49626319776
+  },
+  "gguf_metadata": {
+    "version": 3,
+    "tensor_count": 323,
+    "metadata_count": 40,
+    "data_start_offset": 740256,
+    "general_architecture": "llama",
+    "general_name": "Mixtral 8x7B Instruct v0.1",
+    "file_type": 7,
+    "context_length": 32768,
+    "embedding_length": 4096,
+    "block_count": 32,
+    "feed_forward_length": 14336,
+    "attention_head_count": 32,
+    "attention_head_count_kv": 8,
+    "expert_count": 8,
+    "expert_used_count": 2,
+    "tokenizer_model": "llama",
+    "tokenizer_pre": "default",
+    "add_bos_token": true,
+    "add_eos_token": false,
+    "add_space_prefix": false,
+    "chat_template_length": 1058
+  },
+  "moe_tensor_pattern": {
+    "router_example": "blk.0.ffn_gate_inp.weight",
+    "expert_tensor_examples": [
+      "blk.0.ffn_gate_exps.weight",
+      "blk.0.ffn_up_exps.weight",
+      "blk.0.ffn_down_exps.weight"
+    ],
+    "first_layer_router_dims": [
+      4096,
+      8
+    ],
+    "first_layer_gate_exps_dims": [
+      4096,
+      14336,
+      8
+    ],
+    "first_layer_up_exps_dims": [
+      4096,
+      14336,
+      8
+    ],
+    "first_layer_down_exps_dims": [
+      14336,
+      4096,
+      8
+    ]
+  },
+  "runtime_evidence": {
+    "typed_guard": "LlamaModelConfig::from_gguf rejects Mixtral/MoE metadata before dense tensor binding",
+    "api_load": "/api/models/load exposes unsupported_runtime.code=unsupported_model_architecture while tokenizer metadata remains available",
+    "api_generation": "/api/generation/sessions returns unsupported_model_architecture with Mixtral MoE top-k expert-routing message",
+    "rss_kib": {
+      "before": 11392,
+      "after_metadata_load": 23536,
+      "after_generation_reject": 25904
+    },
+    "ubuntu_validation_rss_kib": {
+      "before": 12080,
+      "after_metadata_load": 22256,
+      "after_generation_reject": 32272
+    },
+    "ubuntu_validation": "Clean Ubuntu checkout at commit 5f270ab reproduced the typed Mixtral MoE unsupported API behavior using a 64 MiB sparse-header GGUF; targeted model_binding/tokenizer/capabilities tests passed, and real Mixtral tokenizer parity passed with MIXTRAL_GGUF pointing at the sparse header.",
+    "rss_note": "debug server, sparse-header GGUF metadata/tokenizer load only; no full tensor payload or generation parity attempted"
+  },
+  "tokenizer_evidence": {
+    "reference_pack": "fixtures/tokenizer/mixtral-8x7b-instruct-v0.1-reference-pack.json",
+    "reference_tool": "llama.cpp llama-tokenize --ids against exact-row sparse GGUF header",
+    "prompt_cases": [
+      "raw_hello",
+      "single_user_turn",
+      "system_user_turn",
+      "assistant_then_user"
+    ]
+  },
+  "not_attempted": [
+    "full GGUF download",
+    "full tensor materialization",
+    "MoE routing implementation",
+    "deterministic generation parity",
+    "API/WebUI readiness promotion"
+  ],
+  "next_step": "implement the smallest top-k expert routing path and prove one deterministic prompt only after MoE routing is unit-tested"
+}

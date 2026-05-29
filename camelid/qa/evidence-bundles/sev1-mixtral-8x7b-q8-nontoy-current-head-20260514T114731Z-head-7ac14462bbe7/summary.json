@@ -1,0 +1,45 @@
+{
+  "schema": "camelid.sev1.mixtral_nontoy_current_head.v1",
+  "head": "7ac14462bbe76bacabd51d11f2370e580163291e",
+  "model": "mixtral-8x7b-instruct-v0.1.Q8_0.gguf",
+  "model_id": "mixtral_8x7b_instruct_v0_1_q8_0",
+  "model_sha256": "cdca4a8c09dfd722702f781d479695cda0d45e1bd1cd602ba1b6085ad921fc5f",
+  "scope": "current-head non-toy API runtime probe only (50-token completion + 50-token chat); not a Mixtral support promotion and not parity proof",
+  "commands": [
+    "curl /api/models/load",
+    "curl /v1/completions max_tokens=50 temperature=0",
+    "curl /v1/chat/completions max_tokens=50 temperature=0"
+  ],
+  "results": {
+    "load_model": {
+      "http_status": 200,
+      "exit_code": "0"
+    },
+    "completion_50tok": {
+      "http_status": 200,
+      "exit_code": "0",
+      "finish_reason": "length",
+      "completion_tokens": 50,
+      "generated_token_count": 50,
+      "text_prefix": "\n\n1. API Readiness:\n   - Ensure the API is properly documented and accessible.\n   - Verify that the API can handle multiple requests concurrently.\n   - Test for proper error handling and response codes.\n\n2",
+      "time": "elapsed=4:17.99 max_rss_kib=11032"
+    },
+    "chat_50tok": {
+      "http_status": 200,
+      "exit_code": "0",
+      "finish_reason": "length",
+      "completion_tokens": 50,
+      "generated_token_count": 50,
+      "text_prefix": " The local inference backend is ready and responsive via API. The tokenizer correctly processes input, handling unknown words and special characters. Generation length is configurable and produces coherent text. The system demonstrates dete",
+      "time": "elapsed=5:12.01 max_rss_kib=11000"
+    }
+  },
+  "non_toy_runtime_probe": "pass",
+  "full_validation_status": "blocked_not_promoted",
+  "blocker_evidence": [
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-gate9a-50tok-20260511/summary.json",
+    "qa/evidence-bundles/mixtral-8x7b-v0.1-q8-longgen-continuation-20260511/summary.json"
+  ],
+  "blocker_summary": "Existing Gate 9A 50-token parity diverges at generated token index 9 and longer continuation evidence records a backend HTTP hang; current non-toy API runtime does not remove those blockers.",
+  "result": "pass_runtime_only_blocked_for_support"
+}

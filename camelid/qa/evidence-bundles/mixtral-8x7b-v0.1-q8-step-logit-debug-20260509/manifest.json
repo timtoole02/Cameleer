@@ -1,0 +1,17 @@
+{
+  "artifact": "mixtral-8x7b-v0.1-q8-step-logit-debug-20260509",
+  "created_at": "2026-05-09T22:45:00Z",
+  "branch": "mixtral-exact-row-20260509",
+  "base_commit": "f123f118d95734a821c8085a762ccd86174e591a",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+  "model_sha256": "c48f9680d5aa60703ed0fd38e29fc6556b3490f8f6c9919a31c9da7996039f81",
+  "prompt": "[INST] Count to three. [/INST]",
+  "finding": "Camelid and llama.cpp agree through generated tokens [28705, 28740], then diverge at step 2: Camelid ranks dot above comma, while llama.cpp full decode ranks comma barely above dot. Fresh llama.cpp forced-prefill after the same token prefix ranks dot above comma, localizing the blocker to decode/prefill numeric path parity rather than tokenizer or prompt construction.",
+  "files": {
+    "camelid_step_logits": "camelid_count_5tok_step_logits.json",
+    "llama_full_decode": "llama_count_5tok_fresh.json",
+    "llama_forced_prefill_after_1": "llama_count_forced_after_1_fresh.json",
+    "load_response": "load.json"
+  },
+  "status": "debug evidence only; no broad Mixtral support claim"
+}

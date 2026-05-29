@@ -1,0 +1,77 @@
+{
+  "schema": "camelid.public-api-webui-smoke-summary.v1",
+  "generated_utc": "2026-05-04T23:32:55Z",
+  "git_head": "cb8943d7d33391403cfe7cf358c4f8ea4e9babea",
+  "git_head_short": "cb8943d",
+  "validation_lane": "approved_ubuntu_validation_lane_reopened_clean_public_checkout",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "scope": "API plus frontend promotion smoke for exact rows: release build, frontend build/model-state smoke, /v1/health before/after, /api/models/load, /api/models/current, /v1/models, /api/capabilities, /v1/completions, /v1/chat/completions, and frontend smoke contract checks. Parity packs, longer-context packs, and full performance portability evidence are not included in this summary.",
+  "raw_artifact_root_private": "target/ubuntu-public-main-20260504T233202Z-head-cb8943d",
+  "toolchain": {
+    "rust": "checked-in rustup wrapper/toolchain",
+    "node": "v22.22.2",
+    "npm": "10.9.7"
+  },
+  "preflight": {
+    "source_checkout": "clean public repository checkout at cb8943d7d33391403cfe7cf358c4f8ea4e9babea",
+    "builds_passed": [
+      "scripts/with-rustup-cargo.sh build --release",
+      "frontend npm ci",
+      "frontend npm run build",
+      "frontend npm run smoke:model-state"
+    ],
+    "model_sha256": {
+      "tinyllama-1.1b-chat-v1.0.Q8_0.gguf": "a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59",
+      "Llama-3.2-1B-Instruct-Q8_0.gguf": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+      "Llama-3.2-3B-Instruct-Q8_0.gguf": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+      "Meta-Llama-3-8B-Instruct-Q8_0.gguf": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+    }
+  },
+  "rows": [
+    {
+      "id": "tinyllama_1_1b_chat_q8_0",
+      "model_file": "tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+      "model_id": "tinyllama-q8",
+      "expected_compatibility_status": "supported_current_gate",
+      "expected_contract_supported": true,
+      "expected_webui_chat": "enabled",
+      "passed": true,
+      "steps_ok": ["health_before", "load", "current_model", "v1_models", "capabilities", "v1_completions", "v1_chat_completions", "health_after", "frontend_smoke"]
+    },
+    {
+      "id": "llama32_1b_instruct_q8_0",
+      "model_file": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "model_id": "llama32-1b-q8",
+      "expected_compatibility_status": "supported_exact_row_smoke",
+      "expected_contract_supported": true,
+      "expected_webui_chat": "enabled",
+      "passed": true,
+      "steps_ok": ["health_before", "load", "current_model", "v1_models", "capabilities", "v1_completions", "v1_chat_completions", "health_after", "frontend_smoke"]
+    },
+    {
+      "id": "llama32_3b_instruct_q8_0",
+      "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "model_id": "llama32-3b-q8",
+      "expected_compatibility_status": "supported_exact_row_smoke",
+      "expected_contract_supported": true,
+      "expected_webui_chat": "enabled",
+      "passed": true,
+      "steps_ok": ["health_before", "load", "current_model", "v1_models", "capabilities", "v1_completions", "v1_chat_completions", "health_after", "frontend_smoke"]
+    },
+    {
+      "id": "llama3_8b_instruct_q8_0",
+      "model_file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "model_id": "llama3-8b-q8",
+      "expected_compatibility_status": "supported_exact_row_smoke",
+      "expected_contract_supported": true,
+      "expected_webui_chat": "enabled",
+      "passed": true,
+      "steps_ok": ["health_before", "load", "current_model", "v1_models", "capabilities", "v1_completions", "v1_chat_completions", "health_after", "frontend_smoke"]
+    }
+  ],
+  "privacy_audit": {
+    "command": "node scripts/audit-evidence-bundle-privacy.mjs qa/evidence-bundles",
+    "finding_count": 0
+  },
+  "claim_boundary": "This summary refreshes exact-row API plus frontend smoke on current public main. It does not promote broad Llama-family support, neighboring sizes, other quantizations, longer contexts, full parity, or performance portability. The later single-pack 8B 512-context pass is recorded in qa/evidence-bundles/llama3-8b-context-512-20260504T234625Z-head-58acf592345c/."
+}

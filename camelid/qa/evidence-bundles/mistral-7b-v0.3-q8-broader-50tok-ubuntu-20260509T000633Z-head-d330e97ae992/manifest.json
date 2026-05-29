@@ -1,0 +1,10 @@
+{
+  "schema": "camelid.evidence_bundle_manifest.v1",
+  "created_utc": "2026-05-09T00:12:47Z",
+  "bundle": "mistral-7b-v0.3-q8-broader-50tok-ubuntu-20260509T000633Z-head-d330e97ae992",
+  "purpose": "Ubuntu broader 5-prompt Mistral 50-token parity validation against llama.cpp for exact Mistral-7B-Instruct-v0.3 Q8_0.",
+  "repo_head": "d330e97ae99280207b52535f44e9c2bdb086a081",
+  "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+  "result": "PASS: prompt tokens, generated token IDs, and generated text matched llama.cpp for all 5 prompts.",
+  "privacy": "Sanitized: no operator paths, host IPs, SSH commands, key paths, or machine-specific model paths are included."
+}

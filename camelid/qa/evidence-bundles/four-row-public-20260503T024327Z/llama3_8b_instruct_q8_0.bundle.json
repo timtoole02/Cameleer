@@ -1,0 +1,405 @@
+{
+  "schema": "camelid.normalized.row_evidence_bundle.v1",
+  "generated_utc": "2026-05-03T02:43:28.345356Z",
+  "bundle_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+  "current_head_rebuild_status": {
+    "attempted": true,
+    "attempted_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+    "status": "blocked",
+    "reason": "Ubuntu host cargo 1.75.0 cannot parse Cargo.lock v4 (cargo build --release --bin backendinference failed before rerun).",
+    "failed_artifact_root": "target/full-support-20260503T023129Z"
+  },
+  "row_id": "llama3_8b_instruct_q8_0",
+  "display_name": "Llama 3 8B Instruct Q8_0",
+  "exact_support_status": "groundwork_backend_evidence_only",
+  "model": {
+    "id": "llama3-8b-q8",
+    "path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+    "loaded_model_record": {
+      "id": "llama3-8b-q8",
+      "path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "gguf_path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "gguf_version": 3,
+      "gguf_tensor_count": 291,
+      "gguf_metadata": {
+        "general.name": "Meta-Llama-3-8B-Instruct",
+        "general.architecture": "llama",
+        "general.file_type": 7,
+        "llama.context_length": 8192,
+        "llama.block_count": 32,
+        "llama.embedding_length": 4096
+      }
+    }
+  },
+  "prompt_pack": {
+    "id": "llama3-broader-repro-3prompt",
+    "path": "qa/prompt-packs/llama3-broader-repro-3prompt.json"
+  },
+  "source_artifacts": {
+    "smoke_root": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8",
+    "smoke_commit_sha": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+    "parity_paths": [
+      "target/ubuntu-followup-20260502T015231Z/llama3_8b-50tok.json",
+      "target/acceptance-llama3-8b-broader-5tok-longtimeout-20260503T010536Z/summary.json",
+      "target/ubuntu-llama3-8b-q8-current-head-20260502T000207Z/validation-summary.json"
+    ]
+  },
+  "host_facts": {
+    "captured_at": "Sat May  2 21:27:51 UTC 2026",
+    "artifact_git_head": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+    "uname": "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+    "hostname": "canonical-private-ubuntu-validation-host",
+    "memory": {
+      "total": "123Gi",
+      "used": "2.3Gi",
+      "free": "101Gi",
+      "available": "121Gi"
+    },
+    "disk_root": {
+      "size": "193G",
+      "used": "29G",
+      "avail": "165G",
+      "use_percent": "15%",
+      "mount": "/"
+    },
+    "raw_excerpt": [
+      "Sat May  2 21:27:51 UTC 2026",
+      "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+      " M COMPATIBILITY.md",
+      " M README.md",
+      " M ROADMAP.md",
+      " M STATUS.md",
+      " M frontend/README.md",
+      " M frontend/scripts/model-state-smoke.mjs",
+      " M frontend/src/lib/acceptanceTargets.js",
+      " M frontend/src/views/ChatWorkspace.jsx",
+      " M frontend/src/views/ModelsView.jsx",
+      " M src/api/mod.rs",
+      " M tests/api_vertical_slice.rs",
+      "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+      "               total        used        free      shared  buff/cache   available",
+      "Mem:           123Gi       2.3Gi       101Gi       3.0Mi        20Gi       121Gi",
+      "Swap:             0B          0B          0B",
+      "Filesystem      Size  Used Avail Use% Mounted on",
+      "/dev/root       193G   29G  165G  15% /",
+      "/dev/root       193G   29G  165G  15% /"
+    ]
+  },
+  "api_webui_readiness": {
+    "smoke_summary_sha256": "6712bdd96120841bb54ac66b0f9350e07e6e6a2e5965c012535288c210f0a6de",
+    "frontend_summary_sha256": "6bf4d66ff0e279d7236755ed52ff60353c7df8344fa945ab3b243e8780e6ba3f",
+    "smoke_summary": {
+      "schema": "camelid.model-promotion.smoke-bundle.v1",
+      "generated_utc": "2026-05-02T21:31:58.603Z",
+      "api_base": "http://127.0.0.1:8291",
+      "frontend_url": "http://127.0.0.1:4276",
+      "model_path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "model_id": "llama3-8b-q8",
+      "message": "hello",
+      "max_tokens": 1,
+      "temperature": 0,
+      "allow_guarded_chat": true,
+      "skip_frontend": false,
+      "steps": {
+        "health_before": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/health-before.json"
+        },
+        "load": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/load.response.json"
+        },
+        "current_model": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/current-model.json"
+        },
+        "v1_models": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/v1-models.json"
+        },
+        "capabilities": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/capabilities.json"
+        },
+        "v1_completions": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/completion.response.json"
+        },
+        "v1_chat_completions": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/chat.response.json"
+        },
+        "health_after": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/health-after.json"
+        },
+        "frontend_smoke": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8/frontend.summary.json"
+        }
+      },
+      "passed": true
+    },
+    "frontend_summary": {
+      "command": [
+        "node",
+        "frontend/scripts/smoke.mjs",
+        "--api",
+        "http://127.0.0.1:8291",
+        "--frontend",
+        "http://127.0.0.1:4276",
+        "--model",
+        "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+        "--model-id",
+        "llama3-8b-q8",
+        "--chat-repeats",
+        "1",
+        "--allow-guarded-chat",
+        "--expect-compatibility-row",
+        "llama3_8b_instruct_gguf",
+        "--expect-compatibility-status",
+        "groundwork_backend_evidence_only",
+        "--expect-contract-supported",
+        "false",
+        "--expect-webui-chat",
+        "guarded"
+      ],
+      "exit_code": 0,
+      "mode": "allow_guarded_chat"
+    },
+    "health_after": {
+      "active_model_id": "llama3-8b-q8",
+      "generation_ready": true,
+      "request_id": null
+    },
+    "capabilities_excerpt": {
+      "model_count": 0,
+      "keys": [
+        "api_features",
+        "engine",
+        "gguf_metadata",
+        "inference",
+        "model_compatibility",
+        "notes",
+        "planned_model_families",
+        "planned_quantization",
+        "streaming",
+        "support_contract",
+        "supported_model_families",
+        "supported_quantization",
+        "tensor_loading",
+        "tokenization"
+      ]
+    }
+  },
+  "token_parity_summary": [
+    {
+      "path": "target/ubuntu-followup-20260502T015231Z/llama3_8b-50tok.json",
+      "sha256": "1579359df9e7d065eba9e55eab89924f40e2dd0606712b593d6939d37da0e738",
+      "summary": {
+        "model": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+        "model_id": "llama-3-8b-instruct-q8",
+        "message": "hello",
+        "expected_prompt": "<|start_header_id|>user<|end_header_id|>\n\nhello<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+        "prompt_tokens_match": true,
+        "generated_tokens_match": true,
+        "generated_text_match": true,
+        "first_generated_text_diff_index": -1,
+        "backend_prompt_tokens": {
+          "count": 11,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ],
+          "tail": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "reference_prompt_tokens": {
+          "count": 11,
+          "head": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ],
+          "tail": [
+            128000,
+            128006,
+            882,
+            128007,
+            271,
+            15339,
+            128009,
+            128006,
+            78191,
+            128007,
+            271
+          ]
+        },
+        "backend_generated_tokens": {
+          "count": 26,
+          "head": [
+            9906,
+            0,
+            1102,
+            596,
+            6555,
+            311,
+            3449,
+            499,
+            13,
+            2209,
+            1070,
+            2555
+          ],
+          "tail": [
+            1520,
+            499,
+            449,
+            11,
+            477,
+            1053,
+            499,
+            1093,
+            311,
+            6369,
+            30,
+            128009
+          ]
+        },
+        "llama_generated_tokens": {
+          "count": 26,
+          "head": [
+            9906,
+            0,
+            1102,
+            596,
+            6555,
+            311,
+            3449,
+            499,
+            13,
+            2209,
+            1070,
+            2555
+          ],
+          "tail": [
+            1520,
+            499,
+            449,
+            11,
+            477,
+            1053,
+            499,
+            1093,
+            311,
+            6369,
+            30,
+            128009
+          ]
+        }
+      }
+    },
+    {
+      "path": "target/acceptance-llama3-8b-broader-5tok-longtimeout-20260503T010536Z/summary.json",
+      "sha256": "4fda9418d54f54be5b00c0bf7503827314b278b315e6c441b7f9663d64263553",
+      "summary": {
+        "model": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+        "passed": true,
+        "rows": [
+          {
+            "id": "p1",
+            "prompt_tokens_match": true,
+            "generated_tokens_match": true,
+            "generated_text_match": true
+          },
+          {
+            "id": "p2",
+            "prompt_tokens_match": true,
+            "generated_tokens_match": true,
+            "generated_text_match": true
+          },
+          {
+            "id": "p3",
+            "prompt_tokens_match": true,
+            "generated_tokens_match": true,
+            "generated_text_match": true
+          }
+        ]
+      }
+    },
+    {
+      "path": "target/ubuntu-llama3-8b-q8-current-head-20260502T000207Z/validation-summary.json",
+      "sha256": "b70dcf130943b543abd06dbef505be9f4ba90c5b2a78e07c888080e40a7884c4",
+      "summary": {
+        "head": "268f6fbb25507d350bd59d6bf8417a1e79a48e52",
+        "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+        "first_token_slice": {
+          "completed_utc": "2026-05-02T00:02:34Z",
+          "curl_status": "0",
+          "trace_required_count": "967",
+          "trace_has_layer_0_attention_q_done": "2",
+          "rss_kib_min": "6220",
+          "rss_kib_max": "378520",
+          "mem_sample_lines": "40"
+        },
+        "short_5tok_slice": {
+          "completed_utc": "2026-05-02T00:03:24Z",
+          "curl_status": "0",
+          "trace_required_count": "2903",
+          "trace_has_layer_0_attention_q_done": "6",
+          "rss_kib_min": "6076",
+          "rss_kib_max": "396912",
+          "mem_sample_lines": "110"
+        }
+      }
+    }
+  ],
+  "performance_memory_envelope": {
+    "backend_ps_after": {
+      "rss_kib": 566980,
+      "vsz_kib": 1626564,
+      "elapsed": null,
+      "command": null
+    }
+  },
+  "artifact_checksums": {
+    "summary_json": "6712bdd96120841bb54ac66b0f9350e07e6e6a2e5965c012535288c210f0a6de",
+    "frontend_summary_json": "6bf4d66ff0e279d7236755ed52ff60353c7df8344fa945ab3b243e8780e6ba3f",
+    "capabilities_json": "c75305e101869730deff54da3e811c19ab51aebe03450e67399de53c93013179",
+    "current_model_json": "4943ca54ebda3ab16f14dbbea4b7388af5cee6b36b1b4bee63a6c45e22361f6f",
+    "health_after_json": "20d56f087a1feb34a87a28b4cb02354a2c0c0bb54c4c469143a7de582e2a9f25"
+  },
+  "notes": [
+    "Exact-row support claims remain limited to the listed row only.",
+    "Bundle normalized from on-disk Ubuntu artifacts; no current public-head rerun is claimed here because the historical Ubuntu cargo toolchain could not parse Cargo.lock v4."
+  ]
+}

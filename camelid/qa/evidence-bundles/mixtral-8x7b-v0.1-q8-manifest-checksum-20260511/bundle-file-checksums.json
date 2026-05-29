@@ -1,0 +1,17 @@
+[
+  {
+    "file": "manifest.json",
+    "sha256": "498386724ebe5c5acb4c1fba30715751a8eac41069f3d9bd6ddcfc498af7b216",
+    "bytes": 2237
+  },
+  {
+    "file": "model-file-checksum.raw",
+    "sha256": "ef5440843d195270ba7b15dd2e986a6efac9a75bc10cd6f86465b7741128e84a",
+    "bytes": 249
+  },
+  {
+    "file": "summary.json",
+    "sha256": "f6a9a993ac2296188a7d63816650b6fa4bdb9f04a65cca82aac125d0ce0e3af5",
+    "bytes": 608
+  }
+]

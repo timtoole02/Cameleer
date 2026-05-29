@@ -1,0 +1,34 @@
+{
+  "schema": "camelid.llama3.prompt-pack.v1",
+  "pack_id": "llama3-broader-repro-3prompt",
+  "description": "Known broader-pack prompts recovered from STATUS.md and QA_LLAMA32_3B_Q8_ACCEPTANCE.md for local 3B blocker reproduction and 8B harness prep without inventing the unresolved p4/p5 prompts.",
+  "source_of_truth": [
+    "STATUS.md:112-115",
+    "QA_LLAMA32_3B_Q8_ACCEPTANCE.md:31-32",
+    "QA_LLAMA32_3B_Q8_ACCEPTANCE.md:64-67"
+  ],
+  "defaults": {
+    "max_tokens": 50
+  },
+  "prompts": [
+    {
+      "id": "p1",
+      "message": "hello",
+      "note": "Known green broader-pack prompt from STATUS.md"
+    },
+    {
+      "id": "p2",
+      "message": "give me exactly three bullet points about alpacas",
+      "note": "Known green broader-pack prompt from STATUS.md"
+    },
+    {
+      "id": "p3",
+      "message": "answer with valid JSON for {\"ok\":true,\"value\":2}",
+      "note": "Known 3B blocker prompt from STATUS.md and QA_LLAMA32_3B_Q8_ACCEPTANCE.md"
+    }
+  ],
+  "notes": [
+    "This pack intentionally stops at the three prompts that are explicitly recoverable from checked-in artifacts.",
+    "The canonical 1B five-prompt broader bundle still needs the unresolved p4/p5 prompt definitions restored from the original Ubuntu run or regenerated on the host."
+  ]
+}

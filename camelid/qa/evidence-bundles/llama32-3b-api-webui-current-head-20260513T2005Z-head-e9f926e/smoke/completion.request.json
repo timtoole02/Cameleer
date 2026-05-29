@@ -1,0 +1,7 @@
+{
+  "model": "llama32-3b-q8-current-e9f926e",
+  "prompt": "hello",
+  "max_tokens": 1,
+  "stream": false,
+  "temperature": 0
+}

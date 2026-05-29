@@ -1,0 +1,4 @@
+# command: private-host-reference scan over CONTEXT.md docs README*
+# result: matches are limited to the canonical host-reporting rule text in CONTEXT.md and docs/performance/ubuntu-x86-q8.md.
+# note: exact private host/key strings are intentionally not repeated in this artifact.
+# exit=0

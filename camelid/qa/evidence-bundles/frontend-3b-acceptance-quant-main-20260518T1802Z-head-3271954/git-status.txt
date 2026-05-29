@@ -1,0 +1,3 @@
+ M frontend/scripts/frontend-integration-smoke.mjs
+ M frontend/src/views/ModelsView.jsx
+?? qa/evidence-bundles/frontend-3b-acceptance-quant-main-20260518T1802Z-head-3271954/

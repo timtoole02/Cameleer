@@ -1,0 +1,23 @@
+# Camelid / llama.cpp same-host Llama 3.2 3B Q8_0 matrix, 2026-05-14T21:03Z
+
+Host/workload: same local Apple M4 / macOS Darwin 25.5.0, arm64 release binaries, `$CAMELID_MODEL_DIR/Llama-3.2-3B-Instruct-Q8_0.gguf`, harness `node scripts/bench-llama3-same-host.mjs`, `--max-tokens 1 --warmup 0 --repeats 1 --threads 8`, llama.cpp `build-cpu-mac-q8/bin/llama-server -ngl 0 -c 512`.
+
+Recorded command family:
+- baseline / packed-off: `CAMELID_MAC_Q8_REPACK=off CAMELID_Q8_0_PACKED_4X4_DOT=off CAMELID_Q8_0_PACKED_4X8_DOT=off`
+- sidecar_4x4: `CAMELID_MAC_Q8_REPACK=off CAMELID_Q8_0_PACKED_4X4_DOT=on CAMELID_Q8_0_PACKED_4X8_DOT=off`
+- sidecar_4x8: `CAMELID_MAC_Q8_REPACK=off CAMELID_Q8_0_PACKED_4X4_DOT=off CAMELID_Q8_0_PACKED_4X8_DOT=on`
+- runtime_repack_attnq_gateup: `CAMELID_MAC_Q8_REPACK=on CAMELID_Q8_0_PACKED_4X4_DOT=off CAMELID_Q8_0_PACKED_4X8_DOT=off CAMELID_Q8_0_PACK_TRACE=1`
+
+Observed same-workload TTFT snapshots:
+
+| variant | Camelid TTFT ms | llama.cpp CPU TTFT ms | delta vs llama.cpp |
+|---|---:|---:|---:|
+| baseline | 6740.37 | 846.37 | +696.39% |
+| packed-off | 4609.58 | 873.41 | +427.77% |
+| legacy sidecar 4x4 | 18334.03 | 3199.84 | +472.97% |
+| legacy sidecar 4x8 | 17560.24 | 5701.82 | +207.98% |
+| runtime-owned attn_q+ffn_gate+ffn_up | 5265.12 | 849.96 | +519.46% |
+
+Interpretation: single-run 1-token TTFT is noisy and not a speed claim. It still proves the architecture boundary: llama.cpp is much faster on the same CPU-only Q8_0 work because its Q8 tensors are backend-owned CPU_REPACK storage consumed directly by arm int8 kernels; Camelid's legacy sidecar copies are slower/noisier and should stay debug/parity-only. The current runtime-owned Camelid storage is the right direction, but the Mac slice needs broader direct-kernel coverage and warm multi-token measurement before claiming performance parity.
+
+Blocker reproduced during matrix attempt: `CAMELID_MAC_Q8_REPACK=on CAMELID_Q8_0_BLOCK_DOT=off` crashed in `src/tensor/mod.rs:1159` with empty file-backed tensor data. Do not market that as packed-off; packed-off means repack/sidecars disabled while Q8 block-dot remains enabled. This fallback guard should be fixed before expanding the env surface.

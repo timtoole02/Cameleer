@@ -1,0 +1,19 @@
+{
+  "id": "multiline-whitespace-preservation",
+  "note": "Whitespace and multiline content are preserved inside message content.",
+  "message": null,
+  "messages": [
+    {
+      "role": "system",
+      "content": "Preserve line breaks in reasoning inputs."
+    },
+    {
+      "role": "user",
+      "content": "Line one.\n\n  Indented line two.  "
+    }
+  ],
+  "max_tokens": 5,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 5
+}

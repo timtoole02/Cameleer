@@ -1,0 +1,52 @@
+{
+  "schema": "camelid.mistral.prompt-pack.v1",
+  "pack_id": "mistral-broader-50tok-5prompt-v1",
+  "target_context_window": 2048,
+  "description": "Broader Mistral instruct parity pack for exact Mistral 7B Instruct v0.3 Q8_0. Five practical prompts run for 50 tokens each against llama.cpp to widen evidence beyond the bounded 5-token context ladder. This pack intentionally includes tokenizer-stress vocabulary; failures should be diagnosed, not hidden.",
+  "defaults": {
+    "max_tokens": 50,
+    "render_mode": "mistral_instruct"
+  },
+  "prompts": [
+    {
+      "id": "mistral-short-local-model-note",
+      "note": "Short assistant prose with simple local-model wording.",
+      "messages": [
+        { "role": "system", "content": "You are a concise local assistant. Answer clearly in two short sentences." },
+        { "role": "user", "content": "write a short note that says a local model can help draft code and explain tests." }
+      ]
+    },
+    {
+      "id": "mistral-step-list-rust-test",
+      "note": "Small numbered instruction list about rust validation.",
+      "messages": [
+        { "role": "system", "content": "You write compact engineering checklists." },
+        { "role": "user", "content": "give three short steps for checking a rust change before a public push." }
+      ]
+    },
+    {
+      "id": "mistral-json-ish-summary",
+      "note": "Structured prose that often exercises punctuation without requiring strict JSON validity.",
+      "messages": [
+        { "role": "system", "content": "You summarize status in a compact structured style." },
+        { "role": "user", "content": "summarize this status with labels: model loaded, chat ready, evidence pending." }
+      ]
+    },
+    {
+      "id": "mistral-tokenizer-stress-words",
+      "note": "Tokenizer stress prompt includes words that previously exposed Mistral piece-boundary drift while keeping generation deterministic enough for 50-token parity.",
+      "messages": [
+        { "role": "system", "content": "You repeat requested text exactly." },
+        { "role": "user", "content": "Reply with exactly this sentence: Fact alpaca MSTR mstr CMLD checksum gamma llama." }
+      ]
+    },
+    {
+      "id": "mistral-longer-chat-natural",
+      "note": "Natural chat diagnostic wording with deterministic phrasing to distinguish prompt/runtime parity from open-ended sampling drift.",
+      "messages": [
+        { "role": "system", "content": "You answer with the requested sentence exactly." },
+        { "role": "user", "content": "Reply with exactly this sentence: Check prompt tokens first, then logits, then cache state." }
+      ]
+    }
+  ]
+}

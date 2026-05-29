@@ -1,0 +1,10 @@
+{
+  "id": "short",
+  "note": "Short current-gate smoke prompt.",
+  "message": "hello",
+  "messages": null,
+  "max_tokens": 50,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 50
+}

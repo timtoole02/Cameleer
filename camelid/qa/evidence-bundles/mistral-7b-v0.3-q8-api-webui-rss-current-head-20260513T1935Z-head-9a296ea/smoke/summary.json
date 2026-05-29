@@ -1,0 +1,56 @@
+{
+  "schema": "camelid.model-promotion.smoke-bundle.v1",
+  "generated_utc": "2026-05-13T19:37:56.381Z",
+  "api_base": "http://127.0.0.1:19181",
+  "frontend_url": "http://127.0.0.1:19175",
+  "model_path": "<canonical-model-store>/Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+  "model_id": "mistral-7b-v0.3-q8-remote-current-head",
+  "message": "hello",
+  "max_tokens": 1,
+  "temperature": 0,
+  "allow_guarded_chat": true,
+  "skip_frontend": false,
+  "steps": {
+    "health_before": {
+      "ok": true,
+      "path": "smoke/health-before.json"
+    },
+    "load": {
+      "ok": true,
+      "path": "smoke/load.response.json"
+    },
+    "current_model": {
+      "ok": true,
+      "path": "smoke/current-model.json"
+    },
+    "v1_models": {
+      "ok": true,
+      "path": "smoke/v1-models.json"
+    },
+    "capabilities": {
+      "ok": true,
+      "path": "smoke/capabilities.json"
+    },
+    "v1_completions": {
+      "ok": true,
+      "path": "smoke/completion.response.json"
+    },
+    "v1_chat_completions": {
+      "ok": true,
+      "path": "smoke/chat.response.json"
+    },
+    "generation_timings": {
+      "ok": true,
+      "path": "smoke/generation-timings.run.json"
+    },
+    "health_after": {
+      "ok": true,
+      "path": "smoke/health-after.json"
+    },
+    "frontend_smoke": {
+      "ok": true,
+      "path": "smoke/frontend.summary.json"
+    }
+  },
+  "passed": true
+}

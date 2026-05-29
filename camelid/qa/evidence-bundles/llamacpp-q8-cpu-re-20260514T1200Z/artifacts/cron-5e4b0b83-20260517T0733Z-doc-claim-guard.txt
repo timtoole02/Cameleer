@@ -1,0 +1,29 @@
+CAMELID DOCS UBUNTU X86 Q8 — cron 5e4b0b83, 2026-05-17T07:33Z
+
+Scope guard
+- Ubuntu x86_64 dense Llama Q8_0 experiment lane only.
+- Current Q8 reference truth is qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md.
+- No Mac, Apple Silicon, Metal, Mixtral, portability, support-contract, API/frontend, production-throughput, or broad-platform claim is added by this guard pass.
+- Default-off x86 experiment flags only; safe fallback remains the public/runtime baseline unless separately promoted by evidence.
+
+Inputs reviewed
+- Latest backend evidence entry/artifact: cron 95495a91, 2026-05-17T06:55Z, covering CAMELID_X86_Q8_PACKED_ROWS4_MATMUL.
+- docs/CONFIGURATION.md x86 Q8 configuration section.
+- docs/performance/ubuntu-x86-q8.md Ubuntu x86 Q8 performance lane note.
+- This evidence report README.
+
+Guard outcome
+- Confirmed docs/CONFIGURATION.md documents CAMELID_X86_Q8_PACKED_ROWS4_MATMUL only as a default-off Ubuntu x86_64 developer experiment for dense FFN-down multi-row packed-runtime matmul, with fallback requirements and no support/promotion wording.
+- Confirmed docs/performance/ubuntu-x86-q8.md keeps the reproduction block scoped to the current reference default-off baseline flags: CAMELID_X86_Q8_REPACK=on and CAMELID_X86_Q8_KERNEL=avx2.
+- Confirmed docs/performance/ubuntu-x86-q8.md treats matrix-level Q8 GEMM/MUL_MAT as evidence-gated future direction unless a concrete default-off Ubuntu x86_64 path has fresh evidence.
+- Confirmed the latest report entry for the packed-rows4 matmul slice uses scrubbed placeholders for Ubuntu workdir/operator key/validation host and explicitly says no throughput/support promotion is claimed.
+- Did not change the project README, support contract wording, API/frontend claims, Mac/Apple Silicon/Metal notes, or Mixtral language.
+
+Small edits made
+- Added this guard entry to the Ubuntu x86 Q8 evidence report so the latest backend slice has an explicit docs-claim audit marker.
+- Added this audit artifact to the Ubuntu x86 Q8 performance evidence-anchor list.
+
+Validation
+- Ran targeted grep over README.md, docs/, and the Ubuntu x86 Q8 evidence report for unsupported-claim markers and x86 Q8 flags.
+- Ran targeted git diff review for docs/CONFIGURATION.md, docs/performance/ubuntu-x86-q8.md, and the Ubuntu x86 Q8 evidence report.
+- No broad README/support-contract/performance promotion or platform transfer claim was found in the touched Ubuntu x86 Q8 docs/report surface.

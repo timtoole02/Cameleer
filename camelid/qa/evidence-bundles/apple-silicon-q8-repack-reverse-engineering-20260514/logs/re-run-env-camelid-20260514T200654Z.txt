@@ -1,0 +1,27 @@
+# Camelid repo
+<camelid-repo>
+6a12d6d6863f389b8b2a4ce897cea3c1bab372c2
+ M src/inference.rs
+ M src/tensor/mod.rs
+?? qa/evidence-bundles/apple-silicon-q8-repack-reverse-engineering-20260514/
+
+# Host
+Darwin tims-mac-mini.lan 25.5.0 Darwin Kernel Version 25.5.0: Tue Apr 14 21:52:36 PDT 2026; root:xnu-redacted-build~25/RELEASE_ARM64_T8132 arm64
+ProductName:		macOS
+ProductVersion:		26.5
+BuildVersion:		25F5058e
+Apple M4
+hw.optional.arm.FEAT_DotProd: 1
+hw.optional.arm.FEAT_I8MM: 1
+
+# Rust
+rustc 1.95.0 (59807616e 2026-04-14) (Homebrew)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: aarch64-apple-darwin
+release: 1.95.0
+LLVM version: 22.1.3
+cargo 1.95.0 (f2d3ce0bd 2026-03-21) (Homebrew)
+
+# Env q8

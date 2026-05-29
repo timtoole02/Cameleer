@@ -1,0 +1,110 @@
+{
+  "schema": "camelid.public_1b_3b_unique_chat_perf_rss_evidence.v1",
+  "generated_utc": "2026-05-05T06:16:44.166Z",
+  "git_head": "e9f28572e090e8c564e7ebbf36a4475c345da2b8",
+  "origin_main": "e9f28572e090e8c564e7ebbf36a4475c345da2b8",
+  "checkout_clean": true,
+  "validation_lane": "approved_ubuntu_validation_lane_reopened_clean_public_checkout",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "scope": "Exact Llama 3.2 1B and 3B Instruct Q8_0 unique-chat benchmark/RSS envelope only.",
+  "method": {
+    "script": "scripts/bench-unique-chat.mjs",
+    "repeats": 4,
+    "warmup": 2,
+    "max_tokens": 5,
+    "endpoint": "/v1/chat/completions",
+    "note": "Each request used a unique prompt; measured summary excludes warmup and records backend process RSS milestones."
+  },
+  "rows": [
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "display_name": "Llama 3.2 1B Instruct Q8_0",
+      "model_file": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "model_sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+      "bench": {
+        "repeats": 4,
+        "warmup": 2,
+        "max_tokens": 5,
+        "measured_count": 4,
+        "avg_prompt_token_count": 22.5,
+        "all_weight_cache_hit": true,
+        "any_prompt_cache_hit": false,
+        "avg_wall_ms": 7379.73,
+        "avg_generate_ms": 7065.25,
+        "avg_layers_ms": 6720.18,
+        "avg_logits_ms": 338.39,
+        "avg_ffn_total_ms": 5531.52
+      },
+      "memory_samples": [
+        {
+          "label": "before_model_load",
+          "rss_mib": 6.21,
+          "vsz_mib": 1064.57
+        },
+        {
+          "label": "after_model_load",
+          "rss_mib": 91.83,
+          "vsz_mib": 1145.09
+        },
+        {
+          "label": "after_first_generated_token",
+          "rss_mib": 272.89,
+          "vsz_mib": 1337.09
+        },
+        {
+          "label": "after_first_10_generated_tokens",
+          "rss_mib": 274.31,
+          "vsz_mib": 1337.09
+        }
+      ],
+      "max_backend_rss_mib": 274.31,
+      "passed": true
+    },
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "display_name": "Llama 3.2 3B Instruct Q8_0",
+      "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "model_sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+      "bench": {
+        "repeats": 4,
+        "warmup": 2,
+        "max_tokens": 5,
+        "measured_count": 4,
+        "avg_prompt_token_count": 22.5,
+        "all_weight_cache_hit": true,
+        "any_prompt_cache_hit": false,
+        "avg_wall_ms": 19762.21,
+        "avg_generate_ms": 19449.25,
+        "avg_layers_ms": 18946.21,
+        "avg_logits_ms": 494.61,
+        "avg_ffn_total_ms": 14139.64
+      },
+      "memory_samples": [
+        {
+          "label": "before_model_load",
+          "rss_mib": 6.12,
+          "vsz_mib": 1064.57
+        },
+        {
+          "label": "after_model_load",
+          "rss_mib": 91.65,
+          "vsz_mib": 1145.09
+        },
+        {
+          "label": "after_first_generated_token",
+          "rss_mib": 281.39,
+          "vsz_mib": 1337.09
+        },
+        {
+          "label": "after_first_10_generated_tokens",
+          "rss_mib": 287.21,
+          "vsz_mib": 1337.09
+        }
+      ],
+      "max_backend_rss_mib": 287.21,
+      "passed": true
+    }
+  ],
+  "claim_boundary": "This closes only the bounded unique-chat memory/perf envelope box for the exact Llama 3.2 1B/3B Instruct Q8_0 rows. It does not promote broad/full Llama-family support, neighboring rows, other quantizations, larger context buckets, arbitrary GGUF/Jinja template execution, production throughput, or portability.",
+  "passed": true
+}

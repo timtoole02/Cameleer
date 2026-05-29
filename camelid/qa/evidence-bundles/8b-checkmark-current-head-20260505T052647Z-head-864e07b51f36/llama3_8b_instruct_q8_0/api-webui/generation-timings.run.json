@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "scripts/summarize-generation-timings.mjs",
+    "--out",
+    "target/8b-checkmark-current-head-20260505T052647Z-head-864e07b51f36/llama3_8b_instruct_q8_0/api-webui/generation-timings.summary.json",
+    "target/8b-checkmark-current-head-20260505T052647Z-head-864e07b51f36/llama3_8b_instruct_q8_0/api-webui/completion.response.json",
+    "target/8b-checkmark-current-head-20260505T052647Z-head-864e07b51f36/llama3_8b_instruct_q8_0/api-webui/chat.response.json"
+  ],
+  "exit_code": 0,
+  "summary_path": "target/8b-checkmark-current-head-20260505T052647Z-head-864e07b51f36/llama3_8b_instruct_q8_0/api-webui/generation-timings.summary.json"
+}

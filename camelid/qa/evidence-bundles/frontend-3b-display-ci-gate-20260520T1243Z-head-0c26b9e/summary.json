@@ -1,0 +1,9 @@
+{
+  "schema": "camelid.frontend_3b_slice.v1",
+  "generated_at": "2026-05-20T12:43:00Z",
+  "target": "llama32_3b_instruct_q8_0",
+  "quantization": "Q8_0",
+  "retain": true,
+  "claim": "Frontend display alias and CI regression gates preserve exact-row 3B support-contract behavior; no broader/full-support or live backend promotion claim is made.",
+  "live_backend": "blocked: canonical validation host API port refused connections during this slice"
+}

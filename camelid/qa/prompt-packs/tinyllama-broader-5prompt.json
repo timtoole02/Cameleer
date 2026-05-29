@@ -1,0 +1,45 @@
+{
+  "schema": "camelid.tinyllama.prompt-pack.v1",
+  "pack_id": "tinyllama-broader-5prompt-v1",
+  "description": "Current-head TinyLlama exact-row broader prompt pack covering short, trailing whitespace, special characters, a longer instruction, and multiline-long marker-template generation without implying neighboring rows or other quantizations.",
+  "defaults": {
+    "max_tokens": 50,
+    "render_mode": "tinyllama-marker"
+  },
+  "prompts": [
+    {
+      "id": "short",
+      "message": "hello",
+      "note": "Short current-gate smoke prompt."
+    },
+    {
+      "id": "trailing-spaces",
+      "message": "Reply with the word camelid and preserve this prompt's trailing spaces.   ",
+      "note": "Whitespace-preservation edge case."
+    },
+    {
+      "id": "special-chars",
+      "message": "Echo a compact summary of these symbols: []{}<>|~^`\\ and emoji alpaca 🦙.",
+      "note": "Tokenizer/template special-character coverage."
+    },
+    {
+      "id": "longer",
+      "message": "In two short sentences, explain why deterministic token parity matters for a local GGUF inference backend under a strict support contract.",
+      "note": "Longer natural-language instruction within the 50-token budget."
+    },
+    {
+      "id": "multiline-long",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Keep the response concise and deterministic."
+        },
+        {
+          "role": "user",
+          "content": "Line one asks for a tiny checklist.\n\n  Line two is indented and mentions TinyLlama Q8_0.\nLine three asks for exactly three terse bullets about evidence hygiene."
+        }
+      ],
+      "note": "Harsher multiline marker-template prompt matching the old broader-gate intent."
+    }
+  ]
+}

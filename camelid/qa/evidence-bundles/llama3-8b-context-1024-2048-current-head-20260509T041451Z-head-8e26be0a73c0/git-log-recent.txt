@@ -1,0 +1,5 @@
+8e26be0 (HEAD, origin/main, origin/HEAD, main) Bound Q8 reader scratch retention
+879ba39 Fix streaming assistant active markers
+6cc8276 Publish Mistral 16k context evidence
+ef952b8 Align 8B capability context truth
+ffca2fc Publish Mistral 8k context evidence

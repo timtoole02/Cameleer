@@ -1,0 +1,46 @@
+{
+  "schema": "camelid.evidence_bundle.v1",
+  "bundle": "mistral-7b-v0.3-q8-1tok-parity-20260508T1847Z",
+  "validated_source_head": "fa7efc086c0e1513ea57b1849411d8131f920b73",
+  "model_filename": "Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+  "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+  "result": "PASS",
+  "checks": {
+    "tokenizer_reference_pack": "fixtures/tokenizer/mistral-7b-instruct-v0.3-reference-pack.json",
+    "prompt_tokens_match": true,
+    "generated_tokens_match": true,
+    "generated_text_match": true,
+    "backend_prompt_tokens": [
+      1,
+      3,
+      29473,
+      7080,
+      29477,
+      29473,
+      4
+    ],
+    "reference_prompt_tokens": [
+      1,
+      3,
+      29473,
+      7080,
+      29477,
+      29473,
+      4
+    ],
+    "backend_generated_tokens": [
+      23325
+    ],
+    "reference_generated_tokens": [
+      23325
+    ],
+    "backend_text": " Hello",
+    "reference_text": " Hello"
+  },
+  "artifacts": [
+    "diagnostics.sanitized.json",
+    "command.txt",
+    "SHA256SUMS"
+  ],
+  "scope": "Exact Mistral-7B-Instruct-v0.3 Q8_0 first-token parity at the checked 512-token reference context only; no neighboring-row, broad-family, longer-context, 50-token, throughput, portability, API/WebUI smoke, or full-support claim."
+}

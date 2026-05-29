@@ -1,0 +1,39 @@
+{
+  "schema": "camelid.sev1.llama32_1b_metadata_jinja_4096_8192_current_head.v1",
+  "head": "7ac14462bbe76bacabd51d11f2370e580163291e",
+  "model": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+  "model_row": "llama32_1b_instruct_q8_0",
+  "model_sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+  "scope": "exact-row metadata-Jinja render/token/generation parity at bounded 4096/8192 contexts only; no broad Llama-family/template/throughput/portability promotion",
+  "tests": {
+    "metadata_jinja_renderer_exit": "0",
+    "exact_llama32_1b_exit": "0"
+  },
+  "contexts": {
+    "4096": {
+      "passed": true,
+      "exit_code": "0",
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 3775,
+      "backend_prompt_token_count": 3775,
+      "backend_text": "The repeat marker is C",
+      "llama_text": "The repeat marker is C",
+      "report": "context-4096/report.json"
+    },
+    "8192": {
+      "passed": true,
+      "exit_code": "0",
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "reference_prompt_token_count": 7670,
+      "backend_prompt_token_count": 7670,
+      "backend_text": "The repeat marker is C",
+      "llama_text": "The repeat marker is C",
+      "report": "context-8192/report.json"
+    }
+  },
+  "result": "pass"
+}

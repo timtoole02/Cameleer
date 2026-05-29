@@ -1,0 +1,184 @@
+{
+  "schema": "camelid.tinyllama.full_support_broader_template_context_perf_rss.v1",
+  "generated_utc": "2026-05-05T04:49:26.998Z",
+  "row": "tinyllama_1_1b_chat_q8_0",
+  "row_display": "TinyLlama 1.1B Chat Q8_0",
+  "scope": "exact TinyLlama 1.1B Chat Q8_0 row only; no neighboring rows, quantizations, arbitrary templates, or broader context claims",
+  "head": "864e07b51f36e9248f898a07781eeaee2ed5c6d8",
+  "head_short": "864e07b51f36",
+  "model_id": "tinyllama-q8",
+  "model_sha256": "a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59",
+  "tracks": {
+    "broader_parity": {
+      "pack_id": "tinyllama-broader-5prompt-v1",
+      "prompt_count": 5,
+      "target_context_window": null,
+      "passed": true,
+      "prompt_tokens_all_match": true,
+      "generated_tokens_all_match": true,
+      "generated_text_all_match": true,
+      "prompts": [
+        {
+          "id": "short",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 50,
+          "target_context_window": null,
+          "reference_prompt_token_count": 18,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        },
+        {
+          "id": "trailing-spaces",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 50,
+          "target_context_window": null,
+          "reference_prompt_token_count": 34,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        },
+        {
+          "id": "special-chars",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 50,
+          "target_context_window": null,
+          "reference_prompt_token_count": 47,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        },
+        {
+          "id": "longer",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 50,
+          "target_context_window": null,
+          "reference_prompt_token_count": 45,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        },
+        {
+          "id": "multiline-long",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 50,
+          "target_context_window": null,
+          "reference_prompt_token_count": 82,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        }
+      ]
+    },
+    "chat_template_shapes": {
+      "pack_id": "tinyllama-chat-template-shapes-v1",
+      "prompt_count": 4,
+      "target_context_window": null,
+      "passed": true,
+      "prompt_tokens_all_match": true,
+      "generated_tokens_all_match": true,
+      "generated_text_all_match": true,
+      "prompts": [
+        {
+          "id": "single-system-user",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 5,
+          "target_context_window": null,
+          "reference_prompt_token_count": 38,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        },
+        {
+          "id": "multi-turn-user-assistant-user",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 5,
+          "target_context_window": null,
+          "reference_prompt_token_count": 45,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        },
+        {
+          "id": "assistant-final-no-generation-header",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 1,
+          "target_context_window": null,
+          "reference_prompt_token_count": 27,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        },
+        {
+          "id": "multiline-whitespace-preservation",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 5,
+          "target_context_window": null,
+          "reference_prompt_token_count": 46,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        }
+      ]
+    },
+    "context_512": {
+      "pack_id": "tinyllama-context-512-smoke-v1",
+      "prompt_count": 1,
+      "target_context_window": 512,
+      "passed": true,
+      "prompt_tokens_all_match": true,
+      "generated_tokens_all_match": true,
+      "generated_text_all_match": true,
+      "prompts": [
+        {
+          "id": "roughly-512-token-recall",
+          "render_mode": "tinyllama-marker",
+          "max_tokens": 5,
+          "target_context_window": 512,
+          "reference_prompt_token_count": 308,
+          "reference_context": 512,
+          "prompt_tokens_match": true,
+          "generated_tokens_match": true,
+          "generated_text_match": true,
+          "exit_code": 0
+        }
+      ]
+    },
+    "perf_rss": {
+      "passed": true,
+      "sample_count": 246,
+      "max_backend_rss_kib": 105120,
+      "max_backend_rss_by_stage_kib": {
+        "starting": 6264,
+        "broader-parity": 93340,
+        "chat-template-shapes": 93428,
+        "context-512": 105120
+      },
+      "rss_tsv": "backend-rss.tsv",
+      "timing_sources": [
+        "broader-parity/summary.json",
+        "chat-template-shapes/summary.json",
+        "context-512/summary.json"
+      ]
+    }
+  },
+  "passed": true
+}

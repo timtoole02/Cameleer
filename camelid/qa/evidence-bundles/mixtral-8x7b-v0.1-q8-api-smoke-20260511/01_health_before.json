@@ -1,0 +1,16 @@
+{
+  "method": "GET",
+  "path": "/health",
+  "status": 200,
+  "elapsed_seconds": 0.021,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "ok": true,
+    "engine": "camelid",
+    "loaded_now": true,
+    "generation_ready": true,
+    "active_model_id": "mixtral-gate3-backend-parity"
+  }
+}

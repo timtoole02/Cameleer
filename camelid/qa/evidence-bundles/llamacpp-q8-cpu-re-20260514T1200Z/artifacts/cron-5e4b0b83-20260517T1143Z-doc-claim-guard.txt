@@ -1,0 +1,25 @@
+# CAMELID DOCS UBUNTU X86 Q8 — doc claim guard
+
+timestamp_utc: 2026-05-17T11:43Z
+scope: Ubuntu x86_64 dense Llama Q8_0 only
+worktree_branch_observed: ubuntu-x86-q8-f23-plus-qkv-consumers
+
+## Checks performed
+
+- Reviewed the current public doc/report diff for `README.md`, `docs/CONFIGURATION.md`, `docs/performance/ubuntu-x86-q8.md`, and this evidence report.
+- Verified the newly documented `CAMELID_X86_Q8_ATTENTION_QKV_PACKED_ROWS4_MATMUL` language is scoped as a default-off Ubuntu x86_64 developer experiment for multi-row dense attention Q/K/V packed-runtime matmul, with fallback guards.
+- Verified the reproduction guidance remains limited to the current reference flags: `CAMELID_X86_Q8_REPACK=on` and `CAMELID_X86_Q8_KERNEL=avx2`.
+- Verified matrix-level Q8 GEMM/MUL_MAT wording remains evidence-gated and does not imply broad support, default-on acceleration, production throughput, portability, Mac/Apple Silicon/Metal evidence, or Mixtral readiness.
+- Scrubbed raw operator SSH key path / host IP details found in backend evidence artifacts, replacing them with `<operator-key>`, `<validation-host>`, and `<ubuntu-workdir>` placeholders.
+
+## Files touched by this guard pass
+
+- `qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md`
+- `qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260517T1143Z-doc-claim-guard.txt`
+- `qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T1013Z-x86-attn-qkv-packed-rows4-matmul.txt`
+- `qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T0503Z-x86-attn-output-consumer.txt`
+- `qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T0035Z-x86-managed-decode-consumer-flags.txt`
+
+## Non-claims
+
+This guard pass adds no support-contract change, no README support-matrix change, no API/frontend readiness change, no Mac evidence, no Apple Silicon label, no Metal claim, no Mixtral claim, and no production-throughput/default-on acceleration claim.

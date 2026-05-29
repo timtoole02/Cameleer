@@ -1,0 +1,5 @@
+started_utc=2026-05-13T18:28:22Z
+host=canonical-private-ubuntu-validation-host
+source_runtime_head=aaf9207d166999a21f4fde2a3f2ac5631f2fcecb
+status:
+432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3   $CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf

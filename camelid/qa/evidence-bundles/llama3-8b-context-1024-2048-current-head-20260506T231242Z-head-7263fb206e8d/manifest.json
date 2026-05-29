@@ -1,0 +1,143 @@
+{
+  "schema": "camelid.llama3_8b_context_1024_2048_current_head_public_evidence.v1",
+  "generated_utc": "20260506T231242Z",
+  "git_head": "7263fb206e8deb89960c865f743ee0badf597ea0",
+  "origin_main": "7263fb206e8deb89960c865f743ee0badf597ea0",
+  "checkout_clean": true,
+  "validation_lane": "clean_public_origin_main_current_head_ubuntu_validation_lane",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "passed": true,
+  "pack": {
+    "ids": [
+      "llama3-context-1024-smoke-v1",
+      "llama3-context-2048-smoke-v1"
+    ],
+    "max_tokens": 5,
+    "prompt_count_per_pack": 1,
+    "source_prompt_packs": [
+      "qa/prompt-packs/llama3-context-1024-smoke.json",
+      "qa/prompt-packs/llama3-context-2048-smoke.json"
+    ]
+  },
+  "rows": [
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "display_name": "Llama 3 8B Instruct Q8_0",
+      "model_file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+      "git_head": "7263fb206e8deb89960c865f743ee0badf597ea0",
+      "context_window": 1024,
+      "prompt_pack_id": "llama3-context-1024-smoke-v1",
+      "prompt_id": "roughly-1024-token-recall",
+      "render_mode": "compact",
+      "max_tokens": 5,
+      "reference_context": 1024,
+      "reference_prompt_token_count": 881,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "llama_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "backend_text": "CMLD-102",
+      "llama_text": "CMLD-102",
+      "backend_usage": {
+        "prompt_tokens": 881,
+        "completion_tokens": 5,
+        "total_tokens": 886
+      },
+      "runtime_options": {
+        "lazy_q8": true,
+        "retained_q8_blocks": false,
+        "prefill_chunk_tokens": 256,
+        "q8_file_cache_bytes": 0,
+        "q8_file_reader_chunk_bytes": 67108864,
+        "parallel_linear": "enabled",
+        "structured_forward_rss_timings": true
+      },
+      "time": {
+        "elapsed_wall_clock": "2:11.62",
+        "max_resident_set_kib": 17373400,
+        "user_seconds": 101.93,
+        "system_seconds": 4.46,
+        "exit_status": 0
+      },
+      "passed": true,
+      "max_resident_set_kib": 17373400,
+      "raw_artifact": "target/overnight-8b-current-head-20260506T230521Z/llama3-8b-context-1024-head-7263fb206e8d/pack/summary.json"
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "display_name": "Llama 3 8B Instruct Q8_0",
+      "model_file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+      "git_head": "7263fb206e8deb89960c865f743ee0badf597ea0",
+      "context_window": 2048,
+      "prompt_pack_id": "llama3-context-2048-smoke-v1",
+      "prompt_id": "roughly-2048-token-recall",
+      "render_mode": "compact",
+      "max_tokens": 5,
+      "reference_context": 2048,
+      "reference_prompt_token_count": 1910,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "llama_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "backend_text": "CMLD-204",
+      "llama_text": "CMLD-204",
+      "backend_usage": {
+        "prompt_tokens": 1910,
+        "completion_tokens": 5,
+        "total_tokens": 1915
+      },
+      "runtime_options": {
+        "lazy_q8": true,
+        "retained_q8_blocks": false,
+        "prefill_chunk_tokens": 256,
+        "q8_file_cache_bytes": 0,
+        "q8_file_reader_chunk_bytes": 67108864,
+        "parallel_linear": "enabled",
+        "structured_forward_rss_timings": true
+      },
+      "time": {
+        "elapsed_wall_clock": "4:28.69",
+        "max_resident_set_kib": 17507804,
+        "user_seconds": 150.25,
+        "system_seconds": 5.42,
+        "exit_status": 0
+      },
+      "passed": true,
+      "max_resident_set_kib": 17507804,
+      "raw_artifact": "target/overnight-8b-current-head-20260506T230521Z/llama3-8b-context-2048-head-7263fb206e8d/pack/summary.json"
+    }
+  ],
+  "claim_boundary": "Closes only current-head bounded 1024/2048 context parity packs for the exact Llama 3 8B Instruct Q8_0 row at 7263fb206e8d. This does not promote neighboring rows, other quantizations, model-native/larger context buckets beyond these checked packs, arbitrary GGUF/Jinja template execution, broad/full Llama-family support, production throughput, or portability support."
+}

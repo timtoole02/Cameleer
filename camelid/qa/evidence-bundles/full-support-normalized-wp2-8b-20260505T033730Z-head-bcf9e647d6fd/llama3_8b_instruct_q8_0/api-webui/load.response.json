@@ -1,0 +1,38 @@
+{
+  "public_compacted": true,
+  "compact_reason": "Full GGUF tensor/tokenizer metadata is retained in the raw target artifact; public bundle keeps exact-row identity and counts.",
+  "id": "llama3_8b_instruct_q8_0",
+  "path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+  "llama_config": {
+    "context_length": 8192,
+    "embedding_length": 4096,
+    "block_count": 32,
+    "feed_forward_length": 14336,
+    "attention_head_count": 32,
+    "attention_head_count_kv": 8,
+    "rope_dimension_count": 128,
+    "rope_freq_base": 500000,
+    "rms_norm_epsilon": 0.00001,
+    "vocab_size": 128256,
+    "file_type": 7
+  },
+  "tensor_count": 5,
+  "tokenizer": {
+    "model": "gpt2_bpe",
+    "token_count": 0,
+    "merge_count": 0,
+    "bos_token_id": null,
+    "eos_token_id": null,
+    "eot_token_id": null,
+    "chat_template": {
+      "source": "tokenizer.chat_template",
+      "detected_format": "llama3_instruct",
+      "length": 389
+    }
+  },
+  "gguf": {
+    "architecture": null,
+    "file_type": null,
+    "quantization_version": null
+  }
+}

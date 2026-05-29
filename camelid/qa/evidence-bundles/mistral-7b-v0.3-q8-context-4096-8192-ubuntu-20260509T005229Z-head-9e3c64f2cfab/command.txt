@@ -1,0 +1,1 @@
+node scripts/run-llama3-prompt-pack.mjs --chat-parity-script scripts/chat-parity-mistral.mjs --start-llama-server --pack qa/prompt-packs/mistral-context-<4096|8192>-max-ladder.json --model <Mistral-7B-Instruct-v0.3-Q8_0.gguf> --model-id mistral-7b-instruct-v0.3-q8_0-maxctx-head-9e3c64f2cfab --wait-ms 10800000 --require-prompt-match --require-generated-match

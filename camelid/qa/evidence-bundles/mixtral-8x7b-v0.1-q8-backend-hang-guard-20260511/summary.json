@@ -1,0 +1,33 @@
+{
+  "schema": "camelid.mixtral_backend_hang_guard.v1",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf",
+  "scope": "Exact row only; backend runtime safety hardening; no support claim change",
+  "change": "Non-streaming completion/chat generation now runs on a blocking worker with a configurable wall-clock timeout via CAMELID_GENERATION_TIMEOUT_MS. Timeout returns a controlled 503 generation_timeout response instead of leaving the client waiting indefinitely.",
+  "default_timeout_ms": 900000,
+  "validation": {
+    "timeout_guard_probe": {
+      "env": "CAMELID_GENERATION_TIMEOUT_MS=1",
+      "endpoint": "/v1/chat/completions",
+      "prompt": "What is 2+2?",
+      "max_tokens": 128,
+      "http_status": 503,
+      "error_code": "generation_timeout",
+      "result": "passed"
+    },
+    "normal_short_generation_probe": {
+      "endpoint": "/v1/chat/completions",
+      "prompt": "What is 2+2?",
+      "max_tokens": 5,
+      "finish_reason": "length",
+      "completion_tokens": 5,
+      "generated_token_ids": [415, 2648, 302, 28705, 28750],
+      "elapsed_seconds": 51.43,
+      "result": "passed"
+    }
+  },
+  "notes": [
+    "This does not resolve the long-generation parity divergence at generated token index 9.",
+    "This does not broaden Mixtral support beyond the already-promoted exact-row short-prompt/API/WebUI/RSS envelope.",
+    "The guard bounds non-streaming API hangs; a timed-out blocking worker may still finish in the background, so operators should use the timeout as a safety valve and continue investigating long-generation performance/parity separately."
+  ]
+}

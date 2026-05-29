@@ -1,0 +1,15 @@
+{
+  "schema": "camelid.backend_local_current_head_exact_row_guardrail.v1",
+  "local_only": true,
+  "no_remote_validation_used": true,
+  "head": "b4d2d3a54fc773d2e2be65ccc2617501ef835e1a",
+  "head_short": "b4d2d3a54fc7",
+  "passed": true,
+  "commands": {
+    "cargo-test-capabilities": 0,
+    "public-evidence-claims": 0,
+    "public-scrub": 0,
+    "git-diff-check": 0
+  },
+  "support_boundary": "Mixtral remains bounded/partial and blocked after early-token parity; Llama rows remain exact-row bounded only where row-specific evidence exists; no broad/full-support promotion claimed."
+}

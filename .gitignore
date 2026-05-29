@@ -1,0 +1,9 @@
+/target
+/IronClaw.app
+/Cameleer.app
+/Cameleer OS.app
+/Cameleer Engine.app
+.DS_Store
+node_modules/
+dist/
+*.log

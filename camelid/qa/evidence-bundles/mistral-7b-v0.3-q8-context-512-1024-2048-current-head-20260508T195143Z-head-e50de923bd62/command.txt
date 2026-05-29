@@ -1,0 +1,9 @@
+Generated from current-head release backend and llama.cpp reference runs.
+
+Context ladder command shape (paths redacted):
+node scripts/run-llama3-prompt-pack.mjs --chat-parity-script scripts/chat-parity-mistral.mjs --pack qa/prompt-packs/mistral-context-{512,1024,2048}-smoke.json --out-dir <target>/pack-{ctx} --model <model-store>/Mistral-7B-Instruct-v0.3-Q8_0.gguf --model-id mistral-7b-instruct-v0.3-q8_0-current-head-e50de923bd62 --require-prompt-match --require-generated-match --start-llama-server --llama-server <llama.cpp>/bin/llama-server --llama-tokenize <llama.cpp>/bin/llama-tokenize
+
+API smoke command shape (paths redacted):
+curl http://127.0.0.1:8181/v1/health
+curl -H 'Content-Type: application/json' -d '{"model":"mistral-7b-instruct-v0.3-q8_0-current-head-e50de923bd62","prompt":"hello","max_tokens":1,"temperature":0}' http://127.0.0.1:8181/v1/completions
+curl -H 'Content-Type: application/json' -d '{"model":"mistral-7b-instruct-v0.3-q8_0-current-head-e50de923bd62","messages":[{"role":"user","content":"hello"}],"max_tokens":1,"temperature":0}' http://127.0.0.1:8181/v1/chat/completions

@@ -1,0 +1,35 @@
+# Ubuntu x86_64 validation — output decode owner slice
+
+host=ubuntu@<validation-host>
+scratch=<ubuntu-workdir>/camelid-output-decode-owner-20260515T193322Z
+cargo=cargo 1.87.0 (99624be96 2025-05-06)
+kernel=Linux canonical-private-ubuntu-validation-host 6.17.0-1013-aws #13~24.04.1-Ubuntu SMP Fri Apr 24 21:50:45 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+cpu=Intel(R) Xeon(R) Platinum 8488C, 16 vCPUs, flags include avx2/avx512/avx_vnni/avx512_vnni/amx_int8
+
+Commands run:
+
+```sh
+cd <ubuntu-workdir>/camelid-output-decode-owner-20260515T193322Z
+<ubuntu-cargo> fmt --check
+<ubuntu-cargo> test --lib x86_q8 -- --nocapture
+<ubuntu-cargo> test --test tensor_store x86_q8_repack_loads_output_projection_as_token_major_packed_runtime -- --nocapture
+```
+
+Result excerpts:
+
+```text
+running 4 tests
+test inference::tests::x86_q8_avx2_kernel_matches_scalar_dot ... ok
+test inference::tests::x86_q8_avx2_packed_rows4_i8_matches_scalar_dot ... ok
+test inference::tests::x86_q8_ffn_down_decode_owner_path_matches_runtime_packed_baseline ... ok
+test inference::tests::x86_q8_output_decode_owner_path_uses_runtime_packed_storage ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 226 filtered out; finished in 0.00s
+
+running 1 test
+test x86_q8_repack_loads_output_projection_as_token_major_packed_runtime ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+```
+
+Warnings: pre-existing Linux cfg/dead_code warnings (`MAC_Q8_PREFILL_I8MM_MIN_ROWS`, q8 schedule helpers); no test or fmt failures.

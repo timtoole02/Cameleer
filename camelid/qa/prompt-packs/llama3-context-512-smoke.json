@@ -1,0 +1,26 @@
+{
+  "schema": "camelid.llama3.prompt-pack.v1",
+  "pack_id": "llama3-context-512-smoke-v1",
+  "description": "First longer-context Llama 3 compact-header parity bucket. The prompt body is intentionally repetitive and bounded so prompt-token and generated-token parity can be compared across exact rows before broader context claims are made.",
+  "target_context_window": 512,
+  "defaults": {
+    "max_tokens": 5,
+    "render_mode": "compact"
+  },
+  "prompts": [
+    {
+      "id": "roughly-512-token-recall",
+      "note": "A bounded synthetic recall prompt intended for the first longer-context bucket; validate actual prompt token count from the parity report.",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are checking deterministic local model parity. Answer with the final requested marker only."
+        },
+        {
+          "role": "user",
+          "content": "Context block start. Fact 01: alpaca wears blue. Fact 02: llama carries books. Fact 03: vicuna counts stars. Fact 04: camelid keeps evidence. Fact 05: rust code stays audited. Fact 06: parity means matching tokens. Fact 07: frontend unlocks only when ready. Fact 08: APIs report exact rows. Fact 09: longer context needs proof. Fact 10: template coverage stays bounded. Fact 11: memory samples matter. Fact 12: portability needs host facts. Fact 13: no neighboring row inherits support. Fact 14: Q8_0 is the tested quantization. Fact 15: instruct variants are exact. Fact 16: prompt packs must be durable. Fact 17: llama.cpp is the reference. Fact 18: generated text must match. Fact 19: token IDs must match. Fact 20: docs must agree. Repeat marker: CMLD-512-CHECK. Context block end. What is the repeat marker?"
+        }
+      ]
+    }
+  ]
+}

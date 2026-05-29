@@ -1,0 +1,108 @@
+{
+  "schema": "camelid.public_8b_api_webui_rss_summary.v1",
+  "generated_utc": "2026-05-05T01:44:08Z",
+  "git_head": "8cef7af4d6c6198210681257f2b7b111d5801ff4",
+  "origin_main": "8cef7af4d6c6198210681257f2b7b111d5801ff4",
+  "source_tree": "origin/main plus a local patch adding backendinference timing diagnostics to non-streaming /v1/completions and a TinyLlama-backed API vertical-slice assertion",
+  "checkout_clean": false,
+  "validation_lane": "approved_ubuntu_validation_lane_reopened_fresh_clone_with_local_patch",
+  "privacy": "Public summary only; raw operator paths, host addresses, SSH details, API ports, and key paths are intentionally omitted.",
+  "scope": "Exact Llama 3 8B Instruct Q8_0 API + frontend promotion smoke and response-local timing/RSS sample for the completion-diagnostics API patch only.",
+  "model": {
+    "row_id": "llama3_8b_instruct_q8_0",
+    "file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "model_id": "llama3-8b-q8",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+  },
+  "toolchain": {
+    "os": "Ubuntu x86_64",
+    "kernel": "6.17.0-1012-aws",
+    "node": "v22.22.2",
+    "cargo": "1.87.0"
+  },
+  "builds_passed": [
+    "scripts/with-rustup-cargo.sh build --release --bin backendinference",
+    "frontend npm ci",
+    "frontend npm run build"
+  ],
+  "smoke": {
+    "exit_code": 0,
+    "passed": true,
+    "steps_ok": [
+      "health_before",
+      "load",
+      "current_model",
+      "v1_models",
+      "capabilities",
+      "v1_completions",
+      "v1_chat_completions",
+      "generation_timings",
+      "health_after",
+      "frontend_smoke"
+    ],
+    "expect_compatibility_row": "llama3_8b_instruct_q8_0",
+    "expect_compatibility_status": "supported_exact_row_smoke",
+    "expect_contract_supported": true,
+    "expect_webui_chat": "enabled"
+  },
+  "api_timing_summary": {
+    "schema": "camelid.generation_timing_summary.v1",
+    "input_count": 2,
+    "completion_response": {
+      "object": "text_completion",
+      "prompt_tokens": 2,
+      "completion_tokens": 1,
+      "generated_token_ids": [11],
+      "has_backendinference_timings_ms": true,
+      "forward_total_ms": 3746.333,
+      "generate_ms": 3752,
+      "layer_count": 32,
+      "linear_hot_path_ms": 3602.06,
+      "top_bottleneck": "generation.logits"
+    },
+    "chat_response": {
+      "object": "chat.completion",
+      "prompt_tokens": 11,
+      "completion_tokens": 1,
+      "generated_token_ids": [9906],
+      "has_backendinference_timings_ms": true,
+      "forward_total_ms": 19969.736,
+      "generate_ms": 19976,
+      "layer_count": 32,
+      "linear_hot_path_ms": 19782.218,
+      "top_bottleneck": "layers.10.ffn_down"
+    },
+    "aggregate": {
+      "avg_forward_total_ms": 11858.0345,
+      "avg_generate_ms": 11864,
+      "avg_linear_hot_path_ms": 11692.139,
+      "max_logits_ms": 135.835
+    }
+  },
+  "frontend_smoke": {
+    "exit_code": 0,
+    "mode": "require_generation",
+    "frontend_http_200_ms": 27,
+    "model_load_ms": 584,
+    "chat_completion_ms": 20283,
+    "generated_text": "Hello",
+    "backend_generated_token_ids": [9906],
+    "backend_forward_total_ms": 19977.09,
+    "backend_layers_total_ms": 19842.357
+  },
+  "rss_sample": {
+    "backend_rss_before_smoke_kib": 6308,
+    "backend_rss_after_smoke_kib": 286216,
+    "backend_elapsed_after_smoke": "00:46",
+    "smoke_process_max_rss_kib": 226332,
+    "note": "Sampled process RSS around the API/frontend smoke only; this is not a peak model-memory proof and does not replace broader memory/performance validation."
+  },
+  "local_verification": [
+    "scripts/with-rustup-cargo.sh fmt --check",
+    "scripts/with-rustup-cargo.sh test --test api_vertical_slice completion_endpoint_generates_multiple_greedy_tokens",
+    "scripts/with-rustup-cargo.sh test --test api_vertical_slice chat_completion_generates_one_decoded_token_from_loaded_dense_model",
+    "node scripts/test-summarize-generation-timings.mjs"
+  ],
+  "raw_artifact_root_private": "target/ubuntu-llama3-8b-api-rss-20260505T014408Z-head-8cef7af4d6c6",
+  "claim_boundary": "This validates the exact 8B API/WebUI smoke slice and the completion-diagnostics timing-summary fix on a patched 8cef7af tree. It does not promote broad Llama-family support, neighboring sizes, other quantizations, larger contexts, arbitrary chat-template behavior, or full performance portability."
+}

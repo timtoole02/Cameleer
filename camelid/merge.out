@@ -1,0 +1,7 @@
+Auto-merging README.md
+Auto-merging qa/evidence-bundles/frontend-3b-neighbor-quant-path-guard-20260518T111852Z-head-77c6d604cfc7/logs/remote-backend-check.log
+CONFLICT (content): Merge conflict in qa/evidence-bundles/frontend-3b-neighbor-quant-path-guard-20260518T111852Z-head-77c6d604cfc7/logs/remote-backend-check.log
+Auto-merging qa/evidence-bundles/frontend-3b-support-gated-chat-20260518T075933Z-head-bffdfdab8c2e/logs/remote-backend-check.log
+CONFLICT (content): Merge conflict in qa/evidence-bundles/frontend-3b-support-gated-chat-20260518T075933Z-head-bffdfdab8c2e/logs/remote-backend-check.log
+Auto-merging scripts/prepare-full-support-bundle.mjs
+Automatic merge failed; fix conflicts and then commit the result.

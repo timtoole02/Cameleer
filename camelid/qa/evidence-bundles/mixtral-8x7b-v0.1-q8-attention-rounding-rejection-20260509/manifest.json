@@ -1,0 +1,168 @@
+{
+  "artifact": "mixtral-8x7b-v0.1-q8-attention-rounding-rejection-20260509",
+  "created_at": "2026-05-10T00:18:00Z",
+  "branch": "main",
+  "base_commit": "12a7ef6",
+  "model": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+  "model_sha256": "c48f9680d5aa60703ed0fd38e29fc6556b3490f8f6c9919a31c9da7996039f81",
+  "probe": "Targeted experimental Camelid attention f16-rounding variants for the Count to three. step-2 comma/dot blocker",
+  "baseline": {
+    "camelid_tokens": [
+      28705,
+      28740,
+      28723,
+      12875,
+      28725
+    ],
+    "llama_cpp_default_tokens": [
+      28705,
+      28740,
+      28725,
+      28705,
+      28750
+    ],
+    "result": "FAIL",
+    "notes": "Baseline still matches through generated tokens [28705, 28740] then ranks dot over comma."
+  },
+  "rejected_variants": [
+    {
+      "variant": "attention_value_product_f16",
+      "backend_tokens": [
+        4529,
+        2363,
+        28808,
+        4003,
+        478
+      ],
+      "result": "REGRESSION",
+      "notes": "Overcorrects into an early first-token path equivalent to the bad 'Of course!' branch."
+    },
+    {
+      "variant": "attention_value_product_f16_plus_context_accum_f16",
+      "backend_tokens": [
+        4529,
+        2363,
+        28808,
+        4003,
+        478
+      ],
+      "result": "REGRESSION",
+      "notes": "Same early first-token regression as value-product f16."
+    },
+    {
+      "variant": "attention_probability_f16_plus_value_product_f16",
+      "backend_tokens": [
+        28705,
+        28740,
+        28723,
+        12875,
+        28725
+      ],
+      "result": "NO_FIX",
+      "notes": "Leaves the step-2 dot path unchanged."
+    },
+    {
+      "variant": "attention_qk_product_f16",
+      "backend_tokens": [
+        4529,
+        2363,
+        28808,
+        4003,
+        478
+      ],
+      "result": "REGRESSION",
+      "notes": "Overcorrects into the bad early 'Of course!' branch."
+    },
+    {
+      "variant": "attention_qk_accum_f16",
+      "backend_tokens": [
+        28705,
+        28740,
+        28723,
+        12875,
+        28725
+      ],
+      "result": "NO_FIX",
+      "notes": "Leaves the step-2 dot path unchanged."
+    },
+    {
+      "variant": "attention_qk_product_f16_plus_value_product_f16",
+      "backend_tokens": [
+        28705,
+        28740,
+        28723,
+        12875,
+        28725
+      ],
+      "result": "NO_FIX",
+      "notes": "The two crude product-rounding effects cancel enough to leave the dot path unchanged, not comma."
+    },
+    {
+      "variant": "attention_qk_accum_f16_plus_value_product_f16",
+      "backend_tokens": [
+        28705,
+        28740,
+        28723,
+        12875,
+        28725
+      ],
+      "result": "NO_FIX",
+      "notes": "Leaves the step-2 dot path unchanged."
+    },
+    {
+      "variant": "position-gated qk/value product f16 at generated positions 12 or 13",
+      "backend_tokens": [
+        28705,
+        28740,
+        28723,
+        12875,
+        28725
+      ],
+      "result": "NO_FIX",
+      "notes": "Applying crude f16 product rounding only after the first generated positions did not flip the near-tie."
+    },
+    {
+      "variant": "attention_query_f16",
+      "backend_tokens": [
+        28705,
+        28740,
+        28723,
+        12875,
+        28725
+      ],
+      "result": "NO_FIX",
+      "notes": "Rounding the query operand to f16 for QK dot products leaves the dot path unchanged."
+    },
+    {
+      "variant": "attention_query_f16_plus_probability_f16",
+      "backend_tokens": [
+        4529,
+        2363,
+        28808,
+        4003,
+        478
+      ],
+      "result": "REGRESSION",
+      "notes": "Combining query and probability f16 rounding overcorrects into the bad early first-token branch."
+    },
+    {
+      "variant": "attention_query_f16_plus_score_f16",
+      "backend_tokens": [
+        28705,
+        28740,
+        28723,
+        12875,
+        28725
+      ],
+      "result": "NO_FIX",
+      "notes": "Rounding query and attention score to f16 leaves the dot path unchanged."
+    }
+  ],
+  "current_localization": "The remaining blocker is not fixed by simple scalar f16 rounding of QK products, QK accumulation, query operands, attention scores, attention probabilities, value products, or context accumulation. llama.cpp source inspection points at the exact ggml f16 matmul/vector-dot path and operand conversion/order for kqv as the next target, rather than more coarse rounding knobs.",
+  "support_boundary": "Evidence only; no broad Mixtral, frontend, long-context, production, neighboring-row, or full-support claim.",
+  "source_inspection": {
+    "llama_cpp_attention_path": "llama-graph.cpp builds kq with ggml_mul_mat, forces GGML_PREC_F32 for kq, applies ggml_soft_max_ext, then computes kqv with ggml_mul_mat(v, kq).",
+    "llama_cpp_f16_vecdot_path": "ggml-cpu type traits use ggml_vec_dot_f16 for GGML_TYPE_F16 and vec_dot_type GGML_TYPE_F16, so an f16 V cache can force the probability operand into f16 for the kqv matmul.",
+    "implication": "The reference f16/f16 path is a kernel/order issue, not just final tensor storage precision."
+  }
+}

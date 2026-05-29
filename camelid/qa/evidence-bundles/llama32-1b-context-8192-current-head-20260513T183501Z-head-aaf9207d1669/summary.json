@@ -1,0 +1,77 @@
+{
+  "schema": "camelid.llama32_1b_context_8192_current_head_summary.v1",
+  "id": "llama32-1b-context-8192-current-head-20260513T183501Z-head-aaf9207d1669",
+  "git_head": "aaf9207d166999a21f4fde2a3f2ac5631f2fcecb",
+  "source_runtime_head": "aaf9207d166999a21f4fde2a3f2ac5631f2fcecb",
+  "checkout_clean": true,
+  "canonical_host": "canonical_ubuntu_validation_host_redacted",
+  "model_row": "llama32_1b_instruct_q8_0",
+  "model": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+  "model_sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+  "passed": true,
+  "pack": {
+    "schema": "camelid.llama3.prompt-pack.v1",
+    "id": "llama3-context-8192-smoke-v1",
+    "source_prompt_pack": "qa/prompt-packs/llama3-context-8192-smoke.json",
+    "target_context_window": 8192,
+    "max_tokens": 5,
+    "prompt_count": 1,
+    "render_mode": "compact"
+  },
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "rows": [
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "prompt_id": "roughly-8192-token-recall",
+      "context_window": 8192,
+      "max_tokens": 5,
+      "passed": true,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "reference_prompt_token_count": 7650,
+      "reference_context": 8192,
+      "backend_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        18831
+      ],
+      "llama_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        18831
+      ],
+      "generated_text": "CMLD-819",
+      "llama_text": "CMLD-819",
+      "backend_usage": {
+        "prompt_tokens": 7650,
+        "completion_tokens": 5,
+        "total_tokens": 7655
+      },
+      "llama_usage": {
+        "cache_n": 0,
+        "prompt_n": 7650,
+        "prompt_ms": 28134.764,
+        "prompt_per_token_ms": 3.677746928104575,
+        "prompt_per_second": 271.9056040420314,
+        "predicted_n": 5,
+        "predicted_ms": 275.24,
+        "predicted_per_token_ms": 55.048,
+        "predicted_per_second": 18.165964249382355
+      },
+      "max_resident_set_kib": 3806876,
+      "elapsed_wall_clock": "6:17.57",
+      "model_sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+      "raw_artifact": "pack/llama32-1b-q8-current-head-aaf9207d1669-roughly-8192-token-recall/report.json"
+    }
+  ],
+  "claim_boundary": "Closes only the checked bounded 8192-context compact-template parity/API pack for the exact Llama 3.2 1B Instruct Q8_0 row on source/runtime head aaf9207d166999a21f4fde2a3f2ac5631f2fcecb. It does not promote neighboring rows, other quantizations, model-native/larger context beyond this checked pack, arbitrary/Jinja templates beyond the compact renderer, broad/full Llama-family support, production throughput, or portability; API/frontend support surfaces are synchronized separately by the local gate."
+}

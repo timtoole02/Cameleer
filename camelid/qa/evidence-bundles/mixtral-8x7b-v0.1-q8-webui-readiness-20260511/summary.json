@@ -1,0 +1,21 @@
+{
+  "bundle": "mixtral-8x7b-v0.1-q8-webui-readiness-20260511",
+  "scope": "Mixtral-8x7B-Instruct-v0.1.Q8_0 exact-row WebUI readiness gate evidence before promotion",
+  "checks": {
+    "model_state_smoke_passed": true,
+    "frontend_build_passed": true,
+    "frontend_http_200": true,
+    "runtime_loaded_now_generation_ready_reflected": true,
+    "capability_row_matched": true,
+    "contract_unsupported_blocked": true
+  },
+  "notes": "Current pre-promotion contract correctly keeps the exact Mixtral row blocked in WebUI despite loaded_now/generation_ready runtime readiness. model-state smoke covers bad loaded_now/generation_ready mismatch states and supported-row unlock conditions.",
+  "files": [
+    "frontend-build.out",
+    "frontend-runtime-smoke.out",
+    "model-state-smoke.out",
+    "npm-ci-node22.out",
+    "npm-ci.out"
+  ],
+  "all_passed": true
+}

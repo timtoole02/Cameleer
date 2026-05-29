@@ -1,0 +1,82 @@
+$ git grep -n "CAMELID_X86_Q8_REPACK\|CAMELID_X86_Q8_KERNEL\|select_linux_x86_q8_plan\|q8_0_runtime_packed_rows4_for_tensor\|q8_repack_tensor_enabled\|q8_repack_x86_tensor_enabled\|q8_repack_linear_shape\|Q8_0RuntimeStorage" -- src tests
+src/execution_plan.rs:13:    "CAMELID_X86_Q8_REPACK",
+src/execution_plan.rs:14:    "CAMELID_X86_Q8_KERNEL",
+src/execution_plan.rs:150:                select_linux_x86_q8_plan(&profile, &platform, &mut env_updates, &mut reasons)
+src/execution_plan.rs:282:fn select_linux_x86_q8_plan(
+src/execution_plan.rs:299:    if env_flag_disabled("CAMELID_X86_Q8_REPACK") || env_flag_disabled("CAMELID_X86_Q8_KERNEL") {
+src/execution_plan.rs:303:        if env_flag_disabled("CAMELID_X86_Q8_REPACK") {
+src/execution_plan.rs:304:            env_updates.insert("CAMELID_X86_Q8_REPACK", Some("off"));
+src/execution_plan.rs:306:        if env_flag_disabled("CAMELID_X86_Q8_KERNEL") {
+src/execution_plan.rs:307:            env_updates.insert("CAMELID_X86_Q8_KERNEL", Some("off"));
+src/execution_plan.rs:313:            "invalid CAMELID_X86_Q8_KERNEL={invalid}; failing closed to safe path"
+src/execution_plan.rs:315:        env_updates.insert("CAMELID_X86_Q8_KERNEL", Some("off"));
+src/execution_plan.rs:580:    let value = env::var("CAMELID_X86_Q8_KERNEL").ok()?;
+src/execution_plan.rs:652:            "CAMELID_X86_Q8_REPACK",
+src/execution_plan.rs:653:            "CAMELID_X86_Q8_KERNEL",
+src/execution_plan.rs:707:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_KERNEL"));
+src/execution_plan.rs:784:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_KERNEL"));
+src/execution_plan.rs:785:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_REPACK"));
+src/execution_plan.rs:840:        env::set_var("CAMELID_X86_Q8_KERNEL", "amx_now_please");
+src/execution_plan.rs:849:            outcome.env_updates.get("CAMELID_X86_Q8_KERNEL"),
+src/inference.rs:35:        Q8_0PackedRows4Interleave, Q8_0RuntimeStorage, TensorShape, TensorStore,
+src/inference.rs:4827:    storage: Option<&Q8_0RuntimeStorage>,
+src/inference.rs:4831:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = storage else {
+src/inference.rs:4848:    q8_0_runtime_storage: Option<&'a Q8_0RuntimeStorage>,
+src/inference.rs:7855:        env::var("CAMELID_X86_Q8_KERNEL").as_deref(),
+src/inference.rs:8751:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() {
+src/inference.rs:8770:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage {
+src/inference.rs:10958:        std::env::set_var("CAMELID_X86_Q8_KERNEL", "avx2");
+src/inference.rs:10969:        std::env::remove_var("CAMELID_X86_Q8_KERNEL");
+src/inference.rs:10976:        std::env::set_var("CAMELID_X86_Q8_KERNEL", "avx2");
+src/inference.rs:11006:        std::env::remove_var("CAMELID_X86_Q8_KERNEL");
+src/tensor/mod.rs:129:pub enum Q8_0RuntimeStorage {
+src/tensor/mod.rs:283:    env_flag_enabled("CAMELID_X86_Q8_REPACK")
+src/tensor/mod.rs:291:fn q8_repack_tensor_enabled(name: &str) -> bool {
+src/tensor/mod.rs:293:        || (x86_q8_repack_enabled() && q8_repack_x86_tensor_enabled(name))
+src/tensor/mod.rs:302:fn q8_repack_x86_tensor_enabled(name: &str) -> bool {
+src/tensor/mod.rs:318:fn q8_repack_linear_shape(name: &str, shape: &TensorShape) -> Option<(usize, usize)> {
+src/tensor/mod.rs:319:    if !q8_repack_tensor_enabled(name) || shape.dims.len() != 2 {
+src/tensor/mod.rs:357:fn q8_0_runtime_packed_rows4_for_tensor(
+src/tensor/mod.rs:361:) -> Result<Option<Q8_0RuntimeStorage>> {
+src/tensor/mod.rs:365:    let Some((rows, cols)) = q8_repack_linear_shape(name, shape) else {
+src/tensor/mod.rs:387:    Ok(Some(Q8_0RuntimeStorage::PackedRows4(packed)))
+src/tensor/mod.rs:699:    pub q8_0_runtime_storage: Option<Q8_0RuntimeStorage>,
+src/tensor/mod.rs:1039:            q8_0_runtime_storage: Some(Q8_0RuntimeStorage::PackedRows4(packed)),
+src/tensor/mod.rs:2494:        if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:2495:            q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+src/tensor/mod.rs:2570:        if q8_repack_tensor_enabled(name) {
+src/tensor/mod.rs:2572:            if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:2573:                q8_0_runtime_packed_rows4_for_tensor(name, &shape, &bytes)?
+src/tensor/mod.rs:2808:        q8_file_cache_insert, q8_repack_x86_tensor_enabled, with_q8_file_cache_capacity_override,
+src/tensor/mod.rs:2922:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/tensor/mod.rs:2988:        std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+src/tensor/mod.rs:2994:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/tensor/mod.rs:2999:        assert!(q8_repack_x86_tensor_enabled("output.weight"));
+src/tensor/mod.rs:3000:        assert!(q8_repack_x86_tensor_enabled("blk.0.attn_output.weight"));
+src/tensor/mod.rs:3001:        assert!(q8_repack_x86_tensor_enabled("blk.0.ffn_down.weight"));
+src/tensor/mod.rs:3002:        assert!(!q8_repack_x86_tensor_enabled("token_embd.weight"));
+src/tensor/mod.rs:3003:        assert!(!q8_repack_x86_tensor_enabled("blk.0.attn_norm.weight"));
+src/tensor/mod.rs:3010:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/tensor/mod.rs:3016:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes)
+src/tensor/mod.rs:3021:        std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+src/tensor/mod.rs:3022:        let Some(super::Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:3023:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes).unwrap()
+src/tensor/mod.rs:3031:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:9:    tensor::{CpuTensor, Q8_0Block, Q8_0RuntimeStorage, RuntimeDType, TensorStore},
+tests/tensor_store.rs:142:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:152:    let Q8_0RuntimeStorage::PackedRows4(packed) = block_backed_tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:218:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:229:    std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+tests/tensor_store.rs:254:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:264:    let Q8_0RuntimeStorage::PackedRows4(packed) = block_backed_tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:268:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:275:    std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+tests/tensor_store.rs:314:        let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:319:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:326:    std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+tests/tensor_store.rs:367:        let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:375:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:382:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:402:    std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+tests/tensor_store.rs:411:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:415:    std::env::remove_var("CAMELID_X86_Q8_REPACK");

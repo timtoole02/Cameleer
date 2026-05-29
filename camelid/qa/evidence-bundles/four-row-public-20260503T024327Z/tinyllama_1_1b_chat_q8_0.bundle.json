@@ -1,0 +1,368 @@
+{
+  "schema": "camelid.normalized.row_evidence_bundle.v1",
+  "generated_utc": "2026-05-03T02:43:28.345356Z",
+  "bundle_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+  "current_head_rebuild_status": {
+    "attempted": true,
+    "attempted_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+    "status": "blocked",
+    "reason": "Ubuntu host cargo 1.75.0 cannot parse Cargo.lock v4 (cargo build --release --bin backendinference failed before rerun).",
+    "failed_artifact_root": "target/full-support-20260503T023129Z"
+  },
+  "row_id": "tinyllama_1_1b_chat_q8_0",
+  "display_name": "TinyLlama 1.1B Chat Q8_0",
+  "exact_support_status": "supported_current_gate",
+  "model": {
+    "id": "tinyllama-q8",
+    "path": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+    "sha256": "a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59",
+    "loaded_model_record": {
+      "id": "tinyllama-q8",
+      "path": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+      "gguf_path": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+      "gguf_version": 3,
+      "gguf_tensor_count": 201,
+      "gguf_metadata": {
+        "general.name": "tinyllama_tinyllama-1.1b-chat-v1.0",
+        "general.architecture": "llama",
+        "general.file_type": 7,
+        "llama.context_length": 2048,
+        "llama.block_count": 22,
+        "llama.embedding_length": 2048
+      }
+    }
+  },
+  "prompt_pack": {
+    "id": "tinyllama-hello-5tok-v1",
+    "path": "qa/prompt-packs/tinyllama-hello-5tok.json"
+  },
+  "source_artifacts": {
+    "smoke_root": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8",
+    "smoke_commit_sha": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+    "parity_paths": [
+      "target/ubuntu-full-llama-sweep-nobuild-20260502T030740Z/tinyllama/parity-5tok.json",
+      "target/parity-20260502T030911Z/tinyllama-5tok/report.json"
+    ]
+  },
+  "host_facts": {
+    "captured_at": "Sat May  2 21:27:51 UTC 2026",
+    "artifact_git_head": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+    "uname": "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+    "hostname": "canonical-private-ubuntu-validation-host",
+    "memory": {
+      "total": "123Gi",
+      "used": "2.3Gi",
+      "free": "101Gi",
+      "available": "121Gi"
+    },
+    "disk_root": {
+      "size": "193G",
+      "used": "29G",
+      "avail": "165G",
+      "use_percent": "15%",
+      "mount": "/"
+    },
+    "raw_excerpt": [
+      "Sat May  2 21:27:51 UTC 2026",
+      "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+      " M COMPATIBILITY.md",
+      " M README.md",
+      " M ROADMAP.md",
+      " M STATUS.md",
+      " M frontend/README.md",
+      " M frontend/scripts/model-state-smoke.mjs",
+      " M frontend/src/lib/acceptanceTargets.js",
+      " M frontend/src/views/ChatWorkspace.jsx",
+      " M frontend/src/views/ModelsView.jsx",
+      " M src/api/mod.rs",
+      " M tests/api_vertical_slice.rs",
+      "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+      "               total        used        free      shared  buff/cache   available",
+      "Mem:           123Gi       2.3Gi       101Gi       3.0Mi        20Gi       121Gi",
+      "Swap:             0B          0B          0B",
+      "Filesystem      Size  Used Avail Use% Mounted on",
+      "/dev/root       193G   29G  165G  15% /",
+      "/dev/root       193G   29G  165G  15% /"
+    ]
+  },
+  "api_webui_readiness": {
+    "smoke_summary_sha256": "51214c742172d4d0f41de65c596bc35ba14db401bdd313b4915eb7112564c143",
+    "frontend_summary_sha256": "a2da03c4e05b2581af451e580f6a519bfd5cf10f8f77612eedd53705921960b9",
+    "smoke_summary": {
+      "schema": "camelid.model-promotion.smoke-bundle.v1",
+      "generated_utc": "2026-05-02T21:28:03.910Z",
+      "api_base": "http://127.0.0.1:8291",
+      "frontend_url": "http://127.0.0.1:4276",
+      "model_path": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+      "model_id": "tinyllama-q8",
+      "message": "hello",
+      "max_tokens": 1,
+      "temperature": 0,
+      "allow_guarded_chat": false,
+      "skip_frontend": false,
+      "steps": {
+        "health_before": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/health-before.json"
+        },
+        "load": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/load.response.json"
+        },
+        "current_model": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/current-model.json"
+        },
+        "v1_models": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/v1-models.json"
+        },
+        "capabilities": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/capabilities.json"
+        },
+        "v1_completions": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/completion.response.json"
+        },
+        "v1_chat_completions": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/chat.response.json"
+        },
+        "health_after": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/health-after.json"
+        },
+        "frontend_smoke": {
+          "ok": true,
+          "path": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8/frontend.summary.json"
+        }
+      },
+      "passed": true
+    },
+    "frontend_summary": {
+      "command": [
+        "node",
+        "frontend/scripts/smoke.mjs",
+        "--api",
+        "http://127.0.0.1:8291",
+        "--frontend",
+        "http://127.0.0.1:4276",
+        "--model",
+        "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+        "--model-id",
+        "tinyllama-q8",
+        "--chat-repeats",
+        "1",
+        "--require-generation",
+        "--expect-compatibility-row",
+        "tinyllama_1_1b_chat_q8_0",
+        "--expect-compatibility-status",
+        "supported_current_gate",
+        "--expect-contract-supported",
+        "true",
+        "--expect-webui-chat",
+        "enabled"
+      ],
+      "exit_code": 0,
+      "mode": "require_generation"
+    },
+    "health_after": {
+      "active_model_id": "tinyllama-q8",
+      "generation_ready": true,
+      "request_id": null
+    },
+    "capabilities_excerpt": {
+      "model_count": 0,
+      "keys": [
+        "api_features",
+        "engine",
+        "gguf_metadata",
+        "inference",
+        "model_compatibility",
+        "notes",
+        "planned_model_families",
+        "planned_quantization",
+        "streaming",
+        "support_contract",
+        "supported_model_families",
+        "supported_quantization",
+        "tensor_loading",
+        "tokenization"
+      ]
+    }
+  },
+  "token_parity_summary": [
+    {
+      "path": "target/ubuntu-full-llama-sweep-nobuild-20260502T030740Z/tinyllama/parity-5tok.json",
+      "sha256": "65f10ff43516b52a419359e7ac771010d6f1aa23f468ff5832a0f65e1eaaf752",
+      "summary": {
+        "model": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+        "message": "hello",
+        "expected_prompt": "<|user|>\nhello</s>\n<|assistant|>\n",
+        "prompt_tokens_match": true,
+        "generated_text_match": true,
+        "backend_prompt_tokens": {
+          "count": 18,
+          "head": [
+            1,
+            529,
+            29989,
+            1792,
+            29989,
+            29958,
+            13,
+            12199,
+            2,
+            29871,
+            13,
+            29966
+          ],
+          "tail": [
+            13,
+            12199,
+            2,
+            29871,
+            13,
+            29966,
+            29989,
+            465,
+            22137,
+            29989,
+            29958,
+            13
+          ]
+        },
+        "backend_generated_tokens": {
+          "count": 5,
+          "head": [
+            29907,
+            13946,
+            368,
+            29991,
+            2266
+          ],
+          "tail": [
+            29907,
+            13946,
+            368,
+            29991,
+            2266
+          ]
+        },
+        "llama_generated_tokens": {
+          "count": 5,
+          "head": [
+            29907,
+            13946,
+            368,
+            29991,
+            2266
+          ],
+          "tail": [
+            29907,
+            13946,
+            368,
+            29991,
+            2266
+          ]
+        }
+      }
+    },
+    {
+      "path": "target/parity-20260502T030911Z/tinyllama-5tok/report.json",
+      "sha256": "32a2c646d72b3562ad6f824ddd6f293b0507a39eddd0e43669bb40ba1a068a67",
+      "summary": {
+        "model": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+        "message": "hello",
+        "expected_prompt": "<|user|>\nhello</s>\n<|assistant|>\n",
+        "prompt_tokens_match": true,
+        "generated_text_match": true,
+        "backend_prompt_tokens": {
+          "count": 18,
+          "head": [
+            1,
+            529,
+            29989,
+            1792,
+            29989,
+            29958,
+            13,
+            12199,
+            2,
+            29871,
+            13,
+            29966
+          ],
+          "tail": [
+            13,
+            12199,
+            2,
+            29871,
+            13,
+            29966,
+            29989,
+            465,
+            22137,
+            29989,
+            29958,
+            13
+          ]
+        },
+        "backend_generated_tokens": {
+          "count": 5,
+          "head": [
+            29907,
+            13946,
+            368,
+            29991,
+            2266
+          ],
+          "tail": [
+            29907,
+            13946,
+            368,
+            29991,
+            2266
+          ]
+        },
+        "llama_generated_tokens": {
+          "count": 5,
+          "head": [
+            29907,
+            13946,
+            368,
+            29991,
+            2266
+          ],
+          "tail": [
+            29907,
+            13946,
+            368,
+            29991,
+            2266
+          ]
+        }
+      }
+    }
+  ],
+  "performance_memory_envelope": {
+    "backend_ps_after": {
+      "rss_kib": 135864,
+      "vsz_kib": 1093004,
+      "elapsed": null,
+      "command": null
+    }
+  },
+  "artifact_checksums": {
+    "summary_json": "51214c742172d4d0f41de65c596bc35ba14db401bdd313b4915eb7112564c143",
+    "frontend_summary_json": "a2da03c4e05b2581af451e580f6a519bfd5cf10f8f77612eedd53705921960b9",
+    "capabilities_json": "c75305e101869730deff54da3e811c19ab51aebe03450e67399de53c93013179",
+    "current_model_json": "9fd8ec24838dd53f3307c1a135843ecb8f154f15522b7778599d00a64afaf1fd",
+    "health_after_json": "0a719454ac634fb916195dd438d4e6b574d43ef810656e2643504d4d234e5b56"
+  },
+  "notes": [
+    "Exact-row support claims remain limited to the listed row only.",
+    "Bundle normalized from on-disk Ubuntu artifacts; no current public-head rerun is claimed here because the historical Ubuntu cargo toolchain could not parse Cargo.lock v4."
+  ]
+}

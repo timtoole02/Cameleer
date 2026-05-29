@@ -1,0 +1,50 @@
+{
+  "schema": "camelid.public_1b_3b_chat_template_shapes_summary.v1",
+  "source_manifest": "manifest.json",
+  "passed": true,
+  "checks": {
+    "clean_public_checkout": true,
+    "model_sha256_matched_expected": true,
+    "prompt_tokens_all_match": true,
+    "generated_tokens_all_match": true,
+    "generated_text_all_match": true,
+    "exit_status": true
+  },
+  "rows": [
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "display_name": "Llama 3.2 1B Instruct Q8_0",
+      "passed": true,
+      "prompt_count": 4,
+      "prompt_ids": [
+        "single-system-user",
+        "multi-turn-user-assistant-user",
+        "assistant-final-no-generation-header",
+        "multiline-whitespace-preservation"
+      ]
+    },
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "display_name": "Llama 3.2 3B Instruct Q8_0",
+      "passed": true,
+      "prompt_count": 4,
+      "prompt_ids": [
+        "single-system-user",
+        "multi-turn-user-assistant-user",
+        "assistant-final-no-generation-header",
+        "multiline-whitespace-preservation"
+      ]
+    }
+  ],
+  "pack": {
+    "id": "llama3-chat-template-shapes-v1",
+    "prompt_count": 4,
+    "prompt_ids": [
+      "single-system-user",
+      "multi-turn-user-assistant-user",
+      "assistant-final-no-generation-header",
+      "multiline-whitespace-preservation"
+    ]
+  },
+  "claim_boundary": "This closes only the bounded compact chat-template-shapes box for the exact Llama 3.2 1B/3B Instruct Q8_0 rows. It does not promote broad/full Llama-family support, neighboring rows, other quantizations, arbitrary GGUF/Jinja template execution, larger context buckets, production performance, or portability."
+}

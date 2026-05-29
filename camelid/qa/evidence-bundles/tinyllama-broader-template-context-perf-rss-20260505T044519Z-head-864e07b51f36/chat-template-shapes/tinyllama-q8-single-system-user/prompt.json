@@ -1,0 +1,19 @@
+{
+  "id": "single-system-user",
+  "note": "System + user message shape.",
+  "message": null,
+  "messages": [
+    {
+      "role": "system",
+      "content": "Answer briefly and stay factual."
+    },
+    {
+      "role": "user",
+      "content": "Name one primary color."
+    }
+  ],
+  "max_tokens": 5,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 5
+}

@@ -1,0 +1,134 @@
+# CAMELID BACKEND ENGINEER UBUNTU X86 Q8 — attention-output packed rows4 matmul slice
+
+Time: 2026-05-17T08:25Z
+Lane: Ubuntu x86_64 dense Llama Q8_0 only
+Scope: default-off runtime-gated Camelid slice informed by llama.cpp CPU Q8_0/x86 evidence. No throughput/support promotion.
+
+## Slice implemented
+
+Added a narrow multi-row attention-output packed-runtime matmul path:
+
+- new default-off flag: `CAMELID_X86_Q8_ATTENTION_OUTPUT_PACKED_ROWS4_MATMUL`
+- runtime gate: `ResolvedRuntimePlan.q8.attention_output_packed_rows4_matmul`
+- path: `try_x86_q8_attention_output_packed_rows4_matmul_path`
+- shared executor: `q8_0_packed_rows4_matmul_projection`
+- accepted tensors: `blk.*.attn_output.weight` only
+- accepted storage: backend-owned `Q8_0RuntimeStorage::PackedRows4` only
+- accepted shape: rank-2 input, more than one input row, input width divisible by 32, packed I8 interleave
+- fallback: if the flag or any guard fails, `linear_for_role_runtime_with_plan` continues to the next guarded path or safe linear fallback
+
+This avoids the failed duplicate packed-copy sidecar direction: it consumes existing backend-owned runtime packed rows4 storage and adds no duplicate packed-copy sidecar.
+
+## llama.cpp inspection summary
+
+Commands used from `<local-llama.cpp-worktree>`:
+
+```bash
+git grep -n 'ggml_vec_dot_q8_0_q8_0' -- .
+git grep -n 'tinyBLAS' -- .
+git grep -n 'MUL_MAT' -- .
+git grep -n 'repack' -- .
+git grep -n 'scheduling' -- .
+git grep -n 'OpenMP' -- .
+git grep -n 'AVX2' -- .
+git grep -n 'AVX512' -- .
+git grep -n 'VNNI' -- .
+```
+
+Selected evidence:
+
+```text
+ggml/src/ggml-cpu/arch/x86/quants.c:1170:void ggml_vec_dot_q8_0_q8_0(...)
+ggml/src/ggml-cpu/ggml-cpu.c:264:        .vec_dot                  = ggml_vec_dot_q8_0_q8_0,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:1353:class tinyBLAS_Q0_AVX {
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3726:        tinyBLAS<8, __m256, __m256, float, float, float> tb{ params,
+ggml/src/ggml-cpu/ggml-cpu.c:2771:    // thread scheduling for the different operations + work buffer size estimation
+ggml/src/ggml-cpu/ggml-cpu.c:3335:                // update the number of threads from the actual number of threads that we got from OpenMP
+ggml/CMakeLists.txt:246:option(GGML_OPENMP                          "ggml: use OpenMP"                                ON)
+ggml/src/CMakeLists.txt:314:                      AVX AVX2 BMI2 AVX_VNNI FMA F16C
+ggml/src/CMakeLists.txt:315:                      AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16
+common/arg.cpp:2014:        {"--repack"},
+common/common.h:545:    bool no_extra_bufts    = false; // disable extra buffer types (used for weight repacking)
+```
+
+Conclusion: the relevant llama.cpp direction for Camelid remains directly usable packed/runtime storage plus x86-specific Q8 dot/matmul scheduling, not a duplicate row-major+packed sidecar.
+
+## Camelid implementation evidence
+
+Repository/head during local work:
+
+```text
+Camelid HEAD: 0ebbcba (dirty worktree before this slice)
+llama.cpp HEAD: 3e037f3
+```
+
+Selected Camelid locations after the slice:
+
+```text
+src/inference.rs:674:    attention_output_packed_rows4_matmul: bool,
+src/inference.rs:714:            attention_output_packed_rows4_matmul: q8_0_env_flag_enabled_default_off(
+src/inference.rs:4693:        if let Some(output) = try_x86_q8_attention_output_packed_rows4_matmul_path(
+src/inference.rs:7509:fn try_x86_q8_attention_output_packed_rows4_matmul_path(
+src/inference.rs:14231:fn q8_attention_output_packed_rows4_matmul_matches_runtime_packed_baseline_for_prefill()
+src/inference.rs:14295:fn q8_attention_output_packed_rows4_matmul_is_plan_gated_and_shape_limited()
+src/execution_plan.rs:17:    "CAMELID_X86_Q8_ATTENTION_OUTPUT_PACKED_ROWS4_MATMUL",
+src/execution_plan.rs:355:        "CAMELID_X86_Q8_ATTENTION_OUTPUT_PACKED_ROWS4_MATMUL",
+```
+
+## Local validation
+
+From `<local-camelid-worktree>`:
+
+```bash
+cargo fmt --all
+cargo test q8_attention_output_packed_rows4_matmul --lib
+cargo test resolved_runtime_plan_captures_q8_env_once --lib
+cargo test runtime_profile_defaults_keep_experimental_q8_gates_closed --lib
+cargo test planner_env_apply_clears_stale_x86_q8_decode_consumer_flags --lib
+cargo test ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib
+```
+
+Result summary:
+
+```text
+q8_attention_output_packed_rows4_matmul: 2 passed
+resolved_runtime_plan_captures_q8_env_once: 1 passed
+runtime_profile_defaults_keep_experimental_q8_gates_closed: 1 passed
+planner_env_apply_clears_stale_x86_q8_decode_consumer_flags: 1 passed
+ubuntu_experimental_validated_gates_select_rust_avx2_q8_path: 1 passed
+```
+
+## Canonical Ubuntu x86_64 validation
+
+Synced local worktree to `<ubuntu-workdir>/camelid-q8-slice-20260517T0825Z` on the canonical Ubuntu x86_64 host using the operator SSH key.
+
+Host/toolchain:
+
+```text
+host=<validation-host>
+Linux <validation-host> 6.17.0-1013-aws #13~24.04.1-Ubuntu SMP Fri Apr 24 21:50:45 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+rustc 1.95.0 (59807616e 2026-04-14)
+cargo 1.95.0 (f2d3ce0bd 2026-03-21)
+```
+
+Commands:
+
+```bash
+cargo fmt --all -- --check
+cargo test q8_attention_output_packed_rows4_matmul --lib
+cargo test planner_env_apply_clears_stale_x86_q8_decode_consumer_flags --lib
+cargo test ubuntu_experimental_validated_gates_select_rust_avx2_q8_path --lib
+```
+
+Result summary:
+
+```text
+q8_attention_output_packed_rows4_matmul: 2 passed; 0 failed; 250 filtered out
+planner_env_apply_clears_stale_x86_q8_decode_consumer_flags: 1 passed; 0 failed; 251 filtered out
+ubuntu_experimental_validated_gates_select_rust_avx2_q8_path: 1 passed; 0 failed; 251 filtered out
+cargo fmt --all -- --check: passed
+```
+
+## Claim boundary
+
+This is a runtime-gate/planner/unit-validation slice only. It does not claim end-to-end throughput, support-contract readiness, broader model-family coverage, or portability evidence.

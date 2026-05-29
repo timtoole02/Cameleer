@@ -1,0 +1,7 @@
+artifact=<bundle-artifact-dir>
+repo_head=5e989e61b6ba7fd2759f1a68891b9655d449f28d
+model=<Mistral-7B-Instruct-v0.3-Q8_0.gguf>
+model_size=7702565088
+404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f  <Mistral-7B-Instruct-v0.3-Q8_0.gguf>
+backend_pid=864044
+parity_exit=0

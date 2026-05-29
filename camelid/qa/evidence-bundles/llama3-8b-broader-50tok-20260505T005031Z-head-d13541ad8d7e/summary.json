@@ -1,0 +1,24 @@
+{
+  "schema": "camelid.public_8b_broader_50tok_summary.v1",
+  "source_manifest": "manifest.json",
+  "passed": true,
+  "checks": {
+    "clean_public_checkout": true,
+    "model_sha256_matched_expected": true,
+    "prompt_tokens_all_match": true,
+    "generated_tokens_all_match": true,
+    "generated_text_all_match": true,
+    "exit_status": 0
+  },
+  "pack": {
+    "id": "llama3-broader-repro-3prompt",
+    "prompt_count": 3,
+    "default_max_tokens": 50,
+    "prompt_ids": [
+      "p1",
+      "p2",
+      "p3"
+    ]
+  },
+  "claim_boundary": "Does not promote broad Llama-family support, neighboring sizes, other quantizations, larger context buckets, arbitrary GGUF chat-template execution, or performance portability. This closes only the exact 8B three-prompt broader pack at 50 tokens; full-support promotion still requires stronger memory/performance, portability, broader context evidence, and docs/API/frontend synchronization."
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "camelid.full_support.normalized_wp2_8b.v1",
+  "generated_utc": "2026-05-05T03:38:23Z",
+  "head": "bcf9e647d6fd",
+  "out_dir": "target/full-support-normalized-wp2-8b-20260505T033730Z-head-bcf9e647d6fd",
+  "node": "v22.22.2",
+  "model": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+  "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+  "api_base": "http://127.0.0.1:8381",
+  "frontend_url": "http://127.0.0.1:4598",
+  "max_backend_rss_kib": 286128,
+  "rows": [
+    {
+      "row": "llama3_8b_instruct_q8_0",
+      "passed": true,
+      "summary": "target/full-support-normalized-wp2-8b-20260505T033730Z-head-bcf9e647d6fd/llama3_8b_instruct_q8_0/api-webui/summary.json"
+    }
+  ]
+}

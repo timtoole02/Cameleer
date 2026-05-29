@@ -1,0 +1,11 @@
+ .../README.md                                                |  2 +-
+ .../SHA256SUMS                                               |  8 ++++----
+ .../logs/remote-backend-check.log                            |  2 +-
+ .../logs/repo-state.log                                      |  2 +-
+ .../remote-backend-check.command.txt                         | 12 ++----------
+ .../SHA256SUMS                                               |  4 ++--
+ .../logs/remote-backend-check.log                            |  2 +-
+ .../remote-backend-check.command.txt                         |  3 ++-
+ src/execution_plan.rs                                        | 11 +++++++++++
+ src/inference.rs                                             |  2 ++
+ 10 files changed, 27 insertions(+), 21 deletions(-)

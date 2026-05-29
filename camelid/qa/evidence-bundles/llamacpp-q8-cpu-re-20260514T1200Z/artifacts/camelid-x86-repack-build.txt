@@ -1,0 +1,2 @@
+   Compiling camelid v0.1.0 (/tmp/camelid-ubuntu-x86-q8-20260514T2221Z)
+    Finished `release` profile [optimized] target(s) in 11.39s

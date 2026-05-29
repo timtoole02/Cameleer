@@ -1,0 +1,305 @@
+{
+  "schema": "camelid.compact_perf_portability_envelope.v2",
+  "captured_utc": "2026-05-03T02:56:39Z",
+  "ubuntu_target": "canonical-private-ubuntu-validation-host",
+  "host_facts": {
+    "git_head": "04de8105ec2e440e557068b174725c4d1c83b3c0",
+    "uname": "Linux canonical-private-ubuntu-validation-host 6.17.0-1012-aws #12~24.04.1-Ubuntu SMP Mon Apr  6 17:36:28 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+    "hostname": "canonical-private-ubuntu-validation-host",
+    "cargo_version": "cargo 1.75.0",
+    "node_version": "v18.19.1",
+    "memory_excerpt": [
+      "total        used        free      shared  buff/cache   available",
+      "Mem:           123Gi       1.9Gi       100Gi       3.0Mi        22Gi       121Gi"
+    ],
+    "swap_excerpt": "Swap:             0B          0B          0B",
+    "disk_root_excerpt": [
+      "Filesystem      Size  Used Avail Use% Mounted on",
+      "/dev/root       193G   30G  164G  16% /"
+    ]
+  },
+  "rows": [
+    {
+      "row_id": "tinyllama_1_1b_chat_q8_0",
+      "display_name": "TinyLlama 1.1B Chat Q8_0",
+      "model_path": "$CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+      "model_sha256": "a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59",
+      "smoke_artifact_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8",
+      "validation_artifact_dir": "target/validation-runs/20260502T030636Z/tinyllama-q8",
+      "smoke_generated_utc": "2026-05-02T21:28:03.910Z",
+      "smoke_command": "node scripts/model-promotion-smoke-bundle.mjs --api http://127.0.0.1:8291 --frontend http://127.0.0.1:4276 --model $CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf --model-id tinyllama-q8 --out-dir target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8 --message hello --max-tokens 1 --temperature 0 --expect-compatibility-row tinyllama_1_1b_chat_q8_0 --expect-compatibility-status supported_current_gate --expect-contract-supported true --expect-webui-chat enabled",
+      "frontend_command": "node frontend/scripts/smoke.mjs --api http://127.0.0.1:8291 --frontend http://127.0.0.1:4276 --model $CAMELID_MODEL_DIR/tinyllama-1.1b-chat-v1.0.Q8_0.gguf --model-id tinyllama-q8 --chat-repeats 1 --require-generation --expect-compatibility-row tinyllama_1_1b_chat_q8_0 --expect-compatibility-status supported_current_gate --expect-contract-supported true --expect-webui-chat enabled",
+      "timeout_settings": {
+        "smoke_bundle_fetch_timeout_ms": null,
+        "frontend_chat_repeats": 1,
+        "smoke_max_tokens": 1,
+        "parity_request_timeout_ms": null
+      },
+      "runtime_duration_ms": {
+        "model_load_ms": 134,
+        "chat_completion_ms": 40558,
+        "backend_generate_ms": 40487,
+        "backend_forward_total_ms": 40485.794
+      },
+      "memory_trend_rss_kib": [
+        {
+          "step": "load",
+          "rss_kib": 27032
+        },
+        {
+          "step": "1tok",
+          "rss_kib": 89568
+        },
+        {
+          "step": "5tok",
+          "rss_kib": 136588
+        },
+        {
+          "step": "api_webui_smoke_after",
+          "rss_kib": 135864
+        }
+      ],
+      "max_rss_kib": 136588,
+      "backend_ps_after": {
+        "pid": 49207,
+        "rss_kib": 135864,
+        "vsz_kib": 1093004,
+        "command": "01:27 target/release/backendinference serve --addr 127.0.0.1:8291"
+      },
+      "chat_template": {
+        "detected_format": "tinyllama_marker",
+        "source": "tokenizer.chat_template",
+        "length": 410
+      },
+      "health_after_ok": true,
+      "smoke_passed": true,
+      "stderr_empty": {
+        "bundle": true,
+        "frontend": true
+      },
+      "no_oom_or_runaway_signature": true,
+      "oom_signature_detected": false,
+      "runaway_signature_detected": false,
+      "notes": [
+        "Smoke/API/WebUI evidence only; exact-row gate remains limited."
+      ],
+      "bundle_path": "qa/evidence-bundles/four-row-public-20260503T024327Z/tinyllama_1_1b_chat_q8_0.bundle.json",
+      "bundle_sha256": "f15d03a75c11f83e914a0dbdb4a3c9320768c5215b6f0e35548cde9e99bd0d6a",
+      "source_smoke_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/tinyllama-q8"
+    },
+    {
+      "row_id": "llama32_1b_instruct_q8_0",
+      "display_name": "Llama 3.2 1B Instruct Q8_0",
+      "model_path": "$CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf",
+      "model_sha256": "432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3",
+      "smoke_artifact_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8",
+      "validation_artifact_dir": "target/validation-runs/20260502T030636Z/llama32-1b-q8",
+      "smoke_generated_utc": "2026-05-02T21:29:30.097Z",
+      "smoke_command": "node scripts/model-promotion-smoke-bundle.mjs --api http://127.0.0.1:8291 --frontend http://127.0.0.1:4276 --model $CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf --model-id llama32-1b-q8 --out-dir target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8 --message hello --max-tokens 1 --temperature 0 --expect-compatibility-row llama32_1b_instruct_q8_0 --expect-compatibility-status supported_exact_row_smoke --expect-contract-supported true --expect-webui-chat enabled",
+      "frontend_command": "node frontend/scripts/smoke.mjs --api http://127.0.0.1:8291 --frontend http://127.0.0.1:4276 --model $CAMELID_MODEL_DIR/Llama-3.2-1B-Instruct-Q8_0.gguf --model-id llama32-1b-q8 --chat-repeats 1 --require-generation --expect-compatibility-row llama32_1b_instruct_q8_0 --expect-compatibility-status supported_exact_row_smoke --expect-contract-supported true --expect-webui-chat enabled",
+      "timeout_settings": {
+        "smoke_bundle_fetch_timeout_ms": null,
+        "frontend_chat_repeats": 1,
+        "smoke_max_tokens": 1,
+        "parity_request_timeout_ms": 120000
+      },
+      "runtime_duration_ms": {
+        "model_load_ms": 559,
+        "chat_completion_ms": 20973,
+        "backend_generate_ms": 20674,
+        "backend_forward_total_ms": 20669.289
+      },
+      "memory_trend_rss_kib": [
+        {
+          "step": "load",
+          "rss_kib": 161620
+        },
+        {
+          "step": "1tok",
+          "rss_kib": 273552
+        },
+        {
+          "step": "5tok",
+          "rss_kib": 274876
+        },
+        {
+          "step": "api_webui_smoke_after",
+          "rss_kib": 347316
+        }
+      ],
+      "max_rss_kib": 347316,
+      "backend_ps_after": {
+        "pid": 49207,
+        "rss_kib": 347316,
+        "vsz_kib": 1362500,
+        "command": "02:14 target/release/backendinference serve --addr 127.0.0.1:8291"
+      },
+      "chat_template": {
+        "detected_format": "llama3_instruct",
+        "source": "tokenizer.chat_template",
+        "length": 3827
+      },
+      "health_after_ok": true,
+      "smoke_passed": true,
+      "stderr_empty": {
+        "bundle": true,
+        "frontend": true
+      },
+      "no_oom_or_runaway_signature": true,
+      "oom_signature_detected": false,
+      "runaway_signature_detected": false,
+      "notes": [
+        "Broader prompt-pack artifacts exist, but support remains exact-row only."
+      ],
+      "bundle_path": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama32_1b_instruct_q8_0.bundle.json",
+      "bundle_sha256": "fd94e57632d91c13f7f886de1259b78ce8c1d22a8074ee07e86d371a5c8928e0",
+      "source_smoke_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-1b-q8"
+    },
+    {
+      "row_id": "llama32_3b_instruct_q8_0",
+      "display_name": "Llama 3.2 3B Instruct Q8_0",
+      "model_path": "$CAMELID_MODEL_DIR/Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "model_sha256": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921",
+      "smoke_artifact_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-3b-q8",
+      "validation_artifact_dir": "target/validation-runs/20260502T030636Z/llama32-3b-q8",
+      "smoke_generated_utc": "2026-05-02T21:30:17.538Z",
+      "smoke_command": "node scripts/model-promotion-smoke-bundle.mjs --api http://127.0.0.1:8291 --frontend http://127.0.0.1:4276 --model $CAMELID_MODEL_DIR/Llama-3.2-3B-Instruct-Q8_0.gguf --model-id llama32-3b-q8 --out-dir target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-3b-q8 --message hello --max-tokens 1 --temperature 0 --expect-compatibility-row llama32_3b_instruct_q8_0 --expect-compatibility-status supported_exact_row_smoke --expect-contract-supported true --expect-webui-chat enabled",
+      "frontend_command": "node frontend/scripts/smoke.mjs --api http://127.0.0.1:8291 --frontend http://127.0.0.1:4276 --model $CAMELID_MODEL_DIR/Llama-3.2-3B-Instruct-Q8_0.gguf --model-id llama32-3b-q8 --chat-repeats 1 --require-generation --expect-compatibility-row llama32_3b_instruct_q8_0 --expect-compatibility-status supported_exact_row_smoke --expect-contract-supported true --expect-webui-chat enabled",
+      "timeout_settings": {
+        "smoke_bundle_fetch_timeout_ms": null,
+        "frontend_chat_repeats": 1,
+        "smoke_max_tokens": 1,
+        "parity_request_timeout_ms": 120000
+      },
+      "runtime_duration_ms": {
+        "model_load_ms": 566,
+        "chat_completion_ms": 45138,
+        "backend_generate_ms": 44830,
+        "backend_forward_total_ms": 44825.724
+      },
+      "memory_trend_rss_kib": [
+        {
+          "step": "load",
+          "rss_kib": 311932
+        },
+        {
+          "step": "1tok",
+          "rss_kib": 309048
+        },
+        {
+          "step": "5tok",
+          "rss_kib": 454396
+        },
+        {
+          "step": "api_webui_smoke_after",
+          "rss_kib": 559572
+        }
+      ],
+      "max_rss_kib": 559572,
+      "backend_ps_after": {
+        "pid": 49207,
+        "rss_kib": 559572,
+        "vsz_kib": 1626564,
+        "command": "03:55 target/release/backendinference serve --addr 127.0.0.1:8291"
+      },
+      "chat_template": {
+        "detected_format": "llama3_instruct",
+        "source": "tokenizer.chat_template",
+        "length": 3827
+      },
+      "health_after_ok": true,
+      "smoke_passed": true,
+      "stderr_empty": {
+        "bundle": true,
+        "frontend": true
+      },
+      "no_oom_or_runaway_signature": true,
+      "oom_signature_detected": false,
+      "runaway_signature_detected": false,
+      "notes": [
+        "Broader prompt-pack artifacts exist, but support remains exact-row only."
+      ],
+      "bundle_path": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama32_3b_instruct_q8_0.bundle.json",
+      "bundle_sha256": "0d10b5587f4f26e1ef17aa7386abc85d36bb84ab9f56766f73a521b6c7eb1464",
+      "source_smoke_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama32-3b-q8"
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "display_name": "Llama 3 8B Instruct Q8_0",
+      "model_path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+      "smoke_artifact_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8",
+      "validation_artifact_dir": "target/validation-runs/20260502T030636Z/llama3-8b-q8",
+      "smoke_generated_utc": "2026-05-02T21:31:58.603Z",
+      "smoke_command": "node scripts/model-promotion-smoke-bundle.mjs --api http://127.0.0.1:8291 --frontend http://127.0.0.1:4276 --model $CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf --model-id llama3-8b-q8 --out-dir target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8 --message hello --max-tokens 1 --temperature 0 --expect-compatibility-row llama3_8b_instruct_gguf --expect-compatibility-status groundwork_backend_evidence_only --expect-contract-supported false --expect-webui-chat guarded --allow-guarded-chat",
+      "frontend_command": "node frontend/scripts/smoke.mjs --api http://127.0.0.1:8291 --frontend http://127.0.0.1:4276 --model $CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf --model-id llama3-8b-q8 --chat-repeats 1 --allow-guarded-chat --expect-compatibility-row llama3_8b_instruct_gguf --expect-compatibility-status groundwork_backend_evidence_only --expect-contract-supported false --expect-webui-chat guarded",
+      "timeout_settings": {
+        "smoke_bundle_fetch_timeout_ms": null,
+        "frontend_chat_repeats": 1,
+        "smoke_max_tokens": 1,
+        "parity_request_timeout_ms": 1200000
+      },
+      "runtime_duration_ms": {
+        "model_load_ms": 566,
+        "chat_completion_ms": 81086,
+        "backend_generate_ms": 80794,
+        "backend_forward_total_ms": 80789.357
+      },
+      "memory_trend_rss_kib": [
+        {
+          "step": "load",
+          "rss_kib": 454396
+        },
+        {
+          "step": "1tok",
+          "rss_kib": 454396
+        },
+        {
+          "step": "5tok",
+          "rss_kib": 454396
+        },
+        {
+          "step": "api_webui_smoke_after",
+          "rss_kib": 566980
+        }
+      ],
+      "max_rss_kib": 566980,
+      "backend_ps_after": {
+        "pid": 49207,
+        "rss_kib": 566980,
+        "vsz_kib": 1626564,
+        "command": "06:54 target/release/backendinference serve --addr 127.0.0.1:8291"
+      },
+      "chat_template": {
+        "detected_format": "llama3_instruct",
+        "source": "tokenizer.chat_template",
+        "length": 389
+      },
+      "health_after_ok": true,
+      "smoke_passed": true,
+      "stderr_empty": {
+        "bundle": true,
+        "frontend": true
+      },
+      "no_oom_or_runaway_signature": true,
+      "oom_signature_detected": false,
+      "runaway_signature_detected": false,
+      "notes": [
+        "Long-timeout broader-pack acceptance used on Ubuntu; support remains exact-row/backend-evidence scoped."
+      ],
+      "bundle_path": "qa/evidence-bundles/four-row-public-20260503T024327Z/llama3_8b_instruct_q8_0.bundle.json",
+      "bundle_sha256": "3a8a0292f433fdb51071b016c1ae86264c566e5feae7dfeed4e42dc7e2c75f66",
+      "source_smoke_dir": "target/private-four-llama-e2e-20260502T212751Z-head-c5e6d7e/llama3-8b-q8"
+    }
+  ],
+  "bundle_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+  "artifact_source_commit_sha": "c5e6d7ee26a9aec6e7c8025ad2029a3904c38670",
+  "current_head_rebuild": {
+    "attempted": true,
+    "attempted_public_head": "9d091ce4d2f1d911f684333eda6575f28e1e9adf",
+    "status": "blocked",
+    "reason": "Ubuntu host cargo 1.75.0 cannot parse Cargo.lock v4 (cargo build --release --bin backendinference failed before rerun).",
+    "failed_artifact_root": "target/full-support-20260503T023129Z"
+  },
+  "guardrail": "Exact-row evidence only; do not broaden to neighboring Llama sizes, versions, quantizations, longer contexts, or chat-template families."
+}

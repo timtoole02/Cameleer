@@ -1,0 +1,10 @@
+{
+  "id": "special-chars",
+  "note": "Tokenizer/template special-character coverage.",
+  "message": "Echo a compact summary of these symbols: []{}<>|~^`\\ and emoji alpaca 🦙.",
+  "messages": null,
+  "max_tokens": 50,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 50
+}

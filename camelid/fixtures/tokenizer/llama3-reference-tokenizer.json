@@ -1,0 +1,42 @@
+{
+  "reference": {
+    "tool": "llama.cpp llama-tokenize --ids",
+    "binary": "llama-tokenize",
+    "model": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "generated_at_utc": "2026-04-29T07:28:37.110Z"
+  },
+  "cases": {
+    "quick_brown_fox": {
+      "text": "The quick brown fox jumps over the lazy dog.",
+      "add_special": true,
+      "parse_special": false,
+      "tokens": [
+        128000,
+        791,
+        4062,
+        14198,
+        39935,
+        35308,
+        927,
+        279,
+        16053,
+        5679,
+        13
+      ]
+    },
+    "begin_text_hows_it_going": {
+      "text": "<|begin_of_text|>hello how's it going?",
+      "add_special": false,
+      "parse_special": true,
+      "tokens": [
+        128000,
+        15339,
+        1268,
+        596,
+        433,
+        2133,
+        30
+      ]
+    }
+  }
+}

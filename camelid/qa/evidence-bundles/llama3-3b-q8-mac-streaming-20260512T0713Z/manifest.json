@@ -1,0 +1,35 @@
+{
+  "schema": "camelid.llama32_3b_mac_streaming_responsiveness_public_evidence.v1",
+  "generated_utc": "2026-05-12T17:58:00Z",
+  "bundle": "qa/evidence-bundles/llama3-3b-q8-mac-streaming-20260512T0713Z",
+  "publication_head": "e1268cf",
+  "related_backend_change": "3f0157a Move SSE generation off async runtime",
+  "related_frontend_change": "954b454 Improve frontend streaming progress states",
+  "scope": "Exact Llama 3.2 3B Instruct Q8_0 local Mac streaming-responsiveness smoke only.",
+  "privacy": "Public compact artifact; raw local model paths, hostnames, and operator-only staging details are redacted.",
+  "row": {
+    "row_id": "llama32_3b_instruct_q8_0",
+    "model_file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+    "support_status": "supported_exact_row_smoke_with_bounded_existing_evidence",
+    "this_bundle_changes_support_status": false
+  },
+  "observations": {
+    "pre_patch_first_content_ms": 253510.9,
+    "pre_patch_content_chunks_per_second_after_first_content": 1.01,
+    "pre_patch_concurrent_health_models_timeout_ms": 2000,
+    "post_patch_headers_ms": 91.7585,
+    "post_patch_first_role_chunk_ms": 91.815208,
+    "post_patch_concurrent_health_status": 200,
+    "post_patch_concurrent_health_ms": 3.648292
+  },
+  "finding": "The local Mac 3B Q8_0 user-visible wait remains dominated by long first-content latency, but the patched streaming path can emit an immediate role/progress chunk and keep health responsive during dense generation.",
+  "non_claims": [
+    "Does not improve or close the approximately 253.5 second first-content latency finding.",
+    "Does not promote production throughput or portability support.",
+    "Does not widen support to neighboring Llama rows, other quants, model-native/larger context, arbitrary templates, or broad Llama-family behavior."
+  ],
+  "files": [
+    "README.md",
+    "patched-stream-role-health.json"
+  ]
+}

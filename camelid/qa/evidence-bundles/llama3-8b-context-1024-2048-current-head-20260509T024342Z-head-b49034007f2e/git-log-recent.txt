@@ -1,0 +1,5 @@
+b490340 Guard public docs against legacy branding
+c28c471 Bypass disabled Q8 file cache bookkeeping
+b51416b fix frontend streaming activity markers
+a3db283 Guard API support allowlist
+bbb70ac Sync Mistral fail-closed evidence metadata

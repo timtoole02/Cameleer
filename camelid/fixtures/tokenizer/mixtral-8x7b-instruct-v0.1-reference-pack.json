@@ -1,0 +1,101 @@
+{
+  "status": "reference_capture",
+  "captured_at": "2026-05-09T13:18:00-07:00",
+  "source": "llama.cpp llama-tokenize --ids against exact-row sparse GGUF header; rendered prompts follow GGUF tokenizer.chat_template captured from Mixtral Q8_0 metadata",
+  "expected_artifacts": {
+    "target_row": "Mixtral-8x7B-Instruct-v0.1.Q8_0",
+    "hf_repo": "leserg/Mixtral-8x7B-Instruct-v0.1-Q8_0-GGUF",
+    "hf_commit_sha": "93c0492d1891b5147f42b2648d9fccc140910a2f",
+    "gguf_filename": "mixtral-8x7b-instruct-v0.1-q8_0.gguf",
+    "gguf_etag": "77b8ee314ae3e77cefaba7f33841235da3346c34171547fe10e8a85f127973a7",
+    "gguf_size_bytes": 49626319776,
+    "license": "apache-2.0",
+    "reference_tool": "llama.cpp llama-tokenize --ids",
+    "tokenizer_fixture_id": "mixtral-instruct-v0.1-tokenizer-v1",
+    "chat_template_fixture_id": "mixtral-instruct-v0.1-chat-template-pack-v1",
+    "prompt_cases": [
+      {
+        "name": "raw_hello",
+        "rendered_prompt": "Hello",
+        "add_bos": true,
+        "parse_special": true,
+        "expected_tokens": [
+          1,
+          16230
+        ]
+      },
+      {
+        "name": "single_user_turn",
+        "rendered_prompt": "<s> [INST] Hello [/INST]",
+        "add_bos": false,
+        "parse_special": true,
+        "expected_tokens": [
+          1,
+          733,
+          16289,
+          28793,
+          22557,
+          733,
+          28748,
+          16289,
+          28793
+        ]
+      },
+      {
+        "name": "system_user_turn",
+        "rendered_prompt": "<s> [INST] Be brief.\n\nHello there. [/INST]",
+        "add_bos": false,
+        "parse_special": true,
+        "expected_tokens": [
+          1,
+          733,
+          16289,
+          28793,
+          1739,
+          6817,
+          28723,
+          13,
+          13,
+          16230,
+          736,
+          28723,
+          733,
+          28748,
+          16289,
+          28793
+        ]
+      },
+      {
+        "name": "assistant_then_user",
+        "rendered_prompt": "<s> [INST] Complete cam [/INST] elid</s> [INST] Now say hi [/INST]",
+        "add_bos": false,
+        "parse_special": true,
+        "expected_tokens": [
+          1,
+          733,
+          16289,
+          28793,
+          21929,
+          3730,
+          733,
+          28748,
+          16289,
+          28793,
+          639,
+          313,
+          2,
+          733,
+          16289,
+          28793,
+          2961,
+          1315,
+          12014,
+          733,
+          28748,
+          16289,
+          28793
+        ]
+      }
+    ]
+  }
+}

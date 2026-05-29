@@ -1,0 +1,57 @@
+CAMELID BACKEND ENGINEER UBUNTU X86 Q8 — cron 95495a91 — 2026-05-15T11:08Z
+
+Scope
+- Ubuntu x86_64 dense Llama Q8_0 only.
+- Small technical slice: widen the default-off x86 runtime-packed Q8_0 load gate from attn_q to the dense attention projection family: blk.*.attn_q.weight, blk.*.attn_k.weight, blk.*.attn_v.weight, blk.*.attn_output.weight.
+- Storage design: backend-owned Q8_0RuntimeStorage::PackedRows4; no duplicate row-major packed-copy sidecar for the selected tensors.
+- Fallback: unchanged when CAMELID_X86_Q8_REPACK is unset/off, or when the linear is outside the selected x86 family.
+
+llama.cpp source grep evidence refreshed from <local-llama-worktree>
+Commands used:
+- git grep -n -i q8_0 -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i tinyBLAS -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i ggml_vec_dot_q8_0_q8_0 -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i repack -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i MUL_MAT -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i scheduling -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i OpenMP -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i AVX2 -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i AVX512 -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -i VNNI -- CMakeLists.txt ggml src include tools tests examples
+- git grep -n -E "Q8_0|q8_0|vec_dot|MUL_MAT|REPACK|AVX2|VNNI" -- ggml/src/ggml-cpu/arch/x86/quants.c ggml/src/ggml-cpu/arch/x86/repack.cpp ggml/src/ggml-cpu/ggml-cpu.c ggml/src/ggml-cpu/ggml-cpu.cpp ggml/src/ggml-cpu/CMakeLists.txt ggml/CMakeLists.txt ggml/src/CMakeLists.txt
+
+Selected grep hits informing this slice:
+- ggml/src/ggml-cpu/ggml-cpu.c:262-265 wires GGML_TYPE_Q8_0 to quantize_row_q8_0 and ggml_vec_dot_q8_0_q8_0.
+- ggml/src/ggml-cpu/arch/x86/quants.c:1170 defines ggml_vec_dot_q8_0_q8_0; nearby x86 Q8 paths are AVX/AVX2 gated.
+- ggml/src/ggml-cpu/arch/x86/repack.cpp:178 defines ggml_quantize_mat_q8_0_4x8; repack.cpp contains q8_0 4x8 GEMV/GEMM helpers using Q8_0 activation blocks.
+- ggml/CMakeLists.txt:152 has GGML_CPU_REPACK, ggml/CMakeLists.txt:157 has GGML_AVX2, ggml/CMakeLists.txt:161 has GGML_AVX512_VNNI, and ggml/CMakeLists.txt:246 has GGML_OPENMP.
+- ggml/src/CMakeLists.txt:369-384 lists x86 backend variants from haswell AVX2 through cascadelake/icelake/sapphirerapids VNNI/AMX variants.
+- ggml/include/ggml.h:511 lists GGML_OP_MUL_MAT; ggml/src/ggml-cpu/ggml-cpu.c:2771 comments thread scheduling/work estimation for ops.
+
+Camelid files/functions changed
+- src/tensor/mod.rs
+  - q8_repack_tensor_enabled now separates platform family allowlists.
+  - q8_repack_x86_tensor_enabled includes q8_repack_attention_tensor_enabled plus existing ffn_gate/ffn_up.
+  - q8_repack_attention_tensor_enabled covers dense attention projection names: attn_q, attn_k, attn_v, attn_output.
+- tests/tensor_store.rs
+  - x86 Q8 runtime-pack tests are cfg-gated to x86/x86_64.
+  - New x86_q8_repack_loads_dense_attention_family_as_packed_runtime verifies the four dense attention projection names load as Q8_0RuntimeStorage::PackedRows4 with empty data, no q8_0_blocks, no file backing, and no packed sidecars.
+- docs/CONFIGURATION.md
+  - Documents CAMELID_X86_Q8_REPACK=on as default-off Ubuntu/Linux x86_64 developer lane and lists the attention-family coverage.
+
+Validation
+Local dev host:
+- cargo fmt --check: PASS
+- cargo test -q x86_q8_repack_loads_dense_attention_family_as_packed_runtime --test tensor_store: PASS, 0 tests on non-x86 due cfg gate.
+
+Canonical Ubuntu x86_64 host:
+- Host: ssh [identity omitted] <operator-key-path> ubuntu@<validation-host>
+- Remote workdir: <ubuntu-workdir>/camelid-x86-q8-attn-family-20260515T110324Z
+- Toolchain used explicitly because default cargo was 1.75.0: <ubuntu-cargo-1.90.0> with matching RUSTC.
+- PATH=<ubuntu-rust-bin>:$PATH cargo fmt --check: PASS
+- RUSTC=<ubuntu-rustc-1.90.0> cargo test -q x86_q8_repack_loads_dense_attention_family_as_packed_runtime --test tensor_store: PASS, 1 passed, 23 filtered out.
+- RUSTC=<ubuntu-rustc-1.90.0> cargo test -q x86_q8_avx2_packed_rows4_i8_matches_scalar_dot --lib: PASS, 1 passed, 222 filtered out.
+
+Notes
+- The Ubuntu host default cargo reports rustc 1.75.0 and cannot parse the lockfile / meet MSRV, so validation used the installed 1.90.0 toolchain directly.
+- This is a loader/runtime-storage slice, not a full tiled GEMM or end-to-end throughput claim.

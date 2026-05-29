@@ -1,0 +1,167 @@
+{
+  "schema": "camelid.llama3_8b_context_1024_2048_current_head_public_evidence.v1",
+  "generated_utc": "20260509T002636Z",
+  "git_head": "9e3c64f2cfab098f9cccbc8e5f879ecd99d73666",
+  "git_head_short": "9e3c64f2cfab",
+  "checkout_clean": true,
+  "passed": true,
+  "model": {
+    "id": "meta-llama3-8b-q8",
+    "path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+  },
+  "pack": {
+    "max_tokens": 5,
+    "ids": [
+      "llama3-context-1024-smoke-v1",
+      "llama3-context-2048-smoke-v1"
+    ],
+    "source_prompt_packs": [
+      "qa/prompt-packs/llama3-context-1024-smoke.json",
+      "qa/prompt-packs/llama3-context-2048-smoke.json"
+    ]
+  },
+  "source_prompt_packs": [
+    "qa/prompt-packs/llama3-context-1024-smoke.json",
+    "qa/prompt-packs/llama3-context-2048-smoke.json"
+  ],
+  "prompt_packs": [
+    "llama3-context-1024-smoke-v1",
+    "llama3-context-2048-smoke-v1"
+  ],
+  "rows": [
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "model_id": "meta-llama3-8b-q8",
+      "context_window": 1024,
+      "prompt_pack_id": "llama3-context-1024-smoke-v1",
+      "source_prompt_pack": "qa/prompt-packs/llama3-context-1024-smoke.json",
+      "prompt_id": "roughly-1024-token-recall",
+      "reference_context": 1024,
+      "reference_prompt_token_count": 881,
+      "max_tokens": 5,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "backend_text": "CMLD-102",
+      "llama_text": "CMLD-102",
+      "generated_text": "CMLD-102",
+      "backend_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "llama_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        4278
+      ],
+      "backend_usage": {
+        "prompt_tokens": 881,
+        "completion_tokens": 5,
+        "total_tokens": 886
+      },
+      "llama_usage": {
+        "cache_n": 0,
+        "prompt_n": 881,
+        "prompt_ms": 8341.227,
+        "prompt_per_token_ms": 9.467908059023838,
+        "prompt_per_second": 105.61995255614072,
+        "predicted_n": 5,
+        "predicted_ms": 414.31,
+        "predicted_per_token_ms": 82.862,
+        "predicted_per_second": 12.068258067630516
+      },
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "exit_code": 0,
+      "elapsed_wall_clock": "2:14.84",
+      "max_resident_set_kib": 17383572,
+      "time_exit_status": 0,
+      "prefill_q8_file_reads": null,
+      "first_token_q8_file_reads": null,
+      "generation_q8_file_reads": null,
+      "passed": true,
+      "raw_artifact": "pack-1024/meta-llama3-8b-q8-current-head-9e3c64f2cfab-roughly-1024-token-recall/report.json",
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+    },
+    {
+      "row_id": "llama3_8b_instruct_q8_0",
+      "model_id": "meta-llama3-8b-q8",
+      "context_window": 2048,
+      "prompt_pack_id": "llama3-context-2048-smoke-v1",
+      "source_prompt_pack": "qa/prompt-packs/llama3-context-2048-smoke.json",
+      "prompt_id": "roughly-2048-token-recall",
+      "reference_context": 2048,
+      "reference_prompt_token_count": 1910,
+      "max_tokens": 5,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "backend_text": "CMLD-204",
+      "llama_text": "CMLD-204",
+      "generated_text": "CMLD-204",
+      "backend_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "llama_generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "generated_tokens": [
+        34,
+        2735,
+        35,
+        12,
+        7854
+      ],
+      "backend_usage": {
+        "prompt_tokens": 1910,
+        "completion_tokens": 5,
+        "total_tokens": 1915
+      },
+      "llama_usage": {
+        "cache_n": 0,
+        "prompt_n": 1910,
+        "prompt_ms": 19289.631,
+        "prompt_per_token_ms": 10.099283246073298,
+        "prompt_per_second": 99.0169277991891,
+        "predicted_n": 5,
+        "predicted_ms": 435.678,
+        "predicted_per_token_ms": 87.1356,
+        "predicted_per_second": 11.4763655727395
+      },
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "exit_code": 0,
+      "elapsed_wall_clock": "4:37.33",
+      "max_resident_set_kib": 17571348,
+      "time_exit_status": 0,
+      "prefill_q8_file_reads": null,
+      "first_token_q8_file_reads": null,
+      "generation_q8_file_reads": null,
+      "passed": true,
+      "raw_artifact": "pack-2048/meta-llama3-8b-q8-current-head-9e3c64f2cfab-roughly-2048-token-recall/report.json",
+      "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+    }
+  ],
+  "claim_boundary": "Closes only bounded 1024/2048 context parity packs for the exact Llama 3 8B Instruct Q8_0 row at current runtime source head 9e3c64f2cfab. This does not promote neighboring rows, other quantizations, model-native/larger context buckets beyond these checked packs, arbitrary GGUF/Jinja template execution, broad/full Llama-family support, production throughput, or portability support."
+}

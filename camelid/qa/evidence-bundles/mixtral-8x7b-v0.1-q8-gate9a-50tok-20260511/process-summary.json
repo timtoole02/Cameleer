@@ -1,0 +1,8 @@
+{
+  "schema": "camelid.process_summary.v1",
+  "raw_logs": "omitted from bundle to keep evidence compact and scrub-safe",
+  "backend_exit": "terminated by harness after Gate 9A stop condition",
+  "llama_cpp_exit": "terminated by harness after Gate 9A stop condition",
+  "panic_or_oom_observed": false,
+  "note": "Gate 9A stopped because token parity diverged before 50 generated tokens on the first prompt. This is classified as a long-generation parity gap, not a change to the completed Gates 1-8 exact-row promotion."
+}

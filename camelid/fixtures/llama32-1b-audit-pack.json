@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1b_greeting",
+    "message": "Hello! Provide a single-sentence acknowledgment.",
+    "max_tokens": 5,
+    "notes": "instruction/greeting smoke"
+  },
+  {
+    "id": "1b_extraction",
+    "message": "Extract the version format from Camelid backend-v0.4.2.",
+    "max_tokens": 5,
+    "notes": "short extraction / formatting smoke"
+  },
+  {
+    "id": "1b_logic",
+    "message": "In Rust, write a unit test assert for 1 + 1 = 2.",
+    "max_tokens": 5,
+    "notes": "logic / coding smoke"
+  },
+  {
+    "id": "1b_short_completion",
+    "message": "The quick brown fox jumps over the",
+    "max_tokens": 5,
+    "notes": "short continuation smoke"
+  },
+  {
+    "id": "1b_multiline",
+    "message": "Provide strict output only.\nInput: Evaluate the multiline format.\nOutput:",
+    "max_tokens": 5,
+    "notes": "multiline / formatting-sensitive smoke"
+  }
+]

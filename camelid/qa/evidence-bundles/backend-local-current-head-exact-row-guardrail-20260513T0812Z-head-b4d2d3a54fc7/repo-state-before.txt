@@ -1,0 +1,27 @@
+branch=main
+head=b4d2d3a54fc773d2e2be65ccc2617501ef835e1a
+head_short=b4d2d3a54fc7
+timestamp_utc=20260513T0812Z
+local_only=true
+no_remote_validation_used=true
+
+?? qa/evidence-bundles/backend-local-current-head-exact-row-guardrail-20260513T021450Z-head-c439c435aecf/
+?? qa/evidence-bundles/backend-local-current-head-exact-row-guardrail-20260513T0812Z-head-b4d2d3a54fc7/
+?? qa/evidence-bundles/backend-local-exact-row-current-head-guardrail-20260512T201348Z-head-04aacdd/
+?? qa/evidence-bundles/backend-local-exact-row-guardrail-20260512T1832Z-head-bb7ed1b/
+?? qa/evidence-bundles/backend-local-mixtral-blocker-guard-current-head-20260513T051441Z-head-b26402b5fbd6/
+?? qa/evidence-bundles/backend-local-support-contract-guard-current-head-20260513T0342Z-head-5bcdd99d5ee7/
+?? qa/evidence-bundles/llama3-8b-context-1024-2048-current-head-20260508T150407Z-head-3a29d7a535e2/
+?? qa/evidence-bundles/llama3-8b-context-1024-2048-current-head-20260508T155823Z-head-62757bc52fb9/
+?? qa/evidence-bundles/local-perf-capabilities-contract-20260513T060304Z-head-01820b12de30/
+?? qa/evidence-bundles/local-perf-cargo-test-20260512T223222Z-head-06a1789/
+?? qa/evidence-bundles/local-perf-cargo-test-all-targets-20260513T013231Z-head-c439c435aecf/
+?? qa/evidence-bundles/local-perf-cargo-test-all-targets-20260513T013300Z-head-c439c435aecf/
+?? qa/evidence-bundles/local-perf-q8-file-cache-tests-20260513T030312Z-head-8a89e2dd2850/
+?? qa/evidence-bundles/local-support-contract-guard-20260512T223340Z-head-06a1789/
+?? qa/evidence-bundles/local-support-contract-guard-20260513T000328Z-head-62527d7d863b/
+?? qa/evidence-bundles/local-support-contract-guard-20260513T013358Z-head-c439c435aecf/
+?? qa/evidence-bundles/tpm-local-resume-20260513T011726Z-head-85fb749612ad/
+?? qa/evidence-bundles/tpm-local-resume-postfix-20260513T011844Z-head-01f137a700f3/
+?? qa/evidence-bundles/tpm-local-validation-20260512T1840Z-head-a26ad54/
+?? scripts/bench-llama3-same-host.mjs

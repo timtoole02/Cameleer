@@ -1,0 +1,20 @@
+{
+  "method": "GET",
+  "path": "/v1/models",
+  "status": 200,
+  "elapsed_seconds": 0.001,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "object": "list",
+    "data": [
+      {
+        "id": "mixtral-8x7b-v0.1-q8-api-smoke",
+        "object": "model",
+        "created": 0,
+        "owned_by": "camelid"
+      }
+    ]
+  }
+}

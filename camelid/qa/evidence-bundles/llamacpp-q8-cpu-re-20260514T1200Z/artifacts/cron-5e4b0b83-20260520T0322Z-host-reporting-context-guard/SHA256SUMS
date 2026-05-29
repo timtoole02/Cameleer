@@ -1,0 +1,5 @@
+61e6c560cc181881699b73618fbb38dc1a737e835af4bbb62b28ac05f28f2070  README.md
+b685f32fc4c91288e7adaac4059e8e1f1c547cf881c43a3492df24c5c7fcc989  commands/local-doc-gates.command.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  logs/git-diff-check.log
+9672022acf7b5e6e9d6d1a880f3b9efc3b337e0ee13da962f2f3b252d9c59d36  logs/host-reporting-public-scan.log
+65aa1a0717967d2e6e90f7585353738f34c6a92a12f6e852f24ff50bcc9082d5  logs/diff-stat.log

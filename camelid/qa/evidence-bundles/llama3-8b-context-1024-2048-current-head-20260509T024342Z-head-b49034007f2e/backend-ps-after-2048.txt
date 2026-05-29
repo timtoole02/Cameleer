@@ -1,0 +1,313 @@
+    PID COMMAND
+      1 /sbin/init
+      2 [kthreadd]
+      3 [pool_workqueue_release]
+      4 [kworker/R-rcu_gp]
+      5 [kworker/R-sync_wq]
+      6 [kworker/R-kvfree_rcu_reclaim]
+      7 [kworker/R-slub_flushwq]
+      8 [kworker/R-netns]
+     10 [kworker/0:0H-events_highpri]
+     13 [kworker/R-mm_percpu_wq]
+     14 [ksoftirqd/0]
+     15 [rcu_sched]
+     16 [rcu_exp_par_gp_kthread_worker/0]
+     17 [rcu_exp_gp_kthread_worker]
+     18 [migration/0]
+     19 [idle_inject/0]
+     20 [cpuhp/0]
+     21 [cpuhp/1]
+     22 [idle_inject/1]
+     23 [migration/1]
+     24 [ksoftirqd/1]
+     26 [kworker/1:0H-events_highpri]
+     27 [cpuhp/2]
+     28 [idle_inject/2]
+     29 [migration/2]
+     30 [ksoftirqd/2]
+     32 [kworker/2:0H-events_highpri]
+     33 [cpuhp/3]
+     34 [idle_inject/3]
+     35 [migration/3]
+     36 [ksoftirqd/3]
+     38 [kworker/3:0H-events_highpri]
+     39 [cpuhp/4]
+     40 [idle_inject/4]
+     41 [migration/4]
+     42 [ksoftirqd/4]
+     44 [kworker/4:0H-events_highpri]
+     45 [cpuhp/5]
+     46 [idle_inject/5]
+     47 [migration/5]
+     48 [ksoftirqd/5]
+     50 [kworker/5:0H-events_highpri]
+     51 [cpuhp/6]
+     52 [idle_inject/6]
+     53 [migration/6]
+     54 [ksoftirqd/6]
+     56 [kworker/6:0H-events_highpri]
+     57 [cpuhp/7]
+     58 [idle_inject/7]
+     59 [migration/7]
+     60 [ksoftirqd/7]
+     62 [kworker/7:0H-events_highpri]
+     63 [cpuhp/8]
+     64 [idle_inject/8]
+     65 [migration/8]
+     66 [ksoftirqd/8]
+     68 [kworker/8:0H-events_highpri]
+     69 [cpuhp/9]
+     70 [idle_inject/9]
+     71 [migration/9]
+     72 [ksoftirqd/9]
+     74 [kworker/9:0H-events_highpri]
+     75 [cpuhp/10]
+     76 [idle_inject/10]
+     77 [migration/10]
+     78 [ksoftirqd/10]
+     80 [kworker/10:0H-events_highpri]
+     81 [cpuhp/11]
+     82 [idle_inject/11]
+     83 [migration/11]
+     84 [ksoftirqd/11]
+     86 [kworker/11:0H-events_highpri]
+     87 [cpuhp/12]
+     88 [idle_inject/12]
+     89 [migration/12]
+     90 [ksoftirqd/12]
+     92 [kworker/12:0H-events_highpri]
+     93 [cpuhp/13]
+     94 [idle_inject/13]
+     95 [migration/13]
+     96 [ksoftirqd/13]
+     98 [kworker/13:0H-events_highpri]
+     99 [cpuhp/14]
+    100 [idle_inject/14]
+    101 [migration/14]
+    102 [ksoftirqd/14]
+    104 [kworker/14:0H-events_highpri]
+    105 [cpuhp/15]
+    106 [idle_inject/15]
+    107 [migration/15]
+    108 [ksoftirqd/15]
+    110 [kworker/15:0H-events_highpri]
+    111 [kdevtmpfs]
+    112 [kworker/R-inet_frag_wq]
+    113 [rcu_tasks_rude_kthread]
+    114 [rcu_tasks_trace_kthread]
+    115 [kauditd]
+    116 [khungtaskd]
+    117 [oom_reaper]
+    120 [kworker/R-writeback]
+    121 [kcompactd0]
+    122 [ksmd]
+    123 [khugepaged]
+    124 [kworker/R-kblockd]
+    125 [kworker/R-blkcg_punt_bio]
+    126 [kworker/R-kintegrityd]
+    127 [irq/9-acpi]
+    129 [kworker/R-tpm_dev_wq]
+    130 [kworker/R-ata_sff]
+    131 [kworker/R-md]
+    132 [kworker/R-md_bitmap]
+    133 [kworker/R-edac-poller]
+    134 [kworker/R-devfreq_wq]
+    135 [watchdogd]
+    137 [kworker/R-quota_events_unbound]
+    138 [kworker/8:1H-kblockd]
+    140 [kswapd0]
+    141 [ecryptfs-kthread]
+    142 [kworker/R-kthrotld]
+    143 [irq/24-pciehp]
+    144 [irq/25-pciehp]
+    145 [irq/26-pciehp]
+    146 [irq/27-pciehp]
+    147 [irq/28-pciehp]
+    148 [irq/29-pciehp]
+    149 [irq/30-pciehp]
+    150 [irq/31-pciehp]
+    151 [irq/32-pciehp]
+    152 [irq/33-pciehp]
+    153 [irq/34-pciehp]
+    154 [irq/35-pciehp]
+    155 [irq/36-pciehp]
+    156 [irq/37-pciehp]
+    157 [irq/38-pciehp]
+    158 [irq/39-pciehp]
+    159 [irq/40-pciehp]
+    160 [irq/41-pciehp]
+    161 [irq/42-pciehp]
+    162 [irq/43-pciehp]
+    163 [irq/44-pciehp]
+    164 [irq/45-pciehp]
+    165 [irq/46-pciehp]
+    166 [irq/47-pciehp]
+    167 [irq/48-pciehp]
+    168 [irq/49-pciehp]
+    169 [irq/50-pciehp]
+    170 [irq/51-pciehp]
+    171 [irq/52-pciehp]
+    172 [irq/53-pciehp]
+    173 [irq/54-pciehp]
+    174 [irq/55-pciehp]
+    175 [irq/56-pciehp]
+    176 [irq/57-pciehp]
+    177 [irq/58-pciehp]
+    178 [irq/59-pciehp]
+    179 [irq/60-pciehp]
+    180 [irq/61-pciehp]
+    181 [irq/62-pciehp]
+    182 [irq/63-pciehp]
+    183 [irq/64-pciehp]
+    184 [irq/65-pciehp]
+    185 [irq/66-pciehp]
+    187 [kworker/R-acpi_thermal_pm]
+    189 [kworker/R-nvme-wq]
+    190 [kworker/R-nvme-reset-wq]
+    191 [kworker/R-nvme-delete-wq]
+    192 [kworker/R-nvme-auth-wq]
+    196 [kworker/R-mld]
+    197 [kworker/2:1H-kblockd]
+    198 [kworker/R-ipv6_addrconf]
+    199 [kworker/R-kstrp]
+    208 [kworker/u65:0]
+    220 [kworker/R-charger_manager]
+    221 [kworker/0:1H-kblockd]
+    222 [jbd2/nvme0n1p1-8]
+    223 [kworker/R-ext4-rsv-conversion]
+    226 [kworker/10:1H-kblockd]
+    228 [kworker/11:1H-kblockd]
+    231 [kworker/1:1H-kblockd]
+    232 [kworker/12:1H-kblockd]
+    233 [kworker/4:1H-kblockd]
+    266 [kworker/6:1H-kblockd]
+    269 [kworker/5:1H-kblockd]
+    272 [kworker/15:1H-kblockd]
+    274 /usr/lib/systemd/systemd-journald
+    295 [kworker/R-kmpathd]
+    296 [kworker/R-kmpath_handlerd]
+    315 [kworker/13:1H-kblockd]
+    335 /sbin/multipathd -d -s
+    337 [kworker/7:1H-kblockd]
+    341 /usr/lib/systemd/systemd-udevd
+    355 [kworker/9:1H-kblockd]
+    356 [psimon]
+    371 [kworker/3:1H-kblockd]
+    375 [kworker/14:1H-kblockd]
+    429 [kworker/R-ena]
+    478 [jbd2/nvme0n1p16-8]
+    479 [kworker/R-ext4-rsv-conversion]
+    613 /usr/lib/systemd/systemd-resolved
+    670 /usr/lib/systemd/systemd-networkd
+    710 /usr/sbin/acpid
+    714 /usr/sbin/cron -f -P
+    715 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+    721 /usr/sbin/irqbalance
+    723 /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers
+    725 /usr/lib/polkit-1/polkitd --no-debug
+    727 /snap/amazon-ssm-agent/13009/amazon-ssm-agent
+    730 /snap/snapd/current/usr/lib/snapd/snapd
+    733 /usr/lib/systemd/systemd-logind
+    737 /usr/libexec/udisks2/udisksd
+    756 /sbin/agetty -o -p -- \u --keep-baud 115200,57600,38400,9600 - vt220
+    761 /usr/sbin/rsyslogd -n -iNONE
+    786 /usr/sbin/chronyd -F 1
+    793 /usr/sbin/chronyd -F 1
+    814 /sbin/agetty -o -p -- \u --noclear - linux
+    841 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+    914 /usr/sbin/ModemManager
+   1113 sshd: /usr/sbin/sshd -D -o AuthorizedKeysCommand /usr/share/ec2-instance-connect/eic_run_authorized_keys %u %f -o AuthorizedKeysCommandUser ec2-instance-connect [listener] 0 of 10-100 startups
+   1122 [psimon]
+   1124 /usr/lib/systemd/systemd --user
+   1125 (sd-pam)
+   1510 [kworker/R-tls-strp]
+  16310 npm run preview --host canonical-private-ubuntu-validation-host --port 4492
+  16323 sh -c vite preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4492
+  16324 node $CAMELID_WORKTREE preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4492
+  25775 ./target/release/backendinference serve --addr canonical-private-ubuntu-validation-host:8181
+  43280 node $CAMELID_WORKTREE preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4391
+  45687 node $CAMELID_WORKTREE preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4391
+  48151 npm exec vite preview --host canonical-private-ubuntu-validation-host --port 4394
+  48166 sh -c vite preview --host canonical-private-ubuntu-validation-host --port 4394
+  48167 node $CAMELID_WORKTREE preview --host canonical-private-ubuntu-validation-host --port 4394
+  70404 node $CAMELID_WORKTREE preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4598
+  80535 npm run preview --host canonical-private-ubuntu-validation-host --port 4601
+  80548 sh -c vite preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4601
+  80549 node $CAMELID_WORKTREE preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4601
+ 112167 npm run preview --host canonical-private-ubuntu-validation-host --port 4618
+ 112180 sh -c vite preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4618
+ 112181 node $CAMELID_WORKTREE preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4618
+ 157357 node $CAMELID_WORKTREE preview --host canonical-private-ubuntu-validation-host --port 4175 --host canonical-private-ubuntu-validation-host --port 4397
+ 495567 bash -s
+ 495568 ./target/release/backendinference serve --addr canonical-private-ubuntu-validation-host:8311
+ 495593 bash -s
+ 495594 ./target/release/backendinference serve --addr canonical-private-ubuntu-validation-host:8312
+ 495625 bash -s
+ 495627 ./target/release/backendinference serve --addr canonical-private-ubuntu-validation-host:8313
+ 657396 $CAMELID_WORKTREE serve --addr canonical-private-ubuntu-validation-host:8461
+ 661394 $CAMELID_WORKTREE serve --addr canonical-private-ubuntu-validation-host:8466
+ 663967 $CAMELID_WORKTREE serve --addr canonical-private-ubuntu-validation-host:8475
+ 664414 $CAMELID_WORKTREE serve --addr canonical-private-ubuntu-validation-host:8477
+ 713121 $CAMELID_WORKTREE serve --addr canonical-private-ubuntu-validation-host:8672
+ 742581 [kworker/0:2-events]
+ 767913 [kworker/9:0-events]
+ 786353 [kworker/5:0-events]
+ 796908 /usr/libexec/fwupd/fwupd
+ 798273 [kworker/10:0-events]
+ 807946 [kworker/11:2-events]
+ 815602 [kworker/12:0-events]
+ 821474 [kworker/6:2-events]
+ 833797 [kworker/14:1-events]
+ 834121 sshd: ubuntu [priv]
+ 834178 sshd: ubuntu@pts/2
+ 834179 -bash
+ 834420 top
+ 834421 sshd: ubuntu [priv]
+ 834469 sshd: ubuntu@pts/3
+ 834470 -bash
+ 848480 [kworker/7:1-events]
+ 850119 [kworker/8:0-events]
+ 867881 [kworker/3:2-events]
+ 875209 [kworker/12:1]
+ 878292 [kworker/13:2-mm_percpu_wq]
+ 880086 [kworker/4:1-events]
+ 880525 bash $CAMELID_WORKTREE
+ 882199 ./target/release/camelid serve --addr canonical-private-ubuntu-validation-host:20121
+ 882823 [kworker/10:1]
+ 883587 [kworker/5:2-cgroup_free]
+ 884387 [kworker/14:2]
+ 884408 /usr/bin/time -v node scripts/run-llama3-prompt-pack.mjs --chat-parity-script scripts/chat-parity-mistral.mjs --backend http://canonical-private-ubuntu-validation-host:20121 --llama-url http://canonical-private-ubuntu-validation-host:20124 --llama-server [REDACTED_LINUX_PATH] --llama-tokenize [REDACTED_LINUX_PATH] --start-llama-server --pack qa/prompt-packs/mistral-context-16384-max-ladder.json --model $CAMELID_MODEL_DIR/mistral/Mistral-7B-Instruct-v0.3-Q8_0.gguf --model-id mistral-7b-instruct-v0.3-q8_0-maxctx-head-9e3c64f2cfab --out-dir target/ubuntu-mistral-max-context-ladder-20260509T005229Z-head-9e3c64f2cfab/pack-16384 --prefix mistral-7b-v0.3-q8-maxctx-head-9e3c64f2cfab --wait-ms 10800000 --require-prompt-match --require-generated-match
+ 884409 node scripts/run-llama3-prompt-pack.mjs --chat-parity-script scripts/chat-parity-mistral.mjs --backend http://canonical-private-ubuntu-validation-host:20121 --llama-url http://canonical-private-ubuntu-validation-host:20124 --llama-server [REDACTED_LINUX_PATH] --llama-tokenize [REDACTED_LINUX_PATH] --start-llama-server --pack qa/prompt-packs/mistral-context-16384-max-ladder.json --model $CAMELID_MODEL_DIR/mistral/Mistral-7B-Instruct-v0.3-Q8_0.gguf --model-id mistral-7b-instruct-v0.3-q8_0-maxctx-head-9e3c64f2cfab --out-dir target/ubuntu-mistral-max-context-ladder-20260509T005229Z-head-9e3c64f2cfab/pack-16384 --prefix mistral-7b-v0.3-q8-maxctx-head-9e3c64f2cfab --wait-ms 10800000 --require-prompt-match --require-generated-match
+ 884420 node $CAMELID_WORKTREE --backend http://canonical-private-ubuntu-validation-host:20121 --llama-url http://canonical-private-ubuntu-validation-host:20124 --model $CAMELID_MODEL_DIR/mistral/Mistral-7B-Instruct-v0.3-Q8_0.gguf --model-id mistral-7b-instruct-v0.3-q8_0-maxctx-head-9e3c64f2cfab --max-tokens 16 --wait-ms 10800000 --llama-flash-attn off --diagnostics-out target/ubuntu-mistral-max-context-ladder-20260509T005229Z-head-9e3c64f2cfab/pack-16384/mistral-7b-v0.3-q8-maxctx-head-9e3c64f2cfab-mistral-roughly-16384-token-recall/report.json --render-mode mistral_instruct --llama-context 16384 --messages-json target/ubuntu-mistral-max-context-ladder-20260509T005229Z-head-9e3c64f2cfab/pack-16384/mistral-7b-v0.3-q8-maxctx-head-9e3c64f2cfab-mistral-roughly-16384-token-recall/prompt.json --require-prompt-match --require-generated-match --start-llama-server --llama-server [REDACTED_LINUX_PATH] --llama-tokenize [REDACTED_LINUX_PATH]
+ 884427 node $CAMELID_WORKTREE --backend http://canonical-private-ubuntu-validation-host:20121 --llama-url http://canonical-private-ubuntu-validation-host:20124 --model $CAMELID_MODEL_DIR/mistral/Mistral-7B-Instruct-v0.3-Q8_0.gguf --model-id mistral-7b-instruct-v0.3-q8_0-maxctx-head-9e3c64f2cfab --max-tokens 16 --wait-ms 10800000 --llama-flash-attn off --diagnostics-out target/ubuntu-mistral-max-context-ladder-20260509T005229Z-head-9e3c64f2cfab/pack-16384/mistral-7b-v0.3-q8-maxctx-head-9e3c64f2cfab-mistral-roughly-16384-token-recall/report.json --render-mode mistral_instruct --llama-context 16384 --messages-json target/ubuntu-mistral-max-context-ladder-20260509T005229Z-head-9e3c64f2cfab/pack-16384/mistral-7b-v0.3-q8-maxctx-head-9e3c64f2cfab-mistral-roughly-16384-token-recall/prompt.json --require-prompt-match --require-generated-match --start-llama-server --llama-server [REDACTED_LINUX_PATH] --llama-tokenize [REDACTED_LINUX_PATH]
+ 884440 [REDACTED_LINUX_PATH] --host canonical-private-ubuntu-validation-host --port 20124 -m $CAMELID_MODEL_DIR/mistral/Mistral-7B-Instruct-v0.3-Q8_0.gguf -ngl 0 -c 16384 --no-warmup -fa off
+ 885459 [kworker/2:2-events]
+ 885478 [kworker/u64:4+iou_exit]
+ 885706 [kworker/4:0-cgroup_free]
+ 885912 [kworker/6:0-cgroup_free]
+ 886071 [kworker/2:1-cgroup_free]
+ 886127 [kworker/u64:0+iou_exit]
+ 886377 [kworker/11:0-cgroup_free]
+ 886379 [kworker/15:0-cgroup_free]
+ 886445 [kworker/0:1]
+ 886567 [kworker/1:2-events]
+ 886629 [kworker/9:2-cgroup_free]
+ 886749 [kworker/13:0-cgroup_free]
+ 886752 [kworker/15:1-events]
+ 887164 sshd: ubuntu [priv]
+ 887165 [kworker/3:0]
+ 887213 sshd: ubuntu@notty
+ 887214 bash [REDACTED_LINUX_PATH]
+ 887247 tee -a target/llama3-8b-context-1024-2048-current-head-20260509T024342Z-head-b49034007f2e/run.log
+ 887348 $CAMELID_WORKTREE serve --addr canonical-private-ubuntu-validation-host:20321
+ 887515 [kworker/8:1]
+ 887579 [kworker/7:2]
+ 887582 [kworker/u64:7+iou_exit]
+ 887583 [kworker/u64:8+iou_exit]
+ 887649 [kworker/1:1-cgroup_free]
+ 887714 [kworker/9:1]
+ 887781 [kworker/1:0]
+ 887782 [kworker/u64:1+iou_exit]
+ 887783 [kworker/u64:2+iou_exit]
+ 887784 [kworker/u64:3]
+ 887785 ps -eo pid,args

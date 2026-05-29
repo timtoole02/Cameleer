@@ -1,0 +1,81 @@
+cron=0719640b-b612-42e5-a335-f8f5d87fd3e7
+LANE=UBUNTU_X86_Q8
+timestamp_utc=2026-05-14T22:49Z
+canonical_host=ssh [identity omitted] <operator-key-path> ubuntu@<validation-host>
+--- local commit/status ---
+80f6271 Add default-off Ubuntu x86 Q8 repack path
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-0719640b-20260514T2249Z-verification.txt
+--- canonical host recheck and x86 q8 tests ---
+2026-05-14T22:48:45Z
+canonical-private-ubuntu-validation-host
+Linux canonical-private-ubuntu-validation-host 6.17.0-1013-aws #13~24.04.1-Ubuntu SMP Fri Apr 24 21:50:45 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+Architecture:                            x86_64
+CPU(s):                                  16
+On-line CPU(s) list:                     0-15
+Model name:                              Intel(R) Xeon(R) Platinum 8488C
+Thread(s) per core:                      2
+Core(s) per socket:                      8
+Socket(s):                               1
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq monitor ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 wbnoinvd ida arat avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq rdpid cldemote movdiri movdir64b md_clear serialize amx_bf16 avx512_fp16 amx_tile amx_int8 flush_l1d arch_capabilities
+NUMA node0 CPU(s):                       0-15
+RUSTC=rustc 1.87.0 (17067e9ac 2025-05-09)
+CARGO=cargo 1.87.0 (99624be96 2025-05-06)
+    Finished `release` profile [optimized] target(s) in 0.05s
+
+running 2 tests
+test inference::tests::x86_q8_avx2_kernel_matches_scalar_dot ... ok
+     Running unittests src/lib.rs (target/release/deps/camelid-4124ba76c099c483)
+test inference::tests::x86_q8_avx2_packed_rows4_i8_matches_scalar_dot ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 212 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 59 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/release/deps/camelid-fd4fb7d3bf8d5c5b)
+     Running tests/api_vertical_slice.rs (target/release/deps/api_vertical_slice-fbfa2a897fb25a13)
+     Running tests/gguf_metadata.rs (target/release/deps/gguf_metadata-a602f1ecbe6fa9b5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 22 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+
+running 2 tests
+test x86_q8_repack_loads_attn_q_as_packed_runtime_without_row_major_duplicate ... ok
+test x86_q8_repack_loads_ffn_gate_as_transposed_packed_runtime_without_row_major_duplicate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+     Running tests/inference_session.rs (target/release/deps/inference_session-ee65e4384a9a1430)
+     Running tests/model_binding.rs (target/release/deps/model_binding-09b3b3a4dd96d3b3)
+     Running tests/tensor_primitives.rs (target/release/deps/tensor_primitives-558265b8176ce4d5)
+     Running tests/tensor_store.rs (target/release/deps/tensor_store-d77041ff11e0e476)
+     Running tests/tokenizer.rs (target/release/deps/tokenizer-316e67a5780bbc16)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 24 filtered out; finished in 0.00s
+

@@ -1,0 +1,8 @@
+0976fbe9429c449a00b1897daafa51f90b3ccd4d34e433def66fd91ff523a13e  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1444Z-post-rebase-mac-gate-guard/README.md
+dcac39dd2ed794ad98a19adcaeb6f7750d36c0f807f5b9478e06d27b386f8dfc  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1444Z-post-rebase-mac-gate-guard/dirty-diff-src-inference.patch
+b36abe33b5c28e399db6a6f80bf730cbb931221a70a2bdf17944bbce45dc7f3a  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1444Z-post-rebase-mac-gate-guard/dirty-stat.txt
+47a5bb7f1097820ec8534d793db955e97f207988aa85ffa752b5e6edfbd319bc  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1444Z-post-rebase-mac-gate-guard/head-before-fix.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1444Z-post-rebase-mac-gate-guard/logs/cargo-fmt-check.log
+f549df4cbd37c3fd5246e264d4f356459272c45006fa1ec39ff0d9fbe440f684  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1444Z-post-rebase-mac-gate-guard/logs/cargo-test-lib.log
+800251021102fa520f0823cff04dd22b7252a37ac7d74ffb6ff20573e16d64c0  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1444Z-post-rebase-mac-gate-guard/logs/cargo-test-q8-repack.log
+9ec61f7fe07c38ebb83c9bd63f0a4565d28764106e7921c4d4cc9dde72f1b42f  qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T1444Z-post-rebase-mac-gate-guard/logs/cargo-test-q8-runtime-repack.log

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "prompts": [
+    {
+      "id": "roughly-4096-token-recall",
+      "exit_code": 0,
+      "reference_prompt_token_count": 3755,
+      "reference_context": 4096,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1
+    }
+  ]
+}

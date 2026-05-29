@@ -1,0 +1,7 @@
+{
+  "model": "mistral-7b-v0.3-q8-remote-current-head",
+  "prompt": "hello",
+  "max_tokens": 1,
+  "stream": false,
+  "temperature": 0
+}

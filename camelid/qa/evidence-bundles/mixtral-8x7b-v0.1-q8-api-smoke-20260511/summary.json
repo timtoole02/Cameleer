@@ -1,0 +1,34 @@
+{
+  "bundle": "mixtral-8x7b-v0.1-q8-api-smoke-20260511",
+  "scope": "Mixtral-8x7B-Instruct-v0.1.Q8_0 exact-row API smoke",
+  "model_id": "mixtral-8x7b-v0.1-q8-api-smoke",
+  "checks": {
+    "health_before_ok": true,
+    "load_ok": true,
+    "health_generation_ready": true,
+    "v1_models_ok": true,
+    "v1_completions_ok": true,
+    "v1_chat_completions_ok": true
+  },
+  "observations": {
+    "load_elapsed_seconds": 0.064,
+    "completion_text": ",",
+    "chat_text": " Hello",
+    "completion_token_ids": [
+      28725
+    ],
+    "chat_token_ids": [
+      22557
+    ]
+  },
+  "all_passed": true,
+  "files": [
+    "01_health_before.json",
+    "02_v1_models_before.json",
+    "03_load_model.json",
+    "04_health_after_load.json",
+    "05_v1_models_after.json",
+    "06_v1_completions.json",
+    "07_v1_chat_completions.json"
+  ]
+}

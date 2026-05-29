@@ -1,0 +1,25 @@
+{
+  "schema": "camelid.remote_8b_current_head_run_state.v2",
+  "source_head": "9e3c64f2cfab098f9cccbc8e5f879ecd99d73666",
+  "source_head_short": "9e3c64f2cfab",
+  "status": "completed",
+  "detail": "packs completed; postprocess recovered after shell-variable sanitizer bug",
+  "passed": true,
+  "remote_dir": "${CANONICAL_WORK}/Camelid-8b-current-9e3c64f2cfab-20260509T002636Z",
+  "artifact_root": "target/llama3-8b-context-1024-2048-current-head-20260509T002636Z-head-9e3c64f2cfab",
+  "bundle_dir": "target/llama3-8b-context-1024-2048-current-head-20260509T002636Z-head-9e3c64f2cfab",
+  "started_utc": "20260509T002636Z",
+  "updated_utc": "20260509T002636Z",
+  "packs": {
+    "1024": {
+      "exit_code": 0,
+      "summary_path": "target/llama3-8b-context-1024-2048-current-head-20260509T002636Z-head-9e3c64f2cfab/pack-1024/summary.json",
+      "passed": true
+    },
+    "2048": {
+      "exit_code": 0,
+      "summary_path": "target/llama3-8b-context-1024-2048-current-head-20260509T002636Z-head-9e3c64f2cfab/pack-2048/summary.json",
+      "passed": true
+    }
+  }
+}

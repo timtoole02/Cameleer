@@ -1,0 +1,2 @@
+git diff -- frontend/src/lib/capabilities.js frontend/scripts/model-state-smoke.mjs frontend/scripts/frontend-integration-smoke.mjs
+grep -n "artifactText\|neighboringQuantPath\|llama32ThreeBQ4Path" frontend/src/lib/capabilities.js frontend/scripts/model-state-smoke.mjs frontend/scripts/frontend-integration-smoke.mjs

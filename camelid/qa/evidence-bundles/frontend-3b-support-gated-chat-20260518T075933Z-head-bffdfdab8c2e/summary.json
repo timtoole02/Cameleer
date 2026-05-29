@@ -1,0 +1,17 @@
+{
+  "slice": "frontend-3b-support-gated-chat",
+  "target": "Llama 3.2 3B Instruct Q8_0 frontend/WebUI exact-row gating",
+  "head_before_commit": "bffdfdab8c2e211d85fc01a1b2a3a773853cec77",
+  "decision": "retained",
+  "retained_reason": "Adds regression coverage proving a runtime-ready 3B Q8_0 row remains chat-blocked unless /api/capabilities advertises an exact supported compatibility status, while still surfacing loaded_now/generation_ready and the exact unpromoted row label.",
+  "local_gates": {
+    "command": "npm run smoke:integration && npm run smoke:model-state && npm run smoke:ui && npm run build",
+    "exit": 0
+  },
+  "remote_backend_check": {
+    "command": "ssh canonical Ubuntu host then curl /v1/health and /api/capabilities on 127.0.0.1:8181",
+    "exit": 7,
+    "blocker": "SSH reached host, but local Camelid API was not listening on 127.0.0.1:8181 during this slice."
+  },
+  "support_contract_guard": "No support/README/API/frontend claim is widened; the new test is a fail-closed guard for downgraded 3B capabilities rows."
+}

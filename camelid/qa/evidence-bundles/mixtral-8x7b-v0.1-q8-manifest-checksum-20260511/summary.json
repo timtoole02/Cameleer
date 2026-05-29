@@ -1,0 +1,18 @@
+{
+  "bundle": "mixtral-8x7b-v0.1-q8-manifest-checksum-20260511",
+  "checks": {
+    "model_size_recorded": true,
+    "model_sha256_recorded": true,
+    "artifact_list_present": true,
+    "scope_exact_row_only": true
+  },
+  "model_size_bytes": 49624262592,
+  "model_sha256": "cdca4a8c09dfd722702f781d479695cda0d45e1bd1cd602ba1b6085ad921fc5f",
+  "artifact_bundles": [
+    "mixtral-8x7b-v0.1-q8-backend-parity-refresh-20260511",
+    "mixtral-8x7b-v0.1-q8-api-smoke-20260511",
+    "mixtral-8x7b-v0.1-q8-webui-readiness-20260511",
+    "mixtral-8x7b-v0.1-q8-rss-timing-runtime-20260511"
+  ],
+  "all_passed": true
+}

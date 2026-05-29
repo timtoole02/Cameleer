@@ -1,0 +1,92 @@
+REMOTE=<ubuntu-workdir>/camelid-ffndown-owner-20260515T1759Z
+Fri May 15 17:59:42 UTC 2026
+Linux canonical-private-ubuntu-validation-host 6.17.0-1013-aws #13~24.04.1-Ubuntu SMP Fri Apr 24 21:50:45 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+Architecture:                            x86_64
+Model name:                              Intel(R) Xeon(R) Platinum 8488C
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq monitor ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 wbnoinvd ida arat avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq rdpid cldemote movdiri movdir64b md_clear serialize amx_bf16 avx512_fp16 amx_tile amx_int8 flush_l1d arch_capabilities
+cargo 1.87.0 (99624be96 2025-05-06)
+rustc 1.87.0 (17067e9ac 2025-05-09)
+
+== cargo test --lib q8_0_runtime_packed ==
+warning: unused import: `crate::execution_plan::MAC_Q8_PREFILL_I8MM_MIN_ROWS`
+  --> src/inference.rs:20:5
+   |
+20 | use crate::execution_plan::MAC_Q8_PREFILL_I8MM_MIN_ROWS;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: function `add_q8_schedule_counter` is never used
+    --> src/inference.rs:1395:4
+     |
+1395 | fn add_q8_schedule_counter(counter: &AtomicU64, value: u64) {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` on by default
+
+warning: function `update_q8_schedule_peak` is never used
+    --> src/inference.rs:1401:4
+     |
+1401 | fn update_q8_schedule_peak(counter: &AtomicU64, value: u64) {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `record_q8_schedule_activation_pack` is never used
+    --> src/inference.rs:1414:4
+     |
+1414 | fn record_q8_schedule_activation_pack(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `camelid` (lib test) generated 4 warnings (run `cargo fix --lib -p camelid --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running unittests src/lib.rs (target/debug/deps/camelid-7505f416842590af)
+
+running 5 tests
+test inference::tests::q8_0_runtime_packed_ffn_gate_up_activation_matches_retained_blocks ... ok
+test inference::tests::q8_0_runtime_packed_ffn_transposed_f32_fallback_handles_empty_runtime_data ... ok
+test inference::tests::q8_0_runtime_packed_ffn_down_transposed_view_matches_retained_blocks ... ok
+test inference::tests::q8_0_runtime_packed_ffn_gate_transposed_view_matches_retained_blocks ... ok
+test inference::tests::q8_0_runtime_packed_rows4_f32_fallback_handles_empty_runtime_data ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.00s
+
+
+== cargo test --lib x86_q8 ==
+warning: unused import: `crate::execution_plan::MAC_Q8_PREFILL_I8MM_MIN_ROWS`
+  --> src/inference.rs:20:5
+   |
+20 | use crate::execution_plan::MAC_Q8_PREFILL_I8MM_MIN_ROWS;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: function `add_q8_schedule_counter` is never used
+    --> src/inference.rs:1395:4
+     |
+1395 | fn add_q8_schedule_counter(counter: &AtomicU64, value: u64) {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` on by default
+
+warning: function `update_q8_schedule_peak` is never used
+    --> src/inference.rs:1401:4
+     |
+1401 | fn update_q8_schedule_peak(counter: &AtomicU64, value: u64) {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `record_q8_schedule_activation_pack` is never used
+    --> src/inference.rs:1414:4
+     |
+1414 | fn record_q8_schedule_activation_pack(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `camelid` (lib test) generated 4 warnings (run `cargo fix --lib -p camelid --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running unittests src/lib.rs (target/debug/deps/camelid-7505f416842590af)
+
+running 3 tests
+test inference::tests::x86_q8_avx2_kernel_matches_scalar_dot ... ok
+test inference::tests::x86_q8_avx2_packed_rows4_i8_matches_scalar_dot ... ok
+test inference::tests::x86_q8_ffn_down_decode_owner_path_matches_runtime_packed_baseline ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 226 filtered out; finished in 0.00s
+

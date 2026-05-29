@@ -1,0 +1,14 @@
+branch=main
+head=8a0d522ac3ec4207a9e4e30bb62429481345a1cc
+head_short=8a0d522ac3ec
+utc=20260513T165322Z
+status:
+?? qa/evidence-bundles/qa-cron-support-contract-guard-20260513T165322Z-head-8a0d522ac3ec/
+recent_commits:
+8a0d522 Document frontend API evidence rendering guard
+4cf0eb8 Tighten frontend API feature evidence rendering
+95ad4ae Refresh 1B 4096 current-head evidence
+470388f Fix TPM gate regressions
+29f042c Promote 1B bounded 4096 context evidence
+
+status_excluding_this_artifact:

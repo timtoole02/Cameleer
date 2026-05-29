@@ -1,0 +1,65 @@
+{
+  "public_compacted_from_remote_response": true,
+  "id": "llama32-3b-q8-current-e9f926e",
+  "path": "<canonical-model-store>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+  "gguf": {
+    "path": "<canonical-model-store>/Llama-3.2-3B-Instruct-Q8_0.gguf",
+    "version": 3,
+    "tensor_count": 255,
+    "metadata_count": 35,
+    "alignment": 32,
+    "data_start_offset": 7837984,
+    "metadata": {
+      "general.architecture": "llama",
+      "general.basename": "Llama-3.2",
+      "general.file_type": 7,
+      "general.finetune": "Instruct",
+      "general.name": "Llama 3.2 3B Instruct",
+      "general.quantization_version": 2,
+      "general.size_label": "3B",
+      "llama.block_count": 28,
+      "llama.context_length": 131072,
+      "llama.embedding_length": 3072,
+      "llama.feed_forward_length": 8192,
+      "llama.vocab_size": 128256,
+      "tokenizer.ggml.bos_token_id": 128000,
+      "tokenizer.ggml.eos_token_id": 128009
+    }
+  },
+  "tokenizer": {
+    "status": "available",
+    "model": "gpt2_bpe",
+    "token_count": 128256,
+    "byte_token_count": 0,
+    "special": {
+      "bos": 128000,
+      "eos": 128009,
+      "eot": 128009,
+      "eom": null,
+      "unk": null,
+      "sep": null,
+      "pad": null,
+      "mask": null,
+      "eog": [
+        128009
+      ]
+    },
+    "config": {
+      "add_bos": true,
+      "add_eos": false,
+      "add_sep": false,
+      "add_space_prefix": true,
+      "remove_extra_whitespaces": false
+    },
+    "chat_template": {
+      "source": "tokenizer.chat_template",
+      "detected_format": "llama3_instruct",
+      "length": 3827
+    }
+  },
+  "llama_tensors": {
+    "status": "available",
+    "dense_tensors_bound": true
+  },
+  "unsupported_runtime": null
+}

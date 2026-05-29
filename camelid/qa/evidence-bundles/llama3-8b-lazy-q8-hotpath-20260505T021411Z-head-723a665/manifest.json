@@ -1,0 +1,154 @@
+{
+  "schema": "camelid.lazy_q8_hotpath_bench.v1",
+  "generated_utc": "2026-05-05T02:14:11Z",
+  "git_head": "723a665",
+  "source_tree": "clean public origin/main worktree plus uncommitted bench-q8-blocks --swap-rank2-shape measurement patch",
+  "checkout_clean_before_patch": true,
+  "scope": "Exact Llama 3 8B Instruct Q8_0 retained-block lazy hot-path microbenchmarks; measurement evidence only.",
+  "model": {
+    "row_id": "llama3_8b_instruct_q8_0",
+    "file": "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+    "sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+  },
+  "bench_patch": {
+    "cli": "bench-q8-blocks --swap-rank2-shape",
+    "purpose": "reinterpret rank-2 rows/cols without transposing payload bytes so measurement can match Camelid's guarded rectangular lazy Q8 runtime layout for tensors such as ffn_gate and output.weight",
+    "compatibility": "the JSON keeps shape as the logical shape and adds storage_shape, logical_shape, and swap_rank2_shape"
+  },
+  "runs": [
+    {
+      "tensor": "blk.0.ffn_down.weight",
+      "storage_shape": [
+        14336,
+        4096
+      ],
+      "logical_shape": [
+        14336,
+        4096
+      ],
+      "swap_rank2_shape": false,
+      "tensor_mib": 59.5,
+      "f32_materialized_mib": 224.0,
+      "dot_input_f32_mib": 0.015625,
+      "all_rows_output_f32_mib": 0.0546875,
+      "block_load_ms": 59.20756,
+      "avg_all_rows_dot_ms": 36.731779,
+      "avg_single_input_row_dot_ms": 36.702335,
+      "process_elapsed": "0:00.65",
+      "process_maxrss_kib": 160948
+    },
+    {
+      "tensor": "blk.0.ffn_gate.weight",
+      "storage_shape": [
+        4096,
+        14336
+      ],
+      "logical_shape": [
+        14336,
+        4096
+      ],
+      "swap_rank2_shape": true,
+      "tensor_mib": 59.5,
+      "f32_materialized_mib": 224.0,
+      "dot_input_f32_mib": 0.015625,
+      "all_rows_output_f32_mib": 0.0546875,
+      "block_load_ms": 57.321075,
+      "avg_all_rows_dot_ms": 36.688802,
+      "avg_single_input_row_dot_ms": 36.683314,
+      "process_elapsed": "0:00.65",
+      "process_maxrss_kib": 161004
+    },
+    {
+      "tensor": "output.weight",
+      "storage_shape": [
+        4096,
+        128256
+      ],
+      "logical_shape": [
+        128256,
+        4096
+      ],
+      "swap_rank2_shape": true,
+      "tensor_mib": 532.3125,
+      "f32_materialized_mib": 2004.0,
+      "dot_input_f32_mib": 0.015625,
+      "all_rows_output_f32_mib": 0.4892578125,
+      "block_load_ms": 495.791028,
+      "avg_all_rows_dot_ms": 328.115934,
+      "avg_single_input_row_dot_ms": 328.659922,
+      "process_elapsed": "0:01.47",
+      "process_maxrss_kib": 1157556
+    }
+  ],
+  "interpretation": {
+    "ffn_projection_observation": "Representative 8B FFN lazy Q8 all-row dot over logical [14336,4096] costs about 36.7 ms per projection in retained-block serial microbench mode while avoiding 224 MiB f32 materialization for a 59.5 MiB Q8 tensor.",
+    "logits_observation": "Swapped logical output.weight [128256,4096] costs about 328 ms for one all-row dot and avoids about 2.0 GiB f32 materialization for a 532.3 MiB Q8 tensor, but still dominates single-token logits work.",
+    "known_gap": "This bench uses retained Q8 blocks, not the production file-backed reader path; pair it with response-local timing/RSS evidence before making performance-portability claims."
+  },
+  "claim_boundary": "Lazy Q8 hot-path cost evidence only for exact Llama 3 8B Instruct Q8_0 tensors. No broad Llama-family, full-context, arbitrary-template, neighboring-size, other-quantization, or portability support claim.",
+  "ubuntu_followup_validation": {
+    "validated_utc": "2026-05-05T02:27:27Z",
+    "host": "Ubuntu validation lane (sanitized)",
+    "worktree": "clean temp clone of public origin/main at 723a665 plus the same measurement-only bench-q8-blocks --swap-rank2-shape patch",
+    "toolchain": "rustup cargo/rustc 1.87.0 on PATH=$HOME/.cargo/bin:$PATH",
+    "checks": [
+      "cargo fmt --check passed",
+      "cargo test -q q8_0 --lib passed: 12 passed",
+      "8B model SHA256 matched 583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958"
+    ],
+    "release_probe_results": [
+      {
+        "tensor": "blk.0.ffn_down.weight",
+        "storage_shape": [
+          14336,
+          4096
+        ],
+        "logical_shape": [
+          14336,
+          4096
+        ],
+        "swap_rank2_shape": false,
+        "avg_all_rows_dot_ms": 36.671338,
+        "avg_single_input_row_dot_ms": 37.1334665,
+        "block_load_ms": 59.470667,
+        "tensor_mib": 59.5,
+        "f32_materialized_mib": 224.0
+      },
+      {
+        "tensor": "blk.0.ffn_gate.weight",
+        "storage_shape": [
+          4096,
+          14336
+        ],
+        "logical_shape": [
+          14336,
+          4096
+        ],
+        "swap_rank2_shape": true,
+        "avg_all_rows_dot_ms": 37.1260745,
+        "avg_single_input_row_dot_ms": 37.0419795,
+        "block_load_ms": 58.422293,
+        "tensor_mib": 59.5,
+        "f32_materialized_mib": 224.0
+      },
+      {
+        "tensor": "output.weight",
+        "storage_shape": [
+          4096,
+          128256
+        ],
+        "logical_shape": [
+          128256,
+          4096
+        ],
+        "swap_rank2_shape": true,
+        "avg_all_rows_dot_ms": 330.1315575,
+        "avg_single_input_row_dot_ms": 330.9246075,
+        "block_load_ms": 493.901372,
+        "tensor_mib": 532.3125,
+        "f32_materialized_mib": 2004.0
+      }
+    ],
+    "notes": "Follow-up release-mode JSON timings were consistent with the public bundle. The first shell /usr/bin/time sample included release build overhead, so process elapsed/RSS from that sample is intentionally not used as performance evidence."
+  }
+}

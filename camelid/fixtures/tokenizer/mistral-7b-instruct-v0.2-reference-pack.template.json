@@ -1,0 +1,5 @@
+{
+  "status": "deprecated_target",
+  "notes": "The active exact-row Mistral bring-up target moved to Mistral-7B-Instruct-v0.3 Q8_0. Do not add new evidence here; use mistral-7b-instruct-v0.3-reference-pack.template.json instead.",
+  "superseded_by": "mistral-7b-instruct-v0.3-reference-pack.template.json"
+}

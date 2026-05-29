@@ -1,0 +1,144 @@
+{
+  "status": 200,
+  "elapsed_seconds": 0.064,
+  "body": {
+    "id": "mixtral-8x7b-v0.1-q8-runtime-gate6",
+    "path": "<MODEL:Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf>",
+    "gguf": {
+      "path": "<MODEL:Mixtral-8x7B-Instruct-v0.1.Q8_0.gguf>",
+      "version": 3,
+      "tensor_count": 995,
+      "metadata_count": 26,
+      "alignment": 32,
+      "data_start_offset": 780224,
+      "metadata": {
+        "general.architecture": "llama",
+        "general.file_type": 7,
+        "general.name": "mistralai_mixtral-8x7b-instruct-v0.1",
+        "general.quantization_version": 2,
+        "llama.attention.head_count": 32,
+        "llama.attention.head_count_kv": 8,
+        "llama.attention.layer_norm_rms_epsilon": 1e-05,
+        "llama.block_count": 32,
+        "llama.context_length": 32768,
+        "llama.embedding_length": 4096,
+        "llama.expert_count": 8,
+        "llama.expert_used_count": 2,
+        "llama.feed_forward_length": 14336,
+        "llama.rope.dimension_count": 128,
+        "llama.rope.freq_base": 1000000.0,
+        "tokenizer.chat_template": "{{ bos_token }}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if message['role'] == 'user' %}{{ '[INST] ' + message['content'] + ' [/INST]' }}{% elif message['role'] == 'assistant' %}{{ message['content'] + eos_token}}{% else %}{{ raise_exception('Only user and assistant roles are supported!') }}{% endif %}{% endfor %}",
+        "tokenizer.ggml.add_bos_token": true,
+        "tokenizer.ggml.add_eos_token": false,
+        "tokenizer.ggml.bos_token_id": 1,
+        "tokenizer.ggml.eos_token_id": 2,
+        "tokenizer.ggml.model": "llama",
+        "tokenizer.ggml.padding_token_id": 0
+      },
+      "redaction": "Large tokenizer arrays such as scores/tokens/token_type are omitted from this public evidence file; counts/config remain captured."
+    },
+    "llama_config": {
+      "context_length": 32768,
+      "embedding_length": 4096,
+      "block_count": 32,
+      "feed_forward_length": 14336,
+      "attention_head_count": 32,
+      "attention_head_count_kv": 8,
+      "rope_dimension_count": 128,
+      "rope_freq_base": 1000000.0,
+      "rope_scaling_type": null,
+      "rope_scaling_factor": null,
+      "rope_scaling_original_context_length": null,
+      "rope_scaling_low_freq_factor": null,
+      "rope_scaling_high_freq_factor": null,
+      "rms_norm_epsilon": 1e-05,
+      "vocab_size": 32000,
+      "file_type": 7,
+      "moe": {
+        "family_label": "Mixtral",
+        "expert_count": 8,
+        "expert_used_count": 2
+      }
+    },
+    "llama_tensors_summary": {
+      "token_embedding": {
+        "name": "token_embd.weight",
+        "dimensions": [
+          4096,
+          32000
+        ],
+        "tensor_type": "Q8_0",
+        "relative_offset": 0,
+        "absolute_offset": 780224,
+        "n_bytes": 139264000
+      },
+      "output_norm": {
+        "name": "output_norm.weight",
+        "dimensions": [
+          4096
+        ],
+        "tensor_type": "F32",
+        "relative_offset": 49623465984,
+        "absolute_offset": 49624246208,
+        "n_bytes": 16384
+      },
+      "output": {
+        "name": "output.weight",
+        "dimensions": [
+          4096,
+          32000
+        ],
+        "tensor_type": "Q8_0",
+        "relative_offset": 47380627456,
+        "absolute_offset": 47381407680,
+        "n_bytes": 139264000
+      },
+      "output_is_tied_embedding": false,
+      "rope_freqs": null,
+      "layer_count": 32,
+      "first_layer_tensor_names": {
+        "attention_norm": "blk.0.attn_norm.weight",
+        "attention_q": "blk.0.attn_q.weight",
+        "attention_k": "blk.0.attn_k.weight",
+        "attention_v": "blk.0.attn_v.weight",
+        "attention_output": "blk.0.attn_output.weight",
+        "ffn_norm": "blk.0.ffn_norm.weight",
+        "ffn": null
+      },
+      "redaction": "Per-layer tensor descriptors are summarized to avoid committing large repetitive load dumps."
+    },
+    "unsupported_runtime": null,
+    "tokenizer": {
+      "status": "available",
+      "model": "llama_spm",
+      "token_count": 32000,
+      "byte_token_count": 256,
+      "special": {
+        "bos": 1,
+        "eos": 2,
+        "eot": null,
+        "eom": null,
+        "unk": 0,
+        "sep": null,
+        "pad": 0,
+        "mask": null,
+        "eog": [
+          2
+        ]
+      },
+      "config": {
+        "add_bos": true,
+        "add_eos": false,
+        "add_sep": false,
+        "add_space_prefix": true,
+        "remove_extra_whitespaces": false
+      },
+      "chat_template": {
+        "source": "tokenizer.chat_template",
+        "detected_format": "mistral_instruct",
+        "length": 470
+      }
+    }
+  },
+  "public_evidence_compaction": "Full load response was compacted after validation to avoid large public artifacts; summary and pass/fail evidence remain."
+}

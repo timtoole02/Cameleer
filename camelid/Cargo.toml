@@ -1,0 +1,42 @@
+[package]
+name = "camelid"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.87"
+description = "Camelid: a Rust-native local GGUF inference backend with evidence-gated model compatibility"
+license = "MIT"
+repository = "https://github.com/timtoole02/Camelid"
+readme = "README.md"
+keywords = ["gguf", "llm", "inference", "rust", "openai-compatible"]
+categories = ["api-bindings", "command-line-utilities"]
+
+[dependencies]
+anyhow = "1"
+async-stream = "0.3"
+axum = "0.7"
+clap = { version = "4.5", features = ["derive", "env"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+minijinja = { version = "2", features = ["json"] }
+rayon = "1"
+thiserror = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
+tower-http = { version = "0.5", features = ["trace", "cors"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+metal = "0.31"
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+tempfile = "3"
+
+[lib]
+name = "camelid"
+path = "src/lib.rs"
+
+[[bin]]
+name = "camelid"
+path = "src/main.rs"

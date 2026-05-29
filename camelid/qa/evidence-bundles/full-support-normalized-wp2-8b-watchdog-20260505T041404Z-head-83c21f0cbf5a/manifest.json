@@ -1,0 +1,21 @@
+{
+  "schema": "camelid.full_support.normalized_wp2_8b.watchdog.v1",
+  "generated_utc": "2026-05-05T04:15:24Z",
+  "head": "83c21f0cbf5a",
+  "head_full": "83c21f0cbf5a715c12a8e33c8e9138d9e354dd64",
+  "out_dir": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a",
+  "node": "v22.22.2",
+  "model": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+  "model_sha256": "583c616da14b82930f887f991ab446711da0b029166200b67892d7c9f8f45958",
+  "api_base": "http://127.0.0.1:8391",
+  "frontend_url": "http://127.0.0.1:4601",
+  "max_backend_rss_kib": 283372,
+  "rows": [
+    {
+      "row": "llama3_8b_instruct_q8_0",
+      "passed": true,
+      "summary": "target/full-support-normalized-wp2-8b-watchdog-20260505T041404Z-head-83c21f0cbf5a/llama3_8b_instruct_q8_0/api-webui/summary.json"
+    }
+  ],
+  "scope_boundary": "Exact Llama 3 8B Instruct Q8_0 API/WebUI/RSS smoke only; not broad/full support, not a portability claim, and not evidence for neighboring rows or larger contexts."
+}

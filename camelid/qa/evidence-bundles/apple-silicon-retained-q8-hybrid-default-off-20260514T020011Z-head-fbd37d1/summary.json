@@ -1,0 +1,105 @@
+{
+  "schema": "camelid.apple_silicon_retained_q8_hybrid_default_gate.v1",
+  "created_utc": "2026-05-14T02:00:11Z",
+  "source_head_before_commit": "fbd37d1",
+  "scope": "same-host Apple Silicon retained-Q8 short decode gate",
+  "exact_row": "Llama 3.2 3B Instruct Q8_0",
+  "endpoint": "/v1/chat/completions",
+  "model_id": "llama32-3b-q8-local",
+  "method": {
+    "warmup": "see per-measurement rows",
+    "measured_repeats": "see per-measurement rows",
+    "max_tokens": 8,
+    "threads": 10,
+    "temperature": 0,
+    "prompt_cache": "unique prompts; measured rows reported any_prompt_cache_hit=false",
+    "weight_cache": "hot on measured rows",
+    "forward_memory": "CAMELID_FORWARD_RSS_TIMINGS=on",
+    "raw_outputs": "Raw target/*.json files are intentionally not committed because they include local paths, process ids, device names, and host pressure samples."
+  },
+  "measurements": [
+    {
+      "label": "old_implicit_hybrid_default_10_percent",
+      "mode": "CAMELID_HYBRID_Q8_RETAINED unset under the previous macOS default-on behavior; effective GPU slice 10%",
+      "repeats": 2,
+      "warmup": 1,
+      "max_tokens": 8,
+      "avg_prompt_token_count": 19.5,
+      "avg_wall_ms": 4881.3,
+      "avg_generate_ms": 4867,
+      "avg_layers_ms": 4749.75,
+      "avg_logits_ms": 55.81,
+      "avg_attention_projection_ms": 312.3,
+      "avg_attention_context_ms": 15.9,
+      "avg_ffn_total_ms": 883.52,
+      "max_forward_peak_rss_mib": 4459.19,
+      "observed_peak_backend_rss_mib": 4458.73,
+      "all_weight_cache_hit": true,
+      "any_prompt_cache_hit": false,
+      "avg_q8_file_read_mib": 0,
+      "notes": [
+        "Two-repeat sweep sample captured before changing the default."
+      ]
+    },
+    {
+      "label": "explicit_cpu_only_sweep",
+      "mode": "CAMELID_HYBRID_Q8_RETAINED=0 under the previous code",
+      "repeats": 2,
+      "warmup": 1,
+      "max_tokens": 8,
+      "avg_prompt_token_count": 19.5,
+      "avg_wall_ms": 4823.42,
+      "avg_generate_ms": 4808,
+      "avg_layers_ms": 4689.74,
+      "avg_logits_ms": 57.95,
+      "avg_attention_projection_ms": 314.55,
+      "avg_attention_context_ms": 15.98,
+      "avg_ffn_total_ms": 858.8,
+      "max_forward_peak_rss_mib": 4255.08,
+      "observed_peak_backend_rss_mib": 4255.06,
+      "all_weight_cache_hit": true,
+      "any_prompt_cache_hit": false,
+      "avg_q8_file_read_mib": 0,
+      "notes": [
+        "Two-repeat sweep sample captured in the same tuning session."
+      ]
+    },
+    {
+      "label": "new_default_hybrid_off",
+      "mode": "CAMELID_HYBRID_Q8_RETAINED unset after changing the default to off",
+      "repeats": 3,
+      "warmup": 1,
+      "max_tokens": 8,
+      "avg_prompt_token_count": 19,
+      "avg_wall_ms": 4834.46,
+      "avg_generate_ms": 4819.33,
+      "avg_layers_ms": 4701.71,
+      "avg_logits_ms": 58.27,
+      "avg_attention_projection_ms": 311.27,
+      "avg_attention_context_ms": 15.81,
+      "avg_ffn_total_ms": 846.32,
+      "max_forward_peak_rss_mib": 3818.81,
+      "observed_peak_backend_rss_mib": 3817.66,
+      "all_weight_cache_hit": true,
+      "any_prompt_cache_hit": false,
+      "avg_q8_file_read_mib": 0,
+      "notes": [
+        "Three-repeat confirmation sample after the code/docs change."
+      ]
+    }
+  ],
+  "decision": {
+    "change": "Default CAMELID_HYBRID_Q8_RETAINED to off; keep the CPU+Metal suffix scheduler available only as explicit opt-in.",
+    "reason": "The measured Metal suffix scheduler did not beat the paired retained-Q8 CPU path on this short 3B decode gate and carried higher RSS in the default 10% slice sample.",
+    "old_hybrid_to_new_default_delta": {
+      "avg_generate_ms_improvement_percent": 0.98,
+      "avg_ffn_total_ms_improvement_percent": 4.21,
+      "observed_peak_backend_rss_mib_reduction_percent": 14.38
+    }
+  },
+  "claim_boundary": [
+    "This is a same-host tuning gate for the exact retained-Q8 3B row and short max_tokens=8 chat workload.",
+    "It is not a broad Metal performance claim and does not compare against MLX or llama.cpp.",
+    "The raw local benchmark JSON is excluded from git to avoid publishing local paths and host/device details."
+  ]
+}

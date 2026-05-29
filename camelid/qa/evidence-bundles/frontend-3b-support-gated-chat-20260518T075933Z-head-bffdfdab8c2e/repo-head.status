@@ -1,0 +1,87 @@
+utc: 2026-05-18T07:59:46Z
+head: bffdfdab8c2e211d85fc01a1b2a3a773853cec77
+head_short: bffdfdab8c2e
+branch: ubuntu-x86-q8-f23-plus-qkv-consumers
+status_frontend:
+ M frontend/scripts/frontend-integration-smoke.mjs
+status_all_head:
+ M STATUS.md
+ M docs/CONFIGURATION.md
+ M docs/performance/ubuntu-x86-q8.md
+ M frontend/scripts/frontend-integration-smoke.mjs
+ M qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md
+ M scripts/bench-llama3-same-host.mjs
+ M src/api/mod.rs
+ M src/execution_plan.rs
+ M src/inference.rs
+ M src/tensor/mod.rs
+ M tests/tensor_store.rs
+?? CONTEXT.md
+?? artifacts/
+?? docs/adr/
+?? docs/agents/
+?? evidence/
+?? projects/
+?? qa/evidence-bundles/frontend-3b-support-gated-chat-20260518T075933Z-head-bffdfdab8c2e/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-0719640b-20260518T0615Z-ffndown-gemm4-rowgroup-sched/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-0719640b-20260518T0732Z-attn-output-gemm4-rowgroup-sched/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260517T1516Z-x86-ffn-gate-up-paired-projection-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260517T1645Z-x86-ffn-gate-up-decode-paired-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260517T1744Z-x86-packed-rows4-decode-output-parallel-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260517T1850Z-x86-output-packed-rows4-matmul-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260517T2001Z-x86-packed-rows4-matmul-chunking-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260517T2118Z-x86-packed-rows4-input-scratch-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260517T2244Z-x86-ffndown-single-owner-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260518T0219Z-x86-ffndown-gemm4-prefill-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260518T0450Z-x86-attn-output-gemm4-prefill-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260518T0552Z-x86-output-gemm4-prefill-local.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-1eeef0a5-20260518T0704Z-output-gemm4-rowgroup-sched/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-58d09b5e-20260518T061200Z-build-qa/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-58d09b5e-20260518T074100Z-build-qa/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260517T1318Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260517T1458Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260517T1650Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260517T1820Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260517T1957Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260517T2131Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260518T0051Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260518T0411Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5e4b0b83-20260518T0621Z-doc-claim-guard.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5efd4e3c-20260518T0100Z-ubuntu-x86-q8-research-scout.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-5efd4e3c-20260518T0610Z-ubuntu-x86-q8-research-scout.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T1522Z-x86-attn-qkv-triplet-packed-rows4.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T1655Z-x86-attn-qkv-decode-triplet.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T1834Z-x86-q8-local-gate-blocker.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T2013Z-x86-output-packed-rows4-host-blocker.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T2207Z-x86-output-packed-rows4-canonical-host-blocker.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T2256Z-x86-ffndown-single-owner-grep.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260517T2256Z-x86-ffndown-single-owner-host.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T0210Z-x86-attn-output-single-owner-host.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T0213Z-x86-output-single-owner-host.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T0614Z-x86-decode-owner-env-cleanup/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-20260518T075517Z-x86-output-rowgroup-planner-guard/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-95495a91-q8-grep-20260517T1522Z.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-a2cb9044-20260518T0648Z-nightly-kickoff-rowgroup-gate/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-c6168b8f-20260518T041333Z-qa-ubuntu-x86-q8-local-audit.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-c6168b8f-20260518T042031Z-qa-ubuntu-x86-q8-host-check.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-c6168b8f-20260518T042130Z-qa-ubuntu-x86-q8-local-gates.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-c6168b8f-20260518T0424Z-qa-ubuntu-x86-q8-retain-reject-summary.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-c6168b8f-20260518T063039Z-qa-ubuntu-x86-q8/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-ceff5ad2-20260518T061020Z-rowgroup-host-validation.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0403Z-ubuntu-x86-q8-tracer.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0407Z-ubuntu-x86-q8-tracer.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0410Z-ubuntu-x86-q8-local-source-map.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0412Z-same-host-harness-plan.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0413Z-local-gates.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0414Z-dirty-stat.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0415Z-ubuntu-x86-q8-tracer-summary.txt
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0448Z-retained-parallel-guard/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0520Z-q8-host-blocked-retain-check/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/cron-fc0b298f-20260518T0630Z-ubuntu-x86-q8-host-blocked-source-map/
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/dirty-snapshot-20260517T225014Z.patch
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/rejected-ffndown-single-owner-20260517T225251Z.patch
+?? qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/artifacts/rejected-ffndown-single-owner-20260517T225251Z.txt
+?? qa/evidence-bundles/mac-q8-manual-20260518T011218Z-residual-ttft-logits-r10/
+?? qa/evidence-bundles/mac-q8-nightly-kickoff-36448ada-20260518T065308Z/
+?? qa/evidence-bundles/mac-q8-re-20260517-0735/
+?? qa/evidence-bundles/mac-q8-re-20260517-0750/

@@ -1,0 +1,4 @@
+{
+  "path": "$CAMELID_MODEL_DIR/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+  "id": "llama3_8b_instruct_q8_0"
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "camelid.supported_row_blocker_proof.v1",
+  "created_utc": "2026-05-13T20:49:00Z",
+  "source_head": "994569dbf9953a2c44eb72d31e3834a0c0d116f6",
+  "source_head_short": "994569dbf995",
+  "scope": "current supported exact rows",
+  "result": "blocked_with_guardrail_proof",
+  "supported_rows": [
+    "tinyllama_1_1b_chat_q8_0",
+    "llama32_1b_instruct_q8_0",
+    "llama32_3b_instruct_q8_0",
+    "llama3_8b_instruct_q8_0"
+  ],
+  "blocked_claims": [
+    "arbitrary_jinja_template_execution",
+    "production_throughput"
+  ],
+  "guardrails": [
+    {
+      "name": "arbitrary_jinja_template_is_not_executed_as_supported_renderer",
+      "command": "cargo test -q arbitrary_jinja_template_is_not_executed_as_supported_renderer",
+      "result": "PASS"
+    },
+    {
+      "name": "capabilities_report_current_rows_with_fail_closed_full_support_bar",
+      "command": "cargo test -q capabilities_report_current_rows_with_fail_closed_full_support_bar",
+      "result": "PASS"
+    },
+    {
+      "name": "cargo_fmt_check",
+      "command": "cargo fmt --all -- --check",
+      "result": "PASS"
+    },
+    {
+      "name": "bundle_checksum_check",
+      "command": "bash scripts/check-evidence-bundle-checksums.sh qa/evidence-bundles/supported-row-template-throughput-blocker-proof-20260513T2049Z-head-994569dbf995",
+      "result": "PASS"
+    }
+  ],
+  "shortest_path": [
+    "row-specific broad/metadata template renderer plus llama.cpp prompt-token parity and fail-closed unsupported-template behavior",
+    "production-throughput harness with fixed host class, exact GGUF SHA, prompt/output budgets, concurrency/warmup policy, latency/tokens-per-second, RSS/swap/page-in/storage pressure, and parity guardrails",
+    "scrubbed public manifests/SHA256SUMS plus synchronized API/frontend/docs promotion"
+  ]
+}

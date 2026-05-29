@@ -1,0 +1,116 @@
+{
+  "schema": "camelid.mistral.context_4096_8192_ubuntu_summary.v1",
+  "run_id": "mistral-7b-v0.3-q8-context-4096-8192-ubuntu-20260509T005229Z-head-9e3c64f2cfab",
+  "repo_head": "9e3c64f2cfab098f9cccbc8e5f879ecd99d73666",
+  "model": "Mistral-7B-Instruct-v0.3-Q8_0.gguf",
+  "model_sha256": "404857e776114baada71a08ebd3bba79d721ec7fca99705e7e7b892ae8bc583f",
+  "source": "remote Ubuntu validation lane, sanitized for public evidence",
+  "passed": true,
+  "highest_passed_context_window": 8192,
+  "prompt_tokens_all_match": true,
+  "generated_tokens_all_match": true,
+  "generated_text_all_match": true,
+  "claim_boundary": "Exact Mistral-7B-Instruct-v0.3 Q8_0 row only. This validates checked 4096/8192 synthetic recall prompt packs against llama.cpp; it does not imply Mistral-family support, neighboring variants, model-native/larger context beyond checked packs, arbitrary templates, production throughput, portability, API/WebUI readiness, or full support.",
+  "rows": [
+    {
+      "context_window": 4096,
+      "pack_id": "mistral-context-4096-max-ladder-v1",
+      "prompt_id": "mistral-roughly-4096-token-recall",
+      "max_tokens": 16,
+      "reference_prompt_token_count": 3818,
+      "reference_context": 4096,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        23325,
+        29491,
+        2
+      ],
+      "llama_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        23325,
+        29491,
+        2
+      ],
+      "backend_text": " The repeat marker is Hello.",
+      "llama_text": " The repeat marker is Hello.",
+      "backend_usage": {
+        "prompt_tokens": 3818,
+        "completion_tokens": 7,
+        "total_tokens": 3825
+      },
+      "llama_usage": {
+        "cache_n": 0,
+        "prompt_n": 3818,
+        "prompt_ms": 44936.454,
+        "prompt_per_token_ms": 11.769631744368779,
+        "prompt_per_second": 84.96442554189969,
+        "predicted_n": 7,
+        "predicted_ms": 650.679,
+        "predicted_per_token_ms": 92.95414285714286,
+        "predicted_per_second": 10.75799280443967
+      },
+      "passed": true
+    },
+    {
+      "context_window": 8192,
+      "pack_id": "mistral-context-8192-max-ladder-v1",
+      "prompt_id": "mistral-roughly-8192-token-recall",
+      "max_tokens": 16,
+      "reference_prompt_token_count": 7818,
+      "reference_context": 8192,
+      "prompt_tokens_match": true,
+      "generated_tokens_match": true,
+      "generated_text_match": true,
+      "first_generated_token_diff_index": -1,
+      "first_generated_text_diff_index": -1,
+      "backend_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        23325,
+        29491,
+        2
+      ],
+      "llama_generated_tokens": [
+        1183,
+        14518,
+        19612,
+        1117,
+        23325,
+        29491,
+        2
+      ],
+      "backend_text": " The repeat marker is Hello.",
+      "llama_text": " The repeat marker is Hello.",
+      "backend_usage": {
+        "prompt_tokens": 7818,
+        "completion_tokens": 7,
+        "total_tokens": 7825
+      },
+      "llama_usage": {
+        "cache_n": 0,
+        "prompt_n": 7818,
+        "prompt_ms": 109768.76,
+        "prompt_per_token_ms": 14.040516756203631,
+        "prompt_per_second": 71.22244981176794,
+        "predicted_n": 7,
+        "predicted_ms": 766.695,
+        "predicted_per_token_ms": 109.52785714285714,
+        "predicted_per_second": 9.13009736596691
+      },
+      "passed": true
+    }
+  ]
+}

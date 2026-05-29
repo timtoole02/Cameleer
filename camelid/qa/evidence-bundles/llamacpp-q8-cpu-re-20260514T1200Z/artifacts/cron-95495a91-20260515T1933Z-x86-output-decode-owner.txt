@@ -1,0 +1,699 @@
+# CAMELID BACKEND ENGINEER UBUNTU X86 Q8 — output decode owner slice
+generated_utc=2026-05-15T19:33:22Z
+scope=Ubuntu x86_64 dense Llama Q8_0 only; no Mac/Metal/Mixtral evidence
+
+## llama.cpp grep map
+llama_cpp_head=3e037f313c2c4cfce897d9be8f43954283a61de1
+
+### git grep -n -E 'q8_0' -- ggml src include examples | head -80
+examples/convert_legacy_llama.py:105:        def quantize_blocks_q8_0(blocks: NDArray) -> Iterable[tuple[Any, Any]]:
+examples/convert_legacy_llama.py:111:        return np.fromiter(quantize_blocks_q8_0(blocks), count = n_blocks, dtype = self.quantized_dtype)
+examples/convert_legacy_llama.py:1059:    if output_type_str == "q8_0":
+examples/convert_legacy_llama.py:1313:        output_choices.append("q8_0")
+examples/convert_legacy_llama.py:1319:    parser.add_argument("--outtype",      choices=output_choices, help="output format - note: q8_0 may be very slow (default: f16 or f32 based on input)")
+examples/convert_legacy_llama.py:1400:                "q8_0": GGMLFileType.MostlyQ8_0,
+examples/llama.swiftui/llama.swiftui/Models/LlamaState.swift:88:            url: "https://huggingface.co/ggml-org/models/resolve/main/phi-2/ggml-model-q8_0.gguf?download=true",
+examples/llama.swiftui/llama.swiftui/Models/LlamaState.swift:89:            filename: "phi-2-q8_0.gguf", status: "download"
+examples/speculative-simple/README.md:7:    -m  ../models/qwen2.5-32b-coder-instruct/ggml-model-q8_0.gguf \
+ggml/src/ggml-cann/ggml-cann.cpp:1017:static void ggml_backend_cann_transform_q8_0(ggml_tensor * tensor, const void * src, void * dst) {
+ggml/src/ggml-cann/ggml-cann.cpp:1026:        const block_q8_0 * group = (const block_q8_0 *) ((const char *) src + i * sizeof(block_q8_0));
+ggml/src/ggml-cann/ggml-cann.cpp:1040: * ggml_backend_cann_transform_q8_0(), converting the data back into its
+ggml/src/ggml-cann/ggml-cann.cpp:1048:static void ggml_backend_cann_transform_back_q8_0(const ggml_tensor * tensor, const void * src, void * dst) {
+ggml/src/ggml-cann/ggml-cann.cpp:1057:        block_q8_0 * group = (block_q8_0 *) ((char *) dst + i * sizeof(block_q8_0));
+ggml/src/ggml-cann/ggml-cann.cpp:1084:            ggml_backend_cann_transform_q8_0(tensor, src, dst);
+ggml/src/ggml-cann/ggml-cann.cpp:1109:            ggml_backend_cann_transform_back_q8_0(tensor, src, dst);
+ggml/src/ggml-common.h:245:} block_q8_0;
+ggml/src/ggml-common.h:246:static_assert(sizeof(block_q8_0) == sizeof(ggml_half) + QK8_0, "wrong q8_0 block size/padding");
+ggml/src/ggml-cpu/amx/mmq.cpp:61:template <> struct PackedTypes<block_q8_0> { using type = int8_t; };
+ggml/src/ggml-cpu/amx/mmq.cpp:66:    std::is_same<T, block_q8_0>::value> {};
+ggml/src/ggml-cpu/amx/mmq.cpp:103:                using vec_dot_type = block_q8_0;                                       \
+ggml/src/ggml-cpu/amx/mmq.cpp:114:                using type = block_q8_0;                                               \
+ggml/src/ggml-cpu/amx/mmq.cpp:115:                using vec_dot_type = block_q8_0;                                       \
+ggml/src/ggml-cpu/amx/mmq.cpp:433:            __m128i q8_0 = _mm512_cvtepi32_epi8(_mm512_cvtps_epi32(v[j * 4 + 0]));
+ggml/src/ggml-cpu/amx/mmq.cpp:438:            __m256i q8_01 = _mm256_insertf128_si256(_mm256_castsi128_si256(q8_0), (q8_1), 1);
+ggml/src/ggml-cpu/amx/mmq.cpp:441:            vq[j] = _mm512_inserti32x8(_mm512_castsi256_si512(q8_01), q8_23, 1);
+ggml/src/ggml-cpu/amx/mmq.cpp:462:inline void from_float<block_q8_0>(const float * x, char * vy, int64_t k) {
+ggml/src/ggml-cpu/amx/mmq.cpp:463:    quantize_row_q8_0(x, (block_q8_0 *)vy, k);
+ggml/src/ggml-cpu/amx/mmq.cpp:482:void unpack_A(int8_t * RESTRICT tile, const block_q8_0 * RESTRICT A, int lda, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:613:inline void pack_qs<block_q8_0>(void * RESTRICT packed_B, const block_q8_0 * RESTRICT B, int KB) {
+ggml/src/ggml-cpu/amx/mmq.cpp:785:void pack_B(void * RESTRICT packed_B, const block_q8_0 * RESTRICT B, int KB) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1052:struct acc_C<block_q8_0, block_q4_0, is_acc> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1053:    static void apply(float * RESTRICT C, int ldc, const int32_t * RESTRICT tile, const block_q8_0 * A, int lda, const void * packed_B, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1099:struct acc_C<block_q8_0, block_q8_0, is_acc> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1100:    static void apply(float * RESTRICT C, int ldc, const int32_t * RESTRICT tile, const block_q8_0 * A, int lda, const void * packed_B, int nr) {
+ggml/src/ggml-cpu/amx/mmq.cpp:1366:struct tinygemm_kernel_vnni<block_q8_0, block_q4_0, float, BLOCK_M, BLOCK_N, BLOCK_K> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1372:        const block_q8_0 * RESTRICT A = static_cast<const block_q8_0 *>(_A);
+ggml/src/ggml-cpu/amx/mmq.cpp:1503:struct tinygemm_kernel_vnni<block_q8_0, block_q8_0, float, BLOCK_M, BLOCK_N, BLOCK_K> {
+ggml/src/ggml-cpu/amx/mmq.cpp:1507:        const int TILE_SIZE = TILE_N * sizeof(block_q8_0) + TILE_N * sizeof(int32_t);
+ggml/src/ggml-cpu/amx/mmq.cpp:1509:        const block_q8_0 * RESTRICT A = static_cast<const block_q8_0 *>(_A);
+ggml/src/ggml-cpu/arch-fallback.h:9:#define quantize_row_q8_0_generic quantize_row_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:12:#define ggml_vec_dot_q4_0_q8_0_generic ggml_vec_dot_q4_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:14:#define ggml_vec_dot_q5_0_q8_0_generic ggml_vec_dot_q5_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:16:#define ggml_vec_dot_q8_0_q8_0_generic ggml_vec_dot_q8_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:17:#define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:18:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:19:#define ggml_vec_dot_q1_0_q8_0_generic ggml_vec_dot_q1_0_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:34:#define ggml_vec_dot_iq4_nl_q8_0_generic ggml_vec_dot_iq4_nl_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:37:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:38:#define ggml_quantize_mat_q8_0_4x8_generic ggml_quantize_mat_q8_0_4x8
+ggml/src/ggml-cpu/arch-fallback.h:41:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:42:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:43:#define ggml_gemv_q4_0_8x8_q8_0_generic ggml_gemv_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:51:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:52:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:53:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:54:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:55:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:56:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:57:#define ggml_gemm_q4_0_4x4_q8_0_generic ggml_gemm_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:58:#define ggml_gemm_q4_0_4x8_q8_0_generic ggml_gemm_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:59:#define ggml_gemm_q4_0_8x8_q8_0_generic ggml_gemm_q4_0_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:67:#define ggml_gemm_iq4_nl_4x4_q8_0_generic ggml_gemm_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:68:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:69:#define ggml_gemm_mxfp4_4x4_q8_0_generic ggml_gemm_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:70:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:71:#define ggml_gemm_q8_0_4x4_q8_0_generic ggml_gemm_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:72:#define ggml_gemm_q8_0_4x8_q8_0_generic ggml_gemm_q8_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:77:#define ggml_gemv_iq4_nl_8x8_q8_0_generic ggml_gemv_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:78:#define ggml_gemv_mxfp4_8x8_q8_0_generic ggml_gemv_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:80:#define ggml_gemm_iq4_nl_8x8_q8_0_generic ggml_gemm_iq4_nl_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:81:#define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:85:#define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:87:#define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ggml/src/ggml-cpu/arch-fallback.h:89:#define ggml_gemv_q4_0_4x4_q8_0_generic ggml_gemv_q4_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:90:#define ggml_gemv_q4_0_4x8_q8_0_generic ggml_gemv_q4_0_4x8_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:96:#define ggml_gemv_iq4_nl_4x4_q8_0_generic ggml_gemv_iq4_nl_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:97:#define ggml_gemv_mxfp4_4x4_q8_0_generic ggml_gemv_mxfp4_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:98:#define ggml_gemv_q8_0_4x4_q8_0_generic ggml_gemv_q8_0_4x4_q8_0
+ggml/src/ggml-cpu/arch-fallback.h:99:#define ggml_gemv_q8_0_4x8_q8_0_generic ggml_gemv_q8_0_4x8_q8_0
+
+### git grep -n -E 'tinyBLAS' -- ggml src include examples | head -80
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:485:class tinyBLAS {
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:487:    tinyBLAS(const ggml_compute_params * params, int64_t k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:646:class tinyBLAS_RVV {
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:648:    tinyBLAS_RVV(const ggml_compute_params * params, int64_t k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:1216:class tinyBLAS_Q0_ARM {
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:1218:    tinyBLAS_Q0_ARM(int64_t k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:1353:class tinyBLAS_Q0_AVX {
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:1355:    tinyBLAS_Q0_AVX(int64_t k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:1826:class tinyBLAS_HP16_PPC {
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:1828:    tinyBLAS_HP16_PPC(int64_t k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:2313:class tinyBLAS_Q0_PPC {
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:2315:    tinyBLAS_Q0_PPC(int64_t k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3186:class tinyBLAS_PPC {
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3188:    tinyBLAS_PPC(int64_t k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3720:        tinyBLAS<16, __m512, __m512, float, float, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3726:        tinyBLAS<8, __m256, __m256, float, float, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3734:        tinyBLAS<4, float32x4_t, float32x4_t, float, float, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3742:        tinyBLAS<4, float32x4_t, float32x4_t, float, float, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3750:        tinyBLAS_PPC tb{
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3759:        tinyBLAS_RVV<vfloat32m1_t, vfloat32m1_t, float, float, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3764:        tinyBLAS_RVV<vfloat32m2_t, vfloat32m2_t, float, float, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3769:        tinyBLAS_RVV<vfloat32m4_t, vfloat32m4_t, float, float, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3783:            tinyBLAS<32, __m512, __m512bh, ggml_bf16_t, ggml_bf16_t, float> tb{ params, k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3791:            tinyBLAS<16, __m512, __m512, ggml_bf16_t, ggml_bf16_t, float> tb{ params, k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3799:            tinyBLAS<8, __m256, __m256, ggml_bf16_t, ggml_bf16_t, float> tb{ params, k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3811:            tinyBLAS_HP16_PPC<ggml_bf16_t, ggml_bf16_t, float> tb{ k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3823:                tinyBLAS_RVV<vfloat32m1_t, vbfloat16mf2_t, ggml_bf16_t, ggml_bf16_t, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3828:                tinyBLAS_RVV<vfloat32m2_t, vbfloat16m1_t, ggml_bf16_t, ggml_bf16_t, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3833:                tinyBLAS_RVV<vfloat32m4_t, vbfloat16m2_t, ggml_bf16_t, ggml_bf16_t, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3847:            tinyBLAS<16, __m512, __m512, ggml_fp16_t, ggml_fp16_t, float> tb{ params, k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3855:            tinyBLAS<8, __m256, __m256, ggml_fp16_t, ggml_fp16_t, float> tb{ params, k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3865:            tinyBLAS<8, float16x8_t, float16x8_t, ggml_fp16_t, ggml_fp16_t, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3873:            tinyBLAS<4, float32x4_t, float32x4_t, ggml_fp16_t, float, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3883:            tinyBLAS<4, float32x4_t, float32x4_t, ggml_fp16_t, ggml_fp16_t, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3892:            tinyBLAS_RVV<vfloat32m1_t, vfloat16mf2_t, ggml_fp16_t, ggml_fp16_t, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3897:            tinyBLAS_RVV<vfloat32m2_t, vfloat16m1_t, ggml_fp16_t, ggml_fp16_t, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3902:            tinyBLAS_RVV<vfloat32m4_t, vfloat16m2_t, ggml_fp16_t, ggml_fp16_t, float> tb{ params,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3915:            tinyBLAS_HP16_PPC<ggml_fp16_t, ggml_fp16_t, float> tb{ k,
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3932:        tinyBLAS_Q0_AVX<block_q8_0, block_q8_0, float> tb{
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3940:        tinyBLAS_Q0_ARM<block_q8_0> tb{
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3953:        tinyBLAS_Q0_PPC<block_q8_0> tb{
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3969:        tinyBLAS_Q0_AVX<block_q4_0, block_q8_0, float> tb{
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3977:        tinyBLAS_Q0_ARM<block_q4_0> tb{
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3990:        tinyBLAS_Q0_PPC<block_q4_0> tb{
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:4006:        tinyBLAS_Q0_AVX<block_q5_0, block_q8_0, float> tb{
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:4022:        tinyBLAS_Q0_AVX<block_iq4_nl, block_q8_0, float> tb{
+
+### git grep -n -E 'ggml_vec_dot_q8_0_q8_0' -- ggml src include examples | head -80
+ggml/src/ggml-cpu/arch-fallback.h:16:#define ggml_vec_dot_q8_0_q8_0_generic ggml_vec_dot_q8_0_q8_0
+ggml/src/ggml-cpu/arch/arm/quants.c:1076:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/loongarch/quants.c:943:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/loongarch/quants.c:986:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/powerpc/quants.c:495:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/powerpc/quants.c:560:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/riscv/quants.c:435:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/riscv/quants.c:479:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/s390/quants.c:655:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/s390/quants.c:701:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/wasm/quants.c:544:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/arch/wasm/quants.c:608:    ggml_vec_dot_q8_0_q8_0_generic(n, s, bs, vx, bx, vy, by, nrc);
+ggml/src/ggml-cpu/arch/x86/quants.c:1170:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/ggml-cpu.c:264:        .vec_dot                  = ggml_vec_dot_q8_0_q8_0,
+ggml/src/ggml-cpu/quants.c:400:void ggml_vec_dot_q8_0_q8_0_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+ggml/src/ggml-cpu/quants.h:45:void ggml_vec_dot_q8_0_q8_0(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+ggml/src/ggml-cpu/quants.h:78:void ggml_vec_dot_q8_0_q8_0_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+
+### git grep -n -E 'repack' -- ggml src include examples | head -80
+ggml/src/ggml-cpu/CMakeLists.txt:32:        ggml-cpu/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:33:        ggml-cpu/repack.h
+ggml/src/ggml-cpu/CMakeLists.txt:110:            ggml-cpu/arch/arm/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:252:            ggml-cpu/arch/x86/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:450:            ggml-cpu/arch/riscv/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:460:                ggml-cpu/spacemit/repack.cpp
+ggml/src/ggml-cpu/CMakeLists.txt:461:                ggml-cpu/spacemit/repack.h
+ggml/src/ggml-cpu/amx/amx.cpp:70:        GGML_LOG_DEBUG("%s: amx repack tensor %s of type %s\n", __func__, tensor->name, ggml_type_name(tensor->type));
+ggml/src/ggml-cpu/amx/mmq.cpp:180:// Block B needs to be prepacked to vnni format before feeding into  TMUL:
+ggml/src/ggml-cpu/arch-fallback.h:36:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:74:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:86:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:120:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:166:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:206:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:257:// repack.cpp
+ggml/src/ggml-cpu/arch-fallback.h:311:// repack.cpp
+ggml/src/ggml-cpu/arch/arm/repack.cpp:19:#include "../../repack.h"
+ggml/src/ggml-cpu/arch/riscv/repack.cpp:19:#include "../../repack.h"
+ggml/src/ggml-cpu/arch/x86/repack.cpp:19:#include "../../repack.h"
+ggml/src/ggml-cpu/ggml-cpu.cpp:4:#include "repack.h"
+ggml/src/ggml-cpu/ggml-cpu.cpp:65:        if (ggml_backend_cpu_repack_buffer_type()) {
+ggml/src/ggml-cpu/ggml-cpu.cpp:66:            bufts.push_back(ggml_backend_cpu_repack_buffer_type());
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1206:    int repack(struct ggml_tensor * tensor, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1359:    auto OK            = tensor_traits->repack(tensor, data, size);
+ggml/src/ggml-cpu/llamafile/sgemm.cpp:3582:                 * broadcasted, instead of using packing routine to prepack the
+ggml/src/ggml-cpu/repack.cpp:19:#include "repack.h"
+ggml/src/ggml-cpu/repack.cpp:2935:        // RVV repacking.
+ggml/src/ggml-cpu/repack.cpp:3200:static int repack_q4_0_to_q4_0_4_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3231:static int repack_q4_K_to_q4_K_8_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3262:static int repack_q4_K_to_q4_K_16_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3292:static int repack_q2_K_to_q2_K_8_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3323:static int repack_q2_K_to_q2_K_16_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3358:static int repack_q4_0_to_q4_0_16_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3388:static int repack_q5_K_to_q5_K_8_bl(struct ggml_tensor *       t,
+ggml/src/ggml-cpu/repack.cpp:3420:static int repack_q6_K_to_q6_K_8_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3449:static int repack_q4_0_to_q4_0_8_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3480:static int repack_q8_0_to_q8_0_4_bl(struct ggml_tensor *       t,
+ggml/src/ggml-cpu/repack.cpp:3535:static int repack_q8_0_to_q8_0_16_bl(struct ggml_tensor *       t,
+ggml/src/ggml-cpu/repack.cpp:3601:static int repack_iq4_nl_to_iq4_nl_4_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3658:static int repack_iq4_nl_to_iq4_nl_8_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3715:static int repack_iq4_nl_to_iq4_nl_16_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3772:static int repack_mxfp4_to_mxfp4_4_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3829:static int repack_mxfp4_to_mxfp4_8_bl(struct ggml_tensor * t, int interleave_block, const void * GGML_RESTRICT data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3862:namespace ggml::cpu::repack {
+ggml/src/ggml-cpu/repack.cpp:3863:// repack
+ggml/src/ggml-cpu/repack.cpp:3865:int repack(struct ggml_tensor *, const void *, size_t);
+ggml/src/ggml-cpu/repack.cpp:3868:template <> int repack<block_q4_0, 4, 4>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3869:    return repack_q4_0_to_q4_0_4_bl(t, 4, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3872:template <> int repack<block_q4_0, 8, 4>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3873:    return repack_q4_0_to_q4_0_4_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3876:template <> int repack<block_q4_0, 8, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3877:    return repack_q4_0_to_q4_0_8_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3880:template <> int repack<block_q4_K, 8, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3881:    return repack_q4_K_to_q4_K_8_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3884:template <> int repack<block_q4_K, 4, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3885:    return repack_q4_K_to_q4_K_8_bl(t, 4, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3888:template <> int repack<block_q2_K, 8, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3889:    return repack_q2_K_to_q2_K_8_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3892:template <> int repack<block_q5_K, 4, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3893:    return repack_q5_K_to_q5_K_8_bl(t, 4, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3896:template <> int repack<block_q5_K, 8, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3897:    return repack_q5_K_to_q5_K_8_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3900:template <> int repack<block_q6_K, 4, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3901:    return repack_q6_K_to_q6_K_8_bl(t, 4, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3904:template <> int repack<block_q6_K, 8, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3905:    return repack_q6_K_to_q6_K_8_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3908:template <> int repack<block_iq4_nl, 4, 4>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3909:    return repack_iq4_nl_to_iq4_nl_4_bl(t, 4, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3913://template <> int repack<block_iq4_nl, 8, 4>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3914://    return repack_iq4_nl_to_iq4_nl_4_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3917:template <> int repack<block_iq4_nl, 8, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3918:    return repack_iq4_nl_to_iq4_nl_8_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3921:template <> int repack<block_mxfp4, 4, 4>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3922:    return repack_mxfp4_to_mxfp4_4_bl(t, 4, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3925:template <> int repack<block_mxfp4, 8, 8>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3926:    return repack_mxfp4_to_mxfp4_8_bl(t, 8, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3929:template <> int repack<block_q8_0, 4, 4>(struct ggml_tensor * t, const void * data, size_t data_size) {
+ggml/src/ggml-cpu/repack.cpp:3930:    return repack_q8_0_to_q8_0_4_bl(t, 4, data, data_size);
+ggml/src/ggml-cpu/repack.cpp:3933:template <> int repack<block_q8_0, 8, 4>(struct ggml_tensor * t, const void * data, size_t data_size) {
+
+### git grep -n -E 'MUL_MAT' -- ggml src include examples | head -80
+examples/eval-callback/README.md:53:ggml_debug:                   wqkv-0 = (f32)    MUL_MAT(blk.0.attn_qkv.weight{2560, 7680, 1, 1}, attn_norm-0{2560, 1, 1, 1}}) = {7680, 1, 1, 1}
+ggml/include/ggml.h:511:        GGML_OP_MUL_MAT,
+ggml/include/ggml.h:512:        GGML_OP_MUL_MAT_ID,
+ggml/src/ggml-backend-meta.cpp:845:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-backend-meta.cpp:846:            case GGML_OP_MUL_MAT_ID: {
+ggml/src/ggml-backend.cpp:1581:                    (node->src[0] == input_cpy && node->op == GGML_OP_MUL_MAT_ID)
+ggml/src/ggml-backend.cpp:1585:                    const int64_t n_expert   = node->op == GGML_OP_MUL_MAT_ID ? input->ne[2] : input->ne[1];
+ggml/src/ggml-backend.cpp:1586:                    const size_t expert_size = node->op == GGML_OP_MUL_MAT_ID ? input->nb[2] : input->nb[1];
+ggml/src/ggml-blas/ggml-blas.cpp:236:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-blas/ggml-blas.cpp:404:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/acl_tensor.h:336:#define BCAST_MUL_MAT_SHAPE(input, weight, dst)                                                                  \
+ggml/src/ggml-cann/acl_tensor.h:347:#define BCAST_MUL_MAT_PARAM(tensor) bcast_##tensor##_ne, bcast_##tensor##_nb, bcast_dims
+ggml/src/ggml-cann/aclnn_ops.cpp:2163:    BCAST_MUL_MAT_SHAPE(input, weight, dst);
+ggml/src/ggml-cann/aclnn_ops.cpp:2233:        GGML_ABORT("Only support Q4_0 and Q8_0 MUL_MAT");
+ggml/src/ggml-cann/aclnn_ops.cpp:3625: * This function implements MUL_MAT_ID operation for quantized weight matrices
+ggml/src/ggml-cann/aclnn_ops.cpp:3673:                                   (GGML_ABORT("MUL_MAT_ID only supports Q4_0 and Q8_0"), 0.0f);
+ggml/src/ggml-cann/aclnn_ops.h:573: *            multiplication. dst->op is `GGML_OP_MUL_MAT`.
+ggml/src/ggml-cann/ggml-cann.cpp:1915:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:1918:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cann/ggml-cann.cpp:2436:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cann/ggml-cann.cpp:2457:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/amx/amx.cpp:30:        if (op->op == GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:146:        if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/amx/amx.cpp:193:        if (op->op == GGML_OP_MUL_MAT && op->src[0]->buffer &&
+ggml/src/ggml-cpu/ggml-cpu.c:1827:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:1831:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.c:2298:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:2299:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.c:2814:                case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/ggml-cpu.c:2822:                case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/ggml-cpu.cpp:452:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/kleidiai/kernels.cpp:871:    if (tensor->op == GGML_OP_MUL_MAT && tensor->src[0] != nullptr && tensor->src[1] != nullptr) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:438:        if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:540:        if (dst->op == GGML_OP_MUL_MAT) {
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1448:        if ((op->op == GGML_OP_MUL_MAT || op->op == GGML_OP_GET_ROWS) &&
+ggml/src/ggml-cpu/kleidiai/kleidiai.cpp:1472:        if (op->op == GGML_OP_MUL_MAT || op->op == GGML_OP_GET_ROWS) {
+ggml/src/ggml-cpu/repack.cpp:4163:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/repack.cpp:4168:            case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/repack.cpp:4191:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/repack.cpp:4194:            case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/repack.cpp:4775:        if (    op->op == GGML_OP_MUL_MAT &&
+ggml/src/ggml-cpu/repack.cpp:4791:        } else if (op->op == GGML_OP_MUL_MAT_ID
+ggml/src/ggml-cpu/repack.cpp:4811:        if (op->op == GGML_OP_MUL_MAT || op->op == GGML_OP_MUL_MAT_ID) {
+ggml/src/ggml-cpu/spacemit/ime.cpp:130:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/spacemit/ime.cpp:151:            case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/spacemit/ime.cpp:189:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/spacemit/ime.cpp:204:                        // GGML_ABORT("fatal error: unsupported type for src0 in MUL_MAT");
+ggml/src/ggml-cpu/spacemit/ime.cpp:208:            case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/spacemit/ime.cpp:223:                        // GGML_ABORT("fatal error: unsupported type for src0 in MUL_MAT_ID");
+ggml/src/ggml-cpu/spacemit/ime.cpp:1582:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/spacemit/ime.cpp:1594:            case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cpu/spacemit/ime.cpp:1615:            case GGML_OP_MUL_MAT:
+ggml/src/ggml-cpu/spacemit/ime.cpp:1616:            case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cuda/ggml-cuda.cu:1559:#define MUL_MAT_SRC1_COL_STRIDE 128
+ggml/src/ggml-cuda/ggml-cuda.cu:1983:    const int64_t src1_col_stride = split && used_devices > 1 ? MUL_MAT_SRC1_COL_STRIDE : ne11;
+ggml/src/ggml-cuda/ggml-cuda.cu:2106:        int64_t is_max = (ne11 + MUL_MAT_SRC1_COL_STRIDE - 1) / MUL_MAT_SRC1_COL_STRIDE;
+ggml/src/ggml-cuda/ggml-cuda.cu:2390:    const bool is_mul_mat     = ffn_up->op == GGML_OP_MUL_MAT     && ffn_gate->op == GGML_OP_MUL_MAT     && glu->op == GGML_OP_GLU;
+ggml/src/ggml-cuda/ggml-cuda.cu:2391:    const bool is_mul_mat_id  = ffn_up->op == GGML_OP_MUL_MAT_ID  && ffn_gate->op == GGML_OP_MUL_MAT_ID  && glu->op == GGML_OP_GLU;
+ggml/src/ggml-cuda/ggml-cuda.cu:2469:    const bool is_mul_mat_id = tensor->op == GGML_OP_MUL_MAT_ID;
+ggml/src/ggml-cuda/ggml-cuda.cu:2487:    if (tensor->op == GGML_OP_MUL_MAT && dst->ne[1] != 1) {
+ggml/src/ggml-cuda/ggml-cuda.cu:2491:    if (tensor->op == GGML_OP_MUL_MAT_ID && dst->ne[2] != 1) {
+ggml/src/ggml-cuda/ggml-cuda.cu:2517:    if (tensor->op == GGML_OP_MUL_MAT && dst->ne[1] != 1) {
+ggml/src/ggml-cuda/ggml-cuda.cu:2521:    if (tensor->op == GGML_OP_MUL_MAT_ID && dst->ne[2] != 1) {
+ggml/src/ggml-cuda/ggml-cuda.cu:2635:    // [TAG_MUL_MAT_ID_CUDA_GRAPHS]
+ggml/src/ggml-cuda/ggml-cuda.cu:2969:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cuda/ggml-cuda.cu:2972:        case GGML_OP_MUL_MAT_ID:
+ggml/src/ggml-cuda/ggml-cuda.cu:3260:        // [TAG_MUL_MAT_ID_CUDA_GRAPHS]
+ggml/src/ggml-cuda/ggml-cuda.cu:3261:        if (node->op == GGML_OP_MUL_MAT_ID) {
+ggml/src/ggml-cuda/ggml-cuda.cu:3617:    std::initializer_list<enum ggml_op> mul_mat_bias_glu_ops    = { GGML_OP_MUL_MAT,    GGML_OP_ADD,    GGML_OP_MUL_MAT,    GGML_OP_ADD,    GGML_OP_GLU };
+ggml/src/ggml-cuda/ggml-cuda.cu:3618:    std::initializer_list<enum ggml_op> mul_mat_id_bias_glu_ops = { GGML_OP_MUL_MAT_ID, GGML_OP_ADD_ID, GGML_OP_MUL_MAT_ID, GGML_OP_ADD_ID, GGML_OP_GLU };
+ggml/src/ggml-cuda/ggml-cuda.cu:3620:    std::initializer_list<enum ggml_op> mul_mat_id_glu_ops = { GGML_OP_MUL_MAT_ID, GGML_OP_MUL_MAT_ID, GGML_OP_GLU };
+ggml/src/ggml-cuda/ggml-cuda.cu:3621:    std::initializer_list<enum ggml_op> mul_mat_glu_ops    = { GGML_OP_MUL_MAT,    GGML_OP_MUL_MAT,    GGML_OP_GLU };
+ggml/src/ggml-cuda/ggml-cuda.cu:3996:    for (ggml_op op : { GGML_OP_MUL_MAT, GGML_OP_MUL_MAT_ID }) {
+ggml/src/ggml-cuda/ggml-cuda.cu:3997:        const ggml_op bias_op = op == GGML_OP_MUL_MAT ? GGML_OP_ADD : GGML_OP_ADD_ID;
+ggml/src/ggml-cuda/ggml-cuda.cu:4123:    for (ggml_op op : { GGML_OP_MUL_MAT, GGML_OP_MUL_MAT_ID }) {
+ggml/src/ggml-cuda/ggml-cuda.cu:4124:        const ggml_op bias_op = op == GGML_OP_MUL_MAT ? GGML_OP_ADD : GGML_OP_ADD_ID;
+ggml/src/ggml-cuda/ggml-cuda.cu:5037:    // split buffers can only be used with GGML_OP_MUL_MAT
+ggml/src/ggml-cuda/ggml-cuda.cu:5038:    if (op->op != GGML_OP_MUL_MAT) {
+ggml/src/ggml-cuda/ggml-cuda.cu:5101:        case GGML_OP_MUL_MAT:
+ggml/src/ggml-cuda/ggml-cuda.cu:5102:        case GGML_OP_MUL_MAT_ID:
+
+### git grep -n -E 'schedul|thread|OpenMP|GOMP' -- ggml src include examples | head -80
+examples/batched.swift/Sources/main.swift:46:context_params.n_threads = 8
+examples/batched.swift/Sources/main.swift:47:context_params.n_threads_batch = 8
+examples/convert-llama2c-to-ggml/convert-llama2c-to-ggml.cpp:295:    int n_threads;
+examples/convert-llama2c-to-ggml/convert-llama2c-to-ggml.cpp:772:    params.n_threads  =    6;
+examples/convert_legacy_llama.py:703:    output value buffered per thread.'''
+examples/diffusion/README.md:24:Choose one of the following scheduling methods:
+examples/diffusion/README.md:26:**Timestep-based scheduling:**
+examples/diffusion/README.md:27:- `--diffusion-eps`: Epsilon value for timestep scheduling (e.g., 0.001)
+examples/diffusion/README.md:29:**Block-based scheduling:**
+examples/diffusion/README.md:30:- `--diffusion-block-length`: Block size for block-based scheduling (e.g., 32)
+examples/diffusion/diffusion-cli.cpp:153:    llama_set_n_threads(ctx, params.cpuparams.n_threads, params.cpuparams_batch.n_threads);
+examples/diffusion/diffusion-cli.cpp:195:        diff_params.schedule = DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED;
+examples/diffusion/diffusion-cli.cpp:198:        diff_params.schedule     = DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED;
+examples/diffusion/diffusion-cli.cpp:231:        (diff_params.schedule >= 0 && diff_params.schedule <= 1) ? sched_names[diff_params.schedule] : "UNKNOWN";
+examples/diffusion/diffusion-cli.cpp:237:    LOG_INF("diffusion_params: - %-25s enum             = %d (%s)\n", "schedule", diff_params.schedule, sched_name);
+examples/diffusion/diffusion-cli.cpp:239:    if (diff_params.schedule == DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED) {
+examples/diffusion/diffusion-cli.cpp:243:    if (diff_params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:52:                                        diffusion_transfer_schedule  schedule,
+examples/diffusion/diffusion.cpp:55:    switch (schedule) {
+examples/diffusion/diffusion.cpp:164:    if (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:178:        int32_t block_start = (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) ? n_input + block_num * params.block_length : 0;
+examples/diffusion/diffusion.cpp:179:        int32_t block_end   = (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) ?
+examples/diffusion/diffusion.cpp:184:        if (params.schedule == DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED) {
+examples/diffusion/diffusion.cpp:273:                    if (params.schedule != DIFFUSION_TRANSFER_SCHEDULE_BLOCK_BASED || (i >= block_start && i < block_end)) {
+examples/diffusion/diffusion.cpp:289:                    step, steps_per_block, mask_positions.size(), params.schedule, params.eps, num_transfer_tokens);
+examples/diffusion/diffusion.cpp:343:                    step, steps_per_block, mask_positions.size(), params.schedule, params.eps, num_transfer_tokens);
+examples/diffusion/diffusion.h:15:// Unified transfer scheduling methods
+examples/diffusion/diffusion.h:16:enum diffusion_transfer_schedule {
+examples/diffusion/diffusion.h:41:    diffusion_transfer_schedule schedule  = DIFFUSION_TRANSFER_SCHEDULE_TIMESTEP_BASED;
+examples/diffusion/diffusion.h:44:    float   eps              = 0.;     // Timestep scheduling
+examples/diffusion/diffusion.h:45:    int32_t block_length     = 0;      // Block size (for block scheduling)
+examples/eval-callback/eval-callback.cpp:53:    // pass the callback to the backend scheduler
+examples/idle/idle.cpp:10:#include <thread>
+examples/idle/idle.cpp:75:            std::this_thread::sleep_for(std::chrono::milliseconds(t_pause_ms));
+examples/llama-eval/README.md:17:  --grader-type regex --threads 32
+examples/llama-eval/README.md:19:# Multiple servers (comma-separated URLs and thread counts)
+examples/llama-eval/README.md:23:  --threads 16,16 \
+examples/llama-eval/llama-eval.py:9:import threading
+examples/llama-eval/llama-eval.py:26:    threads: int
+examples/llama-eval/llama-eval.py:162:        self._lock = threading.Lock()
+examples/llama-eval/llama-eval.py:1101:            print(f"  {i+1}. {sc.name} — {sc.url} ({sc.threads} threads) [{models_str}]")
+examples/llama-eval/llama-eval.py:1115:        # Total worker threads across all servers
+examples/llama-eval/llama-eval.py:1116:        total_threads = sum(sc.threads for sc in self.server_configs)
+examples/llama-eval/llama-eval.py:1119:        for _ in range(total_threads):
+examples/llama-eval/llama-eval.py:1126:            executor = ThreadPoolExecutor(max_workers=server_config.threads)
+examples/llama-eval/llama-eval.py:1128:            for _ in range(server_config.threads):
+examples/llama-eval/llama-eval.py:1237:        "--threads",
+examples/llama-eval/llama-eval.py:1240:        help="Comma-separated thread counts per server (default: 32)"
+examples/llama-eval/llama-eval.py:1292:    # Parse server URLs and thread counts
+examples/llama-eval/llama-eval.py:1294:    thread_counts = [int(t.strip()) for t in args.threads.split(",") if t.strip()]
+examples/llama-eval/llama-eval.py:1296:    if len(server_urls) != len(thread_counts):
+examples/llama-eval/llama-eval.py:1297:        print(f"Error: --server ({len(server_urls)} URLs) and --threads ({len(thread_counts)} values) must have the same count")
+examples/llama-eval/llama-eval.py:1310:        ServerConfig(url=url, threads=threads, name=name)
+examples/llama-eval/llama-eval.py:1311:        for url, threads, name in zip(server_urls, thread_counts, server_names)
+examples/llama-eval/llama-server-simulator.py:10:import threading
+examples/llama-eval/llama-server-simulator.py:301:    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+examples/llama-eval/llama-server-simulator.py:302:    server_thread.start()
+examples/llama-eval/llama-server-simulator.py:311:        server_thread.join()
+examples/llama.android/lib/src/main/cpp/ai_chat.cpp:82:    // Multi-threading setup
+examples/llama.android/lib/src/main/cpp/ai_chat.cpp:83:    const int n_threads = std::max(N_THREADS_MIN, std::min(N_THREADS_MAX,
+examples/llama.android/lib/src/main/cpp/ai_chat.cpp:86:    LOGi("%s: Using %d threads", __func__, n_threads);
+examples/llama.android/lib/src/main/cpp/ai_chat.cpp:98:    ctx_params.n_threads = n_threads;
+examples/llama.android/lib/src/main/cpp/ai_chat.cpp:99:    ctx_params.n_threads_batch = n_threads;
+examples/llama.android/lib/src/main/java/com/arm/aichat/internal/InferenceEngineImpl.kt:31: * All operations are executed on a dedicated single-threaded dispatcher to ensure thread safety
+examples/llama.android/lib/src/main/java/com/arm/aichat/internal/InferenceEngineImpl.kt:121:     * Single-threaded coroutine dispatcher & scope for LLama asynchronous operations
+examples/llama.swiftui/llama.cpp.swift/LibLlama.swift:76:        let n_threads = max(1, min(8, ProcessInfo.processInfo.processorCount - 2))
+examples/llama.swiftui/llama.cpp.swift/LibLlama.swift:77:        print("Using \(n_threads) threads")
+examples/llama.swiftui/llama.cpp.swift/LibLlama.swift:81:        ctx_params.n_threads       = Int32(n_threads)
+examples/llama.swiftui/llama.cpp.swift/LibLlama.swift:82:        ctx_params.n_threads_batch = Int32(n_threads)
+examples/server-llama2-13B.sh:21:  --threads "$N_THREAD" \
+examples/server_embd.py:2:import asyncio.threads
+examples/server_embd.py:12:    return await asyncio.threads.to_thread(requests.post, *args, **kwargs)
+examples/speculative-simple/speculative-simple.cpp:62:        if (params_spec.cpuparams.n_threads > 0) {
+examples/speculative-simple/speculative-simple.cpp:63:            params_dft.cpuparams.n_threads       = params.speculative.draft.cpuparams.n_threads;
+examples/speculative-simple/speculative-simple.cpp:64:            params_dft.cpuparams_batch.n_threads = params.speculative.draft.cpuparams_batch.n_threads;
+examples/speculative/speculative.cpp:86:    if (params.speculative.draft.cpuparams.n_threads > 0) {
+examples/speculative/speculative.cpp:87:        params.cpuparams.n_threads = params.speculative.draft.cpuparams.n_threads;
+examples/speculative/speculative.cpp:90:    params.cpuparams_batch.n_threads = params.speculative.draft.cpuparams_batch.n_threads;
+ggml/CMakeLists.txt:136:option(GGML_SANITIZE_THREAD    "ggml: enable thread sanitizer"    OFF)
+ggml/CMakeLists.txt:246:option(GGML_OPENMP                          "ggml: use OpenMP"                                ON)
+
+### git grep -n -E 'AVX2|AVX512|VNNI' -- ggml src include examples | head -80
+examples/gguf-hash/deps/xxhash/xxhash.h:61: * | XXH3_64bits()        | @b AVX2 |    64 |        59.4 GB/s |               133.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:63: * | XXH3_128bits()       | @b AVX2 |   128 |        57.9 GB/s |               118.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:79: * | Blake3*              | @b AVX2 |   256 |         4.4 GB/s |                 8.1 |
+examples/gguf-hash/deps/xxhash/xxhash.h:1088: *   - AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:1089: *   - AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:3406:#if (defined(__AVX512F__)) && !defined(XXH_ENABLE_AUTOVECTORIZE)
+examples/gguf-hash/deps/xxhash/xxhash.h:3411:     * reason) without globally disabling AVX512.
+examples/gguf-hash/deps/xxhash/xxhash.h:3750:#  elif defined(__AVX2__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3867:    XXH_AVX2   = 2,  /*!< AVX2 for Haswell and Bulldozer */
+examples/gguf-hash/deps/xxhash/xxhash.h:3868:    XXH_AVX512 = 3,  /*!< AVX512 for Skylake and Icelake */
+examples/gguf-hash/deps/xxhash/xxhash.h:3882: * type, so, for example, 32 for AVX2.
+examples/gguf-hash/deps/xxhash/xxhash.h:3893:#  define XXH_AVX2   2
+examples/gguf-hash/deps/xxhash/xxhash.h:3894:#  define XXH_AVX512 3
+examples/gguf-hash/deps/xxhash/xxhash.h:3912:#  elif defined(__AVX512F__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3913:#    define XXH_VECTOR XXH_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:3914:#  elif defined(__AVX2__)
+examples/gguf-hash/deps/xxhash/xxhash.h:3915:#    define XXH_VECTOR XXH_AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:3949:#  elif XXH_VECTOR == XXH_AVX2  /* avx2 */
+examples/gguf-hash/deps/xxhash/xxhash.h:3955:#  elif XXH_VECTOR == XXH_AVX512  /* avx512 */
+examples/gguf-hash/deps/xxhash/xxhash.h:3963:    || XXH_VECTOR == XXH_AVX2 || XXH_VECTOR == XXH_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:3981: * However, when targeting AVX2, it is overzealous in its unrolling resulting
+examples/gguf-hash/deps/xxhash/xxhash.h:3986: * only applies to Sandy and Ivy Bridge... which don't even support AVX2.
+examples/gguf-hash/deps/xxhash/xxhash.h:3988: * That is why when compiling the AVX2 version, it is recommended to use either
+examples/gguf-hash/deps/xxhash/xxhash.h:3998:#if XXH_VECTOR == XXH_AVX2 /* AVX2 */ \
+examples/gguf-hash/deps/xxhash/xxhash.h:4800:#    if (XXH_VECTOR == XXH_AVX512)
+examples/gguf-hash/deps/xxhash/xxhash.h:4881:#if (XXH_VECTOR == XXH_AVX512) \
+examples/gguf-hash/deps/xxhash/xxhash.h:4882:     || (defined(XXH_DISPATCH_AVX512) && XXH_DISPATCH_AVX512 != 0)
+examples/gguf-hash/deps/xxhash/xxhash.h:4884:#ifndef XXH_TARGET_AVX512
+examples/gguf-hash/deps/xxhash/xxhash.h:4885:# define XXH_TARGET_AVX512  /* disable attribute target */
+examples/gguf-hash/deps/xxhash/xxhash.h:4888:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4915:XXH_FORCE_INLINE XXH_TARGET_AVX512 XXH3_ACCUMULATE_TEMPLATE(avx512)
+examples/gguf-hash/deps/xxhash/xxhash.h:4938:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4961:XXH_FORCE_INLINE XXH_TARGET_AVX512 void
+examples/gguf-hash/deps/xxhash/xxhash.h:4984:#if (XXH_VECTOR == XXH_AVX2) \
+examples/gguf-hash/deps/xxhash/xxhash.h:4985:    || (defined(XXH_DISPATCH_AVX2) && XXH_DISPATCH_AVX2 != 0)
+examples/gguf-hash/deps/xxhash/xxhash.h:4987:#ifndef XXH_TARGET_AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:4988:# define XXH_TARGET_AVX2  /* disable attribute target */
+examples/gguf-hash/deps/xxhash/xxhash.h:4991:XXH_FORCE_INLINE XXH_TARGET_AVX2 void
+examples/gguf-hash/deps/xxhash/xxhash.h:5024:XXH_FORCE_INLINE XXH_TARGET_AVX2 XXH3_ACCUMULATE_TEMPLATE(avx2)
+examples/gguf-hash/deps/xxhash/xxhash.h:5026:XXH_FORCE_INLINE XXH_TARGET_AVX2 void
+examples/gguf-hash/deps/xxhash/xxhash.h:5055:XXH_FORCE_INLINE XXH_TARGET_AVX2 void XXH3_initCustomSecret_avx2(void* XXH_RESTRICT customSecret, xxh_u64 seed64)
+examples/gguf-hash/deps/xxhash/xxhash.h:5102:    /* SSE2 is just a half-scale version of the AVX2 version. */
+examples/gguf-hash/deps/xxhash/xxhash.h:5785:#if (XXH_VECTOR == XXH_AVX512)
+examples/gguf-hash/deps/xxhash/xxhash.h:5792:#elif (XXH_VECTOR == XXH_AVX2)
+examples/gguf-hash/deps/xxhash/xxhash.h:6067: * alignment on 32-bit. This isn't enough for the 32 byte aligned loads in AVX2
+examples/gguf-hash/deps/xxhash/xxhash.h:7075:#if XXH_VECTOR == XXH_AVX2 /* AVX2 */ \
+ggml/CMakeLists.txt:156:option(GGML_AVX_VNNI         "ggml: enable AVX-VNNI"         OFF)
+ggml/CMakeLists.txt:157:option(GGML_AVX2             "ggml: enable AVX2"             ${INS_ENB})
+ggml/CMakeLists.txt:159:option(GGML_AVX512           "ggml: enable AVX512F"          OFF)
+ggml/CMakeLists.txt:160:option(GGML_AVX512_VBMI      "ggml: enable AVX512-VBMI"      OFF)
+ggml/CMakeLists.txt:161:option(GGML_AVX512_VNNI      "ggml: enable AVX512-VNNI"      OFF)
+ggml/CMakeLists.txt:162:option(GGML_AVX512_BF16      "ggml: enable AVX512-BF16"      OFF)
+ggml/CMakeLists.txt:164:    # in MSVC F16C and FMA is implied with AVX2/AVX512
+ggml/CMakeLists.txt:447:    # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/src/CMakeLists.txt:314:                      AVX AVX2 BMI2 AVX_VNNI FMA F16C
+ggml/src/CMakeLists.txt:315:                      AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16
+ggml/src/CMakeLists.txt:365:            # __FMA__ and __F16C__ are not defined in MSVC, however they are implied with AVX2/AVX512
+ggml/src/CMakeLists.txt:369:        ggml_add_cpu_backend_variant(haswell            SSE42 AVX F16C FMA AVX2 BMI2)
+ggml/src/CMakeLists.txt:370:        ggml_add_cpu_backend_variant(skylakex           SSE42 AVX F16C FMA AVX2 BMI2 AVX512)
+ggml/src/CMakeLists.txt:371:        ggml_add_cpu_backend_variant(cannonlake         SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI)
+ggml/src/CMakeLists.txt:372:        ggml_add_cpu_backend_variant(cascadelake        SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI)
+ggml/src/CMakeLists.txt:373:        ggml_add_cpu_backend_variant(icelake            SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI)
+ggml/src/CMakeLists.txt:378:            ggml_add_cpu_backend_variant(cooperlake     SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:379:            ggml_add_cpu_backend_variant(zen4           SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16)
+ggml/src/CMakeLists.txt:381:        ggml_add_cpu_backend_variant(alderlake          SSE42 AVX F16C FMA AVX2 BMI2 AVX_VNNI)
+ggml/src/CMakeLists.txt:384:            ggml_add_cpu_backend_variant(sapphirerapids SSE42 AVX F16C FMA AVX2 BMI2 AVX512 AVX512_VBMI AVX512_VNNI AVX512_BF16 AMX_TILE AMX_INT8)
+ggml/src/ggml-cpu/CMakeLists.txt:260:            if (GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:261:                list(APPEND ARCH_FLAGS /arch:AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:262:                # /arch:AVX512 includes: __AVX512F__, __AVX512CD__, __AVX512BW__, __AVX512DQ__, and __AVX512VL__
+ggml/src/ggml-cpu/CMakeLists.txt:264:                # AVX512 extensions, neither it defines the
+ggml/src/ggml-cpu/CMakeLists.txt:267:                list(APPEND ARCH_DEFINITIONS GGML_AVX512)
+ggml/src/ggml-cpu/CMakeLists.txt:268:                if (GGML_AVX512_VBMI)
+ggml/src/ggml-cpu/CMakeLists.txt:269:                    list(APPEND ARCH_DEFINITIONS __AVX512VBMI__)
+ggml/src/ggml-cpu/CMakeLists.txt:274:                if (GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:275:                    list(APPEND ARCH_DEFINITIONS __AVX512VNNI__ GGML_AVX512_VNNI)
+ggml/src/ggml-cpu/CMakeLists.txt:280:                if (GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:281:                    list(APPEND ARCH_DEFINITIONS __AVX512BF16__ GGML_AVX512_BF16)
+ggml/src/ggml-cpu/CMakeLists.txt:295:            elseif (GGML_AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:296:                list(APPEND ARCH_FLAGS /arch:AVX2)
+ggml/src/ggml-cpu/CMakeLists.txt:297:                list(APPEND ARCH_DEFINITIONS GGML_AVX2 GGML_FMA GGML_F16C)
+
+## Camelid grep map
+camelid_head=219ca6cc05d2709fb1c911fb3f17df7fe1ad0918
+
+### git grep -n -E 'CAMELID_X86_Q8_OUTPUT_DECODE_OWNER|try_x86_q8_output_decode_owner_path|output_projection_with_layout' -- src tests docs qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md | head -120
+docs/CONFIGURATION.md:111:- `CAMELID_X86_Q8_OUTPUT_DECODE_OWNER=on` is a default-off Ubuntu x86_64 developer experiment that lets one-row decode output projection consume backend-owned packed `output.weight` storage directly; it falls back unless the tensor, shape, and packed-row guards match exactly.
+src/execution_plan.rs:16:    "CAMELID_X86_Q8_OUTPUT_DECODE_OWNER",
+src/execution_plan.rs:655:            "CAMELID_X86_Q8_OUTPUT_DECODE_OWNER",
+src/inference.rs:4973:    output_projection_with_layout(input, weight, name, layout)
+src/inference.rs:4976:fn output_projection_with_layout(
+src/inference.rs:5017:            if let Some(output) = try_x86_q8_output_decode_owner_path(input, weight, &name)? {
+src/inference.rs:6859:        env_flag_enabled("CAMELID_X86_Q8_OUTPUT_DECODE_OWNER")
+src/inference.rs:6867:fn try_x86_q8_output_decode_owner_path(
+src/inference.rs:11207:        let actual = output_projection_with_layout(
+src/inference.rs:11258:        let actual = output_projection_with_layout(
+src/inference.rs:12001:            "CAMELID_X86_Q8_OUTPUT_DECODE_OWNER",
+src/inference.rs:14012:        let token_major = output_projection_with_layout(
+src/inference.rs:14019:        let descriptor = output_projection_with_layout(
+src/inference.rs:14648:        let logits = output_projection_with_layout(
+src/inference.rs:14696:        let logits = output_projection_with_layout(
+src/inference.rs:14992:        std::env::set_var("CAMELID_X86_Q8_OUTPUT_DECODE_OWNER", "on");
+src/inference.rs:15041:        std::env::remove_var("CAMELID_X86_Q8_OUTPUT_DECODE_OWNER");
+src/inference.rs:15061:        let logits = output_projection_with_layout(
+src/inference.rs:15145:        let logits = output_projection_with_layout(
+
+### git grep -n -E 'Q8_0RuntimeStorage::PackedRows4|q8_0_runtime_packed_rows4_linear' -- src tests docs qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md | head -120
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:12:- The path is intentionally narrow: dense Llama Q8_0 `ffn_down`, one activation row, runtime-packed `Q8_0RuntimeStorage::PackedRows4`, I8 interleave, input width divisible by 32, output width divisible by 4. If any guard fails or the env flag is unset/off, `linear_for_role_runtime` falls back to the existing path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:20:- Small follow-on slice widened the default-off `CAMELID_X86_Q8_REPACK=on` runtime-packed loader to include dense Llama `blk.*.ffn_down.weight` in backend-owned `Q8_0RuntimeStorage::PackedRows4`.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:29:- The implementation still uses backend-owned `Q8_0RuntimeStorage::PackedRows4` for selected tensors and keeps `data`, `q8_0_blocks`, file backing, and debug packed sidecars empty/absent for that path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:180:- When the gate is on, `TensorStore::{load_q8_0_file_backed_linear,load_q8_0_block_backed_linear}` build `Q8_0RuntimeStorage::PackedRows4` directly from GGUF Q8_0 bytes and return a tensor with empty `data`, no `q8_0_blocks`, and no file-backed row-major sidecar for those selected tensors.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:182:- `CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER=on` is a second default-off experiment gate for decode-time `ffn_down` to consume `Q8_0RuntimeStorage::PackedRows4` directly through `try_x86_q8_ffn_down_decode_owner_path`; it falls back unless the tensor/shape/interleave guards match exactly.
+src/inference.rs:4837:    let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = storage else {
+src/inference.rs:8875:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage.as_ref() {
+src/inference.rs:8894:    if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) = weight.q8_0_runtime_storage {
+src/inference.rs:12517:        let packed_file_weight = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:12579:        let packed_weight = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:12641:        let packed_weight = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:12684:        let packed_weight = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:12748:        let packed_weight = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:12840:        let packed_weight = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:12925:        let packed_gate = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:12933:        let packed_up = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:12978:        let packed_weight = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:13054:        let packed_gate = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:13067:        let packed_up = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/inference.rs:15011:        let output_weight = CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/tensor/mod.rs:387:    Ok(Some(Q8_0RuntimeStorage::PackedRows4(packed)))
+src/tensor/mod.rs:1026:    pub fn q8_0_runtime_packed_rows4_linear(
+src/tensor/mod.rs:1039:            q8_0_runtime_storage: Some(Q8_0RuntimeStorage::PackedRows4(packed)),
+src/tensor/mod.rs:2494:        if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:2497:            return Ok(CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/tensor/mod.rs:2572:            if let Some(Q8_0RuntimeStorage::PackedRows4(packed)) =
+src/tensor/mod.rs:2575:                return Ok(CpuTensor::q8_0_runtime_packed_rows4_linear(
+src/tensor/mod.rs:3022:        let Some(super::Q8_0RuntimeStorage::PackedRows4(packed)) =
+tests/tensor_store.rs:151:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:170:    let Q8_0RuntimeStorage::PackedRows4(packed) = block_backed_tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:248:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:284:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:294:    let Q8_0RuntimeStorage::PackedRows4(packed) = block_backed_tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:344:        let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:397:        let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+tests/tensor_store.rs:441:    let Q8_0RuntimeStorage::PackedRows4(packed) = tensor.q8_0_runtime_storage.unwrap();
+
+### git grep -n -E 'q8_repack_x86_tensor_enabled|output\.weight' -- src tests docs qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md | head -120
+docs/CONFIGURATION.md:110:- `CAMELID_X86_Q8_REPACK=on` is a default-off Ubuntu x86_64 developer experiment that loads selected dense Llama Q8_0 linears into backend-owned packed runtime storage instead of retaining a duplicate row-major packed sidecar. The current x86 slice covers the dense attention projection family (`blk.*.attn_{q,k,v}.weight`, `blk.*.attn_output.weight`), dense FFN gate/up/down rows, and `output.weight`; leave it unset for the safe fallback.
+docs/CONFIGURATION.md:111:- `CAMELID_X86_Q8_OUTPUT_DECODE_OWNER=on` is a default-off Ubuntu x86_64 developer experiment that lets one-row decode output projection consume backend-owned packed `output.weight` storage directly; it falls back unless the tensor, shape, and packed-row guards match exactly.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:28:- Small follow-on slice widened the default-off `CAMELID_X86_Q8_REPACK=on` runtime-packed loader from `blk.*.attn_q.weight` to the dense attention projection family: `blk.*.attn_q.weight`, `blk.*.attn_k.weight`, `blk.*.attn_v.weight`, and `blk.*.attn_output.weight`.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:179:- `CAMELID_X86_Q8_REPACK=on` is a default-off GGUF load/read gate for selected Llama dense Q8 linears in this slice (`blk.*.attn_q.weight`, `blk.*.attn_k.weight`, `blk.*.attn_v.weight`, `blk.*.attn_output.weight`, `blk.*.ffn_gate.weight`, `blk.*.ffn_up.weight`, `blk.*.ffn_down.weight`).
+src/api/mod.rs:5915:            output: desc("output.weight"),
+src/api/mod.rs:5923:                attention_output: desc("blk.0.attn_output.weight"),
+src/api/mod.rs:6083:                "output.weight",
+src/api/mod.rs:6094:                    "blk.0.attn_output.weight",
+src/inference.rs:6875:        || weight.name != "output.weight"
+src/inference.rs:11199:            "output.weight",
+src/inference.rs:11250:            "output.weight",
+src/inference.rs:11321:                    "blk.0.attn_output.weight",
+src/inference.rs:11632:                attention_output: dense_matrix("blk.0.attn_output.weight"),
+src/inference.rs:13808:            "output.weight",
+src/inference.rs:14003:            "output.weight",
+src/inference.rs:14686:            "output.weight",
+src/inference.rs:14721:            "output.weight",
+src/inference.rs:14770:            "output.weight",
+src/inference.rs:14822:            "output.weight",
+src/inference.rs:14856:            "output.weight",
+src/inference.rs:14916:            "output.weight",
+src/inference.rs:14959:            "output.weight",
+src/inference.rs:15012:            "output.weight",
+src/inference.rs:15053:            "output.weight",
+src/inference.rs:15144:            CpuTensor::from_f32("output.weight", vec![4, 1], vec![1.5, 2.0, -0.5, -4.0]).unwrap();
+src/inference.rs:15556:                    "output.weight",
+src/inference.rs:15592:                    "blk.0.attn_output.weight",
+src/inference.rs:15794:                    "output.weight",
+src/inference.rs:15827:                    "blk.0.attn_output.weight",
+src/inference.rs:16015:                "blk.0.attn_output.weight",
+src/inference.rs:16243:                    "output.weight",
+src/inference.rs:16276:                    "blk.0.attn_output.weight",
+src/main.rs:226:    let mut names = vec!["token_embd.weight".to_string(), "output.weight".to_string()];
+src/main.rs:236:        "attn_output.weight",
+src/main.rs:1247:        "output.weight" if shape[0] < shape[1] => Some(LogicalTokenRowLayout {
+src/main.rs:1254:        "output.weight" => Some(LogicalTokenRowLayout {
+src/main.rs:1267:        "output.weight" if shape.len() == 2 && shape[0] < shape[1] => Some(LogicalTokenRowLayout {
+src/main.rs:1579:        assert_eq!(names[1], "output.weight");
+src/main.rs:1594:        let names = tensor_dump_names(vec!["output.weight".to_string()], vec![2]);
+src/main.rs:1596:        assert_eq!(names[0], "output.weight");
+src/main.rs:1628:            logical_token_row_layout("output.weight", &[4, 10]),
+src/main.rs:1638:            descriptor_token_column_layout("output.weight", &[4, 10]),
+src/main.rs:1648:            logical_token_row_layout("output.weight", &[10, 4]),
+src/main.rs:1710:            "output.weight",
+src/main.rs:1736:            "output.weight",
+src/main.rs:1804:            "output.weight",
+src/main.rs:1853:            "output.weight",
+src/model.rs:203:        let (output, output_is_tied_embedding) = match find_tensor(gguf, "output.weight") {
+src/model.rs:221:                    &format!("blk.{layer_idx}.attn_output.weight"),
+src/model.rs:711:        assert!(err.contains("output.weight"));
+src/model.rs:734:            name: "output.weight".to_string(),
+src/tensor/mod.rs:293:        || (x86_q8_repack_enabled() && q8_repack_x86_tensor_enabled(name))
+src/tensor/mod.rs:302:fn q8_repack_x86_tensor_enabled(name: &str) -> bool {
+src/tensor/mod.rs:308:        || name == "output.weight"
+src/tensor/mod.rs:315:        || name.ends_with(".attn_output.weight")
+src/tensor/mod.rs:324:    if name == "output.weight" {
+src/tensor/mod.rs:2808:        q8_file_cache_insert, q8_repack_x86_tensor_enabled, with_q8_file_cache_capacity_override,
+src/tensor/mod.rs:2999:        assert!(q8_repack_x86_tensor_enabled("output.weight"));
+src/tensor/mod.rs:3000:        assert!(q8_repack_x86_tensor_enabled("blk.0.attn_output.weight"));
+src/tensor/mod.rs:3001:        assert!(q8_repack_x86_tensor_enabled("blk.0.ffn_down.weight"));
+src/tensor/mod.rs:3002:        assert!(!q8_repack_x86_tensor_enabled("token_embd.weight"));
+src/tensor/mod.rs:3003:        assert!(!q8_repack_x86_tensor_enabled("blk.0.attn_norm.weight"));
+src/tensor/mod.rs:3016:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes)
+src/tensor/mod.rs:3023:            super::q8_0_runtime_packed_rows4_for_tensor("output.weight", &shape, &bytes).unwrap()
+tests/api_vertical_slice.rs:2905:        ("output.weight", vec![4, 4]),
+tests/api_vertical_slice.rs:2910:        ("blk.0.attn_output.weight", vec![4, 4]),
+tests/inference_session.rs:431:            "output.weight",
+tests/inference_session.rs:442:                "blk.0.attn_output.weight",
+tests/model_binding.rs:175:    assert_eq!(binding.output.name, "output.weight");
+tests/model_binding.rs:301:        ("blk.0.attn_output.weight", vec![8, 8]),
+tests/model_binding.rs:307:        ("output.weight", vec![8, 4]),
+tests/model_binding.rs:384:            "blk.0.attn_output.weight",
+tests/model_binding.rs:400:        ("output.weight", vec![embedding_length as i64, 4]),
+tests/model_binding.rs:484:        ("blk.0.attn_output.weight", vec![32, 32]),
+tests/model_binding.rs:489:        ("output.weight", vec![32, 4]),
+tests/model_binding.rs:594:        ("blk.0.attn_output.weight", vec![8, 8]),
+tests/model_binding.rs:601:        tensors.push(("output.weight", vec![8, 4]));
+tests/tensor_store.rs:314:        "blk.0.attn_output.weight",
+tests/tensor_store.rs:424:    write_named_tensor_gguf_with_dims(&path, "output.weight", 8, &[32, 64], &payload);
+tests/tensor_store.rs:428:    let fallback = store.load_q8_0_file_backed_linear("output.weight").unwrap();
+tests/tensor_store.rs:433:    let tensor = store.load_q8_0_file_backed_linear("output.weight").unwrap();
+
+### git grep -n -E 'CAMELID_X86_Q8_REPACK|CAMELID_X86_Q8_KERNEL|CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER' -- src tests docs qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md | head -120
+docs/CONFIGURATION.md:110:- `CAMELID_X86_Q8_REPACK=on` is a default-off Ubuntu x86_64 developer experiment that loads selected dense Llama Q8_0 linears into backend-owned packed runtime storage instead of retaining a duplicate row-major packed sidecar. The current x86 slice covers the dense attention projection family (`blk.*.attn_{q,k,v}.weight`, `blk.*.attn_output.weight`), dense FFN gate/up/down rows, and `output.weight`; leave it unset for the safe fallback.
+docs/CONFIGURATION.md:112:- Explicit x86 disables remain available as developer overrides. The execution planner respects `CAMELID_X86_Q8_REPACK=off` and `CAMELID_X86_Q8_KERNEL=off|disabled` by failing closed to the safe CPU path.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:11:- Small technical slice added a directly usable decode-time FFN-down consumer for backend-owned packed Q8_0 runtime storage, gated by the new default-off x86 flag `CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER`.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:20:- Small follow-on slice widened the default-off `CAMELID_X86_Q8_REPACK=on` runtime-packed loader to include dense Llama `blk.*.ffn_down.weight` in backend-owned `Q8_0RuntimeStorage::PackedRows4`.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:28:- Small follow-on slice widened the default-off `CAMELID_X86_Q8_REPACK=on` runtime-packed loader from `blk.*.attn_q.weight` to the dense attention projection family: `blk.*.attn_q.weight`, `blk.*.attn_k.weight`, `blk.*.attn_v.weight`, and `blk.*.attn_output.weight`.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:40:- CAMELID TPM UBUNTU X86 Q8: same-host llama.cpp and Camelid benchmark artifacts remain under `benchmarks/`; Camelid baseline/default-parallel/parallel-off retained-block microbench stayed ~16 ms with equal checksum, while the bounded default-off `CAMELID_X86_Q8_REPACK=on CAMELID_X86_Q8_KERNEL=avx2` API smoke cut first-token wall from 147425.30 ms to 75650.18 ms and kept token id 8586.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:154:| `CAMELID_X86_Q8_KERNEL=avx2` | 16.102 ms | 16.058 ms | `-0.05126936` |
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:169:| `CAMELID_X86_Q8_REPACK=on CAMELID_X86_Q8_KERNEL=avx2` | `Here` | 75650.18 ms | 72077.00 ms | 71463.04 ms | 24606.97 ms | 5174.13 ms | 5127.87 ms | 36484.12 ms | 46796.54 ms | 3836.46 MiB |
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:179:- `CAMELID_X86_Q8_REPACK=on` is a default-off GGUF load/read gate for selected Llama dense Q8 linears in this slice (`blk.*.attn_q.weight`, `blk.*.attn_k.weight`, `blk.*.attn_v.weight`, `blk.*.attn_output.weight`, `blk.*.ffn_gate.weight`, `blk.*.ffn_up.weight`, `blk.*.ffn_down.weight`).
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:182:- `CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER=on` is a second default-off experiment gate for decode-time `ffn_down` to consume `Q8_0RuntimeStorage::PackedRows4` directly through `try_x86_q8_ffn_down_decode_owner_path`; it falls back unless the tensor/shape/interleave guards match exactly.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:183:- `x86_q8_kernel_avx2_enabled()` reads `CAMELID_X86_Q8_KERNEL` and accepts `avx2/on/1/true` (case variants included).
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:193:- Same-host API smoke parity: baseline and `CAMELID_X86_Q8_REPACK=on CAMELID_X86_Q8_KERNEL=avx2` both emitted first-token text `Here` for the measured Ubuntu x86_64 prompt; timings are in `benchmarks/unique-chat-*.json`. Those timings cover the earlier measured gate/up runtime-repacked slice and are not evidence for FFN-down throughput.
+qa/evidence-bundles/llamacpp-q8-cpu-re-20260514T1200Z/README.md:208:| Implement bounded default-off x86 slice | PASS | `src/tensor/mod.rs`, `src/inference.rs`, `tests/tensor_store.rs`; env `CAMELID_X86_Q8_REPACK=on`, `CAMELID_X86_Q8_KERNEL=avx2`; follow-on attention-family loader evidence in `artifacts/cron-95495a91-20260515T1108Z-x86-attn-family.txt`; FFN-down runtime-storage evidence in `artifacts/cron-95495a91-20260515T1235Z-x86-ffn-down-runtime.txt`; default-off FFN-down decode-owner evidence in `artifacts/cron-95495a91-20260515T1759Z-x86-ffn-down-decode-owner-tests.txt` |
+src/execution_plan.rs:13:    "CAMELID_X86_Q8_REPACK",
+src/execution_plan.rs:14:    "CAMELID_X86_Q8_KERNEL",
+src/execution_plan.rs:15:    "CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER",
+src/execution_plan.rs:300:    if env_flag_disabled("CAMELID_X86_Q8_REPACK") || env_flag_disabled("CAMELID_X86_Q8_KERNEL") {
+src/execution_plan.rs:304:        if env_flag_disabled("CAMELID_X86_Q8_REPACK") {
+src/execution_plan.rs:305:            env_updates.insert("CAMELID_X86_Q8_REPACK", Some("off"));
+src/execution_plan.rs:307:        if env_flag_disabled("CAMELID_X86_Q8_KERNEL") {
+src/execution_plan.rs:308:            env_updates.insert("CAMELID_X86_Q8_KERNEL", Some("off"));
+src/execution_plan.rs:314:            "invalid CAMELID_X86_Q8_KERNEL={invalid}; failing closed to safe path"
+src/execution_plan.rs:316:        env_updates.insert("CAMELID_X86_Q8_KERNEL", Some("off"));
+src/execution_plan.rs:580:    let value = env::var("CAMELID_X86_Q8_KERNEL").ok()?;
+src/execution_plan.rs:652:            "CAMELID_X86_Q8_REPACK",
+src/execution_plan.rs:653:            "CAMELID_X86_Q8_KERNEL",
+src/execution_plan.rs:654:            "CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER",
+src/execution_plan.rs:718:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_KERNEL"));
+src/execution_plan.rs:813:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_KERNEL"));
+src/execution_plan.rs:814:        assert!(!outcome.env_updates.contains_key("CAMELID_X86_Q8_REPACK"));
+src/execution_plan.rs:869:        env::set_var("CAMELID_X86_Q8_KERNEL", "amx_now_please");
+src/execution_plan.rs:878:            outcome.env_updates.get("CAMELID_X86_Q8_KERNEL"),
+src/inference.rs:6848:        env_flag_enabled("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER")
+src/inference.rs:7979:        env::var("CAMELID_X86_Q8_KERNEL").as_deref(),
+src/inference.rs:11082:        std::env::set_var("CAMELID_X86_Q8_KERNEL", "avx2");
+src/inference.rs:11093:        std::env::remove_var("CAMELID_X86_Q8_KERNEL");
+src/inference.rs:11100:        std::env::set_var("CAMELID_X86_Q8_KERNEL", "avx2");
+src/inference.rs:11130:        std::env::remove_var("CAMELID_X86_Q8_KERNEL");
+src/inference.rs:12827:        std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+src/inference.rs:12828:        std::env::set_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER", "on");
+src/inference.rs:12862:        std::env::remove_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER");
+src/inference.rs:12865:        std::env::set_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER", "on");
+src/inference.rs:12870:        std::env::remove_var("CAMELID_X86_Q8_FFN_DOWN_DECODE_OWNER");
+src/inference.rs:12871:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/inference.rs:14991:        std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+src/inference.rs:15042:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/tensor/mod.rs:283:    env_flag_enabled("CAMELID_X86_Q8_REPACK")
+src/tensor/mod.rs:2922:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/tensor/mod.rs:2988:        std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+src/tensor/mod.rs:2994:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/tensor/mod.rs:3010:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+src/tensor/mod.rs:3021:        std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+src/tensor/mod.rs:3031:        std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:259:    std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+tests/tensor_store.rs:298:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:305:    std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+tests/tensor_store.rs:349:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:356:    std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+tests/tensor_store.rs:405:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:412:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+tests/tensor_store.rs:432:    std::env::set_var("CAMELID_X86_Q8_REPACK", "on");
+tests/tensor_store.rs:445:    std::env::remove_var("CAMELID_X86_Q8_REPACK");
+
+## Ubuntu x86_64 validation
+host=ubuntu@<validation-host>
+scratch=<ubuntu-workdir>/camelid-output-decode-owner-20260515T193322Z
+cpu=Intel Xeon Platinum 8488C; flags include avx2,avx512*,avx_vnni,avx512_vnni,amx_int8
+commands: cargo fmt --check; cargo test --lib x86_q8 -- --nocapture; cargo test --test tensor_store x86_q8_repack_loads_output_projection_as_token_major_packed_runtime -- --nocapture
+result: PASS. lib x86_q8 ran 4 tests including x86_q8_output_decode_owner_path_uses_runtime_packed_storage; tensor_store output.weight runtime-pack test passed. Warnings were pre-existing Linux cfg/dead_code warnings, no failures.

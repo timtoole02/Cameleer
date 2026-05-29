@@ -1,0 +1,19 @@
+{
+  "id": "assistant-final-no-generation-header",
+  "note": "Assistant-final messages should not append another assistant generation header.",
+  "message": null,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Complete the word: cam"
+    },
+    {
+      "role": "assistant",
+      "content": "elid"
+    }
+  ],
+  "max_tokens": 1,
+  "render_mode": "tinyllama-marker",
+  "target_context_window": null,
+  "resolved_max_tokens": 1
+}
