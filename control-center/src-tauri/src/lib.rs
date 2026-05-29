@@ -20,6 +20,8 @@ mod agent_contracts;
 mod agent_state_machine;
 mod agent_work_router;
 mod agent_runtime_kernel;
+mod agent_validation_engine;
+mod agent_tool_controller;
 
 use storage::DbState;
 use tauri::Manager;

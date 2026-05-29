@@ -132,20 +132,62 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
     save_and_emit_message(&app_handle, &session_id, &agent_id, response_text.clone());
 
     // 9. Execute Action & Guard
+    let mut target_state = AgentState::Idle;
+    let mut transition_reason = "Completed cycle iteration".to_string();
+
     if let Some(action) = parse_agent_action(&response_text) {
         println!("[AGENT RUNTIME KERNEL] Agent triggered Action: {}", action.action_type);
         
-        // This is where Phase 3 Tool Controller will go: execute_tool(agent_id, tool_call, context)
-        // For Phase 1 we pass it through.
+        if action.action_type == "complete_card" {
+            if let Some(c_id) = action.card_id.as_ref() {
+                let val_res = {
+                    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+                    crate::agent_validation_engine::validate_task_completion(&conn, &agent_id, c_id, &action.evidence)
+                };
+                
+                if let Ok(res) = val_res {
+                    if res.is_valid {
+                        println!("[VALIDATION] Task {} valid. Moving to {}", c_id, res.required_state);
+                        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+                        let _ = conn.execute("UPDATE kanban_cards SET status = ?1 WHERE id = ?2", params![res.required_state, c_id]);
+                        
+                        transition_reason = format!("Successfully completed task {}", c_id);
+                    } else {
+                        println!("[VALIDATION FAILED] {:?}", res.errors);
+                        let err_msg = format!("Validation failed. You must provide evidence or satisfy criteria:\n- {}", res.errors.join("\n- "));
+                        save_and_emit_message(&app_handle, &session_id, "system", err_msg);
+                        
+                        // If validation fails, agent must remain in Working state to fix it
+                        target_state = AgentState::Working;
+                        transition_reason = "Validation failed, returning to work".to_string();
+                    }
+                }
+            }
+        } else {
+            // Use tool controller for other actions
+            match crate::agent_tool_controller::execute_tool(&app_handle, &agent_id, &session_id, &contract, &action) {
+                Ok(result) => {
+                    transition_reason = format!("Successfully executed {}", action.action_type);
+                    target_state = AgentState::Working; // Usually want them to continue working after a tool call
+                },
+                Err(e) => {
+                    let err_msg = format!("Tool execution failed: {}", e);
+                    save_and_emit_message(&app_handle, &session_id, "system", err_msg);
+                    transition_reason = format!("Tool {} failed", action.action_type);
+                    target_state = AgentState::Working; // Keep working to recover
+                }
+            }
+        }
         
     } else {
         println!("[AGENT RUNTIME KERNEL] Agent finished step with text response.");
+        // If it's a text response, it implies idle
+        target_state = AgentState::Idle;
     }
 
     // 10. Update state based on Validation Engine (Phase 2) and Recovery Engine (Phase 4)
-    // For now, we transition back to idle if we aren't executing more
     let conn = state.conn.lock().map_err(|err| err.to_string())?;
-    let _ = transition_agent_state(&conn, &agent_id, current_state.clone(), AgentState::Idle, "Completed cycle iteration");
+    let _ = transition_agent_state(&conn, &agent_id, current_state.clone(), target_state, &transition_reason);
 
     Ok(())
 }
