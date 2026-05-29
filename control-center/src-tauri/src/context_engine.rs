@@ -118,52 +118,55 @@ pub fn get_workspace_context_snapshot(
         }
     }
 
-    // 4. Tasks & Blockers
+    // 4. Tasks & Blockers (Upgraded Kanban Cards Orchestration)
     let mut stmt_tasks = conn.prepare(
-        "SELECT id, title, owner_id, status FROM tasks"
+        "SELECT id, title, owner_id, assigned_agent_id, status, priority, 
+                acceptance_criteria, required_files, related_files, blockers, dependencies 
+         FROM tasks"
     ).map_err(|e| e.to_string())?;
+
     let tasks_iter = stmt_tasks.query_map([], |row| {
         Ok((
             row.get::<_, String>(0)?,
             row.get::<_, String>(1)?,
             row.get::<_, Option<String>>(2)?,
-            row.get::<_, String>(3)?,
+            row.get::<_, Option<String>>(3)?,
+            row.get::<_, String>(4)?,
+            row.get::<_, String>(5)?,
+            row.get::<_, Option<String>>(6)?,
+            row.get::<_, Option<String>>(7)?,
+            row.get::<_, Option<String>>(8)?,
+            row.get::<_, Option<String>>(9)?,
+            row.get::<_, Option<String>>(10)?,
         ))
     }).map_err(|e| e.to_string())?;
 
     let mut tasks_summary = String::new();
     for task in tasks_iter {
-        if let Ok((id, title, owner, status)) = task {
-            let owner_str = owner.unwrap_or_else(|| "unassigned".to_string());
-            
-            // Check blockers
-            let blocked_by: Vec<String> = {
-                let mut stmt_block = conn.prepare(
-                    "SELECT blocked_by_task_id, reason FROM task_blockers WHERE task_id = ?1"
-                ).map_err(|e| e.to_string())?;
-                let block_iter = stmt_block.query_map([&id], |row| {
-                    Ok(format!("task:{}({})", row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-                }).map_err(|e| e.to_string())?;
-                let mut b_list = Vec::new();
-                for b in block_iter {
-                    if let Ok(b_val) = b {
-                        b_list.push(b_val);
-                    }
-                }
-                b_list
-            };
+        if let Ok((id, title, owner, assignee, status, priority, criteria, req_files, rel_files, blockers, deps)) = task {
+            let assignee_id = assignee.or(owner).unwrap_or_else(|| "unassigned".to_string());
+            let criteria_str = criteria.unwrap_or_else(|| "[]".to_string());
+            let req_files_str = req_files.unwrap_or_else(|| "[]".to_string());
+            let rel_files_str = rel_files.unwrap_or_else(|| "[]".to_string());
+            let blockers_str = blockers.unwrap_or_else(|| "[]".to_string());
+            let deps_str = deps.unwrap_or_else(|| "[]".to_string());
 
-            let blocker_str = if blocked_by.is_empty() {
-                "".to_string()
-            } else {
-                format!(" | blocked_by=[{}]", blocked_by.join(", "))
-            };
-
-            tasks_summary.push_str(&format!("- [id: {}] \"{}\" | owner=[{}] | status=[{}]{}\n", id, title, owner_str, status, blocker_str));
+            tasks_summary.push_str(&format!(
+                "- Kanban Card [id: {}] \"{}\"\n\
+                  * Status: {}\n\
+                  * Priority: {}\n\
+                  * Assigned Agent: {}\n\
+                  * Acceptance Criteria: {}\n\
+                  * Required Files: {}\n\
+                  * Related Files: {}\n\
+                  * Blockers: {}\n\
+                  * Dependencies: {}\n\n",
+                id, title, status, priority, assignee_id, criteria_str, req_files_str, rel_files_str, blockers_str, deps_str
+            ));
         }
     }
     if tasks_summary.is_empty() {
-        tasks_summary = "- No tasks registered yet.".to_string();
+        tasks_summary = "- No Kanban cards registered yet.".to_string();
     }
 
     // 5. Workspace File Artifacts

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use rusqlite::{params, Connection, Result};
-use tauri::{State, AppHandle};
+use tauri::{State, AppHandle, Manager};
 use crate::storage::DbState;
 use crate::router::{call_model, ChatMessage, ModelSettings};
 use crate::event_bus::{emit_event, AppEvent};
@@ -180,18 +180,65 @@ pub async fn trigger_agent_reply(
         }
 
         // Fetch dynamically compiled blackboard awareness context to inject
-        let context_packet = {
+        let (context_packet, work_queue_str) = {
             let conn = state.conn.lock().map_err(|e| e.to_string())?;
-            crate::context_engine::get_workspace_context_snapshot(&conn, Some(&agent_id), None, None).unwrap_or_default()
+            let ctx = crate::context_engine::get_workspace_context_snapshot(&conn, Some(&agent_id), None, None).unwrap_or_default();
+            
+            // Compile agent active work queue
+            let mut stmt = conn.prepare(
+                "SELECT id, title, status, priority, acceptance_criteria, required_files 
+                 FROM tasks 
+                 WHERE (assigned_agent_id = ?1 OR owner_id = ?1) AND status != 'done'"
+            ).map_err(|e| e.to_string())?;
+            
+            let iter = stmt.query_map([&agent_id], |row| {
+                Ok(format!(
+                    "- [Card ID: {}] \"{}\" | status={} | priority={} | criteria={}",
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, Option<String>>(4)?.unwrap_or_default()
+                ))
+            }).map_err(|e| e.to_string())?;
+            
+            let mut q_list = Vec::new();
+            for item in iter {
+                if let Ok(s) = item {
+                    q_list.push(s);
+                }
+            }
+            let q_str = if q_list.is_empty() {
+                "None - No active enqueued cards assigned to you.".to_string()
+            } else {
+                q_list.join("\n")
+            };
+            
+            (ctx, q_str)
         };
 
         // 2. Build full conversation messages from database for this session_id
         let system_instructions = format!(
             "You are {} (Role: {}).\nYour Persona: {}\n\n\
              {}\n\n\
+             ### YOUR ACTIVE KANBAN WORK QUEUE:\n{}\n\n\
              You are operating inside a secure macOS agent workspace. You have direct access to execute shell commands and write files on the host computer.\n\n\
-             CRITICAL: When the user asks you to save, write, or create a file, you MUST write the file physically using either of these formats:\n\n\
-             Format 1 (Strict ReAct block):\n\
+             CRITICAL: Before doing any work, you MUST check your Kanban work queue above and claim your highest priority enqueued card. When doing work, you must update the card progress and mark it done with validation evidence when finished.\n\n\
+             To claim a card and start working on it, output:\n\
+             ACTION: claim_card\n\
+             CARD_ID: <card_id>\n\n\
+             To update card progress (e.g. logging notes, files modified, validation checks):\n\
+             ACTION: update_card_progress\n\
+             CARD_ID: <card_id>\n\
+             NOTES: <your progress note description here>\n\
+             FILES: [\"<filepath_here>\"]\n\
+             VALIDATION_STATUS: <passed or pending or failed>\n\n\
+             To complete a card (only do this when all criteria are satisfied and evidence is attached):\n\
+             ACTION: complete_card\n\
+             CARD_ID: <card_id>\n\
+             EVIDENCE: <your detailed completion explanation and paths to evidence files>\n\
+             VALIDATION_PASSED: <true or false>\n\n\
+             Format 1 (Strict ReAct block for file writes):\n\
              ACTION: write_file\n\
              PATH: <target filepath here (e.g. hello.rs or ~/Desktop/hello.rs)>\n\
              CONTENT:\n\
@@ -214,7 +261,7 @@ pub async fn trigger_agent_reply(
              ```\n\n\
              When you are completely finished with your task and have no more actions to run, speak directly to the user to deliver your final response.\n\n\
              Keep answers concise and let the tools do the heavy lifting.",
-            name, role, persona, context_packet
+            name, role, persona, context_packet, work_queue_str
         );
 
         let mut history = vec![
@@ -345,6 +392,29 @@ pub async fn trigger_agent_reply(
                                     "INSERT INTO events (event_type, agent_id, payload) VALUES ('file_created', ?1, ?2)",
                                     params![agent_id, format!("{{\"path\":\"{}\"}}", path_str)],
                                 );
+
+                                // Auto-link file to active claimed card if one is in progress!
+                                let active_card_id: Option<String> = conn.query_row(
+                                    "SELECT id FROM tasks WHERE (assigned_agent_id = ?1 OR owner_id = ?1) AND status = 'in_progress' LIMIT 1",
+                                    [&agent_id],
+                                    |row| row.get(0),
+                                ).ok();
+                                
+                                if let Some(c_id) = active_card_id {
+                                    let db_state = app_handle.state::<crate::storage::DbState>();
+                                    let _ = crate::task_manager::update_card_progress(
+                                        db_state,
+                                        app_handle.clone(),
+                                        agent_id.clone(),
+                                        c_id,
+                                        Some(format!("Automatically linked created/modified file: {}", path_str)),
+                                        Some(vec![path_str.clone()]),
+                                        None,
+                                        None,
+                                        None,
+                                    );
+                                }
+
                                 format!("SUCCESS: File successfully saved to: {:?}", target_path)
                             }
                             Err(e) => format!("ERROR: Failed to write file: {}", e)
@@ -452,6 +522,58 @@ pub async fn trigger_agent_reply(
                     }
                 } else {
                     "ERROR: Missing TARGET_AGENT_ID or REASON parameter in request_handoff action".to_string()
+                }
+            } else if action.action_type == "claim_card" {
+                if let Some(ref card_id) = action.card_id {
+                    let db_state = app_handle.state::<crate::storage::DbState>();
+                    match crate::task_manager::claim_card(db_state, app_handle.clone(), agent_id.clone(), card_id.clone()) {
+                        Ok(_) => format!("SUCCESS: You have successfully claimed Kanban card '{}'. Status is now In Progress.", card_id),
+                        Err(e) => format!("ERROR: Failed to claim card '{}': {}", card_id, e)
+                    }
+                } else {
+                    "ERROR: Missing CARD_ID parameter in claim_card action".to_string()
+                }
+            } else if action.action_type == "update_card_progress" {
+                if let Some(ref card_id) = action.card_id {
+                    let db_state = app_handle.state::<crate::storage::DbState>();
+                    let progress_notes = action.notes.clone();
+                    let files_list = action.files.clone();
+                    let validation_stat = action.validation_status.clone();
+                    match crate::task_manager::update_card_progress(
+                        db_state,
+                        app_handle.clone(),
+                        agent_id.clone(),
+                        card_id.clone(),
+                        progress_notes,
+                        files_list,
+                        None,
+                        None,
+                        validation_stat,
+                    ) {
+                        Ok(_) => format!("SUCCESS: Kanban card '{}' progress has been successfully updated.", card_id),
+                        Err(e) => format!("ERROR: Failed to update card '{}' progress: {}", card_id, e)
+                    }
+                } else {
+                    "ERROR: Missing CARD_ID parameter in update_card_progress action".to_string()
+                }
+            } else if action.action_type == "complete_card" {
+                if let (Some(ref card_id), Some(ref evidence), Some(val_passed)) = (&action.card_id, &action.evidence, action.validation_passed) {
+                    let db_state = app_handle.state::<crate::storage::DbState>();
+                    let val_notes = action.validation_notes.clone();
+                    match crate::task_manager::complete_card(
+                        db_state,
+                        app_handle.clone(),
+                        agent_id.clone(),
+                        card_id.clone(),
+                        evidence.clone(),
+                        val_passed,
+                        val_notes,
+                    ) {
+                        Ok(_) => format!("SUCCESS: Kanban card '{}' has been successfully completed and moved to review/done.", card_id),
+                        Err(e) => format!("ERROR: Failed to complete card '{}': {}", card_id, e)
+                    }
+                } else {
+                    "ERROR: Missing CARD_ID, EVIDENCE, or VALIDATION_PASSED parameter in complete_card action".to_string()
                 }
             } else {
                 format!("ERROR: Unsupported action type: {}", action.action_type)
@@ -626,6 +748,13 @@ struct AgentAction {
     target_agent_id: Option<String>,
     task_id: Option<String>,
     blocked_by_task_id: Option<String>,
+    card_id: Option<String>,
+    notes: Option<String>,
+    files: Option<Vec<String>>,
+    validation_status: Option<String>,
+    evidence: Option<String>,
+    validation_passed: Option<bool>,
+    validation_notes: Option<String>,
 }
 
 fn resolve_path(path: &str) -> std::path::PathBuf {
@@ -714,6 +843,13 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                         target_agent_id: None,
                         task_id: None,
                         blocked_by_task_id: None,
+                        card_id: None,
+                        notes: None,
+                        files: None,
+                        validation_status: None,
+                        evidence: None,
+                        validation_passed: None,
+                        validation_notes: None,
                     });
                 }
             }
@@ -763,6 +899,13 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                         target_agent_id: None,
                         task_id: None,
                         blocked_by_task_id: None,
+                        card_id: None,
+                        notes: None,
+                        files: None,
+                        validation_status: None,
+                        evidence: None,
+                        validation_passed: None,
+                        validation_notes: None,
                     });
                 }
             }
@@ -783,6 +926,13 @@ fn parse_agent_action(text: &str) -> Option<AgentAction> {
     let mut target_agent_id = String::new();
     let mut task_id = String::new();
     let mut blocked_by_task_id = String::new();
+    let mut card_id = String::new();
+    let mut notes = String::new();
+    let mut files = String::new();
+    let mut validation_status = String::new();
+    let mut evidence = String::new();
+    let mut validation_passed = String::new();
+    let mut validation_notes = String::new();
     let mut reading_content = false;
     
     for line in text.lines() {
@@ -803,6 +953,20 @@ fn parse_agent_action(text: &str) -> Option<AgentAction> {
             task_id = clean[8..].trim().to_string();
         } else if clean.starts_with("BLOCKED_BY_TASK_ID:") {
             blocked_by_task_id = clean[19..].trim().to_string();
+        } else if clean.starts_with("CARD_ID:") {
+            card_id = clean[8..].trim().to_string();
+        } else if clean.starts_with("NOTES:") {
+            notes = clean[6..].trim().to_string();
+        } else if clean.starts_with("FILES:") {
+            files = clean[6..].trim().to_string();
+        } else if clean.starts_with("VALIDATION_STATUS:") {
+            validation_status = clean[18..].trim().to_string();
+        } else if clean.starts_with("EVIDENCE:") {
+            evidence = clean[9..].trim().to_string();
+        } else if clean.starts_with("VALIDATION_PASSED:") {
+            validation_passed = clean[18..].trim().to_string();
+        } else if clean.starts_with("VALIDATION_NOTES:") {
+            validation_notes = clean[17..].trim().to_string();
         } else if clean.starts_with("CONTENT:") {
             reading_content = true;
         } else if reading_content {
@@ -811,7 +975,28 @@ fn parse_agent_action(text: &str) -> Option<AgentAction> {
         }
     }
     
+    // Fallback task_id <-> card_id symmetry
+    if card_id.is_empty() && !task_id.is_empty() {
+        card_id = task_id.clone();
+    }
+    if task_id.is_empty() && !card_id.is_empty() {
+        task_id = card_id.clone();
+    }
+
     if !action_type.is_empty() {
+        let files_vec = if files.is_empty() {
+            None
+        } else {
+            Some(files.split(',').map(|f| f.trim().to_string()).filter(|f| !f.is_empty()).collect())
+        };
+
+        let val_passed = if validation_passed.is_empty() {
+            None
+        } else {
+            let clean_val = validation_passed.to_lowercase();
+            Some(clean_val == "true" || clean_val == "yes" || clean_val == "1" || clean_val == "passed")
+        };
+
         return Some(AgentAction {
             action_type,
             command: if command.is_empty() { None } else { Some(command) },
@@ -822,6 +1007,13 @@ fn parse_agent_action(text: &str) -> Option<AgentAction> {
             target_agent_id: if target_agent_id.is_empty() { None } else { Some(target_agent_id) },
             task_id: if task_id.is_empty() { None } else { Some(task_id) },
             blocked_by_task_id: if blocked_by_task_id.is_empty() { None } else { Some(blocked_by_task_id) },
+            card_id: if card_id.is_empty() { None } else { Some(card_id) },
+            notes: if notes.is_empty() { None } else { Some(notes) },
+            files: files_vec,
+            validation_status: if validation_status.is_empty() { None } else { Some(validation_status) },
+            evidence: if evidence.is_empty() { None } else { Some(evidence) },
+            validation_passed: val_passed,
+            validation_notes: if validation_notes.is_empty() { None } else { Some(validation_notes) },
         });
     }
 

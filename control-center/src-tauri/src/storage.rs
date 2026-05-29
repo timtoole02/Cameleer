@@ -66,19 +66,46 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         [],
     )?;
 
-    // 4. Tasks & Objective Registry
+    // Migration: Check if tasks has workspace_id column. If not, drop dependent tables and tasks to recreate.
+    let has_workspace_id: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('tasks') WHERE name='workspace_id')",
+        [],
+        |row| row.get(0),
+    ).unwrap_or(false);
+
+    if !has_workspace_id {
+        let _ = conn.execute("DROP TABLE IF EXISTS task_blockers", []);
+        let _ = conn.execute("DROP TABLE IF EXISTS agent_runs", []);
+        let _ = conn.execute("DROP TABLE IF EXISTS artifacts", []);
+        let _ = conn.execute("DROP TABLE IF EXISTS handoffs", []);
+        let _ = conn.execute("DROP TABLE IF EXISTS tasks", []);
+    }
+
+    // 4. Tasks & Objective Registry (Upgraded Kanban Cards)
     conn.execute(
         "CREATE TABLE IF NOT EXISTS tasks (
             id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
             title TEXT NOT NULL,
             description TEXT,
             owner_id TEXT REFERENCES agents(id),
-            status TEXT DEFAULT 'pending',
+            assigned_agent_id TEXT REFERENCES agents(id),
+            status TEXT DEFAULT 'backlog',
             priority TEXT DEFAULT 'medium',
-            parent_id TEXT REFERENCES tasks(id),
-            evidence_path TEXT,
+            created_by TEXT DEFAULT 'user',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            due_date TEXT,
+            acceptance_criteria TEXT,
+            required_files TEXT,
+            related_files TEXT,
+            related_artifacts TEXT,
+            dependencies TEXT,
+            blockers TEXT,
+            comments TEXT,
+            activity_log TEXT,
+            validation_status TEXT DEFAULT 'pending',
+            completion_evidence TEXT
         )",
         [],
     )?;

@@ -30,15 +30,27 @@ interface Message {
 
 interface Task {
   id: string;
+  workspace_id?: string | null;
   title: string;
   description: string | null;
   owner_id: string | null;
+  assigned_agent_id?: string | null;
   status: string;
   priority: string;
-  parent_id: string | null;
-  evidence_path: string | null;
+  created_by?: string | null;
   created_at?: string;
   updated_at?: string;
+  due_date?: string | null;
+  acceptance_criteria?: string | null; // serialized JSON
+  required_files?: string | null;      // serialized JSON
+  related_files?: string | null;       // serialized JSON
+  related_artifacts?: string | null;   // serialized JSON
+  dependencies?: string | null;        // serialized JSON
+  blockers?: string | null;            // serialized JSON
+  comments?: string | null;            // serialized JSON
+  activity_log?: string | null;        // serialized JSON
+  validation_status?: string | null;
+  completion_evidence?: string | null;
 }
 
 interface ProviderConfig {
@@ -111,6 +123,22 @@ function App() {
   const [selectedAgentId, setSelectedAgentId] = useState<string>("agent-coder");
   const [messages, setMessages] = useState<Message[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedKanbanTask, setSelectedKanbanTask] = useState<Task | null>(null);
+  const [detailCommentText, setDetailCommentText] = useState("");
+  const [blockerText, setBlockerText] = useState("");
+  const [blockedByTaskId, setBlockedByTaskId] = useState("");
+  const [evidenceText, setEvidenceText] = useState("");
+  const [validationPassed, setValidationPassed] = useState(true);
+  const [validationNotes, setValidationNotes] = useState("");
+  const [completionError, setCompletionError] = useState<string | null>(null);
+  const [selectedCompletingAgentId, setSelectedCompletingAgentId] = useState("");
+  const [selectedClaimingAgentId, setSelectedClaimingAgentId] = useState("");
+  const [isCompletingTask, setIsCompletingTask] = useState(false);
+  const [isAddingBlocker, setIsAddingBlocker] = useState(false);
+  const [taskRequiredFiles, setTaskRequiredFiles] = useState("");
+  const [taskAcceptanceCriteria, setTaskAcceptanceCriteria] = useState("");
+  const [taskDependencies, setTaskDependencies] = useState("");
+  const [modalDetailsTab, setModalDetailsTab] = useState<"log" | "comments">("log");
   const [blackboardText, setBlackboardText] = useState<string>("");
   const [inputText, setInputText] = useState<string>("");
   const [inspectorTab, setInspectorTab] = useState<"profile" | "snapshot">("snapshot");
@@ -593,20 +621,65 @@ function App() {
     }
   };
 
+  // Safe JSON Parsing Helper
+  function safeParseJson<T>(jsonStr: string | null | undefined, defaultValue: T): T {
+    if (!jsonStr || !jsonStr.trim()) return defaultValue;
+    try {
+      return JSON.parse(jsonStr) as T;
+    } catch (e) {
+      console.warn("Failed to parse JSON string:", jsonStr, e);
+      return defaultValue;
+    }
+  }
+
+  // Smart Assignment Recommendations based on task type keywords
+  const recommendAgentForTask = (title: string, desc: string | null): Agent | null => {
+    const text = `${title} ${desc || ""}`.toLowerCase();
+    if (text.includes("code") || text.includes("implement") || text.includes("rust") || text.includes("python") || text.includes("bug") || text.includes("fix") || text.includes("refactor") || text.includes("build") || text.includes("script") || text.includes("coder") || text.includes("develop")) {
+      return agents.find(a => a.id === "agent-coder") || agents.find(a => a.role.toLowerCase().includes("engineer")) || null;
+    }
+    if (text.includes("write") || text.includes("readme") || text.includes("document") || text.includes("docs") || text.includes("explain") || text.includes("text") || text.includes("post") || text.includes("blog") || text.includes("linkedin") || text.includes("writer")) {
+      return agents.find(a => a.id === "agent-writer") || agents.find(a => a.role.toLowerCase().includes("writer")) || null;
+    }
+    if (text.includes("test") || text.includes("verify") || text.includes("validate") || text.includes("check") || text.includes("audit") || text.includes("sentry") || text.includes("assert") || text.includes("run") || text.includes("qa")) {
+      return agents.find(a => a.id === "agent-sentry") || agents.find(a => a.role.toLowerCase().includes("sentry")) || null;
+    }
+    if (text.includes("analyze") || text.includes("research") || text.includes("compare") || text.includes("benchmark") || text.includes("summary") || text.includes("report") || text.includes("graph") || text.includes("metric") || text.includes("analyst")) {
+      return agents.find(a => a.id === "agent-analyst") || agents.find(a => a.role.toLowerCase().includes("analyst")) || null;
+    }
+    return null;
+  };
+
   // Create Kanban Task
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!taskTitle) return;
 
+    const reqFiles = taskRequiredFiles.split(",").map(f => f.trim()).filter(f => f.length > 0);
+    const criteria = taskAcceptanceCriteria.split("\n").map(c => c.trim()).filter(c => c.length > 0);
+    const deps = taskDependencies.split(",").map(d => d.trim()).filter(d => d.length > 0);
+
     const newTask: Task = {
       id: "task-" + Math.random().toString(36).substring(2, 7),
+      workspace_id: "default",
       title: taskTitle,
       description: taskDesc || null,
       owner_id: taskOwner || null,
-      status: "pending",
+      assigned_agent_id: taskOwner || null,
+      status: "backlog", // new status starts in backlog column
       priority: taskPriority,
-      parent_id: null,
-      evidence_path: null,
+      created_by: "user",
+      due_date: null,
+      acceptance_criteria: JSON.stringify(criteria),
+      required_files: JSON.stringify(reqFiles),
+      related_files: "[]",
+      related_artifacts: "[]",
+      dependencies: JSON.stringify(deps),
+      blockers: "[]",
+      comments: "[]",
+      activity_log: "[]",
+      validation_status: "pending",
+      completion_evidence: null
     };
 
     try {
@@ -614,23 +687,168 @@ function App() {
       setIsTaskModalOpen(false);
       setTaskTitle("");
       setTaskDesc("");
+      setTaskOwner("");
+      setTaskRequiredFiles("");
+      setTaskAcceptanceCriteria("");
+      setTaskDependencies("");
       loadTasks();
-    } catch (e) {
-      console.error("Failed to create task", e);
+    } catch (err: any) {
+      console.error("Failed to create task", err);
+      alert("Failed to create task: " + err);
     }
   };
 
-  // Update Task Status
-  const handleUpdateTaskStatus = async (taskId: string, newStatus: string) => {
+  // Transition Card Status general helper
+  const handleTransitionStatus = async (taskId: string, nextStatus: string) => {
     try {
       await invoke("update_task_status", {
         id: taskId,
-        status: newStatus,
-        evidencePath: null,
+        status: nextStatus,
+        evidencePath: null
       });
+      // Refresh modal if open
+      if (selectedKanbanTask && selectedKanbanTask.id === taskId) {
+        const list = await invoke<Task[]>("get_tasks");
+        const updated = list.find(t => t.id === taskId);
+        if (updated) setSelectedKanbanTask(updated);
+      }
       loadTasks();
-    } catch (e) {
-      console.error("Failed to update task status", e);
+    } catch (err: any) {
+      alert("Failed to transition status: " + err);
+    }
+  };
+
+  // Claim Card
+  const handleClaimCard = async (agentId: string, cardId: string) => {
+    try {
+      await invoke("claim_card", { agentId, cardId });
+      loadTasks();
+      // If modal is open, refresh selected task details
+      if (selectedKanbanTask && selectedKanbanTask.id === cardId) {
+        const list = await invoke<Task[]>("get_tasks");
+        const updated = list.find(t => t.id === cardId);
+        if (updated) setSelectedKanbanTask(updated);
+      }
+    } catch (err: any) {
+      alert("Failed to claim card: " + err);
+    }
+  };
+
+  // Complete and Validate Card on Host System
+  const handleCompleteCard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedKanbanTask) return;
+    if (!selectedCompletingAgentId) {
+      alert("Please select the agent completing the task.");
+      return;
+    }
+
+    setCompletionError(null);
+    try {
+      await invoke("complete_card", {
+        agentId: selectedCompletingAgentId,
+        cardId: selectedKanbanTask.id,
+        evidence: evidenceText,
+        validationPassed: validationPassed,
+        validationNotes: validationNotes || null
+      });
+
+      setIsCompletingTask(false);
+      setEvidenceText("");
+      setValidationNotes("");
+      setValidationPassed(true);
+      setSelectedCompletingAgentId("");
+      setSelectedKanbanTask(null);
+      loadTasks();
+    } catch (err: any) {
+      console.error("Failed to complete card", err);
+      setCompletionError(err.toString());
+    }
+  };
+
+  // Add Comment to card history
+  const handleAddComment = async () => {
+    if (!selectedKanbanTask || !detailCommentText.trim()) return;
+    try {
+      await invoke("update_card_progress", {
+        agentId: "user",
+        cardId: selectedKanbanTask.id,
+        notes: detailCommentText,
+        files: null,
+        artifacts: null,
+        blockers: null,
+        validationStatus: null
+      });
+      setDetailCommentText("");
+      // Refresh selected task details
+      const list = await invoke<Task[]>("get_tasks");
+      const updated = list.find(t => t.id === selectedKanbanTask.id);
+      if (updated) setSelectedKanbanTask(updated);
+      loadTasks();
+    } catch (err: any) {
+      alert("Failed to add comment: " + err);
+    }
+  };
+
+  // Declare Card Blocked via database dependency blockers mapping
+  const handleAddBlocker = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedKanbanTask || !blockerText.trim()) return;
+    try {
+      await invoke("create_task_blocker", {
+        taskId: selectedKanbanTask.id,
+        blockedByTaskId: blockedByTaskId || "None",
+        reason: blockerText
+      });
+      setBlockerText("");
+      setBlockedByTaskId("");
+      setIsAddingBlocker(false);
+      // Refresh task details
+      const list = await invoke<Task[]>("get_tasks");
+      const updated = list.find(t => t.id === selectedKanbanTask.id);
+      if (updated) setSelectedKanbanTask(updated);
+      loadTasks();
+    } catch (err: any) {
+      alert("Failed to add blocker: " + err);
+    }
+  };
+
+  // Toggle Acceptance Checklist Item
+  const handleToggleChecklistItem = async (index: number, currentChecked: boolean) => {
+    if (!selectedKanbanTask) return;
+    const criteria = safeParseJson<string[]>(selectedKanbanTask.acceptance_criteria, []);
+    
+    const updatedCriteria = criteria.map((item, idx) => {
+      if (idx === index) {
+        const clean = item.replace(/^\[[ x]\]\s*/, "");
+        return currentChecked ? `[ ] ${clean}` : `[x] ${clean}`;
+      }
+      return item;
+    });
+
+    try {
+      const updatedTask = {
+        ...selectedKanbanTask,
+        acceptance_criteria: JSON.stringify(updatedCriteria)
+      };
+      
+      const clean = criteria[index].replace(/^\[[ x]\]\s*/, "");
+      const actionText = currentChecked ? "unchecked" : "checked";
+      
+      await invoke("update_card_progress", {
+        agentId: "user",
+        cardId: selectedKanbanTask.id,
+        notes: `Checklist item '${clean}' was ${actionText} by user.`,
+        files: null,
+        artifacts: null,
+        blockers: null,
+        validationStatus: null
+      });
+
+      setSelectedKanbanTask(updatedTask);
+      loadTasks();
+    } catch (err: any) {
+      alert("Failed to toggle checklist item: " + err);
     }
   };
 
@@ -906,65 +1124,110 @@ function App() {
           </>
         ) : activeTab === "kanban" ? (
           /* Kanban Board */
-          <div style={{ flex: 1, overflow: "hidden" }}>
-            <div style={{ padding: "16px 24px", display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                Click on any card to view detailed multi-agent timeline, run validation checks, post comment updates, or declare blockers.
+              </div>
               <button className="sidebar-btn" style={{ margin: 0 }} onClick={() => setIsTaskModalOpen(true)}>
                 ➕ Create Task
               </button>
             </div>
+            
             <div className="kanban-board">
-              {["pending", "working", "blocked", "complete"].map((status) => {
+              {["backlog", "ready", "assigned", "in_progress", "blocked", "review", "done"].map((status) => {
                 const columnTasks = tasks.filter((t) => t.status === status);
+                
+                let statusLabel = status;
+                let colorClass = "idle";
+                
+                if (status === "backlog") {
+                  statusLabel = "Backlog";
+                  colorClass = "idle";
+                } else if (status === "ready") {
+                  statusLabel = "Ready";
+                  colorClass = "ready";
+                } else if (status === "assigned") {
+                  statusLabel = "Assigned";
+                  colorClass = "assigned";
+                } else if (status === "in_progress") {
+                  statusLabel = "In Progress";
+                  colorClass = "working";
+                } else if (status === "blocked") {
+                  statusLabel = "Blocked";
+                  colorClass = "blocked";
+                } else if (status === "review") {
+                  statusLabel = "Review";
+                  colorClass = "review";
+                } else if (status === "done") {
+                  statusLabel = "Done";
+                  colorClass = "working"; // emerald green glow in CSS status-badge
+                }
+
                 return (
                   <div key={status} className="kanban-column">
                     <div className="kanban-column-header">
-                      <span>{status}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span className={`status-badge ${colorClass}`} style={{ position: "static", display: "inline-block", width: "8px", height: "8px", margin: 0 }} />
+                        <span>{statusLabel}</span>
+                      </div>
                       <span className="kanban-column-count">{columnTasks.length}</span>
                     </div>
+                    
                     <div className="kanban-cards">
-                      {columnTasks.map((task) => (
-                        <div key={task.id} className="kanban-card">
-                          <div className="kanban-card-title">{task.title}</div>
-                          {task.description && <div className="kanban-card-desc">{task.description}</div>}
-                          <div className="kanban-card-meta">
-                            <span className="kanban-card-owner">
-                              {agents.find((a) => a.id === task.owner_id)?.name || "unassigned"}
-                            </span>
-                            <span className={`kanban-card-priority ${task.priority}`}>
-                              {task.priority}
-                            </span>
-                          </div>
-                          <div style={{ marginTop: "10px", display: "flex", gap: "6px" }}>
-                            {status !== "complete" && (
-                              <button
-                                className="action-btn"
-                                style={{ padding: "4px 8px", fontSize: "0.7rem" }}
-                                onClick={() => handleUpdateTaskStatus(task.id, "complete")}
-                              >
-                                Done
-                              </button>
-                            )}
-                            {status === "pending" && (
-                              <button
-                                className="action-btn"
-                                style={{ padding: "4px 8px", fontSize: "0.7rem" }}
-                                onClick={() => handleUpdateTaskStatus(task.id, "working")}
-                              >
-                                Claim
-                              </button>
-                            )}
-                            {status === "working" && (
-                              <button
-                                className="action-btn"
-                                style={{ padding: "4px 8px", fontSize: "0.7rem" }}
-                                onClick={() => handleUpdateTaskStatus(task.id, "blocked")}
-                              >
-                                Block
-                              </button>
-                            )}
-                          </div>
+                      {columnTasks.length === 0 ? (
+                        <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.75rem", padding: "20px 10px", border: "1px dashed rgba(255,255,255,0.03)", borderRadius: "10px" }}>
+                          No cards here
                         </div>
-                      ))}
+                      ) : (
+                        columnTasks.map((task) => {
+                          const criteria = safeParseJson<string[]>(task.acceptance_criteria, []);
+                          const completedCriteria = criteria.filter(c => c.startsWith("[x]")).length;
+                          const totalCriteria = criteria.length;
+
+                          return (
+                            <div
+                              key={task.id}
+                              className="kanban-card"
+                              onClick={() => {
+                                setSelectedKanbanTask(task);
+                                setCompletionError(null);
+                                setIsCompletingTask(false);
+                                setIsAddingBlocker(false);
+                              }}
+                            >
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
+                                <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", color: "var(--accent-primary)" }}>{task.id}</span>
+                                <span className={`kanban-card-priority ${task.priority}`} style={{ fontSize: "0.68rem" }}>{task.priority}</span>
+                              </div>
+                              <div className="kanban-card-title">{task.title}</div>
+                              {task.description && (
+                                <div className="kanban-card-desc" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                  {task.description}
+                                </div>
+                              )}
+                              
+                              {totalCriteria > 0 && (
+                                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                                  <div style={{ flex: 1, height: "4px", background: "rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}>
+                                    <div style={{ height: "100%", background: "var(--accent-primary)", width: `${(completedCriteria / totalCriteria) * 100}%` }} />
+                                  </div>
+                                  <span>{completedCriteria}/{totalCriteria} items</span>
+                                </div>
+                              )}
+
+                              <div className="kanban-card-meta">
+                                <span className="kanban-card-owner" style={{ fontSize: "0.7rem" }}>
+                                  {agents.find((a) => a.id === task.assigned_agent_id || a.id === task.owner_id)?.name || "unassigned"}
+                                </span>
+                                {task.validation_status === "passed" && (
+                                  <span style={{ fontSize: "0.68rem", color: "#10b981", background: "rgba(16, 185, 129, 0.08)", padding: "1px 6px", borderRadius: "4px", fontWeight: "bold" }}>✓ Passed</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 );
@@ -2522,7 +2785,7 @@ function App() {
       {/* 5. Create Task Modal */}
       {isTaskModalOpen && (
         <div className="modal-overlay">
-          <form className="modal-content" onSubmit={handleCreateTask}>
+          <form className="modal-content" style={{ width: "560px" }} onSubmit={handleCreateTask}>
             <div className="modal-title">➕ Create Kanban Objective</div>
             
             <div className="form-group">
@@ -2542,39 +2805,100 @@ function App() {
                 className="form-input form-textarea"
                 value={taskDesc}
                 onChange={(e) => setTaskDesc(e.target.value)}
-                placeholder="Add files to analyze or technical requirements..."
+                placeholder="Add technical requirements, goals, or context..."
+                style={{ height: "70px" }}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Assignee Owner</label>
-              <select
-                className="form-input"
-                value={taskOwner}
-                onChange={(e) => setTaskOwner(e.target.value)}
-                style={{ background: "#0a0d14", border: "1px solid rgba(255,255,255,0.08)", color: "#fff" }}
-              >
-                <option value="">unassigned</option>
-                {agents.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
-                  </option>
-                ))}
-              </select>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="form-group">
+                <label className="form-label">Assignee Owner</label>
+                <select
+                  className="form-input"
+                  value={taskOwner}
+                  onChange={(e) => setTaskOwner(e.target.value)}
+                  style={{ background: "#0a0d14", border: "1px solid rgba(255,255,255,0.08)", color: "#fff", height: "40px" }}
+                >
+                  <option value="">unassigned</option>
+                  {agents.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} ({a.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Objective Priority</label>
+                <select
+                  className="form-input"
+                  value={taskPriority}
+                  onChange={(e) => setTaskPriority(e.target.value)}
+                  style={{ background: "#0a0d14", border: "1px solid rgba(255,255,255,0.08)", color: "#fff", height: "40px" }}
+                >
+                  <option value="low">Low Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="high">High Priority</option>
+                </select>
+              </div>
             </div>
 
+            {/* Smart Agent Recommendation Banner */}
+            {(() => {
+              const rec = recommendAgentForTask(taskTitle, taskDesc);
+              if (rec) {
+                return (
+                  <div style={{ background: "rgba(0, 242, 254, 0.05)", border: "1px solid rgba(0, 242, 254, 0.2)", borderRadius: "8px", padding: "8px 12px", fontSize: "0.76rem", color: "var(--accent-primary)", marginBottom: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span>✨</span>
+                    <span><strong>Recommendation:</strong> Assign to <strong>{rec.name}</strong> ({rec.role}) based on task keywords.</span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
             <div className="form-group">
-              <label className="form-label">Objective Priority</label>
-              <select
-                className="form-input"
-                value={taskPriority}
-                onChange={(e) => setTaskPriority(e.target.value)}
-                style={{ background: "#0a0d14", border: "1px solid rgba(255,255,255,0.08)", color: "#fff" }}
-              >
-                <option value="low">Low Priority</option>
-                <option value="medium">Medium Priority</option>
-                <option value="high">High Priority</option>
-              </select>
+              <label className="form-label" style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>📋 Acceptance Criteria (One per line)</span>
+                <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Becomes checklist</span>
+              </label>
+              <textarea
+                className="form-input form-textarea"
+                value={taskAcceptanceCriteria}
+                onChange={(e) => setTaskAcceptanceCriteria(e.target.value)}
+                placeholder="e.g. Write standard unit test&#10;Verify compilation on local machine"
+                style={{ height: "60px", fontSize: "0.8rem" }}
+              />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="form-group">
+                <label className="form-label" style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>📂 Required Files</span>
+                  <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Host path checks</span>
+                </label>
+                <input
+                  className="form-input"
+                  value={taskRequiredFiles}
+                  onChange={(e) => setTaskRequiredFiles(e.target.value)}
+                  placeholder="e.g. ~/Desktop/hello.rs"
+                  style={{ fontSize: "0.8rem" }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>⛓️ Dependencies</span>
+                  <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Comma-sep task IDs</span>
+                </label>
+                <input
+                  className="form-input"
+                  value={taskDependencies}
+                  onChange={(e) => setTaskDependencies(e.target.value)}
+                  placeholder="e.g. task-9h8f"
+                  style={{ fontSize: "0.8rem" }}
+                />
+              </div>
             </div>
 
             <div className="modal-buttons">
@@ -2586,6 +2910,500 @@ function App() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* 6. Card Details Modal */}
+      {selectedKanbanTask && (
+        <div className="modal-overlay">
+          <div className="modal-content modal-content-large" style={{ display: "flex", flexDirection: "column", height: "80vh" }}>
+            
+            {/* Modal Header */}
+            <div style={{ padding: "20px 28px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.15)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem", color: "var(--accent-primary)", background: "rgba(0,242,254,0.06)", padding: "2px 8px", borderRadius: "6px", border: "1px solid rgba(0,242,254,0.15)" }}>
+                  {selectedKanbanTask.id}
+                </span>
+                <span style={{ fontSize: "0.76rem", textTransform: "uppercase", padding: "2px 8px", borderRadius: "6px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", fontWeight: 700 }}>
+                  {selectedKanbanTask.status}
+                </span>
+                <span className={`kanban-card-priority ${selectedKanbanTask.priority}`} style={{ fontSize: "0.75rem" }}>
+                  {selectedKanbanTask.priority} Priority
+                </span>
+              </div>
+              <button 
+                onClick={() => setSelectedKanbanTask(null)}
+                style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: "1.25rem", cursor: "pointer" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 340px", overflow: "hidden" }}>
+              
+              {/* Left Column: Context, Checklist, Timeline */}
+              <div style={{ padding: "28px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "24px", borderRight: "1px solid var(--border-color)" }}>
+                <div>
+                  <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>
+                    {selectedKanbanTask.title}
+                  </h2>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", lineHeight: 1.5, background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.03)", borderRadius: "10px", padding: "12px" }}>
+                    {selectedKanbanTask.description || "No description provided."}
+                  </p>
+                </div>
+
+                {/* Acceptance Checklist */}
+                <div>
+                  <h4 style={{ fontSize: "0.85rem", textTransform: "uppercase", color: "var(--accent-primary)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "12px" }}>
+                    📋 Acceptance Criteria Checklist
+                  </h4>
+                  {(() => {
+                    const criteria = safeParseJson<string[]>(selectedKanbanTask.acceptance_criteria, []);
+                    if (criteria.length === 0) {
+                      return <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>No acceptance checklist defined for this card.</div>;
+                    }
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {criteria.map((item, idx) => {
+                          const isChecked = item.startsWith("[x]");
+                          const cleanText = item.replace(/^\[[ x]\]\s*/, "");
+                          return (
+                            <label key={idx} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "0.85rem", cursor: "pointer", padding: "6px 10px", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.02)" }}>
+                              <input 
+                                type="checkbox" 
+                                checked={isChecked} 
+                                onChange={() => handleToggleChecklistItem(idx, isChecked)}
+                                style={{ width: "16px", height: "16px", accentColor: "var(--accent-primary)" }}
+                              />
+                              <span style={{ textDecoration: isChecked ? "line-through" : "none", color: isChecked ? "var(--text-muted)" : "var(--text-main)" }}>
+                                {cleanText}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Required Files Presence Checks */}
+                <div>
+                  <h4 style={{ fontSize: "0.85rem", textTransform: "uppercase", color: "var(--accent-primary)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "12px" }}>
+                    📂 Physical Host File Requirements
+                  </h4>
+                  {(() => {
+                    const reqFiles = safeParseJson<string[]>(selectedKanbanTask.required_files, []);
+                    if (reqFiles.length === 0) {
+                      return <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>No host file constraints required for this card.</div>;
+                    }
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        {reqFiles.map((file, idx) => {
+                          // Simple check: does this file match any of our artifacts?
+                          const filename = file.split("/").pop();
+                          const existsInArtifacts = artifacts.some(art => art.path.endsWith(filename || "---"));
+                          
+                          return (
+                            <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "rgba(0,0,0,0.15)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
+                              <span style={{ fontSize: "0.78rem", fontFamily: "var(--font-mono)", color: "var(--text-main)" }}>{file}</span>
+                              {existsInArtifacts ? (
+                                <span style={{ fontSize: "0.7rem", color: "#10b981", background: "rgba(16,185,129,0.08)", padding: "2px 8px", borderRadius: "6px", fontWeight: "bold" }}>
+                                  ✓ Saved in Workspace
+                                </span>
+                              ) : (
+                                <span style={{ fontSize: "0.7rem", color: "var(--color-blocked)", background: "rgba(245,158,11,0.08)", padding: "2px 8px", borderRadius: "6px", fontWeight: "bold" }}>
+                                  ✗ Awaiting Sandbox Write
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Related files list */}
+                {(() => {
+                  const relFiles = safeParseJson<string[]>(selectedKanbanTask.related_files, []);
+                  if (relFiles.length > 0) {
+                    return (
+                      <div>
+                        <h4 style={{ fontSize: "0.85rem", textTransform: "uppercase", color: "var(--accent-primary)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "12px" }}>
+                          🔗 Linked Sandbox Mutations
+                        </h4>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                          {relFiles.map((file, idx) => (
+                            <span 
+                              key={idx} 
+                              onClick={() => {
+                                // Try to display this in the Files tab if it exists
+                                const art = artifacts.find(a => a.path.endsWith(file.split("/").pop() || "---"));
+                                if (art) {
+                                  setActiveTab("files");
+                                  handleSelectArtifact(art.path);
+                                  setSelectedKanbanTask(null);
+                                } else {
+                                  alert(`File path: ${file}`);
+                                }
+                              }}
+                              style={{ fontSize: "0.72rem", fontFamily: "var(--font-mono)", background: "rgba(79, 172, 254, 0.08)", color: "var(--accent-secondary)", border: "1px solid rgba(79, 172, 254, 0.2)", padding: "4px 8px", borderRadius: "6px", cursor: "pointer" }}
+                            >
+                              📄 {file.split("/").pop()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                {/* Tabs for Timeline and Comments */}
+                <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "20px" }}>
+                  <div style={{ display: "flex", gap: "16px", borderBottom: "1px solid rgba(255,255,255,0.04)", marginBottom: "16px" }}>
+                    <button 
+                      onClick={() => setModalDetailsTab("log")}
+                      style={{ background: "none", border: "none", paddingBottom: "10px", fontSize: "0.8rem", fontWeight: 700, color: modalDetailsTab === "log" ? "var(--accent-primary)" : "var(--text-muted)", borderBottom: modalDetailsTab === "log" ? "2px solid var(--accent-primary)" : "2px solid transparent", cursor: "pointer" }}
+                    >
+                      ⚙️ Agent Activity Timeline
+                    </button>
+                    <button 
+                      onClick={() => setModalDetailsTab("comments")}
+                      style={{ background: "none", border: "none", paddingBottom: "10px", fontSize: "0.8rem", fontWeight: 700, color: modalDetailsTab === "comments" ? "var(--accent-primary)" : "var(--text-muted)", borderBottom: modalDetailsTab === "comments" ? "2px solid var(--accent-primary)" : "2px solid transparent", cursor: "pointer" }}
+                    >
+                      💬 Collaboration Comments
+                    </button>
+                  </div>
+
+                  {modalDetailsTab === "log" ? (
+                    /* timeline component */
+                    <div className="timeline-container">
+                      {(() => {
+                        const logs = safeParseJson<any[]>(selectedKanbanTask.activity_log, []);
+                        if (logs.length === 0) {
+                          return <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", padding: "10px 0" }}>No coordination logs recorded.</div>;
+                        }
+                        return logs.map((entry, idx) => {
+                          const dateStr = new Date(entry.timestamp * 1000).toLocaleString();
+                          return (
+                            <div key={idx} className="timeline-item">
+                              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>
+                                <span>🤖 {entry.agent_id} • <span style={{ color: "var(--accent-primary)" }}>{entry.action}</span></span>
+                                <span>{dateStr}</span>
+                              </div>
+                              <div style={{ fontSize: "0.78rem", color: "var(--text-main)", lineHeight: 1.4 }}>
+                                {entry.detail}
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  ) : (
+                    /* comments list + input */
+                    <div>
+                      <div style={{ maxHeight: "250px", overflowY: "auto", marginBottom: "16px" }}>
+                        {(() => {
+                          const comments = safeParseJson<any[]>(selectedKanbanTask.comments, []);
+                          if (comments.length === 0) {
+                            return <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", padding: "10px 0" }}>No comments. Start the crew discussion below!</div>;
+                          }
+                          return comments.map((c, idx) => {
+                            const dateStr = new Date(c.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            return (
+                              <div key={idx} className="comment-bubble">
+                                <div className="comment-header">
+                                  <span>👤 {c.author}</span>
+                                  <span>{dateStr}</span>
+                                </div>
+                                <div style={{ color: "var(--text-main)" }}>{c.text}</div>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <input
+                          className="form-input"
+                          style={{ flex: 1, height: "36px", fontSize: "0.82rem" }}
+                          value={detailCommentText}
+                          onChange={(e) => setDetailCommentText(e.target.value)}
+                          placeholder="Type collaborative message..."
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleAddComment();
+                          }}
+                        />
+                        <button className="sidebar-btn" style={{ margin: 0, padding: "0 16px", height: "36px", fontSize: "0.8rem" }} onClick={handleAddComment}>
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Actions, Assignee, Blockers */}
+              <div style={{ padding: "28px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "24px", background: "rgba(0,0,0,0.1)" }}>
+                
+                {/* Assignee Details */}
+                <div>
+                  <h4 style={{ fontSize: "0.82rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "8px" }}>
+                    👤 Active Assigned Specialist
+                  </h4>
+                  <select
+                    className="form-input"
+                    value={selectedKanbanTask.assigned_agent_id || selectedKanbanTask.owner_id || ""}
+                    onChange={(e) => {
+                      const nextAgent = e.target.value;
+                      if (nextAgent) {
+                        handleTransitionStatus(selectedKanbanTask.id, "assigned");
+                        // Manually trigger DB change to save assignee
+                        invoke("update_task_status", { id: selectedKanbanTask.id, status: "assigned", evidencePath: null })
+                          .then(() => {
+                            // Update local owner too
+                            loadTasks();
+                          });
+                      } else {
+                        handleTransitionStatus(selectedKanbanTask.id, "backlog");
+                      }
+                    }}
+                    style={{ width: "100%", background: "#0a0d14", border: "1px solid rgba(255,255,255,0.08)", color: "#fff", height: "40px" }}
+                  >
+                    <option value="">unassigned</option>
+                    {agents.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name} ({a.role})
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Dynamic smart assignee tip */}
+                  {!selectedKanbanTask.assigned_agent_id && (
+                    (() => {
+                      const rec = recommendAgentForTask(selectedKanbanTask.title, selectedKanbanTask.description);
+                      if (rec) {
+                        return (
+                          <div style={{ marginTop: "8px", background: "rgba(0, 242, 254, 0.04)", border: "1px solid rgba(0, 242, 254, 0.15)", borderRadius: "8px", padding: "8px 10px", fontSize: "0.72rem", color: "var(--accent-primary)" }}>
+                            💡 <strong>Recommended Specialist:</strong> {rec.name}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()
+                  )}
+                </div>
+
+                {/* Blocker & Dependencies */}
+                <div>
+                  <h4 style={{ fontSize: "0.82rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "8px" }}>
+                    ⛓️ Dependencies & Blockers
+                  </h4>
+                  
+                  {(() => {
+                    const blockersList = safeParseJson<any[]>(selectedKanbanTask.blockers, []);
+                    if (blockersList.length === 0) {
+                      return <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "10px" }}>No active blockers.</div>;
+                    }
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "10px" }}>
+                        {blockersList.map((blk, idx) => (
+                          <div key={idx} style={{ padding: "8px", background: "rgba(239, 68, 68, 0.05)", border: "1px solid rgba(239, 68, 68, 0.15)", borderRadius: "6px", fontSize: "0.74rem", color: "#f87171" }}>
+                            <strong>Blocked:</strong> {blk.reason || blk}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {!isAddingBlocker ? (
+                    <button className="action-btn" style={{ width: "100%", fontSize: "0.75rem" }} onClick={() => setIsAddingBlocker(true)}>
+                      ⚠️ Declare Blocked Dependency
+                    </button>
+                  ) : (
+                    <form onSubmit={handleAddBlocker} style={{ background: "rgba(0,0,0,0.2)", padding: "10px", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <input
+                        className="form-input"
+                        required
+                        value={blockerText}
+                        onChange={(e) => setBlockerText(e.target.value)}
+                        placeholder="Blocker reason..."
+                        style={{ fontSize: "0.75rem", height: "30px" }}
+                      />
+                      <select
+                        className="form-input"
+                        value={blockedByTaskId}
+                        onChange={(e) => setBlockedByTaskId(e.target.value)}
+                        style={{ fontSize: "0.75rem", height: "30px", background: "#0a0d14", border: "1px solid rgba(255,255,255,0.08)", color: "#fff" }}
+                      >
+                        <option value="">No task dependency</option>
+                        {tasks.filter(t => t.id !== selectedKanbanTask.id).map(t => (
+                          <option key={t.id} value={t.id}>{t.id} - {t.title}</option>
+                        ))}
+                      </select>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button type="submit" className="sidebar-btn" style={{ margin: 0, flex: 1, height: "26px", fontSize: "0.7rem", padding: 0 }}>
+                          Save Blocker
+                        </button>
+                        <button type="button" className="action-btn" style={{ flex: 1, height: "26px", fontSize: "0.7rem", padding: 0 }} onClick={() => setIsAddingBlocker(false)}>
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+
+                {/* Specialist Action Controls */}
+                <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "20px" }}>
+                  <h4 style={{ fontSize: "0.82rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "12px" }}>
+                    ⚙️ Sandbox Specialists Controls
+                  </h4>
+                  
+                  {isCompletingTask ? (
+                    /* complete form */
+                    <form onSubmit={handleCompleteCard} style={{ display: "flex", flexDirection: "column", gap: "10px", background: "rgba(16, 185, 129, 0.03)", border: "1px solid rgba(16, 185, 129, 0.15)", padding: "14px", borderRadius: "10px" }}>
+                      <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#10b981" }}>Complete & Validate Task</div>
+                      
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ fontSize: "0.7rem" }}>Signed Specialist Agent</label>
+                        <select
+                          className="form-input"
+                          required
+                          value={selectedCompletingAgentId}
+                          onChange={(e) => setSelectedCompletingAgentId(e.target.value)}
+                          style={{ fontSize: "0.76rem", height: "30px", background: "#0a0d14" }}
+                        >
+                          <option value="">Select agent...</option>
+                          {agents.map(a => (
+                            <option key={a.id} value={a.id}>{a.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ fontSize: "0.7rem" }}>Attached Validation Evidence</label>
+                        <input
+                          className="form-input"
+                          required
+                          value={evidenceText}
+                          onChange={(e) => setEvidenceText(e.target.value)}
+                          placeholder="Evidence bundle path or text..."
+                          style={{ fontSize: "0.76rem", height: "30px" }}
+                        />
+                      </div>
+
+                      <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.76rem", cursor: "pointer" }}>
+                        <input 
+                          type="checkbox" 
+                          checked={validationPassed}
+                          onChange={(e) => setValidationPassed(e.target.checked)}
+                        />
+                        <span>Checklist Validation Passed</span>
+                      </label>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ fontSize: "0.7rem" }}>Validation Explanatory Note</label>
+                        <textarea
+                          className="form-input"
+                          value={validationNotes}
+                          onChange={(e) => setValidationNotes(e.target.value)}
+                          placeholder="Optional explanation notes..."
+                          style={{ fontSize: "0.76rem", height: "40px", resize: "none" }}
+                        />
+                      </div>
+
+                      {/* Detailed failure warnings from Host Filesystem */}
+                      {completionError && (
+                        <div style={{ padding: "8px 10px", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "8px", fontSize: "0.72rem", color: "#f87171", lineHeight: 1.3 }}>
+                          <strong>⚠️ Validation Failure:</strong> {completionError}
+                        </div>
+                      )}
+
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button type="submit" className="sidebar-btn" style={{ margin: 0, flex: 1, background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", borderColor: "#10b981", color: "#fff", fontSize: "0.74rem", height: "32px", padding: 0 }}>
+                          ✓ Run Complete
+                        </button>
+                        <button type="button" className="action-btn" style={{ flex: 1, fontSize: "0.74rem", height: "32px", padding: 0 }} onClick={() => setIsCompletingTask(false)}>
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* active specialist trigger buttons */
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      
+                      {selectedKanbanTask.status !== "in_progress" && (
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <select
+                            className="form-input"
+                            value={selectedClaimingAgentId}
+                            onChange={(e) => setSelectedClaimingAgentId(e.target.value)}
+                            style={{ flex: 1, fontSize: "0.78rem", height: "36px", background: "#0a0d14", border: "1px solid rgba(255,255,255,0.08)", color: "#fff" }}
+                          >
+                            <option value="">Claim as Agent...</option>
+                            {agents.map(a => (
+                              <option key={a.id} value={a.id}>{a.name}</option>
+                            ))}
+                          </select>
+                          <button 
+                            className="sidebar-btn" 
+                            style={{ margin: 0, padding: "0 12px", height: "36px", fontSize: "0.78rem" }}
+                            onClick={() => {
+                              if (!selectedClaimingAgentId) {
+                                alert("Please select an agent to claim the card.");
+                                return;
+                              }
+                              handleClaimCard(selectedClaimingAgentId, selectedKanbanTask.id);
+                            }}
+                          >
+                            Claim
+                          </button>
+                        </div>
+                      )}
+
+                      {selectedKanbanTask.status === "in_progress" && (
+                        <button 
+                          className="action-btn" 
+                          style={{ width: "100%", background: "rgba(245,158,11,0.05)", borderColor: "rgba(245,158,11,0.15)", color: "#fbbf24" }}
+                          onClick={() => handleTransitionStatus(selectedKanbanTask.id, "ready")}
+                        >
+                          ⏸ Pause Sandbox Work
+                        </button>
+                      )}
+
+                      {selectedKanbanTask.status !== "review" && selectedKanbanTask.status !== "done" && (
+                        <button 
+                          className="action-btn" 
+                          style={{ width: "100%", background: "rgba(0,242,254,0.05)", borderColor: "rgba(0,242,254,0.15)", color: "var(--accent-primary)" }}
+                          onClick={() => handleTransitionStatus(selectedKanbanTask.id, "review")}
+                        >
+                          👀 Request Technical Review
+                        </button>
+                      )}
+
+                      {selectedKanbanTask.status !== "done" && (
+                        <button 
+                          className="sidebar-btn" 
+                          style={{ margin: 0, width: "100%", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", borderColor: "#10b981", color: "#fff" }}
+                          onClick={() => {
+                            setCompletionError(null);
+                            setIsCompletingTask(true);
+                          }}
+                        >
+                          ✓ Validate & Complete Task
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                </div>
+              </div>
+
+            </div>
+
+          </div>
         </div>
       )}
     </div>
