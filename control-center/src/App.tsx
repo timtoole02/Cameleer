@@ -1528,8 +1528,8 @@ function App() {
     try {
       await invoke("create_card", { 
         workspaceId: "default",
-        projectId: activeNode?.node_type === "project" ? activeNode.id : (activeNode?.node_type === "team" ? activeNode.parent_id : null),
-        teamId: activeNode?.node_type === "team" ? activeNode.id : null,
+        projectId: activeOrgNode?.node_type === "project" ? activeOrgNode.id : (activeOrgNode?.node_type === "team" ? activeOrgNode.project_id : null),
+        teamId: activeOrgNode?.node_type === "team" ? activeOrgNode.id : null,
         title: taskTitle,
         description: taskDesc || null,
         typeName: "task",

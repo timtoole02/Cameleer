@@ -445,6 +445,21 @@ async fn perform_backend_start(
 
     let model_path = models_dir.join(&model_name);
 
+    // 4b. Pre-flight check: Is the daemon already running from a previous orphaned session?
+    let pre_client = Client::builder().timeout(Duration::from_millis(500)).build().unwrap_or_default();
+    let pre_url = format!("http://{}:{}/health", config.bind_address, config.port);
+    if let Ok(resp) = pre_client.get(&pre_url).send().await {
+        if resp.status().is_success() {
+            log_supervisor_event("Orphaned GGUF local daemon detected already running. Adopting existing process.");
+            let mut status = manager.status.lock().unwrap();
+            status.state = "ready".to_string();
+            status.pid = Some(0); // Adopted, PID unknown
+            status.last_error = None;
+            let _ = app_handle.emit("backend_ready", &*status);
+            return Ok(status.clone());
+        }
+    }
+
     // 5. Spawning child process
     log_supervisor_event(&format!(
         "Spawning GGUF inference process: addr={}:{}, binary={:?}",
