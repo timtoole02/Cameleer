@@ -248,19 +248,36 @@ pub async fn check_health_and_update(
                 struct CamelidHealth {
                     loaded_now: bool,
                     active_model_id: Option<String>,
+                    alive: Option<bool>,
+                    version: Option<String>,
+                    uptime: Option<u64>,
+                    pid: Option<u32>,
+                    state: Option<String>,
                 }
 
-                let active_model = if let Ok(health_data) = resp.json::<CamelidHealth>().await {
+                if let Ok(health_data) = resp.json::<CamelidHealth>().await {
                     status.model_loaded = health_data.loaded_now;
-                    health_data.active_model_id
+                    status.active_model = health_data.active_model_id;
+                    if let Some(v) = health_data.version { status.version = Some(v); }
+                    if let Some(u) = health_data.uptime { status.uptime_seconds = Some(u); }
+                    if let Some(p) = health_data.pid { status.pid = Some(p); }
+                    
+                    if let Some(ref st) = health_data.state {
+                        if st == "running" && status.model_loaded {
+                            status.state = "ready".to_string();
+                        } else {
+                            status.state = st.clone();
+                        }
+                    } else {
+                        status.state = "ready".to_string();
+                    }
                 } else {
                     status.model_loaded = false;
-                    None
-                };
+                    status.active_model = None;
+                    status.state = "ready".to_string();
+                }
 
-                status.state = "ready".to_string();
                 status.last_error = None;
-                status.active_model = active_model;
             } else {
                 // Degraded or check again
                 if status.state == "ready" {

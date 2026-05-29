@@ -22,6 +22,13 @@ impl DaemonManager {
             let _ = old_child.kill().await;
         }
 
+        // Force kill any ghost processes bound to port 8181
+        let _ = tokio::process::Command::new("sh")
+            .arg("-c")
+            .arg("lsof -ti :8181 | xargs kill -9 2>/dev/null")
+            .output()
+            .await;
+
         // 2. Resolve executable path
         // In the native app, camelid is placed in the same directory as cameleer
         let exec_dir = std::env::current_exe()?
@@ -56,6 +63,8 @@ impl DaemonManager {
         cmd.arg("serve")
            .arg("--addr")
            .arg("127.0.0.1:8181")
+           .arg("--ctx-size")
+           .arg("8192")
            .arg("--metal-linear")
            .arg("--metal-q8");
 

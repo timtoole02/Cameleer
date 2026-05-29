@@ -60,6 +60,8 @@ const JINJA_CHAT_TEMPLATE_CACHE_LIMIT: usize = 16;
 static JINJA_CHAT_TEMPLATE_ENV_CACHE: OnceLock<Mutex<HashMap<String, Arc<Environment<'static>>>>> =
     OnceLock::new();
 
+static START_TIME: OnceLock<Instant> = OnceLock::new();
+
 #[derive(Clone)]
 pub struct AppState {
     loaded_model: Arc<RwLock<Option<LoadedModel>>>,
@@ -187,6 +189,11 @@ pub struct LoadModelRequest {
 #[derive(Debug, Serialize)]
 pub struct HealthResponse {
     pub ok: bool,
+    pub alive: bool,
+    pub version: &'static str,
+    pub uptime: u64,
+    pub pid: u32,
+    pub state: &'static str,
     pub engine: &'static str,
     pub loaded_now: bool,
     pub generation_ready: bool,
@@ -766,6 +773,7 @@ pub async fn serve(
     configured_threads: Option<usize>,
     initial_model: Option<PathBuf>,
 ) -> std::io::Result<()> {
+    START_TIME.get_or_init(Instant::now);
     let state = AppState::with_configured_threads(configured_threads);
     if let Some(model_path) = initial_model {
         if let Err(err) = load_model_from_path(&state, model_path, None).await {
@@ -782,8 +790,14 @@ async fn health(State(state): State<AppState>) -> Json<HealthResponse> {
     let model = state.loaded_model.read().await;
     let loaded_now = model.is_some();
     let generation_ready = model.as_ref().is_some_and(loaded_model_generation_ready);
+    let uptime = START_TIME.get().map(|t| t.elapsed().as_secs()).unwrap_or(0);
     Json(HealthResponse {
         ok: true,
+        alive: true,
+        version: env!("CARGO_PKG_VERSION"),
+        uptime,
+        pid: std::process::id(),
+        state: "running",
         engine: "camelid",
         loaded_now,
         generation_ready,

@@ -1,0 +1,11 @@
+/Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/deps/web_atoms-7ad9354fa0a769e5.d: /Users/timtoole/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/web_atoms-0.2.4/lib.rs /Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out/named_entities.rs /Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out/generated.rs
+
+/Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/deps/libweb_atoms-7ad9354fa0a769e5.rlib: /Users/timtoole/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/web_atoms-0.2.4/lib.rs /Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out/named_entities.rs /Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out/generated.rs
+
+/Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/deps/libweb_atoms-7ad9354fa0a769e5.rmeta: /Users/timtoole/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/web_atoms-0.2.4/lib.rs /Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out/named_entities.rs /Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out/generated.rs
+
+/Users/timtoole/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/web_atoms-0.2.4/lib.rs:
+/Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out/named_entities.rs:
+/Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out/generated.rs:
+
+# env-dep:OUT_DIR=/Users/timtoole/.gemini/antigravity/scratch/Cameleer/control-center/src-tauri/../../target-tauri/debug/build/web_atoms-619113926a138355/out
