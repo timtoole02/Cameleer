@@ -330,11 +330,17 @@ pub fn get_board_snapshot(workspace_id: String, project_id: Option<String>, team
 #[tauri::command]
 pub fn create_card(
     workspace_id: String,
+    project_id: Option<String>,
+    team_id: Option<String>,
     title: String,
     description: Option<String>,
     type_name: Option<String>,
     priority: Option<String>,
     status: Option<String>,
+    assigned_agent_id: Option<String>,
+    acceptance_criteria: Option<String>,
+    required_files: Option<String>,
+    dependencies: Option<String>,
     state: State<DbState>
 ) -> Result<String, String> {
     let conn = state.conn.lock().unwrap();
@@ -344,9 +350,13 @@ pub fn create_card(
     let s = status.unwrap_or_else(|| "Ready".to_string());
 
     conn.execute(
-        "INSERT INTO kanban_cards (id, workspace_id, title, description, type, priority, status)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-        params![id, workspace_id, title, description, t, p, s],
+        "INSERT INTO kanban_cards (
+            id, workspace_id, project_id, team_id, title, description, 
+            type, priority, status, assigned_agent_id, 
+            acceptance_criteria, required_files, dependencies, created_by
+         )
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 'human')",
+        params![id, workspace_id, project_id, team_id, title, description, t, p, s, assigned_agent_id, acceptance_criteria, required_files, dependencies],
     ).map_err(|e| e.to_string())?;
     
     Ok(id)

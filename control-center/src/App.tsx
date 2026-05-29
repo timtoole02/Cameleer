@@ -1525,31 +1525,21 @@ function App() {
     const criteria = taskAcceptanceCriteria.split("\n").map(c => c.trim()).filter(c => c.length > 0);
     const deps = taskDependencies.split(",").map(d => d.trim()).filter(d => d.length > 0);
 
-    const newTask: Task = {
-      id: "task-" + Math.random().toString(36).substring(2, 7),
-      workspace_id: "default",
-      title: taskTitle,
-      description: taskDesc || null,
-      owner_id: taskOwner || null,
-      assigned_agent_id: taskOwner || null,
-      status: "backlog", // new status starts in backlog column
-      priority: taskPriority,
-      created_by: "user",
-      due_date: null,
-      acceptance_criteria: JSON.stringify(criteria),
-      required_files: JSON.stringify(reqFiles),
-      related_files: "[]",
-      related_artifacts: "[]",
-      dependencies: JSON.stringify(deps),
-      blockers: "[]",
-      comments: "[]",
-      activity_log: "[]",
-      validation_status: "pending",
-      completion_evidence: null
-    };
-
     try {
-      await invoke("create_task", { task: newTask });
+      await invoke("create_card", { 
+        workspaceId: "default",
+        projectId: activeNode?.node_type === "project" ? activeNode.id : (activeNode?.node_type === "team" ? activeNode.parent_id : null),
+        teamId: activeNode?.node_type === "team" ? activeNode.id : null,
+        title: taskTitle,
+        description: taskDesc || null,
+        typeName: "task",
+        priority: taskPriority,
+        status: "Ready",
+        assignedAgentId: taskOwner || null,
+        acceptanceCriteria: JSON.stringify(criteria),
+        requiredFiles: JSON.stringify(reqFiles),
+        dependencies: JSON.stringify(deps)
+      });
       setIsTaskModalOpen(false);
       setTaskTitle("");
       setTaskDesc("");
@@ -1558,6 +1548,7 @@ function App() {
       setTaskAcceptanceCriteria("");
       setTaskDependencies("");
       loadTasks();
+      setRefreshKanban(prev => prev + 1);
     } catch (err: any) {
       console.error("Failed to create task", err);
       alert("Failed to create task: " + err);
