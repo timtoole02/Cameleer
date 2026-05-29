@@ -21,25 +21,54 @@ Connect your agents to standard cloud APIs (Anthropic, Gemini, OpenAI) or route 
 
 ---
 
-## 🚀 Quick Start
+## 🍏 macOS Installation Guide
 
-### 1. Build and Compile
-Ensure you have the Rust toolchain installed:
+Follow these step-by-step instructions to compile, package, and launch the complete self-contained Cameleer platform with local accelerated AI on your Mac:
+
+### 1. Prerequisites
+Ensure you have the core build toolchains installed:
+* **Rust**: Install via rustup:
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+* **Node.js & npm**: Install via Homebrew or directly from Nodejs.org:
+  ```bash
+  brew install node
+  ```
+
+### 2. Clone the Repository
+Clone the codebase and navigate to the project directory:
+```bash
+git clone https://github.com/timtoole02/Cameleer.git
+cd Cameleer
+```
+
+### 3. Compile Core Rust Binaries
+Compile both the local **`camelid`** GGUF inference engine and the **`cameleer`** autonomous agent CLI in release mode:
 ```bash
 cargo build --release
 ```
 
-### 2. Onboard and Initialize
-Run the onboarding sequence to automatically generate configuration templates, database schemas, and default skills:
+### 4. Build the Tauri Desktop GUI App
+Install the frontend node packages and build the production macOS application bundle (`Cameleer.app`):
 ```bash
-cargo run onboard
+cd control-center
+npm install
+CARGO_TARGET_DIR="target" npm run tauri build
+cd ..
+```
+*Note: We specify `CARGO_TARGET_DIR="target"` during compilation to prevent native AppleDouble cache conflicts on external drives.*
+
+### 5. Package the Standalone Desktop Bundles
+Run the packaging utility to compile the Cocoa app launcher wrapper and automatically copy the required `camelid` local inference engine directly inside the app bundle so that it is 100% self-contained:
+```bash
+./package.sh
 ```
 
-### 3. Run the Interactive CLI Console
-Launch the agent directly. By default, it drops you into our gorgeous colored interactive shell:
-```bash
-cargo run
-```
+### 6. Run the Platform
+Once packaged, the build script deploys the standalone binaries straight to your Desktop. Simply double-click **`Cameleer.app`** or **`Cameleer Engine.app`** on your Desktop to run:
+* **`Cameleer.app`**: The high-fidelity desktop UI chat panel and agent control room. It will automatically spawn the GPU Metal-accelerated `camelid` server on startup and maintain it in the background.
+* **`Cameleer Engine.app`**: A lightweight Cocoa status-bar menu interface that serves the web gateway on port `8080` in the background.
 
 ---
 
