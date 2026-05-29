@@ -220,8 +220,8 @@ pub fn start_watchdog(app_handle: AppHandle) {
                 if let Ok((id, name, role, hb)) = agent {
                     let hb_sec = hb.and_then(|h| h.parse::<u64>().ok()).unwrap_or(0);
                     
-                    // Heartbeat timed out (> 15 seconds ago)
-                    if hb_sec > 0 && now.saturating_sub(hb_sec) > 15 {
+                    // Heartbeat timed out (> 20 seconds ago)
+                    if hb_sec > 0 && now.saturating_sub(hb_sec) > 20 {
                         crashed_agents.push((id, name, role));
                     }
                 }
@@ -230,17 +230,17 @@ pub fn start_watchdog(app_handle: AppHandle) {
             drop(stmt);
             
             for (id, name, role) in crashed_agents {
-                println!("[WATCHDOG] Agent {} ({}) crashed due to heartbeat timeout", name, role);
+                println!("[WATCHDOG] Agent {} ({}) stalled due to heartbeat timeout. Initiating recovery...", name, role);
                 
                 let _ = conn.execute(
-                    "UPDATE agents SET status = 'error' WHERE id = ?1",
+                    "UPDATE agents SET status = 'recovering' WHERE id = ?1",
                     [&id]
                 );
                 
                 let _ = conn.execute(
                     "INSERT INTO events (event_type, agent_id, payload) 
-                     VALUES ('run_crashed', ?1, ?2)",
-                    rusqlite::params![id, format!("{{\"error\":\"Heartbeat timed out. Agent {} crashed.\"}}", name)]
+                     VALUES ('agent_stalled_recovery', ?1, ?2)",
+                    rusqlite::params![id, format!("{{\"status\":\"recovering\",\"error\":\"Heartbeat timed out. Agent {} stalled for >20s. Rolling back to last checkpoint.\"}}", name)]
                 );
                 
                 emit_event(
@@ -249,7 +249,7 @@ pub fn start_watchdog(app_handle: AppHandle) {
                         event_type: "agent_run_status".to_string(),
                         agent_id: Some(id.clone()),
                         task_id: None,
-                        payload: serde_json::json!({ "status": "error", "error": "Heartbeat timed out." }),
+                        payload: serde_json::json!({ "status": "recovering", "error": "Heartbeat timed out. Stalled for >20s. Recovering state." }),
                     }
                 );
             }

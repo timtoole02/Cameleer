@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Connection, Result, OptionalExtension};
 use tauri::{State, AppHandle};
 use crate::storage::DbState;
 use crate::event_bus::{emit_event, AppEvent};
@@ -743,4 +743,225 @@ pub fn get_artifacts(state: State<'_, DbState>) -> Result<Vec<Artifact>, String>
 #[tauri::command]
 pub fn read_artifact_file(path: String) -> Result<String, String> {
     std::fs::read_to_string(&path).map_err(|e| e.to_string())
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SubtaskProposal {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub priority: String,
+    pub preferred_role: String,
+    pub required_files: String,
+}
+
+#[tauri::command]
+pub fn decompose_task(
+    state: State<'_, DbState>,
+    parent_task_id: String,
+) -> Result<Vec<SubtaskProposal>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+
+    // Fetch parent details
+    let (title, description): (String, Option<String>) = conn
+        .query_row(
+            "SELECT title, description FROM tasks WHERE id = ?1",
+            [&parent_task_id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .map_err(|e| format!("Parent task not found: {}", e))?;
+
+    let desc_str = description.unwrap_or_default().to_lowercase();
+    let title_str = title.to_lowercase();
+
+    let proposals = if title_str.contains("tetris") || desc_str.contains("tetris") {
+        vec![
+            SubtaskProposal {
+                id: format!("{}-sub-1", parent_task_id),
+                title: "Blueprint Tetris Matrix State".to_string(),
+                description: "Design and verify the 10x20 coordinate array representation and falling piece matrices.".to_string(),
+                priority: "high".to_string(),
+                preferred_role: "Architect".to_string(),
+                required_files: "[\"architecture.md\"]".to_string(),
+            },
+            SubtaskProposal {
+                id: format!("{}-sub-2", parent_task_id),
+                title: "Build Core Falling Piece Loop".to_string(),
+                description: "Program piece translations (left, right, down) and automatic tick drops.".to_string(),
+                priority: "high".to_string(),
+                preferred_role: "Software Engineer".to_string(),
+                required_files: "[\"src/game.ts\"]".to_string(),
+            },
+            SubtaskProposal {
+                id: format!("{}-sub-3", parent_task_id),
+                title: "Implement Complete Row Clears".to_string(),
+                description: "Evaluate active rows, trigger clears, flash animation, and update score increments.".to_string(),
+                priority: "high".to_string(),
+                preferred_role: "Software Engineer".to_string(),
+                required_files: "[\"src/game.ts\"]".to_string(),
+            },
+            SubtaskProposal {
+                id: format!("{}-sub-4", parent_task_id),
+                title: "QA Test Boundaries & Speed Ramping".to_string(),
+                description: "Assert collision matrices, boundary collisions, row score metrics, and level drop intervals.".to_string(),
+                priority: "medium".to_string(),
+                preferred_role: "QA Engineer".to_string(),
+                required_files: "[\"tests/game.test.ts\"]".to_string(),
+            },
+            SubtaskProposal {
+                id: format!("{}-sub-5", parent_task_id),
+                title: "Compose Tetris Manual & Setup Guides".to_string(),
+                description: "Draft comprehensive README.md detailing local boot commands, features, and shortcuts.".to_string(),
+                priority: "medium".to_string(),
+                preferred_role: "Technical Writer".to_string(),
+                required_files: "[\"README.md\"]".to_string(),
+            },
+        ]
+    } else {
+        vec![
+            SubtaskProposal {
+                id: format!("{}-sub-1", parent_task_id),
+                title: format!("Architect: Blueprint Design for '{}'", title),
+                description: "Design structural design documents and file layout guidelines.".to_string(),
+                priority: "high".to_string(),
+                preferred_role: "Architect".to_string(),
+                required_files: "[\"architecture.md\"]".to_string(),
+            },
+            SubtaskProposal {
+                id: format!("{}-sub-2", parent_task_id),
+                title: format!("Developer: Functional Code Core for '{}'", title),
+                description: "Implement the primary logic and data handlers matching system design.".to_string(),
+                priority: "high".to_string(),
+                preferred_role: "Software Engineer".to_string(),
+                required_files: "[\"src/main.ts\"]".to_string(),
+            },
+            SubtaskProposal {
+                id: format!("{}-sub-3", parent_task_id),
+                title: format!("QA: Unit Integration Tests for '{}'", title),
+                description: "Draft complete mock testing rigs and execute assertion validations.".to_string(),
+                priority: "medium".to_string(),
+                preferred_role: "QA Engineer".to_string(),
+                required_files: "[\"tests/main.test.ts\"]".to_string(),
+            },
+            SubtaskProposal {
+                id: format!("{}-sub-4", parent_task_id),
+                title: format!("Writer: Readme Documentation for '{}'", title),
+                description: "Compose user reference guides and deployment walkthroughs in markdown.".to_string(),
+                priority: "low".to_string(),
+                preferred_role: "Technical Writer".to_string(),
+                required_files: "[\"README.md\"]".to_string(),
+            },
+        ]
+    };
+
+    Ok(proposals)
+}
+
+#[tauri::command]
+pub fn approve_subtasks(
+    state: State<'_, DbState>,
+    app_handle: AppHandle,
+    parent_task_id: String,
+    proposals: Vec<SubtaskProposal>,
+) -> Result<(), String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+
+    // Get parent task details
+    let (workspace_id, _parent_priority): (Option<String>, String) = conn
+        .query_row(
+            "SELECT workspace_id, priority FROM tasks WHERE id = ?1",
+            [&parent_task_id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .map_err(|e| format!("Parent task not found: {}", e))?;
+
+    let ws_id = workspace_id.unwrap_or_else(|| "default".to_string());
+
+    for sub in proposals {
+        // Find matching agent
+        let assigned_agent_id: Option<String> = conn.query_row(
+            "SELECT id FROM agents WHERE role LIKE ?1 LIMIT 1",
+            [format!("%{}%", sub.preferred_role)],
+            |row| row.get(0),
+        )
+        .optional()
+        .unwrap_or(None);
+
+        let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+        let initial_log = serde_json::json!([{
+            "timestamp": now_secs,
+            "agent_id": "system",
+            "action": "kanban_card_created",
+            "detail": format!("Subtask card created under parent '{}'", parent_task_id)
+        }]);
+        let initial_log_str = serde_json::to_string(&initial_log).unwrap_or_else(|_| "[]".to_string());
+
+        let agent_id_val = assigned_agent_id.unwrap_or_else(|| "".to_string());
+
+        conn.execute(
+            "INSERT OR REPLACE INTO tasks (id, workspace_id, title, description, owner_id, assigned_agent_id, status, priority, created_by, acceptance_criteria, required_files, related_files, related_artifacts, dependencies, blockers, comments, activity_log, validation_status)
+             VALUES (?1, ?2, ?3, ?4, NULLIF(?5, ''), NULLIF(?5, ''), 'backlog', ?6, 'system', '[]', ?7, '[]', '[]', ?8, '[]', '[]', ?9, 'pending')",
+            params![
+                sub.id,
+                ws_id,
+                sub.title,
+                sub.description,
+                agent_id_val,
+                sub.priority,
+                sub.required_files,
+                format!("[\"{}\"]", parent_task_id), // Dependency array
+                initial_log_str,
+            ],
+        )
+        .map_err(|e| e.to_string())?;
+
+        // Map dependency blocker
+        conn.execute(
+            "INSERT INTO task_blockers (task_id, blocked_by_task_id, reason) VALUES (?1, ?2, 'Parent task requires complete implementation of child subtask')",
+            params![parent_task_id, sub.id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
+    // Set parent task status to 'blocked'
+    let parent_log_str: Option<String> = conn
+        .query_row(
+            "SELECT activity_log FROM tasks WHERE id = ?1",
+            [&parent_task_id],
+            |row| row.get(0),
+        )
+        .unwrap_or(None);
+
+    let mut parent_log = match parent_log_str {
+        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        _ => Vec::new(),
+    };
+
+    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    parent_log.push(serde_json::json!({
+        "timestamp": now_secs,
+        "agent_id": "system",
+        "action": "kanban_card_blocked",
+        "detail": "Parent task split into subtasks and set to blocked pending child completions."
+    }));
+    let new_parent_log_str = serde_json::to_string(&parent_log).unwrap_or_else(|_| "[]".to_string());
+
+    conn.execute(
+        "UPDATE tasks SET status = 'blocked', activity_log = ?2 WHERE id = ?1",
+        params![parent_task_id, new_parent_log_str],
+    )
+    .map_err(|e| e.to_string())?;
+
+    // Emit event to update UI
+    emit_event(
+        &app_handle,
+        AppEvent {
+            event_type: "task_updated".to_string(),
+            agent_id: None,
+            task_id: Some(parent_task_id.clone()),
+            payload: serde_json::json!({ "id": parent_task_id, "status": "blocked" }),
+        },
+    );
+
+    Ok(())
 }

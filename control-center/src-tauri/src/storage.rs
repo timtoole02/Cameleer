@@ -20,6 +20,17 @@ pub fn get_db_path() -> PathBuf {
 }
 
 pub fn init_db(conn: &Connection) -> Result<()> {
+    // Migration: Check if agents has safety_profile column. If not, drop it to recreate.
+    let has_safety_profile: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('agents') WHERE name='safety_profile')",
+        [],
+        |row| row.get(0),
+    ).unwrap_or(false);
+
+    if !has_safety_profile {
+        let _ = conn.execute("DROP TABLE IF EXISTS agents", []);
+    }
+
     // 1. Agents Registry
     conn.execute(
         "CREATE TABLE IF NOT EXISTS agents (
@@ -35,7 +46,17 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             can_talk_globally INTEGER DEFAULT 1,
             is_continuous INTEGER DEFAULT 0,
             status TEXT DEFAULT 'idle',
-            last_heartbeat TEXT
+            last_heartbeat TEXT,
+            primary_skills TEXT,
+            allowed_tools TEXT,
+            reasoning_level TEXT DEFAULT 'standard',
+            workspace_access TEXT DEFAULT 'full',
+            file_access_scope TEXT,
+            command_permissions TEXT,
+            kanban_permissions TEXT DEFAULT 'full',
+            review_requirements INTEGER DEFAULT 0,
+            safety_profile TEXT DEFAULT 'moderate',
+            escalation_rules TEXT
         )",
         [],
     )?;
@@ -212,6 +233,24 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             target_agent_id TEXT REFERENCES agents(id),
             reason TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 14. Checkpoints Store
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS checkpoints (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            agent_id TEXT REFERENCES agents(id),
+            task_id TEXT REFERENCES tasks(id),
+            plan TEXT,
+            completed_steps TEXT,
+            open_steps TEXT,
+            files_touched TEXT,
+            reasoning_summary TEXT,
+            last_tool_output TEXT,
+            validation_status TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )",
         [],

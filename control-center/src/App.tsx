@@ -92,8 +92,52 @@ interface CoordinationDetails {
   decisions: Decision[];
   handoffs: Handoff[];
 }
+
+interface WorkSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  severity: "info" | "warning" | "critical" | "success";
+  suggestion_type: "blocker" | "assignment" | "handoff" | "review" | "recovery";
+  action_label?: string | null;
+  action_command?: string | null;
+  related_agent_id?: string | null;
+  related_task_id?: string | null;
+}
+
+interface TemplateInfo {
+  key: string;
+  name: string;
+  role: string;
+  persona: string;
+  primary_skills: string[];
+  allowed_tools: string[];
+  reasoning_level: string;
+  workspace_access: string;
+  file_access_scope: string[];
+  command_permissions: string[];
+  kanban_permissions: string;
+  review_requirements: boolean;
+  safety_profile: string;
+}
+
+interface SubtaskProposal {
+  id: string;
+  title: string;
+  description: string;
+  priority: string;
+  preferred_role: string;
+  required_files: string;
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState<"global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models">("global");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models">("dashboard");
+  const [suggestions, setSuggestions] = useState<WorkSuggestion[]>([]);
+  const [templates, setTemplates] = useState<TemplateInfo[]>([]);
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("software_engineer");
+  const [wizardCustomName, setWizardCustomName] = useState<string>("Specialist Agent");
+  const [decomposingTaskId, setDecomposingTaskId] = useState<string>("");
+  const [decomposedProposals, setDecomposedProposals] = useState<SubtaskProposal[]>([]);
   const [localModels, setLocalModels] = useState<string[]>([]);
   const [activeModel, setActiveModel] = useState<string | null>(null);
   const [downloadState, setDownloadState] = useState<{
@@ -239,6 +283,136 @@ function App() {
   const [isThinking, setIsThinking] = useState(false);
   const feedEndRef = useRef<HTMLDivElement>(null);
 
+  const loadSuggestions = async () => {
+    try {
+      const list = await invoke<WorkSuggestion[]>("get_work_engine_suggestions");
+      setSuggestions(list);
+    } catch (e) {
+      console.error("Failed to load suggestions", e);
+    }
+  };
+
+  const loadTemplates = async () => {
+    try {
+      const list = await invoke<TemplateInfo[]>("list_templates");
+      setTemplates(list);
+    } catch (e) {
+      console.error("Failed to load templates", e);
+    }
+  };
+
+  const handleCreateSoftwareTeam = async () => {
+    try {
+      await invoke("create_software_team", { modelProvider: "camelid", modelName: "camelid-default" });
+      await loadAgents();
+      alert("Turnkey Software Team successfully created!");
+    } catch (e) {
+      alert("Failed to create software team: " + e);
+    }
+  };
+
+  const handleCreateCodingSprint = async () => {
+    try {
+      await invoke("create_coding_sprint", { workspaceId: "default" });
+      await loadTasks();
+      alert("Tetris coding sprint enqueued into backlog!");
+    } catch (e) {
+      alert("Failed to create coding sprint: " + e);
+    }
+  };
+
+  const handleLaunchAgent = async () => {
+    try {
+      await invoke("create_agent_from_template", {
+        templateKey: selectedTemplateKey,
+        customizedName: wizardCustomName,
+        modelProvider: "camelid",
+        modelName: "camelid-default"
+      });
+      await loadAgents();
+      alert(`Agent "${wizardCustomName}" successfully launched into workforce!`);
+    } catch (e) {
+      alert("Failed to launch agent: " + e);
+    }
+  };
+
+  const handleDecompose = async (taskId: string) => {
+    try {
+      setDecomposingTaskId(taskId);
+      const proposals = await invoke<SubtaskProposal[]>("decompose_task", { parentTaskId: taskId });
+      setDecomposedProposals(proposals);
+    } catch (e) {
+      alert("Failed to decompose task: " + e);
+    }
+  };
+
+  const handleApproveSubtasks = async () => {
+    try {
+      await invoke("approve_subtasks", {
+        parentTaskId: decomposingTaskId,
+        proposals: decomposedProposals
+      });
+      setDecomposedProposals([]);
+      setDecomposingTaskId("");
+      await loadTasks();
+      alert("Subtask sprint approved and enqueued successfully!");
+    } catch (e) {
+      alert("Failed to approve subtasks: " + e);
+    }
+  };
+
+  const handleResolveCommandApproval = async (taskId: string, approved: boolean) => {
+    try {
+      await invoke("resolve_command_approval", { taskId, approved });
+      await loadSuggestions();
+      await loadTasks();
+      await loadAgents();
+      alert(approved ? "Command execution approved!" : "Command execution rejected.");
+    } catch (e) {
+      alert("Failed to resolve command approval: " + e);
+    }
+  };
+
+  const handleSuggestionAction = async (command: string) => {
+    try {
+      const parts = command.split(":");
+      const action = parts[0];
+      
+      if (action === "restart_agent") {
+        const agentId = parts[1];
+        await invoke("update_agent", {
+          agent: {
+            id: agentId,
+            status: "idle",
+            last_heartbeat: null
+          }
+        });
+        await loadAgents();
+        alert("Agent status reset to idle.");
+      } else if (action === "approve_task") {
+        const taskId = parts[1];
+        await invoke("update_task_status", { id: taskId, status: "done", evidencePath: "User manual validation override." });
+        await loadTasks();
+        alert("Task approved and completed!");
+      } else if (action === "accept_handoff") {
+        const handoffId = parseInt(parts[1], 10);
+        await invoke("resolve_handoff_cmd", { handoffId, resolution: "approved" });
+        await loadTasks();
+        alert("Agent handoff resolved successfully!");
+      } else if (action === "assign_task") {
+        const taskId = parts[1];
+        const agentId = parts[2];
+        await invoke("claim_card", { agentId, cardId: taskId });
+        await loadTasks();
+        await loadAgents();
+        alert("Task claimed and assigned successfully!");
+      }
+      await loadSuggestions();
+    } catch (e) {
+      alert("Failed to execute suggestion action: " + e);
+    }
+  };
+
   // 1. Initial Load of Database contents
   useEffect(() => {
     loadAgents();
@@ -246,6 +420,8 @@ function App() {
     loadBlackboard();
     loadProviderConfigs();
     loadCoordinationDetails();
+    loadSuggestions();
+    loadTemplates();
   }, []);
 
   // Polling hook every 3 seconds for shared awareness details
@@ -255,6 +431,7 @@ function App() {
       loadAgents();
       loadTasks();
       loadBlackboard();
+      loadSuggestions();
     }, 3000);
     return () => clearInterval(timer);
   }, []);
@@ -955,7 +1132,12 @@ function App() {
       <main className="chat-panel">
         <header className="chat-header">
           <div className="chat-title-group">
-            {activeTab === "global" ? (
+            {activeTab === "dashboard" ? (
+              <div>
+                <h2 className="chat-title">Mission Control</h2>
+                <div className="chat-subtitle">Turnkey Local AI Workforce Platform Overview</div>
+              </div>
+            ) : activeTab === "global" ? (
               <div>
                 <h2 className="chat-title">#global-room</h2>
                 <div className="chat-subtitle">Broadcasting coordination blackboard packet to all active agents</div>
@@ -1009,6 +1191,12 @@ function App() {
           </div>
 
           <div className="panel-tabs">
+            <button
+              className={`panel-tab ${activeTab === "dashboard" ? "active" : ""}`}
+              onClick={() => setActiveTab("dashboard")}
+            >
+              Dashboard
+            </button>
             <button
               className={`panel-tab ${activeTab === "global" ? "active" : ""}`}
               onClick={() => setActiveTab("global")}
@@ -1066,7 +1254,227 @@ function App() {
           </div>
         </header>
 
-        {activeTab === "global" || activeTab === "dm" ? (
+        {activeTab === "dashboard" ? (
+          <div className="dashboard-container">
+            {/* Dashboard Hero Banner */}
+            <div className="dashboard-hero">
+              <div className="hero-text">
+                <h3>Autonomous AI Crew Operations</h3>
+                <p>Natively powered by local GGUF models. Turnkey sprint coordination, safety command auditing, and active state recovery watchdog.</p>
+              </div>
+              <div className="hero-actions">
+                <button className="hero-btn primary" onClick={handleCreateSoftwareTeam}>
+                  Launch Software Team
+                </button>
+                <button className="hero-btn secondary" onClick={handleCreateCodingSprint}>
+                  Bootstrap Coding Sprint
+                </button>
+              </div>
+            </div>
+
+            {/* Dashboard Operation Widgets */}
+            <div className="dashboard-grid">
+              
+              {/* AI Crew Heartbeats Widget */}
+              <div className="dashboard-card">
+                <div className="card-header-group">
+                  <div className="card-title">
+                    <span style={{ color: "var(--accent-primary)", marginRight: "8px" }}>●</span> Active Crew Heartbeats
+                  </div>
+                  <span className="telemetry-tag success" style={{ textTransform: "capitalize" }}>{agents.length} specialist(s) active</span>
+                </div>
+                <div className="crew-grid">
+                  {agents.map((agent) => (
+                    <div key={agent.id} className="crew-item">
+                      <div className="crew-avatar">
+                        {agent.name.charAt(0)}
+                        <div className={`crew-status-dot ${agent.status}`} />
+                      </div>
+                      <div className="crew-name">{agent.name}</div>
+                      <div className="crew-role">{agent.role}</div>
+                      {agent.last_heartbeat && (
+                        <div className="crew-hb">HB: {agent.last_heartbeat.slice(-4)}s</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Work Suggestions Stream */}
+              <div className="dashboard-card">
+                <div className="card-header-group">
+                  <div className="card-title">Next Best Actions</div>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{suggestions.length} suggestions</span>
+                </div>
+                <div className="dashboard-scrollable">
+                  {suggestions.length === 0 ? (
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", textAlign: "center", padding: "20px" }}>
+                      All systems green. No blockers or idle specialists detected.
+                    </div>
+                  ) : (
+                    suggestions.map((sug) => (
+                      <div key={sug.id} className={`suggestion-card ${sug.severity}`}>
+                        <div className="suggestion-header">
+                          <span className={`suggestion-tag ${sug.severity}`}>{sug.suggestion_type}</span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{sug.severity}</span>
+                        </div>
+                        <h4 style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{sug.title}</h4>
+                        <div className="suggestion-desc">{sug.description}</div>
+                        {sug.action_command && sug.action_label && (
+                          <button 
+                            className="suggestion-action-btn"
+                            onClick={() => handleSuggestionAction(sug.action_command!)}
+                          >
+                            {sug.action_label}
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Turnkey Specialist Agent wizard */}
+              <div className="dashboard-card">
+                <div className="card-header-group">
+                  <div className="card-title">Agent Builder Wizard</div>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>10 templates ready</span>
+                </div>
+                <div className="wizard-templates-grid">
+                  {templates.slice(0, 4).map((t) => (
+                    <div 
+                      key={t.key} 
+                      className={`wizard-template-card ${selectedTemplateKey === t.key ? "active" : ""}`}
+                      onClick={() => {
+                        setSelectedTemplateKey(t.key);
+                        setWizardCustomName(t.name);
+                      }}
+                    >
+                      <h4>{t.name}</h4>
+                      <p>{t.role}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="wizard-config-panel">
+                  <div className="wizard-form-group">
+                    <label>Agent Custom Call-Sign</label>
+                    <input 
+                      type="text" 
+                      className="wizard-input" 
+                      value={wizardCustomName} 
+                      onChange={(e) => setWizardCustomName(e.target.value)} 
+                    />
+                  </div>
+                  <div className="wizard-checkboxes">
+                    <label className="wizard-checkbox-label">
+                      <input type="checkbox" defaultChecked /> Full Files Access
+                    </label>
+                    <label className="wizard-checkbox-label">
+                      <input type="checkbox" defaultChecked /> Shell execution
+                    </label>
+                    <label className="wizard-checkbox-label">
+                      <input type="checkbox" defaultChecked /> Auto-Subtasks
+                    </label>
+                    <label className="wizard-checkbox-label">
+                      <input type="checkbox" defaultChecked /> Review Required
+                    </label>
+                  </div>
+                  <button className="wizard-submit-btn" onClick={handleLaunchAgent}>
+                    Launch Agent specialist
+                  </button>
+                </div>
+              </div>
+
+              {/* Smart Subtask Decomposer widget */}
+              <div className="dashboard-card">
+                <div className="card-header-group">
+                  <div className="card-title">Subtask Decomposer</div>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Sprint splitting tool</span>
+                </div>
+                <div className="decomposer-panel">
+                  <div className="wizard-form-group">
+                    <label>Choose Parent Task to split</label>
+                    <select 
+                      className="wizard-select"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleDecompose(e.target.value);
+                        }
+                      }}
+                    >
+                      <option value="">-- Select Task Card --</option>
+                      {tasks
+                        .filter((t) => t.status !== "done" && t.status !== "blocked")
+                        .map((t) => (
+                          <option key={t.id} value={t.id}>{t.title} ({t.status})</option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {decomposedProposals.length > 0 && (
+                    <div className="subtask-proposal-list">
+                      <div style={{ fontSize: "0.8rem", fontWeight: "bold", marginBottom: "6px" }}>Proposed Child Sprint Tree:</div>
+                      <div className="dashboard-scrollable" style={{ maxHeight: "140px" }}>
+                        {decomposedProposals.map((prop) => (
+                          <div key={prop.id} className="subtask-proposal-item">
+                            <div className="subtask-title-desc">
+                              <h5>{prop.title}</h5>
+                              <p>{prop.description}</p>
+                            </div>
+                            <div className="subtask-tags">
+                              <span className="subtask-tag role">{prop.preferred_role}</span>
+                              <span className={`subtask-tag priority-${prop.priority}`}>{prop.priority}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <button className="wizard-submit-btn" style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)" }} onClick={handleApproveSubtasks}>
+                        Approve Child Sprint
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Command Guard & Security Reviews widget */}
+              <div className="dashboard-card" style={{ gridColumn: "span 2" }}>
+                <div className="card-header-group">
+                  <div className="card-title" style={{ color: "var(--color-blocked)" }}>🛡️ Security Sandbox Review Queue</div>
+                  <span className="telemetry-tag success" style={{ background: "rgba(245, 158, 11, 0.1)", color: "var(--color-blocked)" }}>Audit Shield Active</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {tasks.filter((t) => t.status === "waiting_for_approval").length === 0 ? (
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", textAlign: "center", padding: "10px" }}>
+                      No blocked agent shell executions requiring security review.
+                    </div>
+                  ) : (
+                    tasks
+                      .filter((t) => t.status === "waiting_for_approval")
+                      .map((t) => (
+                        <div key={t.id} className="review-box" style={{ border: "1px dashed var(--color-blocked)" }}>
+                          <div style={{ fontSize: "0.85rem", fontWeight: "bold" }}>
+                            ⚠️ Security Warning: Card "{t.title}" is paused. An agent is requesting a high-risk system command execution!
+                          </div>
+                          <div style={{ fontStyle: "italic", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                            Review is mandatory under the default Moderate Safety Profile whitelist.
+                          </div>
+                          <div className="review-actions">
+                            <button className="review-btn approve" onClick={() => handleResolveCommandApproval(t.id, true)}>
+                              Approve & Resume
+                            </button>
+                            <button className="review-btn reject" onClick={() => handleResolveCommandApproval(t.id, false)}>
+                              Reject & Block
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        ) : activeTab === "global" || activeTab === "dm" ? (
           <>
             {/* Messages Feed */}
             <div className="messages-feed">

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Connection, Result, OptionalExtension};
 use tauri::{State, AppHandle, Manager};
 use crate::storage::DbState;
 use crate::router::{call_model, ChatMessage, ModelSettings};
@@ -179,6 +179,35 @@ pub async fn trigger_agent_reply(
             );
         }
 
+        // Fetch active task_id assigned to this agent that is 'in_progress'
+        let task_id: Option<String> = {
+            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+            conn.query_row(
+                "SELECT id FROM tasks WHERE assigned_agent_id = ?1 AND status = 'in_progress' LIMIT 1",
+                [&agent_id],
+                |row| row.get(0),
+            )
+            .optional()
+            .unwrap_or(None)
+        };
+
+        let mut checkpoint_recovery_context = String::new();
+        if let Some(ref t_id) = task_id {
+            if let Ok(Some(cp)) = crate::checkpoint_store::get_latest_checkpoint(state.clone(), agent_id.clone(), t_id.clone()) {
+                checkpoint_recovery_context = format!(
+                    "\n### RECOVERY RESUME SNAPSHOT:\n\
+                     The system watchdog recovered your execution from a stall or restart.\n\
+                     - Last Reasoning Summary: {}\n\
+                     - Last Plan Steps: {}\n\
+                     - Completed Steps: {}\n\
+                     - Open Steps: {}\n\
+                     - Files Touched: {}\n\
+                     Please resume work exactly from this snapshot. If the last command failed, analyze the error and self-heal.\n",
+                    cp.reasoning_summary, cp.plan, cp.completed_steps, cp.open_steps, cp.files_touched
+                );
+            }
+        }
+
         // Fetch dynamically compiled blackboard awareness context to inject
         let (context_packet, work_queue_str) = {
             let conn = state.conn.lock().map_err(|e| e.to_string())?;
@@ -221,6 +250,7 @@ pub async fn trigger_agent_reply(
         let system_instructions = format!(
             "You are {} (Role: {}).\nYour Persona: {}\n\n\
              {}\n\n\
+             {}\n\n\
              ### YOUR ACTIVE KANBAN WORK QUEUE:\n{}\n\n\
              You are operating inside a secure macOS agent workspace. You have direct access to execute shell commands and write files on the host computer.\n\n\
              CRITICAL: Before doing any work, you MUST check your Kanban work queue above and claim your highest priority enqueued card. When doing work, you must update the card progress and mark it done with validation evidence when finished.\n\n\
@@ -261,7 +291,7 @@ pub async fn trigger_agent_reply(
              ```\n\n\
              When you are completely finished with your task and have no more actions to run, speak directly to the user to deliver your final response.\n\n\
              Keep answers concise and let the tools do the heavy lifting.",
-            name, role, persona, context_packet, work_queue_str
+            name, role, persona, context_packet, checkpoint_recovery_context, work_queue_str
         );
 
         let mut history = vec![
@@ -427,27 +457,36 @@ pub async fn trigger_agent_reply(
                 }
             } else if action.action_type == "execute_command" {
                 if let Some(ref cmd) = action.command {
-                    // Block obviously harmful mutating recursive commands
-                    if cmd.contains("rm ") && (cmd.contains("-rf") || cmd.contains("-r")) {
-                        "ERROR: Intercepted recursive delete flags. Refusing execution.".to_string()
-                    } else {
-                        // Execute shell command synchronously on host
-                        println!("[SANDBOX EXECUTE] Command: {}", cmd);
-                        let output_res = Command::new("sh")
-                            .args(["-c", cmd])
-                            .output();
+                    let t_id = task_id.clone().unwrap_or_else(|| "unassigned".to_string());
+                    match crate::command_guard::check_command(&state, &agent_id, &t_id, cmd) {
+                        Ok(crate::command_guard::GuardResult::Suspended(reason)) => {
+                            is_finished = true; // Suspend agent ReAct execution loop
+                            format!("SUSPENDED: The command requires human approval. Reason: {}", reason)
+                        }
+                        _ => {
+                            // Execute shell command synchronously on host
+                            println!("[SANDBOX EXECUTE] Command: {}", cmd);
+                            let output_res = Command::new("sh")
+                                .args(["-c", cmd])
+                                .output();
 
-                        match output_res {
-                            Ok(output) => {
-                                let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-                                let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-                                if output.status.success() {
-                                    format!("SUCCESS:\nstdout:\n{}\nstderr:\n{}", stdout, stderr)
-                                } else {
-                                    format!("FAILED (exit status {}):\nstdout:\n{}\nstderr:\n{}", output.status, stdout, stderr)
+                            match output_res {
+                                Ok(output) => {
+                                    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                                    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+                                    if output.status.success() {
+                                        format!("SUCCESS:\nstdout:\n{}\nstderr:\n{}", stdout, stderr)
+                                    } else {
+                                        format!(
+                                            "FAILED (exit status {}):\nstdout:\n{}\nstderr:\n{}\n\n\
+                                             ### ERROR DIAGNOSED:\n\
+                                             The command failed. Analyze the stderr/stdout to diagnose compile errors, missing directories, or test failures. Self-heal by modifying files or taking corrective action.",
+                                            output.status, stdout, stderr
+                                        )
+                                    }
                                 }
+                                Err(e) => format!("ERROR: Failed to launch shell command: {}", e)
                             }
-                            Err(e) => format!("ERROR: Failed to launch shell command: {}", e)
                         }
                     }
                 } else {
@@ -658,6 +697,31 @@ pub async fn trigger_agent_reply(
                     payload: serde_json::to_value(&reply_msg).unwrap_or(serde_json::Value::Null),
                 },
             );
+        }
+
+        // Save execution checkpoint at the end of each ReAct iteration
+        if let Some(ref t_id) = task_id {
+            let plan_str = "[\"Analyze objectives\", \"Perform execution tools\", \"Verify code deliverables\"]".to_string();
+            let completed_str = format!("[\"ReAct Iteration {}\"]", iteration);
+            let open_str = format!("[\"Next ReAct step\"]");
+            let touched_files = "[]".to_string();
+            let reasoning = format!("Agent {} executing ReAct step {} under task '{}'.", name, iteration, t_id);
+            let last_output = format!("Successfully finished iteration step {}", iteration);
+
+            let cp = crate::checkpoint_store::Checkpoint {
+                id: None,
+                agent_id: agent_id.clone(),
+                task_id: t_id.clone(),
+                plan: plan_str,
+                completed_steps: completed_str,
+                open_steps: open_str,
+                files_touched: touched_files,
+                reasoning_summary: reasoning,
+                last_tool_output: last_output,
+                validation_status: "pending".to_string(),
+                timestamp: None,
+            };
+            let _ = crate::checkpoint_store::save_agent_checkpoint(state.clone(), cp);
         }
     }
 

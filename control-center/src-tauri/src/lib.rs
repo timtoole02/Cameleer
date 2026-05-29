@@ -6,6 +6,10 @@ mod task_manager;
 mod context_engine;
 mod supervisor;
 mod event_bus;
+mod agent_templates;
+mod checkpoint_store;
+mod work_engine;
+mod command_guard;
 
 use storage::DbState;
 use tauri::Manager;
@@ -78,6 +82,8 @@ pub fn run() {
             task_manager::claim_card,
             task_manager::update_card_progress,
             task_manager::complete_card,
+            task_manager::decompose_task,
+            task_manager::approve_subtasks,
             context_engine::get_blackboard_awareness,
             context_engine::get_workspace_context,
             context_engine::record_decision_cmd,
@@ -85,7 +91,16 @@ pub fn run() {
             context_engine::resolve_handoff_cmd,
             context_engine::get_coordination_details,
             context_engine::update_shared_state,
-            supervisor::update_heartbeat
+            supervisor::update_heartbeat,
+            agent_templates::list_templates,
+            agent_templates::create_agent_from_template,
+            agent_templates::create_software_team,
+            agent_templates::create_coding_sprint,
+            checkpoint_store::save_agent_checkpoint,
+            checkpoint_store::get_latest_checkpoint,
+            work_engine::get_work_engine_suggestions,
+            command_guard::get_pending_command_approval,
+            command_guard::resolve_command_approval
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

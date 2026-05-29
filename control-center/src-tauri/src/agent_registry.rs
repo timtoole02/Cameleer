@@ -18,6 +18,16 @@ pub struct Agent {
     pub is_continuous: bool,
     pub status: String,
     pub last_heartbeat: Option<String>,
+    pub primary_skills: Option<String>,
+    pub allowed_tools: Option<String>,
+    pub reasoning_level: Option<String>,
+    pub workspace_access: Option<String>,
+    pub file_access_scope: Option<String>,
+    pub command_permissions: Option<String>,
+    pub kanban_permissions: Option<String>,
+    pub review_requirements: Option<bool>,
+    pub safety_profile: Option<String>,
+    pub escalation_rules: Option<String>,
 }
 
 #[tauri::command]
@@ -26,7 +36,9 @@ pub fn get_agents(state: State<'_, DbState>) -> Result<Vec<Agent>, String> {
     let mut stmt = conn
         .prepare(
             "SELECT id, name, role, persona, model_provider, model_name, temperature, max_tokens, 
-                    can_spawn_subtasks, can_talk_globally, is_continuous, status, last_heartbeat 
+                    can_spawn_subtasks, can_talk_globally, is_continuous, status, last_heartbeat,
+                    primary_skills, allowed_tools, reasoning_level, workspace_access, file_access_scope,
+                    command_permissions, kanban_permissions, review_requirements, safety_profile, escalation_rules
              FROM agents",
         )
         .map_err(|e| e.to_string())?;
@@ -47,6 +59,16 @@ pub fn get_agents(state: State<'_, DbState>) -> Result<Vec<Agent>, String> {
                 is_continuous: row.get::<_, i32>(10)? != 0,
                 status: row.get(11)?,
                 last_heartbeat: row.get(12)?,
+                primary_skills: row.get(13)?,
+                allowed_tools: row.get(14)?,
+                reasoning_level: row.get(15)?,
+                workspace_access: row.get(16)?,
+                file_access_scope: row.get(17)?,
+                command_permissions: row.get(18)?,
+                kanban_permissions: row.get(19)?,
+                review_requirements: Some(row.get::<_, i32>(20)? != 0),
+                safety_profile: row.get(21)?,
+                escalation_rules: row.get(22)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -63,8 +85,10 @@ pub fn create_agent(state: State<'_, DbState>, agent: Agent) -> Result<(), Strin
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "INSERT INTO agents (id, name, role, persona, model_provider, model_name, temperature, max_tokens, 
-                             can_spawn_subtasks, can_talk_globally, is_continuous, status)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+                             can_spawn_subtasks, can_talk_globally, is_continuous, status,
+                             primary_skills, allowed_tools, reasoning_level, workspace_access, file_access_scope,
+                             command_permissions, kanban_permissions, review_requirements, safety_profile, escalation_rules)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
         params![
             agent.id,
             agent.name,
@@ -78,6 +102,16 @@ pub fn create_agent(state: State<'_, DbState>, agent: Agent) -> Result<(), Strin
             if agent.can_talk_globally { 1 } else { 0 },
             if agent.is_continuous { 1 } else { 0 },
             agent.status,
+            agent.primary_skills,
+            agent.allowed_tools,
+            agent.reasoning_level,
+            agent.workspace_access,
+            agent.file_access_scope,
+            agent.command_permissions,
+            agent.kanban_permissions,
+            if agent.review_requirements.unwrap_or(false) { 1 } else { 0 },
+            agent.safety_profile,
+            agent.escalation_rules,
         ],
     )
     .map_err(|e| e.to_string())?;
@@ -91,9 +125,12 @@ pub fn update_agent(state: State<'_, DbState>, agent: Agent) -> Result<(), Strin
         "UPDATE agents 
          SET name = ?2, role = ?3, persona = ?4, model_provider = ?5, model_name = ?6, 
              temperature = ?7, max_tokens = ?8, can_spawn_subtasks = ?9, can_talk_globally = ?10, 
-             is_continuous = ?11, status = ?12, last_heartbeat = ?13 
+             is_continuous = ?11, status = ?12, last_heartbeat = ?13,
+             primary_skills = ?14, allowed_tools = ?15, reasoning_level = ?16, workspace_access = ?17,
+             file_access_scope = ?18, command_permissions = ?19, kanban_permissions = ?20,
+             review_requirements = ?21, safety_profile = ?22, escalation_rules = ?23
          WHERE id = ?1",
-        params![
+         params![
             agent.id,
             agent.name,
             agent.role,
@@ -107,6 +144,16 @@ pub fn update_agent(state: State<'_, DbState>, agent: Agent) -> Result<(), Strin
             if agent.is_continuous { 1 } else { 0 },
             agent.status,
             agent.last_heartbeat,
+            agent.primary_skills,
+            agent.allowed_tools,
+            agent.reasoning_level,
+            agent.workspace_access,
+            agent.file_access_scope,
+            agent.command_permissions,
+            agent.kanban_permissions,
+            if agent.review_requirements.unwrap_or(false) { 1 } else { 0 },
+            agent.safety_profile,
+            agent.escalation_rules,
         ],
     )
     .map_err(|e| e.to_string())?;
