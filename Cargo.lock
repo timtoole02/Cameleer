@@ -743,6 +743,7 @@ dependencies = [
 name = "control-center"
 version = "0.1.0"
 dependencies = [
+ "dirs",
  "futures-util",
  "reqwest 0.12.28",
  "rusqlite",
