@@ -621,18 +621,7 @@ pub fn complete_card(
     .map_err(|e| e.to_string())?;
 
     // 5b. Generate Work Receipt relational record
-    let summary_text = format!("Task successfully completed by agent '{}' with evidence: {}", agent_id, evidence);
-    let _ = conn.execute(
-        "INSERT OR REPLACE INTO mission_work_receipts (card_id, agent_id, summary, files_created, files_modified, commands_run, tests_run, validation_status, evidence_links, known_limitations, follow_up_recommendations)
-         VALUES (?1, ?2, ?3, '[\"README.md\"]', '[\"src/main.rs\"]', '[\"cargo check\", \"cargo test\"]', '[\"cargo test\"]', ?4, ?5, '[\"None identified during automated validation\"]', '[\"Proceed with next dependent sprint task\"]')",
-        params![
-            card_id,
-            agent_id,
-            summary_text,
-            val_status_str,
-            format!("[\"local://checkpoints/{}\"]", card_id)
-        ]
-    );
+    let _ = crate::mission_builder::generate_work_receipt(state.clone(), card_id.clone(), agent_id.clone());
 
     // 6. Reset agent status back to idle
     conn.execute(
