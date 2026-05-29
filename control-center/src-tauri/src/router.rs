@@ -278,10 +278,16 @@ pub struct LocalModelsResponse {
 }
 
 fn get_models_dir() -> std::path::PathBuf {
-    let mut path = std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string()));
-    path.push(".cameleer");
-    path.push("models");
-    path
+    if let Some(mut path) = dirs::data_dir() {
+        path.push("Cameleer");
+        path.push("models");
+        path
+    } else {
+        let mut path = std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string()));
+        path.push(".cameleer");
+        path.push("models");
+        path
+    }
 }
 
 #[tauri::command]

@@ -434,7 +434,7 @@ pub async fn trigger_agent_reply(
                     session_id: session_id.clone(),
                     role: "assistant".to_string(),
                     sender_id: Some(agent_id.clone()),
-                    content: response_text,
+                    content: response_text.clone(),
                     timestamp,
                 }
             };
@@ -735,7 +735,7 @@ pub async fn trigger_agent_reply(
                     session_id: session_id.clone(),
                     role: "assistant".to_string(),
                     sender_id: Some(agent_id.clone()),
-                    content: response_text,
+                    content: response_text.clone(),
                     timestamp,
                 }
             };

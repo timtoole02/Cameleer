@@ -662,6 +662,7 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
     let dl_id_clone = download_id.clone();
     let model_id_clone = model_id.clone();
 
+    let dl_url = url.clone();
     tokio::spawn(async move {
         let client = Client::new();
         let update_dl_progress = |progress: i64, finished: bool, err_msg: Option<String>| {
@@ -694,27 +695,101 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
             }
         };
 
-        // Simulated progressive chunks downloader writing directly to models directory
-        let mut downloaded = 0i64;
-        let mut interval = tokio::time::interval(std::time::Duration::from_millis(500));
-        loop {
-            interval.tick().await;
-            downloaded += 200 * 1024 * 1024; // 200MB increments
-            if downloaded >= size {
-                // Ensure a mock GGUF file exists
-                let dest = Path::new(&dest_path);
-                if let Ok(mut f) = fs::File::create(dest) {
-                    // Seed standard whitelisted header blocks so binary parses cleanly on verification
-                    let mut seed = b"GGUF\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00".to_vec();
-                    seed.resize(1024 * 1024, 0); // pad to 1MB
-                    use std::io::Write;
-                    let _ = f.write_all(&seed);
+        let part_path = format!("{}.part", dest_path);
+        let dest = Path::new(&part_path);
+        
+        // 1. Check existing downloaded size for resumability
+        let mut start_bytes = 0u64;
+        if dest.exists() {
+            if let Ok(metadata) = fs::metadata(dest) {
+                start_bytes = metadata.len();
+            }
+        }
+
+        // If we somehow downloaded more or equal, just assume it's done
+        if start_bytes >= size as u64 && size > 0 {
+            let _ = fs::rename(&part_path, &dest_path);
+            update_dl_progress(size, true, None);
+            return;
+        }
+
+        // 2. Build Range request
+        let mut request = client.get(&dl_url);
+        if start_bytes > 0 {
+            request = request.header("Range", format!("bytes={}-", start_bytes));
+        }
+
+        match request.send().await {
+            Ok(res) => {
+                let status = res.status();
+                if !status.is_success() {
+                    update_dl_progress(start_bytes as i64, false, Some(format!("Server returned HTTP {}", status)));
+                    return;
                 }
 
-                update_dl_progress(size, true, None);
-                break;
-            } else {
-                update_dl_progress(downloaded, false, None);
+                // If the server didn't return 206 Partial Content, we must restart
+                let mut file = if status == reqwest::StatusCode::PARTIAL_CONTENT {
+                    match fs::OpenOptions::new().append(true).open(dest) {
+                        Ok(f) => f,
+                        Err(e) => {
+                            update_dl_progress(start_bytes as i64, false, Some(format!("Failed to open part file: {}", e)));
+                            return;
+                        }
+                    }
+                } else {
+                    start_bytes = 0;
+                    match fs::File::create(dest) {
+                        Ok(f) => f,
+                        Err(e) => {
+                            update_dl_progress(0, false, Some(format!("Failed to create part file: {}", e)));
+                            return;
+                        }
+                    }
+                };
+
+                let mut downloaded = start_bytes as i64;
+                let mut stream = res.bytes_stream();
+                use futures_util::StreamExt;
+                use std::io::Write;
+                let mut last_saved = downloaded;
+
+                // 3. Stream chunks to disk
+                while let Some(chunk_res) = stream.next().await {
+                    match chunk_res {
+                        Ok(chunk) => {
+                            if let Err(e) = file.write_all(&chunk) {
+                                update_dl_progress(downloaded, false, Some(format!("Write failed: {}", e)));
+                                return;
+                            }
+                            downloaded += chunk.len() as i64;
+
+                            // Update DB roughly every 5MB to avoid spamming SQLite
+                            if downloaded - last_saved > 5 * 1024 * 1024 {
+                                last_saved = downloaded;
+                                update_dl_progress(downloaded, false, None);
+                            }
+                        }
+                        Err(e) => {
+                            update_dl_progress(downloaded, false, Some(format!("Stream error: {}", e)));
+                            return;
+                        }
+                    }
+                }
+
+                // Verify file size
+                if downloaded >= size || size == 0 {
+                    // Atomic rename
+                    if let Err(e) = fs::rename(&part_path, &dest_path) {
+                        update_dl_progress(downloaded, false, Some(format!("Failed to rename final file: {}", e)));
+                        return;
+                    }
+                    update_dl_progress(downloaded, true, None);
+                } else {
+                    update_dl_progress(downloaded, false, Some("Connection dropped before file was fully downloaded".to_string()));
+                }
+            }
+            Err(e) => {
+                update_dl_progress(start_bytes as i64, false, Some(format!("Network request failed: {}", e)));
             }
         }
     });
@@ -995,6 +1070,18 @@ pub async fn activate_model_scoped(
         // Scoped to specific agent
         conn.execute(
             "UPDATE agents SET model_name = ?1, model_provider = 'camelid' WHERE id = ?2",
+            params![filename, scope_id]
+        ).map_err(|e| e.to_string())?;
+    } else if scope_type == "workspace" {
+        // Scoped to workspace
+        conn.execute(
+            "UPDATE agents SET model_name = ?1, model_provider = 'camelid' WHERE workspace_id = ?2",
+            params![filename, scope_id]
+        ).map_err(|e| e.to_string())?;
+    } else if scope_type == "task" {
+        // Scoped to task owner
+        conn.execute(
+            "UPDATE agents SET model_name = ?1, model_provider = 'camelid' WHERE id = (SELECT owner_id FROM tasks WHERE id = ?2 LIMIT 1)",
             params![filename, scope_id]
         ).map_err(|e| e.to_string())?;
     }
