@@ -141,43 +141,6 @@ pub fn start_watchdog(app_handle: AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(5)).await;
-
-            // 1. Keep camelid background daemon alive and running
-            if let Some(daemon_state) = app_handle.try_state::<DaemonState>() {
-                let mut should_restart = false;
-                if let Ok(mut child_guard) = daemon_state.child.try_lock() {
-                    if let Some(ref mut child) = *child_guard {
-                        match child.try_wait() {
-                            Ok(Some(status)) => {
-                                println!("[WATCHDOG] camelid daemon exited with status: {}. Restarting...", status);
-                                should_restart = true;
-                            }
-                            Ok(None) => {
-                                // Process is still running, perfect!
-                            }
-                            Err(e) => {
-                                println!("[WATCHDOG] Error polling camelid status: {}. Restarting...", e);
-                                should_restart = true;
-                            }
-                        }
-                    } else {
-                        // Daemon not started yet
-                        should_restart = true;
-                    }
-
-                    if should_restart {
-                        // Remove child process from state to ensure spawn has a clean slate
-                        *child_guard = None;
-                    }
-                }
-
-                if should_restart {
-                    if let Some(db_state) = app_handle.try_state::<DbState>() {
-                        println!("[WATCHDOG] Spawning background camelid local inference daemon...");
-                        let _ = spawn_camelid_daemon(&db_state, &daemon_state, None);
-                    }
-                }
-            }
             
             let state = match app_handle.try_state::<DbState>() {
                 Some(s) => s,

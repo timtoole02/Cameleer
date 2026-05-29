@@ -244,6 +244,36 @@ interface SmokeTestResult {
   log_output: string;
 }
 
+interface BackendStatus {
+  state: string;
+  pid: number | null;
+  port: number | null;
+  bind_address: string;
+  version: string | null;
+  uptime_seconds: number | null;
+  active_model: string | null;
+  model_loaded: boolean;
+  last_health_check_at: string | null;
+  last_error: string | null;
+  restart_count: number;
+  log_path: string | null;
+}
+
+interface BackendRuntimeConfig {
+  backend_binary_path: string | null;
+  bind_address: string;
+  port: number;
+  auto_start_on_app_launch: boolean;
+  auto_restart_on_crash: boolean;
+  stop_on_app_exit: boolean;
+  startup_timeout_ms: number;
+  health_check_interval_ms: number;
+  restart_backoff_policy: string;
+  max_restarts: number;
+  log_path: string | null;
+  model_path: string | null;
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models" | "missions">("dashboard");
   const [suggestions, setSuggestions] = useState<WorkSuggestion[]>([]);
@@ -317,6 +347,19 @@ function App() {
   const [developerMode, setDeveloperMode] = useState(false);
   const [metadataSearch, setMetadataSearch] = useState("");
   const [tensorSearch, setTensorSearch] = useState("");
+
+  // Backend Runtime Supervisor React State Hooks
+  const [backendStatus, setBackendStatus] = useState<BackendStatus | null>(null);
+  const [backendLogs, setBackendLogs] = useState<string>("No logs captured yet.");
+  const [formAutoStart, setFormAutoStart] = useState<boolean>(true);
+  const [formAutoRestart, setFormAutoRestart] = useState<boolean>(true);
+  const [formStopOnExit, setFormStopOnExit] = useState<boolean>(true);
+  const [formPort, setFormPort] = useState<number>(8181);
+  const [formLogPath, setFormLogPath] = useState<string>("");
+  const [formBinaryPath, setFormBinaryPath] = useState<string>("");
+  const [formBindAddress, setFormBindAddress] = useState<string>("127.0.0.1");
+  const [formMaxRestarts, setFormMaxRestarts] = useState<number>(5);
+  const [formBackoffPolicy, setFormBackoffPolicy] = useState<string>("exponential");
 
   // Hook: Load Agent Contracts & Work Receipts dynamically on Kanban Selection
   useEffect(() => {
@@ -960,6 +1003,190 @@ function App() {
     }
   };
 
+  const loadBackendStatus = async () => {
+    try {
+      const status = await invoke<BackendStatus>("get_backend_status");
+      setBackendStatus(status);
+      if (status) {
+        setFormPort(status.port || 8181);
+        setFormLogPath(status.log_path || "");
+        setFormBindAddress(status.bind_address || "127.0.0.1");
+      }
+      
+      const config = await invoke<BackendRuntimeConfig>("get_backend_config");
+      if (config) {
+        setFormAutoStart(config.auto_start_on_app_launch);
+        setFormAutoRestart(config.auto_restart_on_crash);
+        setFormStopOnExit(config.stop_on_app_exit);
+        setFormPort(config.port);
+        setFormLogPath(config.log_path || "");
+        setFormBinaryPath(config.backend_binary_path || "");
+        setFormBindAddress(config.bind_address || "127.0.0.1");
+        setFormMaxRestarts(config.max_restarts);
+        setFormBackoffPolicy(config.restart_backoff_policy);
+      }
+    } catch (e) {
+      console.error("Failed to load backend status and config:", e);
+    }
+  };
+
+  const handleCheckBackendHealth = async () => {
+    try {
+      const status = await invoke<BackendStatus>("check_backend_health");
+      setBackendStatus(status);
+      alert(`Backend health check completed! Current state: ${status.state}`);
+    } catch (e) {
+      alert("Health check command failed: " + e);
+    }
+  };
+
+  const handleRestartBackend = async () => {
+    try {
+      const status = await invoke<BackendStatus>("restart_backend", { reason: "user_requested" });
+      setBackendStatus(status);
+      alert(`Backend successfully restarted! Current state: ${status.state}`);
+      handleGetBackendLogs();
+    } catch (e) {
+      alert("Restart command failed: " + e);
+    }
+  };
+
+  const handleStopBackend = async () => {
+    try {
+      const status = await invoke<BackendStatus>("stop_backend");
+      setBackendStatus(status);
+      alert("Backend inference daemon successfully stopped.");
+    } catch (e) {
+      alert("Stop command failed: " + e);
+    }
+  };
+
+  const handleGetBackendLogs = async () => {
+    try {
+      const logs = await invoke<string>("get_backend_logs", { limit: 150 });
+      setBackendLogs(logs);
+    } catch (e) {
+      console.error("Failed to get backend logs:", e);
+    }
+  };
+
+  const handleOpenBackendLogs = async () => {
+    try {
+      await invoke("open_backend_logs");
+    } catch (e) {
+      alert("Failed to open logs: " + e);
+    }
+  };
+
+  const handleSaveBackendConfig = async () => {
+    try {
+      const newConfig = {
+        backend_binary_path: formBinaryPath ? formBinaryPath : null,
+        bind_address: formBindAddress,
+        port: formPort,
+        auto_start_on_app_launch: formAutoStart,
+        auto_restart_on_crash: formAutoRestart,
+        stop_on_app_exit: formStopOnExit,
+        startup_timeout_ms: 30000,
+        health_check_interval_ms: 5000,
+        restart_backoff_policy: formBackoffPolicy,
+        max_restarts: formMaxRestarts,
+        log_path: formLogPath ? formLogPath : null,
+        model_path: null,
+      };
+      await invoke("save_backend_config_cmd", { newConfig });
+      
+      let restartRecommended = false;
+      if (backendStatus) {
+        if (backendStatus.port !== formPort || backendStatus.bind_address !== formBindAddress || 
+            (formBinaryPath !== "" && backendStatus.state !== "ready")) {
+          restartRecommended = true;
+        }
+      }
+      
+      if (restartRecommended) {
+        if (confirm("Supervisor configuration successfully saved! Port or path overrides changed. Would you like to restart the backend supervisor immediately to validate and apply the new configuration?")) {
+          await handleRestartBackend();
+        }
+      } else {
+        alert("Supervisor configuration successfully saved!");
+      }
+      loadBackendStatus();
+    } catch (e) {
+      alert("Failed to save config: " + e);
+    }
+  };
+
+  const handleResetBackendRuntime = async () => {
+    if (!confirm("Are you sure you want to completely reset the backend runtime supervisor? This will stop the daemon and revert all port and auto-start configurations to standard defaults.")) {
+      return;
+    }
+    try {
+      const status = await invoke<BackendStatus>("reset_backend_runtime_state");
+      setBackendStatus(status);
+      alert("Backend runtime supervisor reset successfully!");
+      setFormBinaryPath("");
+      setFormBindAddress("127.0.0.1");
+      setFormPort(8181);
+      setFormLogPath("");
+      setFormMaxRestarts(5);
+      setFormBackoffPolicy("exponential");
+    } catch (e) {
+      alert("Failed to reset supervisor state: " + e);
+    }
+  };
+
+  useEffect(() => {
+    let active = true;
+    let unlistenStatus: (() => void) | null = null;
+    let unlistenReady: (() => void) | null = null;
+    let unlistenFailed: (() => void) | null = null;
+
+    const setupBackendListeners = async () => {
+      const uStatus = await listen<BackendStatus>("backend_status_changed", (event) => {
+        if (active) {
+          console.log("[SUPERVISOR EVENT] Status changed:", event.payload);
+          setBackendStatus(event.payload);
+        }
+      });
+      unlistenStatus = uStatus;
+
+      const uReady = await listen<BackendStatus>("backend_ready", (event) => {
+        if (active) {
+          console.log("[SUPERVISOR EVENT] Ready:", event.payload);
+          setBackendStatus(event.payload);
+        }
+      });
+      unlistenReady = uReady;
+
+      const uFailed = await listen<BackendStatus>("backend_failed", (event) => {
+        if (active) {
+          console.log("[SUPERVISOR EVENT] Failed:", event.payload);
+          setBackendStatus(event.payload);
+        }
+      });
+      unlistenFailed = uFailed;
+    };
+
+    setupBackendListeners();
+    loadBackendStatus();
+    handleGetBackendLogs();
+
+    const logTimer = setInterval(() => {
+      if (activeTab === "system" || !backendStatus || backendStatus.state !== "ready") {
+        handleGetBackendLogs();
+      }
+    }, 5000);
+
+    return () => {
+      active = false;
+      if (unlistenStatus) unlistenStatus();
+      if (unlistenReady) unlistenReady();
+      if (unlistenFailed) unlistenFailed();
+      clearInterval(logTimer);
+    };
+  }, [activeTab, backendStatus?.state]);
+
   useEffect(() => {
     loadLocalModels();
     loadModelCatalog();
@@ -1544,8 +1771,184 @@ function App() {
     }
   };
 
+  const blockingOverlayStyle: React.CSSProperties = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(10, 13, 20, 0.75)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    zIndex: 9999,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--text-main)",
+    fontFamily: "var(--font-sans)",
+  };
+
+  const glassCardStyle: React.CSSProperties = {
+    background: "rgba(19, 24, 38, 0.8)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    borderRadius: "20px",
+    padding: "32px",
+    boxShadow: "0 20px 50px rgba(0, 0, 0, 0.5), 0 0 45px rgba(0, 242, 254, 0.05)",
+    textAlign: "center",
+  };
+
+  const overlayTitleStyle: React.CSSProperties = {
+    fontSize: "1.4rem",
+    fontWeight: 700,
+    marginBottom: "12px",
+    background: "linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  };
+
+  const renderBlockingOverlay = () => {
+    if (activeTab === "system") return null;
+    if (!backendStatus) {
+      return (
+        <div style={blockingOverlayStyle}>
+          <div style={glassCardStyle}>
+            <h2 style={overlayTitleStyle}>Initializing Supervisor Context...</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", margin: 0 }}>Connecting to local GGUF backend supervisor state.</p>
+            <div className="dot-pulse" style={{ justifyContent: "center", marginTop: "24px" }}>
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const isStartingOrLoading = ["starting", "restarting", "stopping"].includes(backendStatus.state);
+    
+    if (backendStatus.state !== "ready") {
+      return (
+        <div style={blockingOverlayStyle}>
+          <div style={{ ...glassCardStyle, width: "650px", maxWidth: "90%" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", borderBottom: "1px solid var(--border-color)", paddingBottom: "20px", marginBottom: "20px" }}>
+              <span style={{ fontSize: "2.2rem" }}>
+                {isStartingOrLoading ? "⏳" : "⚠️"}
+              </span>
+              <div style={{ textAlign: "left" }}>
+                <h2 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 700, color: "var(--text-main)" }}>
+                  {backendStatus.state === "starting" && "Starting Backend Inference..."}
+                  {backendStatus.state === "restarting" && "Restarting Backend..."}
+                  {backendStatus.state === "stopping" && "Stopping Backend..."}
+                  {backendStatus.state === "failed" && "Backend Failed to Start"}
+                  {backendStatus.state === "crashed" && "Backend Inference Process Crashed"}
+                  {backendStatus.state === "stopped" && "Backend Inference Stopped"}
+                  {backendStatus.state === "not_installed" && "Backend Binary Missing"}
+                  {["unknown", "degraded"].includes(backendStatus.state) && `Backend Status: ${backendStatus.state.toUpperCase()}`}
+                </h2>
+                <p style={{ margin: "4px 0 0 0", fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                  Cameleer Local Daemon Supervisor (State: <span style={{ fontFamily: "var(--font-mono)", color: "var(--accent-primary)", fontWeight: 700 }}>{backendStatus.state}</span>)
+                </p>
+              </div>
+            </div>
+
+            {/* Diagnostic / Error Block */}
+            {backendStatus.last_error && (
+              <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "10px", padding: "14px 16px", marginBottom: "20px", color: "#f87171", fontSize: "0.85rem", textAlign: "left", lineHeight: 1.4 }}>
+                <div style={{ fontWeight: 700, textTransform: "uppercase", fontSize: "0.7rem", letterSpacing: "0.5px", marginBottom: "4px", color: "#ef4444" }}>Diagnostic Error Summary</div>
+                {backendStatus.last_error}
+              </div>
+            )}
+
+            {/* Live Log Console */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", textAlign: "left", marginBottom: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.78rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.5px" }}>Live Log Stream (Last 150 Lines)</span>
+                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>{backendStatus.log_path ? backendStatus.log_path.split("/").pop() : "camelid.log"}</span>
+              </div>
+              <pre style={{
+                background: "rgba(0,0,0,0.45)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "10px",
+                padding: "14px",
+                fontSize: "0.75rem",
+                color: "#34d399",
+                fontFamily: "var(--font-mono)",
+                maxHeight: "180px",
+                overflowY: "auto",
+                whiteSpace: "pre-wrap",
+                margin: 0,
+                lineHeight: 1.45,
+                boxShadow: "inset 0 4px 20px rgba(0,0,0,0.5)"
+              }}>
+                {backendLogs || "No logs streams piped yet."}
+              </pre>
+            </div>
+
+            {/* Telemetry Footer */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px", marginBottom: "24px", textAlign: "left" }}>
+              <div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", textTransform: "uppercase", marginBottom: "2px" }}>Target Port / Bind</div>
+                <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{backendStatus.bind_address}:{backendStatus.port || 8181}</div>
+              </div>
+              <div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", textTransform: "uppercase", marginBottom: "2px" }}>Process PID</div>
+                <div style={{ fontWeight: 600, color: "var(--text-main)" }}>{backendStatus.pid || "None"}</div>
+              </div>
+              <div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", textTransform: "uppercase", marginBottom: "2px" }}>Restarts Count</div>
+                <div style={{ fontWeight: 600, color: backendStatus.restart_count > 0 ? "var(--color-blocked)" : "var(--text-main)" }}>{backendStatus.restart_count} / 5</div>
+              </div>
+            </div>
+
+            {/* Action Buttons Row */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={handleCheckBackendHealth} className="action-btn" style={{ margin: 0, height: "38px", padding: "0 16px", fontSize: "0.82rem" }}>
+                  🔄 Check Status
+                </button>
+                {!isStartingOrLoading ? (
+                  <button onClick={handleRestartBackend} className="action-btn" style={{ margin: 0, height: "38px", padding: "0 16px", fontSize: "0.82rem", background: "rgba(16, 185, 129, 0.15)", borderColor: "rgba(16, 185, 129, 0.3)" }}>
+                    🚀 Restart Backend
+                  </button>
+                ) : (
+                  <button disabled className="action-btn" style={{ margin: 0, height: "38px", padding: "0 16px", fontSize: "0.82rem", opacity: 0.6 }}>
+                    ⏳ Restarting...
+                  </button>
+                )}
+                {backendStatus.state !== "stopped" && (
+                  <button onClick={handleStopBackend} className="action-btn danger-btn" style={{ margin: 0, height: "38px", padding: "0 16px", fontSize: "0.82rem" }}>
+                    🛑 Stop
+                  </button>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <button onClick={handleOpenBackendLogs} className="action-btn" style={{ margin: 0, height: "38px", padding: "0 16px", fontSize: "0.82rem" }}>
+                  📂 Open Logs
+                </button>
+                <button onClick={async () => {
+                  try {
+                    await invoke("reveal_backend_binary");
+                  } catch(e) {
+                    alert("Failed to reveal binary: " + e);
+                  }
+                }} className="action-btn" style={{ margin: 0, height: "38px", padding: "0 16px", fontSize: "0.82rem" }}>
+                  🔍 Reveal Binary
+                </button>
+                <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab("system"); }} style={{ fontSize: "0.85rem", color: "var(--accent-primary)", textDecoration: "none", fontWeight: 700, marginLeft: "8px", transition: "color 0.2s ease" }} onMouseEnter={(e) => e.currentTarget.style.color = "var(--accent-secondary)"} onMouseLeave={(e) => e.currentTarget.style.color = "var(--accent-primary)"}>
+                  Go to Settings →
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="app-layout">
+      {renderBlockingOverlay()}
       {/* 1. Sidebar Column */}
       <aside className="sidebar">
         <div className="sidebar-header">
@@ -4030,6 +4433,245 @@ function App() {
                 ))}
             </div>
           </div>
+
+            {/* Backend Runtime Supervisor Control & Telemetry Panel */}
+            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "20px", marginTop: "16px" }}>
+              <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--accent-primary)", marginBottom: "6px" }}>🔌 Backend Runtime Supervisor</h3>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "16px", lineHeight: 1.4 }}>
+                Monitor status and modify supervisor policies for the local GGUF inference engine daemon (Camelid). Single source of truth.
+              </p>
+
+              {/* Status details sub-card */}
+              <div style={{ background: "rgba(0,0,0,0.15)", border: "1px solid var(--border-color)", borderRadius: "10px", padding: "16px", marginBottom: "16px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", fontSize: "0.8rem" }}>
+                  <div>
+                    <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.7rem", textTransform: "uppercase", marginBottom: "2px" }}>SUPERVISED STATUS</span>
+                    <span style={{ 
+                      fontWeight: 700, 
+                      color: backendStatus?.state === "ready" ? "var(--color-working)" : ["starting", "restarting"].includes(backendStatus?.state || "") ? "var(--color-blocked)" : "#ef4444",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}>
+                      <span style={{ 
+                        width: "8px", 
+                        height: "8px", 
+                        borderRadius: "50%", 
+                        backgroundColor: backendStatus?.state === "ready" ? "var(--color-working)" : ["starting", "restarting"].includes(backendStatus?.state || "") ? "var(--color-blocked)" : "#ef4444",
+                        boxShadow: `0 0 8px ${backendStatus?.state === "ready" ? "var(--color-working)" : ["starting", "restarting"].includes(backendStatus?.state || "") ? "var(--color-blocked)" : "#ef4444"}`
+                      }} />
+                      {backendStatus?.state ? backendStatus.state.toUpperCase() : "UNKNOWN"}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.7rem", textTransform: "uppercase", marginBottom: "2px" }}>PROCESS ID (PID)</span>
+                    <span style={{ fontWeight: 600 }}>{backendStatus?.pid || "None"}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.7rem", textTransform: "uppercase", marginBottom: "2px" }}>ACTIVE PORT / BIND</span>
+                    <span style={{ fontWeight: 600 }}>{backendStatus?.bind_address || "127.0.0.1"}:{backendStatus?.port || 8181}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.7rem", textTransform: "uppercase", marginBottom: "2px" }}>ENGINE VERSION</span>
+                    <span style={{ fontWeight: 600 }}>{backendStatus?.version || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.7rem", textTransform: "uppercase", marginBottom: "2px" }}>ACTIVE MODEL</span>
+                    <span style={{ fontWeight: 600, color: "var(--accent-primary)" }}>{backendStatus?.active_model || "None"}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.7rem", textTransform: "uppercase", marginBottom: "2px" }}>MODEL LOADED</span>
+                    <span style={{ fontWeight: 600, color: backendStatus?.model_loaded ? "var(--color-working)" : "var(--text-muted)" }}>
+                      {backendStatus?.model_loaded ? "YES" : "NO"}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.7rem", textTransform: "uppercase", marginBottom: "2px" }}>RESTART ATTEMPTS</span>
+                    <span style={{ fontWeight: 600, color: (backendStatus?.restart_count || 0) > 0 ? "var(--color-blocked)" : "var(--text-main)" }}>
+                      {backendStatus?.restart_count || 0} / 5
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.7rem", textTransform: "uppercase", marginBottom: "2px" }}>LAST HEALTH CHECK</span>
+                    <span style={{ fontWeight: 600, fontSize: "0.75rem" }}>
+                      {backendStatus?.last_health_check_at ? new Date(parseInt(backendStatus.last_health_check_at) * 1000).toLocaleTimeString() : "Never"}
+                    </span>
+                  </div>
+                </div>
+                
+                {backendStatus?.last_error && (
+                  <div style={{ marginTop: "12px", padding: "10px", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "6px", fontSize: "0.75rem", color: "#f87171" }}>
+                    <span style={{ fontWeight: 700 }}>Last Error:</span> {backendStatus.last_error}
+                  </div>
+                )}
+                
+                <div style={{ marginTop: "12px", fontSize: "0.72rem", color: "var(--text-muted)", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "8px" }}>
+                  <span style={{ fontWeight: 600 }}>Log File Location:</span> <code style={{ color: "var(--accent-secondary)", fontFamily: "var(--font-mono)" }}>{backendStatus?.log_path || "~/.cameleer/camelid.log"}</code>
+                </div>
+              </div>
+
+              {/* Log stream view inside settings */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", textAlign: "left", marginBottom: "16px" }}>
+                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.5px" }}>Live Log Console Stream</span>
+                <pre style={{
+                  background: "rgba(0,0,0,0.4)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "10px",
+                  padding: "12px",
+                  fontSize: "0.75rem",
+                  color: "#34d399",
+                  fontFamily: "var(--font-mono)",
+                  maxHeight: "130px",
+                  overflowY: "auto",
+                  whiteSpace: "pre-wrap",
+                  margin: 0,
+                  lineHeight: 1.4
+                }}>
+                  {backendLogs || "No logs streams piped yet."}
+                </pre>
+              </div>
+
+              {/* Action Buttons Row */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "16px" }}>
+                <button onClick={handleCheckBackendHealth} className="action-btn">
+                  🔄 Check Status
+                </button>
+                <button onClick={handleRestartBackend} className="action-btn" style={{ background: "rgba(16, 185, 129, 0.1)", borderColor: "rgba(16, 185, 129, 0.25)", color: "#10b981" }}>
+                  🚀 Restart Backend
+                </button>
+                <button onClick={handleStopBackend} className="action-btn danger-btn">
+                  🛑 Stop Backend
+                </button>
+                <button onClick={handleOpenBackendLogs} className="action-btn">
+                  📂 Open Logs
+                </button>
+                <button onClick={async () => {
+                  try {
+                    await invoke("reveal_backend_binary");
+                  } catch(e) {
+                    alert("Failed to reveal binary: " + e);
+                  }
+                }} className="action-btn">
+                  🔍 Reveal Backend Binary
+                </button>
+                <button onClick={handleResetBackendRuntime} className="action-btn danger-btn" style={{ marginLeft: "auto" }}>
+                  ⚠️ Reset Runtime State
+                </button>
+              </div>
+
+              {/* Configuration Fields Grid */}
+              <h4 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "12px" }}>⚙️ Supervisor Policies</h4>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", justifyContent: "center" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.82rem", cursor: "pointer", userSelect: "none" }}>
+                    <input 
+                      type="checkbox" 
+                      checked={formAutoStart} 
+                      onChange={(e) => setFormAutoStart(e.target.checked)} 
+                      style={{ cursor: "pointer" }}
+                    />
+                    Auto-start backend on app launch
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.82rem", cursor: "pointer", userSelect: "none" }}>
+                    <input 
+                      type="checkbox" 
+                      checked={formAutoRestart} 
+                      onChange={(e) => setFormAutoRestart(e.target.checked)} 
+                      style={{ cursor: "pointer" }}
+                    />
+                    Auto-restart backend if it crashes
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.82rem", cursor: "pointer", userSelect: "none" }}>
+                    <input 
+                      type="checkbox" 
+                      checked={formStopOnExit} 
+                      onChange={(e) => setFormStopOnExit(e.target.checked)} 
+                      style={{ cursor: "pointer" }}
+                    />
+                    Stop backend when Cameleer closes
+                  </label>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Backend Port</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={formPort}
+                    onChange={(e) => setFormPort(parseInt(e.target.value) || 8181)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Bind Address</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formBindAddress}
+                    onChange={(e) => setFormBindAddress(e.target.value)}
+                    placeholder="127.0.0.1"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Max Crash Restarts (2 min window)</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={formMaxRestarts}
+                    onChange={(e) => setFormMaxRestarts(parseInt(e.target.value) || 5)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Restart Backoff Policy</label>
+                  <select
+                    className="form-input"
+                    value={formBackoffPolicy}
+                    onChange={(e) => setFormBackoffPolicy(e.target.value)}
+                    style={{ background: "rgba(0, 0, 0, 0.3)", color: "#fff" }}
+                  >
+                    <option value="exponential">Exponential Backoff</option>
+                    <option value="linear">Linear Backoff</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Developer Configuration / Advanced Section */}
+              <details style={{ background: "rgba(255,255,255,0.01)", border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px", marginBottom: "16px" }}>
+                <summary style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", cursor: "pointer", userSelect: "none" }}>
+                  🛠️ Developer / Advanced Options (Overhead overrides)
+                </summary>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px", marginTop: "12px" }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Backend Binary Path (Leave empty for default bundled)</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formBinaryPath}
+                      onChange={(e) => setFormBinaryPath(e.target.value)}
+                      placeholder="e.g. /usr/local/bin/camelid"
+                    />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Custom Log Path (Leave empty for default ~/.cameleer/camelid.log)</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formLogPath}
+                      onChange={(e) => setFormLogPath(e.target.value)}
+                      placeholder="e.g. /var/log/camelid.log"
+                    />
+                  </div>
+                </div>
+              </details>
+
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button className="sidebar-btn" style={{ margin: 0, padding: "10px 24px" }} onClick={handleSaveBackendConfig}>
+                  Save Supervisor Config
+                </button>
+              </div>
+            </div>
 
             {/* OS Gateway & Camelid Configurations */}
             <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "20px", marginTop: "16px" }}>

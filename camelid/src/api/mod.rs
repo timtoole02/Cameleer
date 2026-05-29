@@ -195,6 +195,15 @@ pub struct HealthResponse {
 }
 
 #[derive(Debug, Serialize)]
+pub struct ReadyResponse {
+    pub ready: bool,
+    pub model_loaded: bool,
+    pub active_model: Option<String>,
+    pub runtime_ready: bool,
+    pub last_error: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
 pub struct CapabilitiesResponse {
     pub engine: &'static str,
     pub gguf_metadata: bool,
@@ -727,6 +736,8 @@ pub fn router_with_state(state: AppState) -> Router {
     Router::new()
         .route("/health", get(health))
         .route("/v1/health", get(health))
+        .route("/ready", get(ready_handler))
+        .route("/v1/ready", get(ready_handler))
         .route("/api/capabilities", get(capabilities))
         .route("/execution-plan", get(execution_plan))
         .route("/api/execution-plan", get(execution_plan))
@@ -778,6 +789,19 @@ async fn health(State(state): State<AppState>) -> Json<HealthResponse> {
         generation_ready,
         active_model_id: model.as_ref().map(|m| m.id.clone()),
         execution_plan: state.execution_plan.read().await.clone(),
+    })
+}
+
+async fn ready_handler(State(state): State<AppState>) -> Json<ReadyResponse> {
+    let model = state.loaded_model.read().await;
+    let loaded = model.is_some();
+    let active_model = model.as_ref().map(|m| m.id.clone());
+    Json(ReadyResponse {
+        ready: true,
+        model_loaded: loaded,
+        active_model,
+        runtime_ready: true,
+        last_error: None,
     })
 }
 

@@ -12,6 +12,7 @@ mod work_engine;
 mod command_guard;
 mod mission_builder;
 mod models_manager;
+mod backend_runtime;
 
 use storage::DbState;
 use tauri::Manager;
@@ -41,20 +42,28 @@ pub fn run() {
                 conn: std::sync::Mutex::new(conn),
             });
             
-            // Initialize and Manage DaemonState in Tauri State
+            // Initialize and Manage DaemonState in Tauri State for legacy handlers
             let daemon_state = supervisor::DaemonState {
                 child: std::sync::Arc::new(std::sync::Mutex::new(None)),
             };
             app.manage(daemon_state);
+
+            // Initialize and Manage BackendRuntimeManager in Tauri State
+            let backend_manager = backend_runtime::BackendRuntimeManager::new();
+            app.manage(backend_manager);
             
-            // Synchronously spawn local camelid daemon on port 8181
-            let db_state = app.state::<DbState>();
-            let managed_daemon_state = app.state::<supervisor::DaemonState>();
-            let _ = supervisor::spawn_camelid_daemon(&db_state, &managed_daemon_state, None);
-            
-            // 2. Start Supervisor Watchdog Daemon
+            // 2. Start Supervisor Watchdogs
             let app_handle = app.handle().clone();
-            supervisor::start_watchdog(app_handle);
+            
+            // Spawn asynchronous backend manager to keep UI responsive on startup
+            tauri::async_runtime::spawn(async move {
+                let _ = backend_runtime::ensure_backend_running(app_handle.clone()).await;
+                backend_runtime::start_heartbeat_loop(app_handle);
+            });
+
+            // Start agent recovery watchdogs
+            let app_handle_agents = app.handle().clone();
+            supervisor::start_watchdog(app_handle_agents);
             
             println!("[SYSTEM] Cameleer core services successfully started.");
             Ok(())
@@ -129,7 +138,19 @@ pub fn run() {
             models_manager::activate_model_scoped,
             models_manager::run_model_smoke_test,
             models_manager::get_model_details,
-            models_manager::get_model_storage_usage
+            models_manager::get_model_storage_usage,
+            backend_runtime::get_backend_status,
+            backend_runtime::ensure_backend_running,
+            backend_runtime::check_backend_health,
+            backend_runtime::restart_backend,
+            backend_runtime::stop_backend,
+            backend_runtime::get_backend_logs,
+            backend_runtime::open_backend_logs,
+            backend_runtime::open_backend_settings,
+            backend_runtime::save_backend_config_cmd,
+            backend_runtime::reset_backend_runtime_state,
+            backend_runtime::reveal_backend_binary,
+            backend_runtime::get_backend_config
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
@@ -141,6 +162,21 @@ pub fn run() {
                     if let Some(mut child) = child_guard.take() {
                         println!("[DAEMON] Cleaning up camelid process on exit...");
                         let _ = child.kill();
+                    }
+                }
+            }
+
+            if let Some(manager) = app_handle.try_state::<backend_runtime::BackendRuntimeManager>() {
+                let stop_on_exit = {
+                    let guard = manager.config.lock().unwrap();
+                    guard.stop_on_app_exit
+                };
+                if stop_on_exit {
+                    println!("[SUPERVISOR] Cleaning up supervised local inference daemon on exit...");
+                    let mut child_guard = manager.child.lock().unwrap();
+                    if let Some(mut child) = child_guard.take() {
+                        let _ = child.kill();
+                        let _ = child.wait();
                     }
                 }
             }
