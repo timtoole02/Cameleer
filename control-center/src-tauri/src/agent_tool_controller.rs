@@ -17,7 +17,7 @@ pub fn execute_tool(
 ) -> Result<String, String> {
 
     // 1. Check allowed tools in contract
-    if !contract.allowed_actions.contains(&action.action_type) && action.action_type != "complete_card" && action.action_type != "claim_card" && action.action_type != "update_card_progress" {
+    if !contract.allowed_actions.contains(&action.action_type) && action.action_type != "complete_card" && action.action_type != "claim_card" && action.action_type != "update_card_progress" && action.action_type != "handoff_card" {
         return Err(format!("Action {} is not permitted in your Agent Contract", action.action_type));
     }
 
@@ -103,6 +103,27 @@ pub fn execute_tool(
                 Ok(msg)
             } else {
                 Err("card_id required".to_string())
+            }
+        },
+        "handoff_card" => {
+            if let (Some(card_id), Some(target_agent_id), Some(notes)) = (&action.card_id, &action.target_agent_id, &action.notes) {
+                let state = app_handle.state::<DbState>();
+                let conn = state.conn.lock().unwrap();
+                
+                crate::agent_handoff_manager::execute_handoff(
+                    app_handle,
+                    &conn,
+                    card_id,
+                    agent_id,
+                    target_agent_id,
+                    notes
+                )?;
+                
+                let msg = format!("Task {} successfully handed off to {}", card_id, target_agent_id);
+                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                Ok(msg)
+            } else {
+                Err("card_id, target_agent_id, and notes required for handoff".to_string())
             }
         },
         "complete_card" => {

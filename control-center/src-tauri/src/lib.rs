@@ -23,6 +23,8 @@ mod agent_runtime_kernel;
 mod agent_validation_engine;
 mod agent_tool_controller;
 mod agent_recovery_engine;
+mod agent_handoff_manager;
+mod agent_conflict_detector;
 
 use storage::DbState;
 use tauri::Manager;
