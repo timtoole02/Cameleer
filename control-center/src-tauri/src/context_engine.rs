@@ -40,11 +40,12 @@ pub struct CoordinationDetails {
     pub handoffs: Vec<Handoff>,
 }
 
-pub fn get_workspace_context_snapshot(
+pub fn get_scoped_agent_context_snapshot(
     conn: &Connection,
     agent_id: Option<&str>,
     workspace_id: Option<&str>,
-    _task_id: Option<&str>,
+    project_id: Option<&str>,
+    team_id: Option<&str>,
 ) -> Result<String, String> {
     // 1. Active Workspace Details
     let ws_query = match workspace_id {
@@ -119,13 +120,23 @@ pub fn get_workspace_context_snapshot(
     }
 
     // 4. Tasks & Blockers (Upgraded Kanban Cards Orchestration)
-    let mut stmt_tasks = conn.prepare(
-        "SELECT id, title, created_by as owner_id, assigned_agent_id, status, priority, 
-                acceptance_criteria, required_files, related_files, blocked_by as blockers, dependencies 
-         FROM kanban_cards"
-    ).map_err(|e| e.to_string())?;
+    let mut tasks_query = "SELECT id, title, created_by as owner_id, assigned_agent_id, status, priority, 
+            acceptance_criteria, required_files, related_files, blocked_by as blockers, dependencies 
+            FROM kanban_cards WHERE 1=1".to_string();
+    let mut tasks_params: Vec<String> = vec![];
 
-    let tasks_iter = stmt_tasks.query_map([], |row| {
+    if let Some(pid) = project_id {
+        tasks_query.push_str(&format!(" AND project_id = '?{}'", tasks_params.len() + 1));
+        tasks_params.push(pid.to_string());
+    }
+    if let Some(tid) = team_id {
+        tasks_query.push_str(&format!(" AND team_id = '?{}'", tasks_params.len() + 1));
+        tasks_params.push(tid.to_string());
+    }
+
+    let mut stmt_tasks = conn.prepare(&tasks_query).map_err(|e| e.to_string())?;
+
+    let tasks_iter = stmt_tasks.query_map(rusqlite::params_from_iter(tasks_params), |row| {
         Ok((
             row.get::<_, String>(0)?,
             row.get::<_, String>(1)?,
@@ -170,10 +181,20 @@ pub fn get_workspace_context_snapshot(
     }
 
     // 5. Workspace File Artifacts
-    let mut stmt_arts = conn.prepare(
-        "SELECT path, artifact_type, size_bytes FROM artifacts ORDER BY id DESC LIMIT 10"
-    ).map_err(|e| e.to_string())?;
-    let arts_iter = stmt_arts.query_map([], |row| {
+    let mut arts_query = "SELECT path, artifact_type, size_bytes FROM artifacts WHERE 1=1".to_string();
+    let mut arts_params: Vec<String> = vec![];
+    if let Some(pid) = project_id {
+        arts_query.push_str(&format!(" AND project_id = '?{}'", arts_params.len() + 1));
+        arts_params.push(pid.to_string());
+    }
+    if let Some(tid) = team_id {
+        arts_query.push_str(&format!(" AND team_id = '?{}'", arts_params.len() + 1));
+        arts_params.push(tid.to_string());
+    }
+    arts_query.push_str(" ORDER BY id DESC LIMIT 10");
+
+    let mut stmt_arts = conn.prepare(&arts_query).map_err(|e| e.to_string())?;
+    let arts_iter = stmt_arts.query_map(rusqlite::params_from_iter(arts_params), |row| {
         Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, Option<i32>>(2)?))
     }).map_err(|e| e.to_string())?;
 
@@ -284,7 +305,7 @@ pub fn get_workspace_context_snapshot(
 #[tauri::command]
 pub fn get_blackboard_awareness(state: State<'_, DbState>) -> Result<String, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    get_workspace_context_snapshot(&conn, None, None, None)
+    get_scoped_agent_context_snapshot(&conn, None, None, None, None)
 }
 
 #[tauri::command]
@@ -292,10 +313,23 @@ pub fn get_workspace_context(
     state: State<'_, DbState>,
     agent_id: Option<String>,
     workspace_id: Option<String>,
-    task_id: Option<String>,
+    project_id: Option<String>,
+    team_id: Option<String>,
 ) -> Result<String, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    get_workspace_context_snapshot(&conn, agent_id.as_deref(), workspace_id.as_deref(), task_id.as_deref())
+    get_scoped_agent_context_snapshot(&conn, agent_id.as_deref(), workspace_id.as_deref(), project_id.as_deref(), team_id.as_deref())
+}
+
+#[tauri::command]
+pub fn get_scoped_agent_context(
+    state: State<'_, DbState>,
+    agent_id: Option<String>,
+    workspace_id: Option<String>,
+    project_id: Option<String>,
+    team_id: Option<String>,
+) -> Result<String, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    get_scoped_agent_context_snapshot(&conn, agent_id.as_deref(), workspace_id.as_deref(), project_id.as_deref(), team_id.as_deref())
 }
 
 #[tauri::command]

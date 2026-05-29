@@ -211,7 +211,7 @@ pub async fn trigger_agent_reply(
         // Fetch dynamically compiled blackboard awareness context to inject
         let (context_packet, work_queue_str) = {
             let conn = state.conn.lock().map_err(|e| e.to_string())?;
-            let ctx = crate::context_engine::get_workspace_context_snapshot(&conn, Some(&agent_id), None, None).unwrap_or_default();
+            let ctx = crate::context_engine::get_scoped_agent_context_snapshot(&conn, Some(&agent_id), None, None, None).unwrap_or_default();
             
             // Compile agent active work queue
             let mut stmt = conn.prepare(

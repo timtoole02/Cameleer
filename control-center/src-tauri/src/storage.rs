@@ -330,6 +330,131 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         [],
     )?;
 
+    // --- Epic 6: Agent Organization System Schema ---
+
+    // 11a. Projects
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS projects (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
+            name TEXT NOT NULL,
+            description TEXT,
+            status TEXT DEFAULT 'active',
+            priority TEXT DEFAULT 'medium',
+            owner_agent_id TEXT REFERENCES agents(id),
+            owner_human_id TEXT,
+            default_board_id TEXT REFERENCES boards(id),
+            default_context_id TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 11b. Teams
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS teams (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
+            project_id TEXT REFERENCES projects(id),
+            parent_team_id TEXT REFERENCES teams(id),
+            name TEXT NOT NULL,
+            description TEXT,
+            lead_agent_id TEXT REFERENCES agents(id),
+            purpose TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 11c. Agent Org Nodes (for rendering nested tree)
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS agent_org_nodes (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
+            project_id TEXT REFERENCES projects(id),
+            parent_node_id TEXT REFERENCES agent_org_nodes(id),
+            node_type TEXT NOT NULL,
+            display_name TEXT NOT NULL,
+            agent_id TEXT REFERENCES agents(id),
+            team_id TEXT REFERENCES teams(id),
+            sort_order INTEGER DEFAULT 0,
+            collapsed INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 11d. Agent Relationships
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS agent_relationships (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
+            source_agent_id TEXT REFERENCES agents(id),
+            target_agent_id TEXT REFERENCES agents(id),
+            relationship_type TEXT NOT NULL,
+            permissions TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 11e. Agent Project Memberships
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS agent_project_memberships (
+            id TEXT PRIMARY KEY,
+            agent_id TEXT REFERENCES agents(id),
+            workspace_id TEXT REFERENCES workspaces(id),
+            project_id TEXT REFERENCES projects(id),
+            team_id TEXT REFERENCES teams(id),
+            role_in_project TEXT,
+            permissions TEXT,
+            active INTEGER DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 11f. Scoped Chat Threads
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS project_chat_threads (
+            id TEXT PRIMARY KEY,
+            project_id TEXT REFERENCES projects(id),
+            name TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS team_chat_threads (
+            id TEXT PRIMARY KEY,
+            team_id TEXT REFERENCES teams(id),
+            name TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 11g. Scoped Context Snapshots
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS scoped_context_snapshots (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
+            project_id TEXT REFERENCES projects(id),
+            team_id TEXT REFERENCES teams(id),
+            snapshot_data TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // --- End Epic 6 Schema ---
+
     // 12. Decisions
     conn.execute(
         "CREATE TABLE IF NOT EXISTS decisions (
@@ -448,10 +573,66 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             dependencies TEXT, -- JSON Array of IDs
             evidence_gate TEXT, -- JSON
             review_required INTEGER DEFAULT 0,
-            rationale TEXT
+            approval_required INTEGER DEFAULT 0
         )",
         [],
     )?;
+
+    // Epic 6 Schema Migrations
+    let has_project_id: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('kanban_cards') WHERE name='project_id')",
+        [],
+        |row| row.get(0),
+    ).unwrap_or(false);
+
+    if !has_project_id {
+        // Add project_id and team_id to relevant tables
+        let _ = conn.execute("ALTER TABLE kanban_cards ADD COLUMN project_id TEXT REFERENCES projects(id)", []);
+        let _ = conn.execute("ALTER TABLE kanban_cards ADD COLUMN team_id TEXT REFERENCES teams(id)", []);
+        
+        let _ = conn.execute("ALTER TABLE backlog_items ADD COLUMN project_id TEXT REFERENCES projects(id)", []);
+        let _ = conn.execute("ALTER TABLE backlog_items ADD COLUMN team_id TEXT REFERENCES teams(id)", []);
+
+        let _ = conn.execute("ALTER TABLE messages ADD COLUMN project_id TEXT REFERENCES projects(id)", []);
+        let _ = conn.execute("ALTER TABLE messages ADD COLUMN team_id TEXT REFERENCES teams(id)", []);
+        let _ = conn.execute("ALTER TABLE messages ADD COLUMN agent_id TEXT REFERENCES agents(id)", []);
+        let _ = conn.execute("ALTER TABLE messages ADD COLUMN card_id TEXT REFERENCES kanban_cards(id)", []);
+        
+        let _ = conn.execute("ALTER TABLE artifacts ADD COLUMN project_id TEXT REFERENCES projects(id)", []);
+        let _ = conn.execute("ALTER TABLE artifacts ADD COLUMN team_id TEXT REFERENCES teams(id)", []);
+
+        // Migrate default organization
+        // Ensure default workspace
+        conn.execute("INSERT OR IGNORE INTO workspaces (id, name, path, active) VALUES ('default', 'Cameleer Workspace', '~/Desktop', 1)", []).ok();
+
+        // Create Default Project
+        conn.execute("INSERT INTO projects (id, workspace_id, name, description) VALUES ('proj_default', 'default', 'Default Project', 'System migrated project') ON CONFLICT DO NOTHING", []).ok();
+
+        // Create Default Team
+        conn.execute("INSERT INTO teams (id, workspace_id, project_id, name, description) VALUES ('team_default', 'default', 'proj_default', 'Agents', 'System migrated team') ON CONFLICT DO NOTHING", []).ok();
+
+        // Migrate all Kanban Cards to default project
+        conn.execute("UPDATE kanban_cards SET project_id = 'proj_default', team_id = 'team_default' WHERE project_id IS NULL", []).ok();
+
+        // Migrate all Backlog Items
+        conn.execute("UPDATE backlog_items SET project_id = 'proj_default', team_id = 'team_default' WHERE project_id IS NULL", []).ok();
+
+        // Migrate all existing agents to Default Project/Team through membership
+        conn.execute("
+            INSERT OR IGNORE INTO agent_project_memberships (id, agent_id, workspace_id, project_id, team_id, role_in_project)
+            SELECT 'apm_' || id, id, 'default', 'proj_default', 'team_default', role FROM agents
+        ", []).ok();
+        
+        // Add existing workspace/project/team/agents as nodes in agent_org_nodes
+        conn.execute("INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, node_type, display_name, sort_order) VALUES ('node_ws', 'default', 'workspace', 'Cameleer Workspace', 0)", []).ok();
+        conn.execute("INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, project_id, parent_node_id, node_type, display_name, sort_order) VALUES ('node_proj', 'default', 'proj_default', 'node_ws', 'project', 'Default Project', 1)", []).ok();
+        conn.execute("INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, project_id, team_id, parent_node_id, node_type, display_name, sort_order) VALUES ('node_team', 'default', 'proj_default', 'team_default', 'node_proj', 'team', 'Agents', 2)", []).ok();
+        
+        conn.execute("
+            INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, project_id, team_id, parent_node_id, node_type, display_name, agent_id, sort_order)
+            SELECT 'node_agent_' || id, 'default', 'proj_default', 'team_default', 'node_team', 'agent', name, id, 3 FROM agents
+        ", []).ok();
+    }
 
     // 19. Agent Contracts
     conn.execute(

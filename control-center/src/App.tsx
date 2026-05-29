@@ -3,6 +3,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import BacklogView from "./components/board/BacklogView";
 import KanbanBoard from "./components/board/KanbanBoard";
+import { OrgSidebar } from "./components/org/OrgSidebar";
+import { ProjectDashboard } from "./components/org/ProjectDashboard";
+import { AgentOrgNode } from "./types";
 import "./App.css";
 
 interface Agent {
@@ -277,7 +280,7 @@ interface BackendRuntimeConfig {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models" | "missions">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models" | "missions" | "org_dashboard">("dashboard");
   const [kanbanView, setKanbanView] = useState<"board" | "backlog">("board");
   const [refreshKanban, setRefreshKanban] = useState(0);
   const [suggestions, setSuggestions] = useState<WorkSuggestion[]>([]);
@@ -313,6 +316,7 @@ function App() {
   const [editContinuous, setEditContinuous] = useState<boolean>(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>("agent-coder");
+  const [activeOrgNode, setActiveOrgNode] = useState<AgentOrgNode | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedKanbanTask, setSelectedKanbanTask] = useState<Task | null>(null);
@@ -1954,38 +1958,31 @@ function App() {
     <div className="app-layout">
       {renderBlockingOverlay()}
       {/* 1. Sidebar Column */}
-      <aside className="sidebar">
-        <div className="sidebar-header">
+      <aside className="sidebar" style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
+        <div className="sidebar-header" style={{ padding: '16px' }}>
           <div className="sidebar-logo">💻 CAMELEER</div>
         </div>
 
-        <button className="sidebar-btn" onClick={() => setIsSpawnModalOpen(true)}>
-          🤖 Spawn Custom Agent
-        </button>
+        <div style={{ padding: '0 16px 16px 16px' }}>
+          <button className="sidebar-btn" onClick={() => setIsSpawnModalOpen(true)}>
+            🤖 Spawn Custom Agent
+          </button>
+        </div>
 
-        <div className="agent-list">
-          <div className="agent-list-title">Active Crew</div>
-          {agents.map((agent) => (
-            <div
-              key={agent.id}
-              className={`agent-item ${
-                activeTab === "dm" && selectedAgentId === agent.id ? "active" : ""
-              }`}
-              onClick={() => {
-                setSelectedAgentId(agent.id);
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <OrgSidebar 
+            workspaceId="default" 
+            agents={agents}
+            onNodeSelect={(node) => {
+              setActiveOrgNode(node);
+              if (node.node_type === 'agent' && node.agent_id) {
+                setSelectedAgentId(node.agent_id);
                 setActiveTab("dm");
-              }}
-            >
-              <div className="agent-avatar">
-                {agent.name.charAt(0)}
-                <div className={`status-badge ${agent.status}`} />
-              </div>
-              <div className="agent-info">
-                <div className="agent-name">{agent.name}</div>
-                <div className="agent-role">{agent.role}</div>
-              </div>
-            </div>
-          ))}
+              } else {
+                setActiveTab("org_dashboard");
+              }
+            }} 
+          />
         </div>
       </aside>
 
@@ -2042,6 +2039,11 @@ function App() {
               <div>
                 <h2 className="chat-title">Local Inference Models</h2>
                 <div className="chat-subtitle">Download and activate optimized GGUF language models running natively via Camelid</div>
+              </div>
+            ) : activeTab === "org_dashboard" && activeOrgNode ? (
+              <div>
+                <h2 className="chat-title">{activeOrgNode.display_name}</h2>
+                <div className="chat-subtitle">{activeOrgNode.node_type.toUpperCase()} SCOPE</div>
               </div>
             ) : (
               <div>
@@ -2446,6 +2448,8 @@ function App() {
           </div>
             
 
+        ) : activeTab === "org_dashboard" && activeOrgNode ? (
+          <ProjectDashboard activeNode={activeOrgNode} />
         ) : activeTab === "skills" ? (
           /* Skills Page */
           <div className="skills-container" style={{ flex: 1, overflowY: "auto", padding: "24px" }}>

@@ -14,6 +14,7 @@ mod mission_builder;
 mod models_manager;
 mod backend_runtime;
 mod board_services;
+mod org_services;
 
 use storage::DbState;
 use tauri::Manager;
@@ -159,7 +160,11 @@ pub fn run() {
             board_services::create_card,
             board_services::assign_card,
             board_services::move_card,
-            board_services::get_agent_work_queue
+            board_services::get_agent_work_queue,
+            org_services::create_project,
+            org_services::create_team,
+            org_services::get_agent_org_tree,
+            org_services::move_agent_to_team,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

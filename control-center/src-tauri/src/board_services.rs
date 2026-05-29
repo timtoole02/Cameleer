@@ -8,6 +8,8 @@ use crate::storage::DbState;
 pub struct BacklogItem {
     pub id: String,
     pub workspace_id: String,
+    pub project_id: Option<String>,
+    pub team_id: Option<String>,
     pub backlog_id: Option<String>,
     pub title: String,
     pub description: Option<String>,
@@ -34,6 +36,8 @@ pub struct BacklogItem {
 pub struct KanbanCard {
     pub id: String,
     pub workspace_id: String,
+    pub project_id: Option<String>,
+    pub team_id: Option<String>,
     pub board_id: Option<String>,
     pub backlog_id: Option<String>,
     pub parent_id: Option<String>,
@@ -98,36 +102,49 @@ pub struct BoardColumn {
 }
 
 #[tauri::command]
-pub fn get_backlog_snapshot(workspace_id: String, state: State<DbState>) -> Result<Vec<BacklogItem>, String> {
+pub fn get_backlog_snapshot(workspace_id: String, project_id: Option<String>, team_id: Option<String>, state: State<DbState>) -> Result<Vec<BacklogItem>, String> {
     let conn = state.conn.lock().unwrap();
-    let mut stmt = conn.prepare(
-        "SELECT id, workspace_id, backlog_id, title, description, type, priority, rank, labels, source, status, owner_agent_id, owner_human_id, proposed_agent_role, acceptance_criteria, refinement_notes, dependencies, risk_level, effort_estimate, readiness_score, created_at, updated_at FROM backlog_items WHERE workspace_id = ?1 ORDER BY rank ASC, created_at DESC"
-    ).map_err(|e| e.to_string())?;
+    let mut query = "SELECT id, workspace_id, project_id, team_id, backlog_id, title, description, type, priority, rank, labels, source, status, owner_agent_id, owner_human_id, proposed_agent_role, acceptance_criteria, refinement_notes, dependencies, risk_level, effort_estimate, readiness_score, created_at, updated_at FROM backlog_items WHERE workspace_id = ?1".to_string();
+    let mut params: Vec<String> = vec![workspace_id.clone()];
+    
+    if let Some(pid) = project_id {
+        query.push_str(&format!(" AND project_id = '?{}'", params.len() + 1));
+        params.push(pid);
+    }
+    if let Some(tid) = team_id {
+        query.push_str(&format!(" AND team_id = '?{}'", params.len() + 1));
+        params.push(tid);
+    }
+    query.push_str(" ORDER BY rank ASC, created_at DESC");
 
-    let iter = stmt.query_map([&workspace_id], |row| {
+    let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
+
+    let iter = stmt.query_map(rusqlite::params_from_iter(params), |row| {
         Ok(BacklogItem {
             id: row.get(0)?,
             workspace_id: row.get(1)?,
-            backlog_id: row.get(2)?,
-            title: row.get(3)?,
-            description: row.get(4)?,
-            type_name: row.get(5)?,
-            priority: row.get(6)?,
-            rank: row.get(7)?,
-            labels: row.get(8)?,
-            source: row.get(9)?,
-            status: row.get(10)?,
-            owner_agent_id: row.get(11)?,
-            owner_human_id: row.get(12)?,
-            proposed_agent_role: row.get(13)?,
-            acceptance_criteria: row.get(14)?,
-            refinement_notes: row.get(15)?,
-            dependencies: row.get(16)?,
-            risk_level: row.get(17)?,
-            effort_estimate: row.get(18)?,
-            readiness_score: row.get(19)?,
-            created_at: row.get(20)?,
-            updated_at: row.get(21)?,
+            project_id: row.get(2)?,
+            team_id: row.get(3)?,
+            backlog_id: row.get(4)?,
+            title: row.get(5)?,
+            description: row.get(6)?,
+            type_name: row.get(7)?,
+            priority: row.get(8)?,
+            rank: row.get(9)?,
+            labels: row.get(10)?,
+            source: row.get(11)?,
+            status: row.get(12)?,
+            owner_agent_id: row.get(13)?,
+            owner_human_id: row.get(14)?,
+            proposed_agent_role: row.get(15)?,
+            acceptance_criteria: row.get(16)?,
+            refinement_notes: row.get(17)?,
+            dependencies: row.get(18)?,
+            risk_level: row.get(19)?,
+            effort_estimate: row.get(20)?,
+            readiness_score: row.get(21)?,
+            created_at: row.get(22)?,
+            updated_at: row.get(23)?,
         })
     }).map_err(|e| e.to_string())?;
 
@@ -164,7 +181,7 @@ pub fn create_backlog_item(
     drop(conn);
     
     // Simplistic fetch back.
-    let items = get_backlog_snapshot(workspace_id, state)?;
+    let items = get_backlog_snapshot(workspace_id, None, None, state)?;
     items.into_iter().find(|i| i.id == id).ok_or_else(|| "Failed to read back item".to_string())
 }
 
@@ -234,57 +251,70 @@ pub fn convert_backlog_item_to_card(id: String, state: State<DbState>) -> Result
 }
 
 #[tauri::command]
-pub fn get_board_snapshot(workspace_id: String, state: State<DbState>) -> Result<Vec<KanbanCard>, String> {
+pub fn get_board_snapshot(workspace_id: String, project_id: Option<String>, team_id: Option<String>, state: State<DbState>) -> Result<Vec<KanbanCard>, String> {
     let conn = state.conn.lock().unwrap();
     
-    let mut stmt = conn.prepare(
-        "SELECT id, workspace_id, board_id, backlog_id, parent_id, title, description, type, status, priority, rank, severity, labels, assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at, due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria, definition_of_done, required_files, related_files, related_artifacts, dependencies, blocked_by, blocking, comments, activity_log, checklist, validation_status, completion_evidence, work_receipt_id, risk_level, review_required, approval_required, reopen_reason FROM kanban_cards WHERE workspace_id = ?1 ORDER BY rank ASC, created_at DESC"
-    ).map_err(|e| e.to_string())?;
+    let mut query = "SELECT id, workspace_id, project_id, team_id, board_id, backlog_id, parent_id, title, description, type, status, priority, rank, severity, labels, assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at, due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria, definition_of_done, required_files, related_files, related_artifacts, dependencies, blocked_by, blocking, comments, activity_log, checklist, validation_status, completion_evidence, work_receipt_id, risk_level, review_required, approval_required, reopen_reason FROM kanban_cards WHERE workspace_id = ?1".to_string();
+    let mut params: Vec<String> = vec![workspace_id.clone()];
+    
+    if let Some(pid) = project_id {
+        query.push_str(&format!(" AND project_id = '?{}'", params.len() + 1));
+        params.push(pid);
+    }
+    if let Some(tid) = team_id {
+        query.push_str(&format!(" AND team_id = '?{}'", params.len() + 1));
+        params.push(tid);
+    }
+    query.push_str(" ORDER BY rank ASC, created_at DESC");
 
-    let iter = stmt.query_map([&workspace_id], |row| {
+    let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
+
+    let iter = stmt.query_map(rusqlite::params_from_iter(params), |row| {
         Ok(KanbanCard {
             id: row.get(0)?,
             workspace_id: row.get(1)?,
-            board_id: row.get(2)?,
-            backlog_id: row.get(3)?,
-            parent_id: row.get(4)?,
-            title: row.get(5)?,
-            description: row.get(6)?,
-            type_name: row.get(7)?,
-            status: row.get(8)?,
-            priority: row.get(9)?,
-            rank: row.get(10)?,
-            severity: row.get(11)?,
-            labels: row.get(12)?,
-            assigned_agent_id: row.get(13)?,
-            assigned_human_id: row.get(14)?,
-            reporter: row.get(15)?,
-            created_by: row.get(16)?,
-            created_at: row.get(17)?,
-            updated_at: row.get(18)?,
-            due_date: row.get(19)?,
-            start_date: row.get(20)?,
-            completed_at: row.get(21)?,
-            estimate: row.get(22)?,
-            actual_time: row.get(23)?,
-            acceptance_criteria: row.get(24)?,
-            definition_of_done: row.get(25)?,
-            required_files: row.get(26)?,
-            related_files: row.get(27)?,
-            related_artifacts: row.get(28)?,
-            dependencies: row.get(29)?,
-            blocked_by: row.get(30)?,
-            blocking: row.get(31)?,
-            comments: row.get(32)?,
-            activity_log: row.get(33)?,
-            checklist: row.get(34)?,
-            validation_status: row.get(35)?,
-            completion_evidence: row.get(36)?,
-            work_receipt_id: row.get(37)?,
-            risk_level: row.get(38)?,
-            review_required: row.get(39)?,
-            approval_required: row.get(40)?,
-            reopen_reason: row.get(41)?,
+            project_id: row.get(2)?,
+            team_id: row.get(3)?,
+            board_id: row.get(4)?,
+            backlog_id: row.get(5)?,
+            parent_id: row.get(6)?,
+            title: row.get(7)?,
+            description: row.get(8)?,
+            type_name: row.get(9)?,
+            status: row.get(10)?,
+            priority: row.get(11)?,
+            rank: row.get(12)?,
+            severity: row.get(13)?,
+            labels: row.get(14)?,
+            assigned_agent_id: row.get(15)?,
+            assigned_human_id: row.get(16)?,
+            reporter: row.get(17)?,
+            created_by: row.get(18)?,
+            created_at: row.get(19)?,
+            updated_at: row.get(20)?,
+            due_date: row.get(21)?,
+            start_date: row.get(22)?,
+            completed_at: row.get(23)?,
+            estimate: row.get(24)?,
+            actual_time: row.get(25)?,
+            acceptance_criteria: row.get(26)?,
+            definition_of_done: row.get(27)?,
+            required_files: row.get(28)?,
+            related_files: row.get(29)?,
+            related_artifacts: row.get(30)?,
+            dependencies: row.get(31)?,
+            blocked_by: row.get(32)?,
+            blocking: row.get(33)?,
+            comments: row.get(34)?,
+            activity_log: row.get(35)?,
+            checklist: row.get(36)?,
+            validation_status: row.get(37)?,
+            completion_evidence: row.get(38)?,
+            work_receipt_id: row.get(39)?,
+            risk_level: row.get(40)?,
+            review_required: row.get(41)?,
+            approval_required: row.get(42)?,
+            reopen_reason: row.get(43)?,
         })
     }).map_err(|e| e.to_string())?;
 
@@ -353,59 +383,71 @@ pub fn move_card(card_id: String, new_status: String, reason: Option<String>, st
 }
 
 #[tauri::command]
-pub fn get_agent_work_queue(agent_id: String, workspace_id: String, state: State<DbState>) -> Result<Vec<KanbanCard>, String> {
+pub fn get_agent_work_queue(agent_id: String, workspace_id: String, project_id: Option<String>, team_id: Option<String>, state: State<DbState>) -> Result<Vec<KanbanCard>, String> {
     let conn = state.conn.lock().unwrap();
     // Prioritized pull: In Progress > Unblocked Assigned > Ready
-    let mut stmt = conn.prepare(
-        "SELECT id, workspace_id, board_id, backlog_id, parent_id, title, description, type, status, priority, rank, severity, labels, assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at, due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria, definition_of_done, required_files, related_files, related_artifacts, dependencies, blocked_by, blocking, comments, activity_log, checklist, validation_status, completion_evidence, work_receipt_id, risk_level, review_required, approval_required, reopen_reason FROM kanban_cards WHERE workspace_id = ?1 AND assigned_agent_id = ?2 AND status IN ('In Progress', 'Assigned', 'Ready') ORDER BY status DESC, priority ASC, rank ASC"
-    ).map_err(|e| e.to_string())?;
+    let mut query = "SELECT id, workspace_id, project_id, team_id, board_id, backlog_id, parent_id, title, description, type, status, priority, rank, severity, labels, assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at, due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria, definition_of_done, required_files, related_files, related_artifacts, dependencies, blocked_by, blocking, comments, activity_log, checklist, validation_status, completion_evidence, work_receipt_id, risk_level, review_required, approval_required, reopen_reason FROM kanban_cards WHERE workspace_id = ?1 AND assigned_agent_id = ?2 AND status IN ('In Progress', 'Assigned', 'Ready')".to_string();
+    
+    let mut params: Vec<String> = vec![workspace_id.clone(), agent_id.clone()];
+    if let Some(pid) = project_id {
+        query.push_str(&format!(" AND project_id = '?{}'", params.len() + 1));
+        params.push(pid);
+    }
+    if let Some(tid) = team_id {
+        query.push_str(&format!(" AND team_id = '?{}'", params.len() + 1));
+        params.push(tid);
+    }
+    query.push_str(" ORDER BY status DESC, priority ASC, rank ASC");
 
-    // (Code omitted for mapping, will just reuse the mapping block from get_board_snapshot in production)
+    let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
+
     // For brevity of implementation plan execution:
-    let iter = stmt.query_map(params![workspace_id, agent_id], |row| {
+    let iter = stmt.query_map(rusqlite::params_from_iter(params), |row| {
         Ok(KanbanCard {
             id: row.get(0)?,
             workspace_id: row.get(1)?,
-            board_id: row.get(2)?,
-            backlog_id: row.get(3)?,
-            parent_id: row.get(4)?,
-            title: row.get(5)?,
-            description: row.get(6)?,
-            type_name: row.get(7)?,
-            status: row.get(8)?,
-            priority: row.get(9)?,
-            rank: row.get(10)?,
-            severity: row.get(11)?,
-            labels: row.get(12)?,
-            assigned_agent_id: row.get(13)?,
-            assigned_human_id: row.get(14)?,
-            reporter: row.get(15)?,
-            created_by: row.get(16)?,
-            created_at: row.get(17)?,
-            updated_at: row.get(18)?,
-            due_date: row.get(19)?,
-            start_date: row.get(20)?,
-            completed_at: row.get(21)?,
-            estimate: row.get(22)?,
-            actual_time: row.get(23)?,
-            acceptance_criteria: row.get(24)?,
-            definition_of_done: row.get(25)?,
-            required_files: row.get(26)?,
-            related_files: row.get(27)?,
-            related_artifacts: row.get(28)?,
-            dependencies: row.get(29)?,
-            blocked_by: row.get(30)?,
-            blocking: row.get(31)?,
-            comments: row.get(32)?,
-            activity_log: row.get(33)?,
-            checklist: row.get(34)?,
-            validation_status: row.get(35)?,
-            completion_evidence: row.get(36)?,
-            work_receipt_id: row.get(37)?,
-            risk_level: row.get(38)?,
-            review_required: row.get(39)?,
-            approval_required: row.get(40)?,
-            reopen_reason: row.get(41)?,
+            project_id: row.get(2)?,
+            team_id: row.get(3)?,
+            board_id: row.get(4)?,
+            backlog_id: row.get(5)?,
+            parent_id: row.get(6)?,
+            title: row.get(7)?,
+            description: row.get(8)?,
+            type_name: row.get(9)?,
+            status: row.get(10)?,
+            priority: row.get(11)?,
+            rank: row.get(12)?,
+            severity: row.get(13)?,
+            labels: row.get(14)?,
+            assigned_agent_id: row.get(15)?,
+            assigned_human_id: row.get(16)?,
+            reporter: row.get(17)?,
+            created_by: row.get(18)?,
+            created_at: row.get(19)?,
+            updated_at: row.get(20)?,
+            due_date: row.get(21)?,
+            start_date: row.get(22)?,
+            completed_at: row.get(23)?,
+            estimate: row.get(24)?,
+            actual_time: row.get(25)?,
+            acceptance_criteria: row.get(26)?,
+            definition_of_done: row.get(27)?,
+            required_files: row.get(28)?,
+            related_files: row.get(29)?,
+            related_artifacts: row.get(30)?,
+            dependencies: row.get(31)?,
+            blocked_by: row.get(32)?,
+            blocking: row.get(33)?,
+            comments: row.get(34)?,
+            activity_log: row.get(35)?,
+            checklist: row.get(36)?,
+            validation_status: row.get(37)?,
+            completion_evidence: row.get(38)?,
+            work_receipt_id: row.get(39)?,
+            risk_level: row.get(40)?,
+            review_required: row.get(41)?,
+            approval_required: row.get(42)?,
+            reopen_reason: row.get(43)?,
         })
     }).map_err(|e| e.to_string())?;
 

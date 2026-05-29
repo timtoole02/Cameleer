@@ -1,6 +1,8 @@
 export interface BacklogItem {
   id: string;
   workspace_id: string;
+  project_id?: string | null;
+  team_id?: string | null;
   backlog_id?: string | null;
   title: string;
   description?: string | null;
@@ -26,6 +28,8 @@ export interface BacklogItem {
 export interface KanbanCard {
   id: string;
   workspace_id: string;
+  project_id?: string | null;
+  team_id?: string | null;
   board_id?: string | null;
   backlog_id?: string | null;
   parent_id?: string | null;
@@ -66,4 +70,35 @@ export interface KanbanCard {
   review_required: number;
   approval_required: number;
   reopen_reason?: string | null;
+}
+
+export interface Project {
+  id: string;
+  workspace_id: string;
+  name: string;
+  description?: string | null;
+  status: string;
+  priority: string;
+}
+
+export interface Team {
+  id: string;
+  workspace_id: string;
+  project_id?: string | null;
+  parent_team_id?: string | null;
+  name: string;
+  description?: string | null;
+}
+
+export interface AgentOrgNode {
+  id: string;
+  workspace_id: string;
+  project_id?: string | null;
+  parent_node_id?: string | null;
+  node_type: string;
+  display_name: string;
+  agent_id?: string | null;
+  team_id?: string | null;
+  sort_order: number;
+  collapsed: number;
 }
