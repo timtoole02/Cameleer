@@ -17,7 +17,7 @@ fn greet(name: &str) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             // 1. Initialize SQLite Database
@@ -34,6 +34,17 @@ pub fn run() {
             app.manage(DbState {
                 conn: std::sync::Mutex::new(conn),
             });
+            
+            // Initialize and Manage DaemonState in Tauri State
+            let daemon_state = supervisor::DaemonState {
+                child: std::sync::Arc::new(std::sync::Mutex::new(None)),
+            };
+            app.manage(daemon_state);
+            
+            // Synchronously spawn local camelid daemon on port 8181
+            let db_state = app.state::<DbState>();
+            let managed_daemon_state = app.state::<supervisor::DaemonState>();
+            let _ = supervisor::spawn_camelid_daemon(&db_state, &managed_daemon_state, None);
             
             // 2. Start Supervisor Watchdog Daemon
             let app_handle = app.handle().clone();
@@ -67,6 +78,19 @@ pub fn run() {
             context_engine::update_shared_state,
             supervisor::update_heartbeat
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| {
+        if let tauri::RunEvent::Exit = event {
+            if let Some(daemon_state) = app_handle.try_state::<supervisor::DaemonState>() {
+                if let Ok(mut child_guard) = daemon_state.child.lock() {
+                    if let Some(mut child) = child_guard.take() {
+                        println!("[DAEMON] Cleaning up camelid process on exit...");
+                        let _ = child.kill();
+                    }
+                }
+            }
+        }
+    });
 }

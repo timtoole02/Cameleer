@@ -1,19 +1,22 @@
 # ✦ Cameleer ✦
 
-> **A premium, safe, and blazing-fast autonomous AI Agent platform written entirely in Rust.**
+> **A premium, safe, and blazing-fast autonomous local AI Agent platform written entirely in Rust.**
 
 ---
 
-Cameleer is a next-generation, self-hosted AI agent gateway designed from the ground up and engineered for superior performance, strict safety controls, and native single-binary convenience. It connects your personal messaging environments (like Telegram, Discord, and a local interactive console) to modern LLMs (Anthropic, Gemini, OpenAI, and local Ollama) and executes autonomous "skills" represented by standardized Markdown files (`SKILL.md`).
+Cameleer is a next-generation, self-hosted autonomous AI agent workspace designed from the ground up for superior performance, strict safety controls, and local-first execution. It features a fully integrated, high-performance local GGUF inference engine (**`camelid`**) supporting native Apple Silicon Metal GPU acceleration out-of-the-box, packaged into a gorgeous, self-contained standalone macOS application (`Cameleer.app`). 
+
+Connect your agents to standard cloud APIs (Anthropic, Gemini, OpenAI) or route them to your own locally-stored GGUF models concurrently with absolute data privacy—all managed under a strict, human-in-the-loop shell command sandbox.
 
 ---
 
 ## ⚡ Why Cameleer?
 
-- **Blazing Performance**: Built on top of Rust's async I/O engine (`tokio`), Cameleer runs with an incredibly low memory footprint (less than 15MB at idle!), making it ideal for cheap VPS instances, home servers, or Raspberry Pis.
+- **Integrated Local AI (via `camelid`)**: Direct, offline GGUF inference powered by a high-performance Rust-native backend. No API keys, no subscription plans, and 100% data privacy.
+- **Native Metal GPU Acceleration**: Harnesses the full power of Apple Silicon out-of-the-box, implementing advanced Metal Q8 retained acceleration pathways for lightning-fast model responses.
 - **Enterprise-Grade Safety Sandbox**: Rogue agent commands are a thing of the past. Cameleer features a strict command whitelist, blocks recursive deletes, and provides *Human-in-the-Loop* approval prompts (inline buttons on Telegram/Discord or interactive CLI confirm gates) before executing any shell commands.
+- **Fully Self-Contained macOS App**: The production application (`Cameleer.app`) bundles the local `camelid` engine directly inside it. Just double-click the app from your Desktop, and the background inference starts up automatically.
 - **SQLite Persistence**: Chat logs, key-value memory blocks, and comprehensive audit traces of every command executed are saved to an embedded, zero-configuration local SQLite database.
-- **Single Binary Convenience**: Compiles into a single, dependency-free executable. There is no Node.js runtime, no `node_modules` hell, and no complex docker setups required. Just download and run.
 - **Multi-Channel Concurrency**: Handles multiple gateway integrations in parallel. Control your agent from a beautiful local interactive shell or message it on-the-go from Telegram or Discord.
 
 ---

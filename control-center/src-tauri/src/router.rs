@@ -498,7 +498,11 @@ pub async fn download_model(state: State<'_, DbState>, model_id: String) -> Resu
 }
 
 #[tauri::command]
-pub async fn activate_model(state: State<'_, DbState>, model_name: String) -> Result<(), String> {
+pub async fn activate_model(
+    state: State<'_, DbState>,
+    daemon_state: State<'_, crate::supervisor::DaemonState>,
+    model_name: String,
+) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // 1. Update shared_state active_local_model
@@ -520,6 +524,12 @@ pub async fn activate_model(state: State<'_, DbState>, model_name: String) -> Re
         "UPDATE agents SET model_name = ?1 WHERE model_provider = 'camelid'",
         [&model_name],
     ).map_err(|e| e.to_string())?;
+
+    // Drop the connection lock explicitly before spawning the daemon
+    drop(conn);
+
+    // Seamlessly hot-swap the background local inference daemon
+    crate::supervisor::spawn_camelid_daemon(&state, &daemon_state, Some(model_name))?;
 
     Ok(())
 }
