@@ -333,20 +333,27 @@ pub async fn trigger_agent_reply(
                                     "INSERT INTO artifacts (path, artifact_type) VALUES (?1, 'code')",
                                     [path_str],
                                 );
+                                crate::system_services::audit_log_sandbox(&agent_id, "write_file", "allowed", &format!("Successfully saved file to: {:?}", target_path));
                                 format!("SUCCESS: File successfully saved to: {:?}", target_path)
                             }
-                            Err(e) => format!("ERROR: Failed to write file: {}", e)
+                            Err(e) => {
+                                crate::system_services::audit_log_sandbox(&agent_id, "write_file", "failed", &format!("Failed to write file to {:?}: {}", target_path, e));
+                                format!("ERROR: Failed to write file: {}", e)
+                            }
                         }
                     } else {
+                        crate::system_services::audit_log_sandbox(&agent_id, "write_file", "denied", "Rejected write_file: Missing CONTENT parameter");
                         "ERROR: Missing CONTENT block in write_file action".to_string()
                     }
                 } else {
+                    crate::system_services::audit_log_sandbox(&agent_id, "write_file", "denied", "Rejected write_file: Missing PATH parameter");
                     "ERROR: Missing PATH in write_file action".to_string()
                 }
             } else if action.action_type == "execute_command" {
                 if let Some(ref cmd) = action.command {
                     // Block obviously harmful mutating recursive commands
                     if cmd.contains("rm ") && (cmd.contains("-rf") || cmd.contains("-r")) {
+                        crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "blocked", &format!("FIREWALL WARNING: Blocked dangerous recursive delete command: '{}'", cmd));
                         "ERROR: Intercepted recursive delete flags. Refusing execution.".to_string()
                     } else {
                         // Execute shell command synchronously on host
@@ -360,18 +367,25 @@ pub async fn trigger_agent_reply(
                                 let stdout = String::from_utf8_lossy(&output.stdout).to_string();
                                 let stderr = String::from_utf8_lossy(&output.stderr).to_string();
                                 if output.status.success() {
+                                    crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "allowed", &format!("Executed successfully: '{}'", cmd));
                                     format!("SUCCESS:\nstdout:\n{}\nstderr:\n{}", stdout, stderr)
                                 } else {
+                                    crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "failed", &format!("Executed with exit status {}: '{}'", output.status, cmd));
                                     format!("FAILED (exit status {}):\nstdout:\n{}\nstderr:\n{}", output.status, stdout, stderr)
                                 }
                             }
-                            Err(e) => format!("ERROR: Failed to launch shell command: {}", e)
+                            Err(e) => {
+                                crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "failed", &format!("Failed to launch shell command '{}': {}", cmd, e));
+                                format!("ERROR: Failed to launch shell command: {}", e)
+                            }
                         }
                     }
                 } else {
+                    crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "denied", "Rejected execute_command: Missing COMMAND parameter");
                     "ERROR: Missing COMMAND parameter in execute_command action".to_string()
                 }
             } else {
+                crate::system_services::audit_log_sandbox(&agent_id, &action.action_type, "blocked", "Triggered unsupported action block");
                 format!("ERROR: Unsupported action type: {}", action.action_type)
             };
 
