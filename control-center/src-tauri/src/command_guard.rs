@@ -163,6 +163,13 @@ fn suspend_execution(
     )
     .map_err(|e| e.to_string())?;
 
+    // Update agent status to reflect waiting for tool
+    conn.execute(
+        "UPDATE agents SET status = 'waiting_for_tool' WHERE id = ?1",
+        [agent_id],
+    )
+    .map_err(|e| e.to_string())?;
+
     // 3. Log event
     conn.execute(
         "INSERT INTO events (event_type, agent_id, task_id, payload) VALUES ('command_approval_paused', ?1, ?2, ?3)",

@@ -220,6 +220,47 @@ body, html {
   background-color: var(--color-idle);
 }
 
+.status-badge.assigned {
+  background-color: #60a5fa;
+}
+
+.status-badge.planning {
+  background-color: #c084fc;
+  box-shadow: 0 0 8px #c084fc;
+  animation: pulse-glow 2s infinite;
+}
+
+.status-badge.waiting_for_tool {
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: pulse-glow 1.5s infinite;
+}
+
+.status-badge.waiting_for_review {
+  background-color: #f472b6;
+  box-shadow: 0 0 8px #f472b6;
+  animation: pulse-glow 2s infinite;
+}
+
+.status-badge.completed {
+  background-color: var(--color-working);
+}
+
+.status-badge.failed {
+  background-color: var(--color-error);
+  box-shadow: 0 0 10px var(--color-error);
+}
+
+.status-badge.recovering {
+  background-color: #fb923c;
+  box-shadow: 0 0 10px #fb923c;
+  animation: pulse-glow 1s infinite;
+}
+
+.status-badge.paused {
+  background-color: #9ca3af;
+}
+
 @keyframes pulse-glow {
   0% { transform: scale(0.95); opacity: 0.8; }
   50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 14px currentColor; }
@@ -1100,10 +1141,51 @@ body, html {
   background-color: var(--color-idle);
 }
 
-.crew-status-dot.recovering {
+.crew-status-dot.assigned {
+  background-color: #60a5fa;
+}
+
+.crew-status-dot.planning {
+  background-color: #c084fc;
+  box-shadow: 0 0 8px #c084fc;
+  animation: pulse-glow 2s infinite;
+}
+
+.crew-status-dot.waiting_for_tool {
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: pulse-glow 1.5s infinite;
+}
+
+.crew-status-dot.blocked {
   background-color: var(--color-blocked);
   box-shadow: 0 0 8px var(--color-blocked);
+  animation: pulse-glow 1.5s infinite;
+}
+
+.crew-status-dot.waiting_for_review {
+  background-color: #f472b6;
+  box-shadow: 0 0 8px #f472b6;
+  animation: pulse-glow 2s infinite;
+}
+
+.crew-status-dot.completed {
+  background-color: var(--color-working);
+}
+
+.crew-status-dot.failed {
+  background-color: var(--color-error);
+  box-shadow: 0 0 8px var(--color-error);
+}
+
+.crew-status-dot.recovering {
+  background-color: #fb923c;
+  box-shadow: 0 0 8px #fb923c;
   animation: pulse-glow 0.8s infinite;
+}
+
+.crew-status-dot.paused {
+  background-color: #9ca3af;
 }
 
 .crew-name {

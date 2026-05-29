@@ -408,6 +408,7 @@ pub async fn trigger_agent_reply(
         };
 
         // Parse response for ReAct tool actions
+        let mut current_outcome = String::new();
         if let Some(action) = parse_agent_action(&response_text) {
             println!("[AGENT ReAct TOOL INTERCEPT] Selected Agent triggered: {}", action.action_type);
 
@@ -667,6 +668,8 @@ pub async fn trigger_agent_reply(
                 format!("ERROR: Unsupported action type: {}", action.action_type)
             };
 
+            current_outcome = outcome_text.clone();
+
             // Save the System Tool Outcome message locally inside its own db lock scope
             let outcome_msg = {
                 let conn = state.conn.lock().map_err(|e| e.to_string())?;
@@ -708,6 +711,7 @@ pub async fn trigger_agent_reply(
         } else {
             // No action block parsed: This is the Final Response!
             is_finished = true;
+            current_outcome = "Final response delivered to user.".to_string();
 
             // Save final reply into database
             let reply_msg = {
@@ -750,12 +754,16 @@ pub async fn trigger_agent_reply(
 
         // Save execution checkpoint at the end of each ReAct iteration
         if let Some(ref t_id) = task_id {
-            let plan_str = "[\"Analyze objectives\", \"Perform execution tools\", \"Verify code deliverables\"]".to_string();
-            let completed_str = format!("[\"ReAct Iteration {}\"]", iteration);
+            let task_criteria: Option<String> = {
+                let conn = state.conn.lock().unwrap();
+                conn.query_row("SELECT acceptance_criteria FROM tasks WHERE id = ?1", [t_id], |row| row.get(0)).unwrap_or(None)
+            };
+            let plan_str = task_criteria.unwrap_or_else(|| "[\"Execute assigned task\"]".to_string());
+            let completed_str = format!("[\"Completed ReAct Iteration {}\"]", iteration);
             let open_str = format!("[\"Next ReAct step\"]");
             let touched_files = "[]".to_string();
-            let reasoning = format!("Agent {} executing ReAct step {} under task '{}'.", name, iteration, t_id);
-            let last_output = format!("Successfully finished iteration step {}", iteration);
+            let reasoning = response_text.clone();
+            let last_output = current_outcome.clone();
 
             let cp = crate::checkpoint_store::Checkpoint {
                 id: None,
