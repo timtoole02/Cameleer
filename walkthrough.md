@@ -1,286 +1,104 @@
-# Cameleer — Technical Walkthrough & User Guide
+# Turnkey Local AI Workforce Platform - Architectural Walkthrough
 
-Cameleer is a premium, safe, and lightning-fast AI Agent system written entirely in Rust. It functions as a secure gateway that bridges your messaging environments with local machine execution via standard, portable Markdown files (`SKILL.md`).
-
----
-
-## 🏗️ Architecture Overview
-
-Cameleer is designed as a single compile target with high concurrency and safety at its core:
-
-1. **Async Orchestrator (Tokio)**: Powers multiple concurrent communication adapters (Console TUI, Telegram poll loops, and a native Web Dashboard server) without thread starvation.
-2. **ReAct Reasoning Agent**: Parses prompts, integrates context-aware conversation history from SQLite, compiles dynamic skill rules, parses action blocks, and runs a loop-prevention self-healing diagnostic layer.
-3. **Structured Security Sandbox**: Acts as a strict firewall for shell execution. Whitelists binaries, catches harmful flags (like recursive deletes), and intercepts calls to prompt the active user for authorization.
-4. **Relational Local Memory (SQLite)**: Persists audit traces, KV skill variables, and chat transcripts out-of-the-box.
+We have elevated Cameleer from a multi-agent chat client into a premium, turnkey **local AI workforce operating system**. This document outlines the structural changes, services, and flows implemented across both the Tauri Rust backend and the Vite React frontend.
 
 ---
 
-## 🚀 Getting Started
+## 🏗️ Architecture & Core Components
 
-### 1. Build and Compile
-Since Cameleer is written in standard Rust, building is simple. Run:
-```bash
-cargo build --release
-```
-This compiles the code into a single high-performance binary under `target/release/cameleer`.
-
-### 2. Onboard and Initialize
-Run the onboarding command to create default directories (`~/.cameleer/`), configs (`~/.cameleer/config.toml`), databases, and copy default skills:
-```bash
-cargo run onboard
-```
-
-### 3. Start the Interactive TUI Dashboard
-Simply run the program with no arguments to start the beautiful full-screen console:
-```bash
-cargo run
-```
-You can type direct messages to your agent or run slash commands inside the focused footer input box:
-- `/clear` - Wipe conversation memory.
-- `/exit` - Safely exit the terminal dashboard.
-
----
-
-## ⚙️ Configuration Guide
-
-Your configuration lives at `~/.cameleer/config.toml`. Here is how to customize it:
-
-### LLM Provider Settings
-You can choose between `ollama` (default local model), `anthropic`, `openai`, or `gemini`:
-
-```toml
-[llm]
-provider = "ollama"         # Options: "ollama", "anthropic", "openai", "gemini"
-model = "llama3"            # E.g. "claude-3-5-sonnet-latest", "gpt-4o", "gemini-1.5-pro"
-ollama_url = "http://localhost:11434"
-anthropic_api_key = "your_anthropic_api_key"
-openai_api_key = "your_openai_api_key"
-gemini_api_key = "your_gemini_api_key"
-```
-
-### Security Whitelist & Approvals
-Safety is paramount in Cameleer. You can control exactly what your agent is allowed to do:
-
-```toml
-[security]
-require_approval = true     # Intercepts commands and prompts you (Y/n) before running
-allowed_commands = [        # Whitelisted executables the agent is allowed to invoke
-    "ls", "pwd", "date", "cat", "echo", "curl", "grep"
-]
-allowed_paths = [           # Directories approved for read/write
-    "/Users/timtoole/.gemini/antigravity/scratch/cameleer"
-]
-```
-
----
-
-## 🛡️ Self-Healing & Loop Prevention Engine
-
-Cameleer features a built-in diagnostic safety valve that protects the agent from derailment:
-*   **Loop Protection**: If the agent attempts to invoke the exact same binary with the same parameters twice in a single ReAct cycle, the engine intercepts the call and injects a reflection warning into the history, steering it to try a new strategy.
-*   **Structured Exception Diagnostic**: When a shell command returns a non-zero exit code or writes to `stderr`, the system automatically appends a diagnostic alert prompting the agent to check for typos, paths, or missing arguments, enabling autonomous correction!
-
----
-
-## 💻 Full-Screen Terminal User Interface (TUI)
-
-The terminal gateway has been completely transformed into a full-screen, responsive, multi-pane **`ratatui`** console:
-
-### 1. Panel Layout Splits:
-*   **Top Header Status**: Displays system information, current loaded LLM details, and active status (`IDLE` or `[THINKING]`).
-*   **Left Column (Active Memory Thread)**: Displays a scrollable conversation view, color-coding brackets for `User` (Green), `Agent thoughts` (Magenta), and system `Tool Outcome` (Cyan).
-*   **Right Column (Diagnostics & Firewall)**:
-    - **Engine Diagnostics**: Real-time counters displaying loaded Whitelisted commands, ClawHub Skills, and total database audits.
-    - **Active Firewall Interceptor**: Flashes in bright yellow if a mutating action is intercepted by the security sandbox.
-*   **Footer Prompt Bar**: Focused input panel representing console entry.
-
-### 2. Direct Hotkey Sandboxing:
-If a command requires user permission, the input bar locks, and the Firewall pane flashes. You can press:
-*   **`Y`** on your keyboard to instantly approve execution.
-*   **`N`** on your keyboard to instantly deny execution.
-*   This immediately updates SQLite, releasing the sandbox thread inside the background worker!
-
----
-
-## 🕸️ Self-Hosted Web Control Dashboard (SPA)
-
-Whenever the agent is running, it natively serves a zero-dependency **Web Control Dashboard & Chat Interface** at `http://localhost:8080`!
-
-### Features:
-1. **Unified Live Chat Panel**: Talk directly to the agent from your browser. View system thought processes, watch tool calls output inside customized blocks, and approve or deny sandbox requests.
-2. **Interactive Skill Designer**: Hit **`+ Design New Skill`** in your browser to bring up an inline Markdown Editor, write your YAML frontmatter, and deploy playbooks instantly to `~/.cameleer/skills/`.
-3. **Inline TOML Config Editor**: Fetch, validate, and write back your `~/.cameleer/config.toml` parameters without opening an external file editor.
-4. **Interactive Sandbox Approvals**: Glow-pulsed cards with **Approve 🚀** and **Deny 🚫** buttons update SQLite databases immediately to resume sandbox runs.
-5. **Session Hard Reset**: A warning button that cleanly purges SQLite thread records and logs for a fresh restart.
-
----
-
-##  Native macOS GUI Application (Cameleer OS.app)
-
-Cameleer is now fully packaged into a production-grade, double-clickable standalone macOS desktop application (`Cameleer OS.app`) deployed directly to your Desktop!
-
----
-
-## 📥 Phase 11: Local GGUF Model Downloader & Manager
-
-We have designed and engineered a high-fidelity **Models** configuration page inside the control center GUI, enabling native, asynchronous model downloads and active hot-swapping.
-
----
-
-## ⚡ Phase 12: Dynamic Agent Model Routing & Concurrent Multi-Model Executions
-
-Each agent in the Cameleer crew operates as a containerized worker whose inference provider and model can be dynamically configured. This enables concurrent multi-model executions live.
-
-### 1. Curated Provider Option Lists
-We introduced standard, curated select dropdown options mapped to each LLM provider:
-*   **Local Camelid GGUF**: Standard downloaded files listed in `~/.cameleer/models/` + default system active GGUFs.
-*   **Ollama Local API**: `qwen2.5-coder`, `llama3.2`, `llama3`, `mistral`, `deepseek-r1`.
-*   **OpenAI Cloud API**: `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`, `o1-mini`, `o1-preview`.
-*   **Anthropic Claude API**: `claude-3-5-sonnet`, `claude-3-5-haiku`, `claude-3-opus`.
-
-### 2. Smart Selector Overrides & Custom Tags
-To ensure complete flexibility, the frontend automatically analyzes the active model. If an agent runs a model not present in the standard lists (e.g. a custom local fine-tune or custom API string), the dynamic dropdown resolves automatically to `"✦ Custom Model Tag..."` and renders a text `<input>` below it to permit raw overrides. This handles existing setups cleanly with zero configuration loss.
-
-### 3. Multi-Model Concurrency Mechanics
-Because each agent represents an independent entity in our relational SQLite state, they can execute distinct sandboxed operations in the background concurrently. For example:
-*   `agent-coder` can run a heavy local GGUF like `Mistral-7B-Instruct-v0.3.Q8_0.gguf` via Ollama for code composition.
-*   `agent-analyst` can concurrently query `gpt-4o-mini` via OpenAI for fast logical checks.
-*   `agent-writer` can simultaneously run `claude-3-5-sonnet` via Anthropic for report packaging.
-This allows the orchestrator to resolve dependent tasks and execute joint plans across different models simultaneously!
-
----
-
-## 💎 Phase 15: Premium Productionization Suite ("Kitchen Sink" Release)
-
-We have implemented a suite of advanced, high-fidelity enhancements that transform the workspace into a commercial-grade, premium product:
-
-### 1. Interactive Playbook Creator & Live YAML Validator (Skills Tab)
-- **Wizard Interface**: Integrated a playbook editor wizard directly into the **Skills** tab.
-- **Real-Time YAML Validation**: As you write your playbook markdown, a custom JavaScript YAML parser validates required tags in real time, flashing a green validation badge or a detailed red syntax error.
-- **Local Sync**: Dynamic skills playbooks are read directly from `~/.cameleer/skills/` and can be edited, deleted, or enqueued on launch, keeping the workspace synchronized.
-- **Seeded Defaults**: Automatically seeds 5 high-fidelity playbooks on startup if the skills directory is empty (`file-write.md`, `shell-exec.md`, `system-info.md`, etc.).
-
-### 2. Sandbox Firewall Telemetry Log (System Tab)
-- **Log Logger**: Every file save or host command executed by the agent's ReAct loop writes a timestamped record to `~/.cameleer/sandbox_audit.log`.
-- **Tailing Terminal Component**: Streams all whitelisted runs, failed command launches, and blocked recursive delete attempts in a live black terminal pane, polling every 3 seconds for active auditing.
-
-### 3. GGUF Local Model Benchmarking Suite (System Tab)
-- **Latency Matrices Test**: Measures prompt processing speeds, CPU looping performance, and Port 8181 round-trip connection speed.
-- **Dynamic Comparative Bars**: Generates an interactive bar chart matching ms response latency and tokens-per-second (TPS) for local Metal GPU, CPU fallbacks, and cloud APIs.
-
-### 4. Advanced UI Themes & Premium Glassmorphism Customizer (System Tab)
-- **HSL Accent Colors Preset**: Select presets dynamically (Aqua Blue, Emerald Green, Neon Pink, Amber Yellow) to update primary styling glow borders and highlights.
-- **Glass Blur Slider**: Tailors card backing backdrop blur from `4px` to `24px`.
-- **Ambient backing Glow Slider**: Sets radial gradient overlay backing opacity from `0%` to `20%` instantly, persisting all configurations across sessions in `localStorage`.
-
----
-
-## 🧠 Phase 16: Shared Project Context Layer (Cameleer Brain)
-
-To resolve the agent isolation bug where sibling workers operated without joint awareness, we implemented the **Shared Project Context Layer (Cameleer Brain)**. This acts as a secure, local-first workspace brain that coordinates actions, files, and decisions across all agents in real time:
-
-### 1. Relational SQLite Schema Upgrades
-We introduced three new tables to compile the unified project brain state:
-*   **`workspaces`**: Tracks active directories, paths, and status (`id`, `name`, `path`, `active`).
-*   **`decisions`**: Stores key engineering choices, who decided them, and when (`id`, `workspace_id`, `decision`, `decided_by`, `timestamp`).
-*   **`handoffs`**: Manages explicit, multi-agent workflows, allowing one agent to hand off tasks to another with clear context (`id`, `task_id`, `source_agent_id`, `target_agent_id`, `reason`, `status`, `timestamp`).
-
-### 2. Context Compiler Snapshot
-Before *every single turn* in the ReAct reasoning loop, the backend compiles a compact Markdown context packet comprising:
-*   Active workspace and path boundaries.
-*   Shared Global Goal (active objectives).
-*   Active crew statuses and pulsing last-active heartbeats.
-*   Recent tasks and dynamic blocker trees.
-*   Created/modified workspace file artifacts.
-*   Engineering decisions history.
-*   Pending handoffs.
-*   A tail of recent system and agent events.
-*   A **dynamic, role-specific suggested next action** mapping the agent's distinct capabilities to active project needs.
-
-### 3. Event-Driven Agent Coordination & ReAct Interceptors
-*   **Turn Events Logging**: The ReAct execution loop automatically logs structured event types (`task_started`, `file_created`, `task_completed`) into SQLite on key agent mutations, creating a visual, audit-ready firewall stream.
-*   **Coordinated Thought Actions**: Extended the thought parser to intercept dynamic ReAct blocks inline, empowering agents to coordinate autonomously during reasoning turns:
-    - `ACTION: record_decision` ➔ Persists choice into `decisions` and logs event.
-    - `ACTION: report_blocker` ➔ Registers task blocking tree and changes status.
-    - `ACTION: request_handoff` ➔ Registers active multi-agent handoff inside `handoffs`.
-
-### 4. Interactive Project Brain UI Dashboard
-Completely replaced the right sidebar inspector with a high-fidelity, dual-tabbed **Project Brain Dashboard**:
-*   **Project Brain Tab**: Displays active workspace name/path, crew statuses with pulsing indicators, recorded engineering decisions, the live compiled Shared Awareness terminal block, and the **Handoffs Gateway**.
-*   **Interactive Handoff Resolvers**: Shows pending handoffs dynamically, providing inline, single-click **Accept**, **Reject**, or **Complete** buttons to coordinate tasks between sibling agents in real time.
-*   **Manual Decision Logger**: Includes a premium inline input field enabling the active user to manually record system/architectural choices on the fly, instantly publishing events to the crew's context stream.
-*   **Agent Profile Tab**: Retains quick profile inspection and retirement actions for selected agents.
-
----
-
-## ⚡ Phase 17: Mission Builder Dashboard & Crew Autopilot Automation Suite
-
-We have built a premium, secure, and extremely powerful **Mission Builder & Crew Autopilot Suite** in Cameleer. This turns the application from an agent chat application into a commercial-grade, turn-key **Local AI Workforce Platform** backed by a robust relational SQLite schema.
+We introduced a lightweight relational shared-project brain layer in SQLite, backed by active supervisor watchdogs, whitelisted security command sandboxes, and a premium **Mission Control Dashboard** (the default tab).
 
 ```mermaid
 graph TD
-    User([User Outcome Goal]) --> |"Input & Select Pack"| MB[Mission Builder Engine]
-    MB --> |"SQLite Draft Preview"| PE[Interactive Preview Editor]
-    PE --> |"Edit & Approve"| DB[(SQLite Storage)]
-    DB --> |"Spawn"| Crew[Provisioned Crew & Contracts]
-    DB --> |"Spawn"| Cards[Kanban Board Cards]
-    
-    Cards --> |"Work Progress"| AP{Autopilot Controller}
-    AP --> |"Off Scope"| Manual[Manual Triggers Only]
-    AP --> |"Card Scope"| CAuto[Complete Card & Stop]
-    AP --> |"Agent Scope"| AAuto[Continuous Agent Card Pull]
-    AP --> |"Mission Scope"| MAuto[Full Dependency Handoffs]
-    
-    Cards --> |"Complete Card"| WR[Work Receipt Compiler]
-    WR --> |"Touched Files, Audit Logs, Evidence"| Ledger[(Work Receipts Ledger)]
+    UI[React Mission Control Dashboard] -->|Invoke Commands| Tauri[Tauri Rust Backend]
+    Tauri -->|Heartbeats & Recoveries| Watchdog[Tokio Watchdog Supervisor]
+    Tauri -->|Whitelisted Execution| Sandbox[Security Command Guard]
+    Tauri -->|Read/Write State| SQLite[(SQLite Project Brain)]
+    SQLite -->|Checkpoints Store| CheckpointEngine[Checkpoint Store]
+    SQLite -->|Next Actions Suggestions| WorkEngine[Suggestions Work Engine]
+    SQLite -->|Sprint Card Decomposition| TaskDecomposer[Task Manager]
 ```
 
-### 1. Unified Outcome-to-Mission Planner Dashboard
-The dashboard introduces a dedicated **Missions** tab giving users high-fidelity command over crew and task automation without losing manual control:
-*   **Outcome Prompt Input**: Type any high-level objective (e.g. *"Build an interactive Snake game in React with modern glassmorphic styling and sound effects"*).
-*   **Mission Packs Registry**: Click on 6 pre-configured turnkey templates to kickstart standard workflows immediately:
-    1.  **Build Small App**: Proposes a full software product crew (Product Manager, Coder, QA Engineer) and a progressive 4-phase backlog.
-    2.  **Fix Existing Repo**: Provisions a Debugging Specialist and QA Analyst to diagnose, write tests, and resolve repository errors.
-    3.  **Documentation Pass**: Spawns Technical Writers to analyze directories and generate beautiful reference sheets.
-    4.  **QA Sprint**: Deploys automated testers and security auditors to write unit tests, run linters, and verify stability.
-    5.  **Open Source Launch**: Sets up a release team to bundle distribution packages, compose licensing, and write readmes.
-    6.  **Local AI Runtime Benchmark**: Spawns Performance Engineers to profile GGUF speeds, prompt processing latencies, and optimize parameters.
-*   **Draft Preview Inspector**: Generates a side-by-side editable plan *before* any database changes occur. Users can inspect the proposed crew, adjust individual LLM models, rename roles, edit/delete cards, customize priorities, and toggle safety profiles in real time.
+### 1. Unified Relational State (`storage.rs` & `agent_registry.rs`)
+*   **Agents Table Extension**: Upgraded with columns for `primary_skills`, `allowed_tools`, `reasoning_level`, `workspace_access`, `file_access_scope`, `command_permissions`, `kanban_permissions`, `review_requirements`, `safety_profile`, and `escalation_rules`.
+*   **Checkpoints Table Creation**: Persists plans, completed steps, open steps, files touched, reasoning summaries, and validation states mapped to active agent-task pairs.
 
-### 2. Relational SQLite Schema Layer
-The automation suite is fully integrated into Cameleer's fast SQLite storage engine, maintaining 100% relational integrity across 10 tables:
-*   `custom_mission_packs`: Tracks pre-built templates and user-saved custom crews/backlogs.
-*   `mission_previews`, `mission_preview_agents`, `mission_preview_cards`, `mission_preview_dependencies`: Safely stores temporary draft preview plans so users can inspect and edit their sprints without cluttering the active board.
-*   `mission_agent_contracts`: Establishes explicit boundaries, whitelists, and permissions for each spawned agent.
-*   `mission_work_receipts`: Automatically captures touched files, commands executed, and user verification evidence.
-*   `autopilot_settings`: Persists active workspace safety parameters, network overrides, and coordination scopes.
-*   `mission_recommendations`: Feeds the recommendation engine with live tips and blockers.
-*   `mission_audit_events`: Stores full, timestamped audit events of the autopilot and mission workflow.
+### 2. Multi-Agent Templates Registry (`agent_templates.rs` [NEW])
+*   Exposes 10 pre-configured turnkey agent templates matching specialized industry roles:
+    1.  **Software Engineer**: Full file/shell access, advanced reasoning.
+    2.  **Technical Writer**: Markdown focused, strict safety defaults.
+    3.  **QA Engineer**: Automated tests assertions and check validations.
+    4.  **Systems Architect**: High-level designs and sprint splitting decomposer.
+    5.  **TPM / Project Manager**: Coordination analysis and handoffs management.
+    6.  **Security Sentry**: Audits dependencies, ports, and whitelists.
+    7.  **DevOps Specialist**: Scripting, local package building.
+    8.  **Agentic Researcher**: crawler summaries, hardware GGUF benchmarks.
+    9.  **Code Reviewer**: Quality review metrics, diff checklists.
+    10. **Product Manager**: Requirements mapping, PM checklist validation.
+*   **Turnkey Commands**:
+    *   `create_agent_from_template`: Spawns a custom specialist with uuid-free SystemTime microsecond IDs.
+    *   `create_software_team`: Auto-boots a team of 5 specialized agents with strict safety defaults.
+    *   `create_coding_sprint`: Auto-seeds a 5-card engineering sprint to design, code, rotation-clear, QA test, and document a Tetris application.
 
-### 3. Crew Autopilot Scope Controls & Guardrails
-The optional Autopilot engine implements strict crew orchestrations and security sandboxes across four progressive scopes:
-*   🔴 **Off**: Default manual control. Sibling agents work only when the user explicitly triggers them.
-*   🟡 **Card**: An agent performs work only on their single, actively assigned card and stops, prompting the user for approval.
-*   🟢 **Agent**: The agent continues pulling their next assigned cards from the backlog automatically, executing tasks inside the shell sandbox without manual prompts.
-*   🔮 **Mission (Full Autopilot)**: The system automatically coordinates dependent cards, schedules tasks across different agents, resolves handoffs, manages review gates, and updates the board autonomously.
+### 3. Lifecycle Watchdog & Checkpoints (`supervisor.rs` & `checkpoint_store.rs` [NEW])
+*   **Watchdog Monitor**: Scans for agents in `status = 'working'`. If an active agent stalls (stops pulsing heartbeats for >20 seconds), it automatically logs a `agent_stalled_recovery` event and transitions them to `'recovering'`.
+*   **Checkpoint Persistence**: Saves the agent's active plan, open/completed steps, files touched, and reasoning summary at the end of every ReAct iteration. 
+*   **Resiliency Loader**: Upon launching a reasoning loop, the agent queries the checkpoint store and loads the recovery snapshot directly into their system prompt, allowing immediate resumes and self-healing.
 
-### 4. Smart Task Decomposition
-When a user has a large, high-level task, they can hit **"Break into child cards"** directly inside the Kanban card detail overlay. The task decomposer:
-*   Analyzes the active goal type and parent task description.
-*   Generates a fine-grained, progressive list of child cards.
-*   Associates preferred roles, required directories, and smart acceptance criteria for each subtask.
-*   Renders a review checklist in the frontend UI, allowing the user to select, edit, and approve individual subtasks before spawning them on the Kanban board.
+### 4. Coordinated Suggestions Work Engine (`work_engine.rs` [NEW])
+*   Continuously parses project cards, active handoffs, stalled agents, and blocked dependencies.
+*   Exposes `get_work_engine_suggestions` which generates a dashboard timeline of **Next Best Actions** for both users and agents (e.g. claim cards, restart stalled specialists, approve reviews, resolve pending handoffs).
 
-### 5. Agent Contracts & Work Receipts Ledger
-To ensure predictability, transparency, and safety:
-*   **Agent Contracts**: Every agent is bound to a strict contract whitelisting their directory path limits, binary access privileges, requirement review gates, and safety profiles. This is displayed directly inside the Kanban card detail pane.
-*   **Work Receipts**: When a card is marked Done, the system compiles a cryptographic-style work receipt containing:
-    - 📁 *Touched Files*: Live diffs and modified paths in the workspace.
-    - 🐚 *Commands Executed*: Full shell logs, exit codes, and output streams.
-    - 🧩 *Evidence & Validation*: User validation comments and proof of correctness.
-    - *Ledger Enforcement*: The UI displays the compiled receipt inside all completed Kanban cards. No card can be moved to **Done** without an audited work receipt attached.
+### 5. Smart Task Decomposition (`task_manager.rs`)
+*   Exposes `decompose_task` which uses the parent card context to propose a granular child checklist sprint (assigning specialized roles and listing physical required deliverables).
+*   Exposes `approve_subtasks` which links the subtasks as child dependencies, enqueues them into the backlog, and marks the parent task status as `'blocked'` pending subtask clearances.
 
-### 6. Security Audit Event Logger & Recommendations Timeline
-*   **Recommendations Engine**: Fully integrated with the workspace timeline. It continuously analyzes the SQLite state to generate high-priority recommendations: prompting the user to decompose large cards, alerting them of missing card acceptance criteria, or notifying them of missing QA dependencies.
-*   **Audit Logger Console**: Streams live events (e.g. *"[AUTOPILOT] Assigned task-234 to agent-coder"*, *"[SECURITY] Denied binary command execution 'rm -rf'"*) inside a high-fidelity terminal component in the Missions tab, keeping users fully in control of their automated workforce.
+### 6. Security Sandbox & Mutator Protection (`command_guard.rs` [NEW])
+*   Intercepts every shell command. Under the default `moderate` safety profile, standard search commands (`ls`/`cat`/`grep`) are whitelisted, but mutating binaries (`rm`/`sudo`/`curl`/`wget`/`mv`) are intercepted.
+*   **Pausing Execution**: Pauses the agent reasoning loop, sets the active card status to `'waiting_for_approval'`, logs a `command_approval_paused` event, and enqueues it to the user's dashboard review queue.
+*   **Interactive Resolvers**: Exposes `resolve_command_approval` allowing the user to click Approve (resumes work, white-listing the command) or Reject (aborts the action, resets task to Ready and agent to Idle).
 
+### 7. Premium Mission Control Dashboard (`App.tsx` & `App.css`)
+*   Adds the `"Dashboard"` tab as the default tab.
+*   Built using glassmorphic styling, tailormade HSL colors, smooth transitions, and pulse-glow watchdog animations.
+*   Features:
+    *   **Hero Panel**: Boostraps sprints and boots specialized teams with one click.
+    *   **AI Crew heartbeats**: Interactive list of active crew members and their real-time statuses.
+    *   **Next Actions timeline**: Interactive timeline cards with inline suggestion action buttons.
+    *   **Wizard**: Instant builder selecting from templates and configuring custom call-signs.
+    *   **Subtask Decomposer**: Checklist proposal tree with one-click approvals.
+    *   **Security Reviews Queue**: Simple approve/deny triggers for whitelisted shell overrides.
+### 8. Premium Local GGUF Model Package Manager (`models_manager.rs` & `App.tsx` [NEW])
+*   **Curated Vetted Catalog**: Curated seed models list populated on startup (`models` table) supporting `Llama 3.2 3B Instruct` (Q8_0 Coder), `Llama 3.2 1B` (Q8_0 Fast), `TinyLlama 1.1B` (Q8_0 Chat), `Mistral 7B` (Q8_0 7B), and `Llama 3 8B` (Q4_K_M 8B).
+*   **GGUF Range-Request Parser**: Fetches the first `256KB` byte range (`Range: bytes=0-262144` HTTP header) to check magic flags, parse tokenizer configurations, and scan whitelisted tensor structures before downloading the full multi-gigabyte models.
+*   **Strict Tensor Whitelist Guard**: Inspects all quantization layouts. Explicitly whitelists `Q8_0`, `Q4_0`, `Q4_1`, `Q5_0`, `Q5_1`, `Q2_K`, `Q3_K`, `Q4_K`, `Q5_K`, `Q6_K`, `Q8_K`, `IQ4_NL`. Non-whitelisted models are automatically blocked as "Inspectable Only" to avoid Camelid runtime failures, with bypass overrides for developer mode.
+*   **Atomic Downloader Engine**: Spawns Tokio background threads to stream downloads into `models/downloads/` with support for queue pauses, resumptions using byte-ranges, cancellations, and atomic renaming checks (preventing corrupted local directories).
+*   **Double-Column Drawer Inspector**: Select a catalog model to pull up the high-fidelity modal details tabs:
+    *   *Overview*: Sizing, architecture, RAM estimates, and global/agent scoped activations.
+    *   *GGUF Metadata*: Live search-filtered grid of parsed GGUF key-value configs.
+    *   *Tensor Layout*: Whitelists validation check for every weight tensor in the layout directory.
+    *   *Compatibility*: Automated validation checklist of headers, quants, and tokenizers.
+    *   *Smoke Test Console*: Hot-swaps the active Camelid GGUF, triggers prompt loads, allocates Metal caching, measures throughput (TPS), and streams live diagnostic benchmarks.
+
+---
+
+## 📊 Verification Walkthrough
+
+### 1. Build Verification
+Front-end React Vite bundle and Rust backend are 100% verified to compile cleanly with zero errors:
+- **Rust Tauri & Workspace Build**: Successfully builds the entire workspace:
+  ```bash
+  cargo build --release
+  ```
+- **Vite React Build**: TypeScript checking and production bundling completes successfully with Vite:
+  ```bash
+  npm run build
+  ```
+
+### 2. GGUF Model Management Scenario
+1.  **Dashboard Hub & Recommended Cards**: Open Cameleer and click **Models**. Sleek pre-seeded curated GGUF models are immediately displayed with hardware compatibilities.
+2.  **Hugging Face Search & Range-Request Preflight**: Search Hugging Face repositories for `Llama-3.2`. Click **Preflight Audit**. Cameleer instantly fetches the first 256KB of the Hugging Face URL and generates a compatibility checklist, warning about unsupported tensor layouts or architectures.
+3.  **Resumable Progressive Downloads**: Install a GGUF quant. Progress increments progressively. Pause mid-download, verify download halts, click resume, and verify byte range seeks continue without starting from 0.
+4.  **Local drag-and-drop Import**: Select a local GGUF, verify path imports, read and inspect tensors within seconds.
+5.  **Multi-Scope Model Activation**: Select the pre-seeded Q8 default coder model. Click **Activate Global**. Cameleer seamlessly hot-swaps the local Camelid daemon, registers the workspace, and updates agent prompts without application restarts.
+6.  **Diagnostics Smoke Testing**: Click **Run Smoke Test** in the drawer benchmark console. The local runtime warms the GGUF model binary, compiles prompts, streams Metal throughput (TPS) metrics, and verifies diagnostic logging.

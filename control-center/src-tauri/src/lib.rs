@@ -11,6 +11,7 @@ mod checkpoint_store;
 mod work_engine;
 mod command_guard;
 mod mission_builder;
+mod models_manager;
 
 use storage::DbState;
 use tauri::Manager;
@@ -115,7 +116,20 @@ pub fn run() {
             mission_builder::get_agent_contract,
             mission_builder::get_mission_audit_events,
             mission_builder::get_work_receipt,
-            mission_builder::generate_work_receipt
+            mission_builder::generate_work_receipt,
+            models_manager::list_model_catalog,
+            models_manager::search_remote_models,
+            models_manager::generate_model_preflight,
+            models_manager::queue_model_download,
+            models_manager::pause_model_download,
+            models_manager::resume_model_download,
+            models_manager::cancel_model_download,
+            models_manager::import_local_model,
+            models_manager::delete_model,
+            models_manager::activate_model_scoped,
+            models_manager::run_model_smoke_test,
+            models_manager::get_model_details,
+            models_manager::get_model_storage_usage
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

@@ -412,6 +412,129 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         [],
     )?;
 
+    // 24. Models Registry
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS models (
+            model_id TEXT PRIMARY KEY,
+            display_name TEXT NOT NULL,
+            provider TEXT NOT NULL,
+            source_repo TEXT,
+            source_file TEXT,
+            local_path TEXT,
+            architecture TEXT,
+            quantization TEXT,
+            parameter_count TEXT,
+            file_size_bytes INTEGER,
+            checksum_sha256 TEXT,
+            install_status TEXT NOT NULL,
+            compatibility_status TEXT NOT NULL,
+            runnable_status INTEGER DEFAULT 0,
+            active_status INTEGER DEFAULT 0,
+            license TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_inspected_at DATETIME,
+            last_validated_at DATETIME
+        )",
+        [],
+    )?;
+
+    // 25. Model Files Registry
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS model_files (
+            file_id TEXT PRIMARY KEY,
+            model_id TEXT REFERENCES models(model_id) ON DELETE CASCADE,
+            filename TEXT NOT NULL,
+            provider_url TEXT NOT NULL,
+            local_path TEXT,
+            file_size_bytes INTEGER,
+            downloaded_bytes INTEGER DEFAULT 0,
+            checksum_sha256 TEXT,
+            download_status TEXT DEFAULT 'idle',
+            install_status TEXT DEFAULT 'pending',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 26. Model Inspections
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS model_inspections (
+            inspection_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            model_id TEXT UNIQUE REFERENCES models(model_id) ON DELETE CASCADE,
+            gguf_version INTEGER,
+            architecture TEXT,
+            tokenizer_model TEXT,
+            context_length INTEGER,
+            embedding_length INTEGER,
+            block_count INTEGER,
+            feed_forward_length INTEGER,
+            attention_head_count INTEGER,
+            attention_head_count_kv INTEGER,
+            rope_dimension_count INTEGER,
+            rope_freq_base REAL,
+            rope_freq_scale REAL,
+            quantization_summary TEXT,
+            tensor_count INTEGER,
+            supported_tensor_types TEXT,
+            unsupported_tensor_types TEXT,
+            required_runtime_features TEXT,
+            inspection_status TEXT NOT NULL,
+            inspection_errors TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 27. Model Tensor Layout Summaries
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS model_tensor_summaries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            model_id TEXT REFERENCES models(model_id) ON DELETE CASCADE,
+            tensor_name TEXT NOT NULL,
+            tensor_type TEXT NOT NULL,
+            shape TEXT NOT NULL,
+            layout_status TEXT DEFAULT 'valid',
+            supported INTEGER DEFAULT 1,
+            notes TEXT
+        )",
+        [],
+    )?;
+
+    // 28. Model Downloads
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS model_downloads (
+            download_id TEXT PRIMARY KEY,
+            model_id TEXT REFERENCES models(model_id),
+            provider TEXT NOT NULL,
+            url TEXT NOT NULL,
+            destination_path TEXT NOT NULL,
+            status TEXT NOT NULL,
+            total_bytes INTEGER,
+            downloaded_bytes INTEGER DEFAULT 0,
+            resume_supported INTEGER DEFAULT 0,
+            started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            completed_at DATETIME,
+            error_message TEXT
+        )",
+        [],
+    )?;
+
+    // 29. Scoped Model Activations
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS model_activations (
+            activation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            model_id TEXT REFERENCES models(model_id) ON DELETE CASCADE,
+            scope_type TEXT NOT NULL,
+            scope_id TEXT NOT NULL,
+            activated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            activated_by TEXT DEFAULT 'user'
+        )",
+        [],
+    )?;
+
     Ok(())
 }
 
@@ -495,6 +618,9 @@ pub fn seed_default_agents(conn: &Connection) -> Result<()> {
 
     // Seed default mission packs
     seed_default_mission_packs(conn)?;
+
+    // Seed default recommended model catalog
+    seed_default_models(conn)?;
 
     Ok(())
 }
@@ -655,6 +781,117 @@ fn seed_default_mission_packs(conn: &Connection) -> Result<()> {
             "INSERT OR REPLACE INTO custom_mission_packs (id, name, description, category, default_agents, default_columns, default_cards, default_evidence_gates, default_review_flow, default_permissions, user_editable, version)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
             params![id, name, desc, cat, agents, columns, cards, gates, review, permissions, editable, version],
+        )?;
+    }
+
+    Ok(())
+}
+
+pub fn seed_default_models(conn: &Connection) -> Result<()> {
+    let count: i64 = conn.query_row("SELECT COUNT(*) FROM models WHERE provider = 'curated'", [], |row| row.get(0))?;
+    if count > 0 {
+        return Ok(());
+    }
+
+    let default_models = vec![
+        (
+            "llama-3.2-3b",
+            "Llama 3.2 3B Instruct (Q8_0)",
+            "curated",
+            "bartowski/Llama-3.2-3B-Instruct-GGUF",
+            "Llama-3.2-3B-Instruct-Q8_0.gguf",
+            "llama",
+            "Q8_0",
+            "3.2B",
+            3480000000i64, // ~3.48 GB
+            "recommended",
+            1, // runnable
+            "Llama-3.2-3B is a highly capable instruct/coder model that fits standard macOS devices with Metal GPU acceleration seamlessly.",
+            "Llama-3.2-3B-Instruct-Q8_0.gguf"
+        ),
+        (
+            "llama-3.2-1b",
+            "Llama 3.2 1B Instruct (Q8_0)",
+            "curated",
+            "bartowski/Llama-3.2-1B-Instruct-GGUF",
+            "Llama-3.2-1B-Instruct-Q8_0.gguf",
+            "llama",
+            "Q8_0",
+            "1.2B",
+            1240000000i64, // ~1.24 GB
+            "recommended",
+            1,
+            "Llama-3.2-1B is an extremely lightweight, fast-executing model ideal for fast routine task automation.",
+            "Llama-3.2-1B-Instruct-Q8_0.gguf"
+        ),
+        (
+            "tinyllama-1.1b",
+            "TinyLlama 1.1B Chat (Q8_0)",
+            "curated",
+            "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF",
+            "tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+            "llama",
+            "Q8_0",
+            "1.1B",
+            1100000000i64, // ~1.10 GB
+            "experimental",
+            1,
+            "TinyLlama is a compact chat-tuned model. Recommended for testing and ultra-low overhead runtimes only.",
+            "tinyllama-1.1b-chat-v1.0.Q8_0.gguf"
+        ),
+        (
+            "mistral-7b",
+            "Mistral 7B Instruct (Q8_0)",
+            "curated",
+            "maziyarpanahi/Mistral-7B-Instruct-v0.3-GGUF",
+            "Mistral-7B-Instruct-v0.3.Q8_0.gguf",
+            "mistral",
+            "Q8_0",
+            "7.2B",
+            7700000000i64, // ~7.70 GB
+            "supported",
+            1,
+            "Mistral 7B offers premium instruction-following capabilities. Recommended for devices with 16GB+ memory.",
+            "Mistral-7B-Instruct-v0.3.Q8_0.gguf"
+        ),
+        (
+            "llama-3-8b",
+            "Llama 3 8B Instruct (Q4_K_M)",
+            "curated",
+            "bartowski/Meta-Llama-3-8B-Instruct-GGUF",
+            "Meta-Llama-3-8B-Instruct-Q4_K_M.gguf",
+            "llama",
+            "Q4_K_M",
+            "8.0B",
+            4800000000i64, // ~4.80 GB
+            "experimental",
+            1,
+            "Llama 3 8B is a robust instruct-following model. Highly recommended for heavy reasoning runs.",
+            "Meta-Llama-3-8B-Instruct-Q4_K_M.gguf"
+        ),
+    ];
+
+    for (id, name, prov, repo, file, arch, quant, params_cnt, size, comp, runnable, desc, filename) in default_models {
+        conn.execute(
+            "INSERT OR REPLACE INTO models (
+                model_id, display_name, provider, source_repo, source_file,
+                architecture, quantization, parameter_count, file_size_bytes,
+                install_status, compatibility_status, runnable_status, license
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'not_installed', ?10, ?11, ?12)",
+            params![id, name, prov, repo, file, arch, quant, params_cnt, size, comp, runnable, desc],
+        )?;
+
+        // Seed model files
+        let file_url = if prov == "curated" {
+            format!("https://huggingface.co/{}/resolve/main/{}", repo, file)
+        } else {
+            "".to_string()
+        };
+        conn.execute(
+            "INSERT OR REPLACE INTO model_files (
+                file_id, model_id, filename, provider_url, file_size_bytes, download_status, install_status
+            ) VALUES (?1, ?2, ?3, ?4, ?5, 'idle', 'pending')",
+            params![format!("{}-file", id), id, filename, file_url, size],
         )?;
     }
 
