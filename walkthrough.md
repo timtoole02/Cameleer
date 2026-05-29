@@ -173,3 +173,41 @@ We have implemented a suite of advanced, high-fidelity enhancements that transfo
 - **Glass Blur Slider**: Tailors card backing backdrop blur from `4px` to `24px`.
 - **Ambient backing Glow Slider**: Sets radial gradient overlay backing opacity from `0%` to `20%` instantly, persisting all configurations across sessions in `localStorage`.
 
+---
+
+## 🧠 Phase 16: Shared Project Context Layer (Cameleer Brain)
+
+To resolve the agent isolation bug where sibling workers operated without joint awareness, we implemented the **Shared Project Context Layer (Cameleer Brain)**. This acts as a secure, local-first workspace brain that coordinates actions, files, and decisions across all agents in real time:
+
+### 1. Relational SQLite Schema Upgrades
+We introduced three new tables to compile the unified project brain state:
+*   **`workspaces`**: Tracks active directories, paths, and status (`id`, `name`, `path`, `active`).
+*   **`decisions`**: Stores key engineering choices, who decided them, and when (`id`, `workspace_id`, `decision`, `decided_by`, `timestamp`).
+*   **`handoffs`**: Manages explicit, multi-agent workflows, allowing one agent to hand off tasks to another with clear context (`id`, `task_id`, `source_agent_id`, `target_agent_id`, `reason`, `status`, `timestamp`).
+
+### 2. Context Compiler Snapshot
+Before *every single turn* in the ReAct reasoning loop, the backend compiles a compact Markdown context packet comprising:
+*   Active workspace and path boundaries.
+*   Shared Global Goal (active objectives).
+*   Active crew statuses and pulsing last-active heartbeats.
+*   Recent tasks and dynamic blocker trees.
+*   Created/modified workspace file artifacts.
+*   Engineering decisions history.
+*   Pending handoffs.
+*   A tail of recent system and agent events.
+*   A **dynamic, role-specific suggested next action** mapping the agent's distinct capabilities to active project needs.
+
+### 3. Event-Driven Agent Coordination & ReAct Interceptors
+*   **Turn Events Logging**: The ReAct execution loop automatically logs structured event types (`task_started`, `file_created`, `task_completed`) into SQLite on key agent mutations, creating a visual, audit-ready firewall stream.
+*   **Coordinated Thought Actions**: Extended the thought parser to intercept dynamic ReAct blocks inline, empowering agents to coordinate autonomously during reasoning turns:
+    - `ACTION: record_decision` ➔ Persists choice into `decisions` and logs event.
+    - `ACTION: report_blocker` ➔ Registers task blocking tree and changes status.
+    - `ACTION: request_handoff` ➔ Registers active multi-agent handoff inside `handoffs`.
+
+### 4. Interactive Project Brain UI Dashboard
+Completely replaced the right sidebar inspector with a high-fidelity, dual-tabbed **Project Brain Dashboard**:
+*   **Project Brain Tab**: Displays active workspace name/path, crew statuses with pulsing indicators, recorded engineering decisions, the live compiled Shared Awareness terminal block, and the **Handoffs Gateway**.
+*   **Interactive Handoff Resolvers**: Shows pending handoffs dynamically, providing inline, single-click **Accept**, **Reject**, or **Complete** buttons to coordinate tasks between sibling agents in real time.
+*   **Manual Decision Logger**: Includes a premium inline input field enabling the active user to manually record system/architectural choices on the fly, instantly publishing events to the crew's context stream.
+*   **Agent Profile Tab**: Retains quick profile inspection and retirement actions for selected agents.
+
