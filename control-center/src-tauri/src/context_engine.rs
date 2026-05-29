@@ -120,9 +120,9 @@ pub fn get_workspace_context_snapshot(
 
     // 4. Tasks & Blockers (Upgraded Kanban Cards Orchestration)
     let mut stmt_tasks = conn.prepare(
-        "SELECT id, title, owner_id, assigned_agent_id, status, priority, 
-                acceptance_criteria, required_files, related_files, blockers, dependencies 
-         FROM tasks"
+        "SELECT id, title, created_by as owner_id, assigned_agent_id, status, priority, 
+                acceptance_criteria, required_files, related_files, blocked_by as blockers, dependencies 
+         FROM kanban_cards"
     ).map_err(|e| e.to_string())?;
 
     let tasks_iter = stmt_tasks.query_map([], |row| {

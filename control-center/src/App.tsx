@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import BacklogView from "./components/board/BacklogView";
+import KanbanBoard from "./components/board/KanbanBoard";
 import "./App.css";
 
 interface Agent {
@@ -276,6 +278,8 @@ interface BackendRuntimeConfig {
 
 function App() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models" | "missions">("dashboard");
+  const [kanbanView, setKanbanView] = useState<"board" | "backlog">("board");
+  const [refreshKanban, setRefreshKanban] = useState(0);
   const [suggestions, setSuggestions] = useState<WorkSuggestion[]>([]);
   const [templates, setTemplates] = useState<TemplateInfo[]>([]);
   const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("software_engineer");
@@ -2394,117 +2398,54 @@ function App() {
             </form>
           </>
         ) : activeTab === "kanban" ? (
-          /* Kanban Board */
+          /* Kanban System */
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                Click on any card to view detailed multi-agent timeline, run validation checks, post comment updates, or declare blockers.
+            <div style={{ padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+              <div className="kanban-view-toggle" style={{ display: "flex", gap: "8px", background: "rgba(0,0,0,0.2)", padding: "4px", borderRadius: "8px" }}>
+                <button 
+                  className={`view-toggle-btn ${kanbanView === "board" ? "active" : ""}`}
+                  onClick={() => setKanbanView("board")}
+                >
+                  Active Board
+                </button>
+                <button 
+                  className={`view-toggle-btn ${kanbanView === "backlog" ? "active" : ""}`}
+                  onClick={() => setKanbanView("backlog")}
+                >
+                  Backlog
+                </button>
               </div>
-              <button className="sidebar-btn" style={{ margin: 0 }} onClick={() => setIsTaskModalOpen(true)}>
-                ➕ Create Task
+              <button className="primary-btn" onClick={() => setIsTaskModalOpen(true)}>
+                ➕ New Card
               </button>
             </div>
             
-            <div className="kanban-board">
-              {["backlog", "ready", "assigned", "in_progress", "blocked", "review", "done"].map((status) => {
-                const columnTasks = tasks.filter((t) => t.status === status);
-                
-                let statusLabel = status;
-                let colorClass = "idle";
-                
-                if (status === "backlog") {
-                  statusLabel = "Backlog";
-                  colorClass = "idle";
-                } else if (status === "ready") {
-                  statusLabel = "Ready";
-                  colorClass = "ready";
-                } else if (status === "assigned") {
-                  statusLabel = "Assigned";
-                  colorClass = "assigned";
-                } else if (status === "in_progress") {
-                  statusLabel = "In Progress";
-                  colorClass = "working";
-                } else if (status === "blocked") {
-                  statusLabel = "Blocked";
-                  colorClass = "blocked";
-                } else if (status === "review") {
-                  statusLabel = "Review";
-                  colorClass = "review";
-                } else if (status === "done") {
-                  statusLabel = "Done";
-                  colorClass = "working"; // emerald green glow in CSS status-badge
-                }
-
-                return (
-                  <div key={status} className="kanban-column">
-                    <div className="kanban-column-header">
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span className={`status-badge ${colorClass}`} style={{ position: "static", display: "inline-block", width: "8px", height: "8px", margin: 0 }} />
-                        <span>{statusLabel}</span>
-                      </div>
-                      <span className="kanban-column-count">{columnTasks.length}</span>
-                    </div>
-                    
-                    <div className="kanban-cards">
-                      {columnTasks.length === 0 ? (
-                        <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.75rem", padding: "20px 10px", border: "1px dashed rgba(255,255,255,0.03)", borderRadius: "10px" }}>
-                          No cards here
-                        </div>
-                      ) : (
-                        columnTasks.map((task) => {
-                          const criteria = safeParseJson<string[]>(task.acceptance_criteria, []);
-                          const completedCriteria = criteria.filter(c => c.startsWith("[x]")).length;
-                          const totalCriteria = criteria.length;
-
-                          return (
-                            <div
-                              key={task.id}
-                              className="kanban-card"
-                              onClick={() => {
-                                setSelectedKanbanTask(task);
-                                setCompletionError(null);
-                                setIsCompletingTask(false);
-                                setIsAddingBlocker(false);
-                              }}
-                            >
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
-                                <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", color: "var(--accent-primary)" }}>{task.id}</span>
-                                <span className={`kanban-card-priority ${task.priority}`} style={{ fontSize: "0.68rem" }}>{task.priority}</span>
-                              </div>
-                              <div className="kanban-card-title">{task.title}</div>
-                              {task.description && (
-                                <div className="kanban-card-desc" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                                  {task.description}
-                                </div>
-                              )}
-                              
-                              {totalCriteria > 0 && (
-                                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
-                                  <div style={{ flex: 1, height: "4px", background: "rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}>
-                                    <div style={{ height: "100%", background: "var(--accent-primary)", width: `${(completedCriteria / totalCriteria) * 100}%` }} />
-                                  </div>
-                                  <span>{completedCriteria}/{totalCriteria} items</span>
-                                </div>
-                              )}
-
-                              <div className="kanban-card-meta">
-                                <span className="kanban-card-owner" style={{ fontSize: "0.7rem" }}>
-                                  {agents.find((a) => a.id === task.assigned_agent_id || a.id === task.owner_id)?.name || "unassigned"}
-                                </span>
-                                {task.validation_status === "passed" && (
-                                  <span style={{ fontSize: "0.68rem", color: "#10b981", background: "rgba(16, 185, 129, 0.08)", padding: "1px 6px", borderRadius: "4px", fontWeight: "bold" }}>✓ Passed</span>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            <div style={{ flex: 1, overflowY: "auto", position: "relative" }}>
+              {kanbanView === "backlog" ? (
+                <BacklogView 
+                  workspaceId="default" 
+                  onItemConverted={() => {
+                    setRefreshKanban(prev => prev + 1);
+                    setKanbanView("board");
+                  }} 
+                />
+              ) : (
+                <KanbanBoard 
+                  workspaceId="default" 
+                  agents={agents} 
+                  onCardClick={(card) => {
+                    setSelectedKanbanTask(card as any);
+                    setCompletionError(null);
+                    setIsCompletingTask(false);
+                    setIsAddingBlocker(false);
+                  }} 
+                  refreshTrigger={refreshKanban}
+                />
+              )}
             </div>
           </div>
+            
+
         ) : activeTab === "skills" ? (
           /* Skills Page */
           <div className="skills-container" style={{ flex: 1, overflowY: "auto", padding: "24px" }}>

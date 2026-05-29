@@ -13,6 +13,7 @@ mod command_guard;
 mod mission_builder;
 mod models_manager;
 mod backend_runtime;
+mod board_services;
 
 use storage::DbState;
 use tauri::Manager;
@@ -89,7 +90,6 @@ pub fn run() {
             task_manager::register_artifact,
             task_manager::get_artifacts,
             task_manager::read_artifact_file,
-            task_manager::get_agent_work_queue,
             task_manager::claim_card,
             task_manager::update_card_progress,
             task_manager::complete_card,
@@ -150,7 +150,16 @@ pub fn run() {
             backend_runtime::save_backend_config_cmd,
             backend_runtime::reset_backend_runtime_state,
             backend_runtime::reveal_backend_binary,
-            backend_runtime::get_backend_config
+            backend_runtime::get_backend_config,
+            board_services::get_backlog_snapshot,
+            board_services::create_backlog_item,
+            board_services::update_backlog_item,
+            board_services::convert_backlog_item_to_card,
+            board_services::get_board_snapshot,
+            board_services::create_card,
+            board_services::assign_card,
+            board_services::move_card,
+            board_services::get_agent_work_queue
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

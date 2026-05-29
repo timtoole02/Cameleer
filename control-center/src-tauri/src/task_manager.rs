@@ -114,8 +114,8 @@ pub fn get_tasks(state: State<'_, DbState>) -> Result<Vec<Task>, String> {
     Ok(tasks)
 }
 
-#[tauri::command]
-pub fn get_agent_work_queue(
+// #[tauri::command]
+pub fn _get_agent_work_queue_legacy(
     state: State<'_, DbState>,
     agent_id: String,
     workspace_id: String,

@@ -102,41 +102,159 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         let _ = conn.execute("DROP TABLE IF EXISTS tasks", []);
     }
 
-    // 4. Tasks & Objective Registry (Upgraded Kanban Cards)
+    // Epic 5 Kanban System Schema
+    
+    // 4a. Boards
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS tasks (
+        "CREATE TABLE IF NOT EXISTS boards (
             id TEXT PRIMARY KEY,
             workspace_id TEXT REFERENCES workspaces(id),
-            title TEXT NOT NULL,
+            name TEXT NOT NULL,
             description TEXT,
-            owner_id TEXT REFERENCES agents(id),
-            assigned_agent_id TEXT REFERENCES agents(id),
-            status TEXT DEFAULT 'backlog',
-            priority TEXT DEFAULT 'medium',
-            created_by TEXT DEFAULT 'user',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            due_date TEXT,
-            acceptance_criteria TEXT,
-            required_files TEXT,
-            related_files TEXT,
-            related_artifacts TEXT,
-            dependencies TEXT,
-            blockers TEXT,
-            comments TEXT,
-            activity_log TEXT,
-            validation_status TEXT DEFAULT 'pending',
-            completion_evidence TEXT
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )",
         [],
     )?;
 
-    // 5. Task Blockers Mapping
+    // 4b. Board Columns
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS task_blockers (
+        "CREATE TABLE IF NOT EXISTS board_columns (
+            id TEXT PRIMARY KEY,
+            board_id TEXT REFERENCES boards(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            status_mapping TEXT NOT NULL,
+            rank INTEGER NOT NULL,
+            wip_limit INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 4c. Backlogs
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS backlogs (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
+            name TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 4d. Backlog Items
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS backlog_items (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
+            backlog_id TEXT REFERENCES backlogs(id) ON DELETE CASCADE,
+            title TEXT NOT NULL,
+            description TEXT,
+            type TEXT DEFAULT 'feature',
+            priority TEXT DEFAULT 'medium',
+            rank INTEGER DEFAULT 0,
+            labels TEXT,
+            source TEXT DEFAULT 'human',
+            status TEXT DEFAULT 'captured',
+            owner_agent_id TEXT REFERENCES agents(id),
+            owner_human_id TEXT,
+            proposed_agent_role TEXT,
+            acceptance_criteria TEXT,
+            refinement_notes TEXT,
+            dependencies TEXT,
+            risk_level TEXT DEFAULT 'low',
+            effort_estimate TEXT,
+            readiness_score INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 4e. Kanban Cards (Replaces Tasks)
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS kanban_cards (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT REFERENCES workspaces(id),
+            board_id TEXT REFERENCES boards(id),
+            backlog_id TEXT REFERENCES backlogs(id),
+            parent_id TEXT REFERENCES kanban_cards(id),
+            title TEXT NOT NULL,
+            description TEXT,
+            type TEXT DEFAULT 'feature',
+            status TEXT DEFAULT 'Ready',
+            priority TEXT DEFAULT 'medium',
+            rank INTEGER DEFAULT 0,
+            severity TEXT,
+            labels TEXT,
+            assigned_agent_id TEXT REFERENCES agents(id),
+            assigned_human_id TEXT,
+            reporter TEXT,
+            created_by TEXT DEFAULT 'system',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            due_date TEXT,
+            start_date TEXT,
+            completed_at TEXT,
+            estimate TEXT,
+            actual_time TEXT,
+            acceptance_criteria TEXT,
+            definition_of_done TEXT,
+            required_files TEXT,
+            related_files TEXT,
+            related_artifacts TEXT,
+            dependencies TEXT,
+            blocked_by TEXT,
+            blocking TEXT,
+            comments TEXT,
+            activity_log TEXT,
+            checklist TEXT,
+            validation_status TEXT DEFAULT 'pending',
+            completion_evidence TEXT,
+            work_receipt_id TEXT,
+            risk_level TEXT DEFAULT 'low',
+            review_required INTEGER DEFAULT 0,
+            approval_required INTEGER DEFAULT 0,
+            reopen_reason TEXT
+        )",
+        [],
+    )?;
+
+    // 4f. Data Migration from `tasks` to `kanban_cards`
+    let tasks_exists: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='tasks')",
+        [],
+        |row| row.get(0),
+    ).unwrap_or(false);
+
+    if tasks_exists {
+        // We do a soft migration of any existing tasks to kanban cards so nothing is lost
+        conn.execute(
+            "INSERT OR IGNORE INTO kanban_cards (
+                id, workspace_id, title, description, assigned_agent_id,
+                status, priority, reporter, created_by, created_at, updated_at,
+                acceptance_criteria, required_files, related_files, related_artifacts,
+                dependencies, validation_status, completion_evidence, comments, activity_log
+            )
+            SELECT 
+                id, workspace_id, title, description, assigned_agent_id,
+                status, priority, owner_id, created_by, created_at, updated_at,
+                acceptance_criteria, required_files, related_files, related_artifacts,
+                dependencies, validation_status, completion_evidence, comments, activity_log
+            FROM tasks",
+            [],
+        ).unwrap_or(0);
+        
+        // Let's keep `tasks` around temporarily if anything relies on it hardcoded, but we use kanban_cards
+        // For Epic 5 we will slowly redirect references.
+    }
+
+    // 5. Task Blockers Mapping (now referencing kanban_cards)
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS card_blockers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            task_id TEXT REFERENCES tasks(id),
-            blocked_by_task_id TEXT REFERENCES tasks(id),
+            card_id TEXT REFERENCES kanban_cards(id),
+            blocked_by_card_id TEXT REFERENCES kanban_cards(id),
             reason TEXT NOT NULL
         )",
         [],

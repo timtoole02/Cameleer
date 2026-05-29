@@ -27,4 +27,5 @@ reqwest = { version = "0.12", features = ["json", "stream"] }
 tokio = { version = "1.36", features = ["full"] }
 futures-util = "0.3"
 dirs = "6.0.0"
+uuid = { version = "1.23.2", features = ["v4"] }
 

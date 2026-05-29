@@ -52,9 +52,9 @@ pub fn get_work_engine_suggestions(
     let mut stmt = conn
         .prepare(
             "SELECT t.id, t.title, a.id, a.name 
-             FROM tasks t
+             FROM kanban_cards t
              JOIN agents a ON t.assigned_agent_id = a.id
-             WHERE t.status = 'in_review' OR t.validation_status = 'pending_review' OR (t.status = 'done' AND t.validation_status = 'pending')",
+             WHERE t.status = 'In Review' OR t.validation_status = 'pending_review' OR (t.status = 'Done' AND t.validation_status = 'pending')",
         )
         .map_err(|e| e.to_string())?;
     let pending_reviews = stmt
@@ -90,7 +90,7 @@ pub fn get_work_engine_suggestions(
         .prepare(
             "SELECT h.id, h.task_id, t.title, sa.name, ta.name 
              FROM handoffs h
-             JOIN tasks t ON h.task_id = t.id
+             JOIN kanban_cards t ON h.task_id = t.id
              JOIN agents sa ON h.source_agent_id = sa.id
              JOIN agents ta ON h.target_agent_id = ta.id
              WHERE h.status = 'pending'",
@@ -130,9 +130,9 @@ pub fn get_work_engine_suggestions(
         .prepare(
             "SELECT tb.id, t1.id, t1.title, t2.title, tb.reason 
              FROM task_blockers tb
-             JOIN tasks t1 ON tb.task_id = t1.id
-             JOIN tasks t2 ON tb.blocked_by_task_id = t2.id
-             WHERE t1.status != 'done' AND t2.status != 'done'",
+             JOIN kanban_cards t1 ON tb.task_id = t1.id
+             JOIN kanban_cards t2 ON tb.blocked_by_task_id = t2.id
+             WHERE t1.status != 'Done' AND t2.status != 'Done'",
         )
         .map_err(|e| e.to_string())?;
     let blocked_tasks = stmt
@@ -182,7 +182,7 @@ pub fn get_work_engine_suggestions(
 
     if !idle_list.is_empty() {
         let mut stmt = conn
-            .prepare("SELECT id, title FROM tasks WHERE status = 'backlog' OR status = 'ready' ORDER BY priority DESC LIMIT 3")
+            .prepare("SELECT id, title FROM kanban_cards WHERE status = 'Backlog' OR status = 'Ready' ORDER BY priority DESC LIMIT 3")
             .map_err(|e| e.to_string())?;
         let open_tasks = stmt
             .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))
