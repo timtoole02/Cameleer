@@ -142,69 +142,79 @@ pub fn start_watchdog(app_handle: AppHandle) {
         loop {
             tokio::time::sleep(Duration::from_secs(5)).await;
             
-            let state = match app_handle.try_state::<DbState>() {
-                Some(s) => s,
-                None => continue,
-            };
-            
-            let conn = match state.conn.lock() {
-                Ok(c) => c,
-                Err(_) => continue,
-            };
-            
-            // Query agents currently working
-            let mut stmt = match conn.prepare(
-                "SELECT id, name, role, last_heartbeat FROM agents WHERE status = 'working'"
-            ) {
-                Ok(s) => s,
-                Err(_) => continue,
-            };
-            
-            let now = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs();
-                
             let mut crashed_agents = Vec::new();
             
-            let iter = match stmt.query_map([], |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, String>(1)?,
-                    row.get::<_, String>(2)?,
-                    row.get::<_, Option<String>>(3)?,
-                ))
-            }) {
-                Ok(it) => it,
-                Err(_) => continue,
-            };
-            
-            for agent in iter {
-                if let Ok((id, name, role, hb)) = agent {
-                    let hb_sec = hb.and_then(|h| h.parse::<u64>().ok()).unwrap_or(0);
+            {
+                let state = match app_handle.try_state::<DbState>() {
+                    Some(s) => s,
+                    None => continue,
+                };
+                
+                let conn = match state.conn.lock() {
+                    Ok(c) => c,
+                    Err(_) => continue,
+                };
+                
+                // Query agents currently working
+                let mut stmt = match conn.prepare(
+                    "SELECT id, name, role, last_heartbeat FROM agents WHERE status = 'working'"
+                ) {
+                    Ok(s) => s,
+                    Err(_) => continue,
+                };
+                
+                let now = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs();
                     
-                    // Heartbeat timed out (> 20 seconds ago)
-                    if hb_sec > 0 && now.saturating_sub(hb_sec) > 20 {
-                        crashed_agents.push((id, name, role));
+                let iter = match stmt.query_map([], |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, String>(1)?,
+                        row.get::<_, String>(2)?,
+                        row.get::<_, Option<String>>(3)?,
+                    ))
+                }) {
+                    Ok(it) => it,
+                    Err(_) => continue,
+                };
+                
+                for agent in iter {
+                    if let Ok((id, name, role, hb)) = agent {
+                        let hb_sec = hb.and_then(|h| h.parse::<u64>().ok()).unwrap_or(0);
+                        
+                        // Heartbeat timed out (> 20 seconds ago)
+                        if hb_sec > 0 && now.saturating_sub(hb_sec) > 20 {
+                            crashed_agents.push((id, name, role));
+                        }
                     }
                 }
-            }
-            
-            drop(stmt);
+            } // conn and stmt drop here
             
             for (id, name, role) in crashed_agents {
                 println!("[WATCHDOG] Agent {} ({}) stalled due to heartbeat timeout. Initiating recovery...", name, role);
                 
-                let _ = conn.execute(
-                    "UPDATE agents SET status = 'recovering' WHERE id = ?1",
-                    [&id]
-                );
-                
-                let _ = conn.execute(
-                    "INSERT INTO events (event_type, agent_id, payload) 
-                     VALUES ('agent_stalled_recovery', ?1, ?2)",
-                    rusqlite::params![id, format!("{{\"status\":\"recovering\",\"error\":\"Heartbeat timed out. Agent {} stalled for >20s. Rolling back to last checkpoint.\"}}", name)]
-                );
+                {
+                    let state = match app_handle.try_state::<DbState>() {
+                        Some(s) => s,
+                        None => continue,
+                    };
+                    let conn = match state.conn.lock() {
+                        Ok(c) => c,
+                        Err(_) => continue,
+                    };
+                    let _ = conn.execute(
+                        "UPDATE agents SET status = 'recovering' WHERE id = ?1",
+                        [&id]
+                    );
+                    
+                    let _ = conn.execute(
+                        "INSERT INTO events (event_type, agent_id, payload) 
+                         VALUES ('agent_stalled_recovery', ?1, ?2)",
+                        rusqlite::params![id, format!("{{\"status\":\"recovering\",\"error\":\"Heartbeat timed out. Agent {} stalled for >20s. Rolling back to last checkpoint.\"}}", name)]
+                    );
+                }
                 
                 emit_event(
                     &app_handle,
@@ -215,6 +225,8 @@ pub fn start_watchdog(app_handle: AppHandle) {
                         payload: serde_json::json!({ "status": "recovering", "error": "Heartbeat timed out. Stalled for >20s. Recovering state." }),
                     }
                 );
+                
+                let _ = crate::agent_recovery_engine::attempt_recovery(app_handle.clone(), id.clone()).await;
             }
         }
     });
