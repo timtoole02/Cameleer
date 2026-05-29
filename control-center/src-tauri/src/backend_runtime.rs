@@ -49,7 +49,7 @@ impl Default for BackendRuntimeConfig {
             auto_start_on_app_launch: true,
             auto_restart_on_crash: true,
             stop_on_app_exit: true,
-            startup_timeout_ms: 120000,
+            startup_timeout_ms: 600000,
             health_check_interval_ms: 5000,
             restart_backoff_policy: "exponential".to_string(),
             max_restarts: 5,
@@ -806,7 +806,7 @@ mod tests {
         assert!(config.auto_start_on_app_launch);
         assert!(config.auto_restart_on_crash);
         assert!(config.stop_on_app_exit);
-        assert_eq!(config.startup_timeout_ms, 120000);
+        assert_eq!(config.startup_timeout_ms, 600000);
         assert_eq!(config.health_check_interval_ms, 5000);
         assert_eq!(config.max_restarts, 5);
         assert_eq!(config.restart_backoff_policy, "exponential");
