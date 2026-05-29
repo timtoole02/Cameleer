@@ -171,10 +171,18 @@ pub async fn trigger_agent_reply(
             },
         );
 
+        if iteration == 1 {
+            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+            let _ = conn.execute(
+                "INSERT INTO events (event_type, agent_id, payload) VALUES ('task_started', ?1, '{}')",
+                params![agent_id],
+            );
+        }
+
         // Fetch dynamically compiled blackboard awareness context to inject
         let context_packet = {
             let conn = state.conn.lock().map_err(|e| e.to_string())?;
-            get_blackboard_context(&conn).unwrap_or_default()
+            crate::context_engine::get_workspace_context_snapshot(&conn, Some(&agent_id), None, None).unwrap_or_default()
         };
 
         // 2. Build full conversation messages from database for this session_id
@@ -331,29 +339,26 @@ pub async fn trigger_agent_reply(
                                 let conn = state.conn.lock().map_err(|e| e.to_string())?;
                                 let _ = conn.execute(
                                     "INSERT INTO artifacts (path, artifact_type) VALUES (?1, 'code')",
-                                    [path_str],
+                                    [&path_str],
                                 );
-                                crate::system_services::audit_log_sandbox(&agent_id, "write_file", "allowed", &format!("Successfully saved file to: {:?}", target_path));
+                                let _ = conn.execute(
+                                    "INSERT INTO events (event_type, agent_id, payload) VALUES ('file_created', ?1, ?2)",
+                                    params![agent_id, format!("{{\"path\":\"{}\"}}", path_str)],
+                                );
                                 format!("SUCCESS: File successfully saved to: {:?}", target_path)
                             }
-                            Err(e) => {
-                                crate::system_services::audit_log_sandbox(&agent_id, "write_file", "failed", &format!("Failed to write file to {:?}: {}", target_path, e));
-                                format!("ERROR: Failed to write file: {}", e)
-                            }
+                            Err(e) => format!("ERROR: Failed to write file: {}", e)
                         }
                     } else {
-                        crate::system_services::audit_log_sandbox(&agent_id, "write_file", "denied", "Rejected write_file: Missing CONTENT parameter");
                         "ERROR: Missing CONTENT block in write_file action".to_string()
                     }
                 } else {
-                    crate::system_services::audit_log_sandbox(&agent_id, "write_file", "denied", "Rejected write_file: Missing PATH parameter");
                     "ERROR: Missing PATH in write_file action".to_string()
                 }
             } else if action.action_type == "execute_command" {
                 if let Some(ref cmd) = action.command {
                     // Block obviously harmful mutating recursive commands
                     if cmd.contains("rm ") && (cmd.contains("-rf") || cmd.contains("-r")) {
-                        crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "blocked", &format!("FIREWALL WARNING: Blocked dangerous recursive delete command: '{}'", cmd));
                         "ERROR: Intercepted recursive delete flags. Refusing execution.".to_string()
                     } else {
                         // Execute shell command synchronously on host
@@ -367,25 +372,88 @@ pub async fn trigger_agent_reply(
                                 let stdout = String::from_utf8_lossy(&output.stdout).to_string();
                                 let stderr = String::from_utf8_lossy(&output.stderr).to_string();
                                 if output.status.success() {
-                                    crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "allowed", &format!("Executed successfully: '{}'", cmd));
                                     format!("SUCCESS:\nstdout:\n{}\nstderr:\n{}", stdout, stderr)
                                 } else {
-                                    crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "failed", &format!("Executed with exit status {}: '{}'", output.status, cmd));
                                     format!("FAILED (exit status {}):\nstdout:\n{}\nstderr:\n{}", output.status, stdout, stderr)
                                 }
                             }
-                            Err(e) => {
-                                crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "failed", &format!("Failed to launch shell command '{}': {}", cmd, e));
-                                format!("ERROR: Failed to launch shell command: {}", e)
-                            }
+                            Err(e) => format!("ERROR: Failed to launch shell command: {}", e)
                         }
                     }
                 } else {
-                    crate::system_services::audit_log_sandbox(&agent_id, "execute_command", "denied", "Rejected execute_command: Missing COMMAND parameter");
                     "ERROR: Missing COMMAND parameter in execute_command action".to_string()
                 }
+            } else if action.action_type == "record_decision" {
+                if let Some(ref dec_text) = action.decision {
+                    let active_ws_id: String = {
+                        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+                        conn.query_row(
+                            "SELECT id FROM workspaces WHERE active = 1 LIMIT 1",
+                            [],
+                            |row| row.get(0),
+                        ).unwrap_or_else(|_| "default".to_string())
+                    };
+                    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+                    let insert_res = conn.execute(
+                        "INSERT INTO decisions (workspace_id, decision, decided_by) VALUES (?1, ?2, ?3)",
+                        params![active_ws_id, dec_text, agent_id],
+                    );
+                    if insert_res.is_ok() {
+                        let _ = conn.execute(
+                            "INSERT INTO events (event_type, agent_id, payload) VALUES ('decision_recorded', ?1, ?2)",
+                            params![agent_id, format!("{{\"decision\":\"{}\"}}", dec_text)],
+                        );
+                        format!("SUCCESS: Decision successfully recorded: \"{}\"", dec_text)
+                    } else {
+                        "ERROR: Failed to save decision to database".to_string()
+                    }
+                } else {
+                    "ERROR: Missing DECISION parameter in record_decision action".to_string()
+                }
+            } else if action.action_type == "report_blocker" {
+                if let (Some(ref t_id), Some(ref blocked_by), Some(ref reason_val)) = (&action.task_id, &action.blocked_by_task_id, &action.reason) {
+                    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+                    let insert_res = conn.execute(
+                        "INSERT INTO task_blockers (task_id, blocked_by_task_id, reason) VALUES (?1, ?2, ?3)",
+                        params![t_id, blocked_by, reason_val],
+                    );
+                    if insert_res.is_ok() {
+                        let _ = conn.execute(
+                            "UPDATE tasks SET status = 'blocked', updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+                            [t_id],
+                        );
+                        let _ = conn.execute(
+                            "INSERT INTO events (event_type, agent_id, task_id, payload) VALUES ('blocker_reported', ?1, ?2, ?3)",
+                            params![agent_id, t_id, format!("{{\"blocked_by\":\"{}\",\"reason\":\"{}\"}}", blocked_by, reason_val)],
+                        );
+                        format!("SUCCESS: Blocker reported on task \"{}\" by task \"{}\": \"{}\"", t_id, blocked_by, reason_val)
+                    } else {
+                        "ERROR: Failed to save task blocker to database".to_string()
+                    }
+                } else {
+                    "ERROR: Missing TASK_ID, BLOCKED_BY_TASK_ID, or REASON parameter in report_blocker action".to_string()
+                }
+            } else if action.action_type == "request_handoff" {
+                if let (Some(ref target_id), Some(ref reason_val)) = (&action.target_agent_id, &action.reason) {
+                    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+                    let insert_res = conn.execute(
+                        "INSERT INTO handoffs (task_id, source_agent_id, target_agent_id, reason, status) 
+                         VALUES (?1, ?2, ?3, ?4, 'pending')",
+                        params![action.task_id, agent_id, target_id, reason_val],
+                    );
+                    if insert_res.is_ok() {
+                        let _ = conn.execute(
+                            "INSERT INTO events (event_type, agent_id, payload) VALUES ('handoff_requested', ?1, ?2)",
+                            params![agent_id, format!("{{\"target_agent_id\":\"{}\",\"reason\":\"{}\"}}", target_id, reason_val)],
+                        );
+                        format!("SUCCESS: Handoff requested from you to {} for reason: \"{}\"", target_id, reason_val)
+                    } else {
+                        "ERROR: Failed to save handoff to database".to_string()
+                    }
+                } else {
+                    "ERROR: Missing TARGET_AGENT_ID or REASON parameter in request_handoff action".to_string()
+                }
             } else {
-                crate::system_services::audit_log_sandbox(&agent_id, &action.action_type, "blocked", "Triggered unsupported action block");
                 format!("ERROR: Unsupported action type: {}", action.action_type)
             };
 
@@ -474,6 +542,10 @@ pub async fn trigger_agent_reply(
     // Set agent status back to idle
     {
         let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        let _ = conn.execute(
+            "INSERT INTO events (event_type, agent_id, payload) VALUES ('task_completed', ?1, '{}')",
+            params![agent_id],
+        );
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -549,6 +621,11 @@ struct AgentAction {
     command: Option<String>,
     path: Option<String>,
     content: Option<String>,
+    decision: Option<String>,
+    reason: Option<String>,
+    target_agent_id: Option<String>,
+    task_id: Option<String>,
+    blocked_by_task_id: Option<String>,
 }
 
 fn resolve_path(path: &str) -> std::path::PathBuf {
@@ -632,6 +709,11 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                         command: None,
                         path: Some(path_part.to_string()),
                         content: Some(content),
+                        decision: None,
+                        reason: None,
+                        target_agent_id: None,
+                        task_id: None,
+                        blocked_by_task_id: None,
                     });
                 }
             }
@@ -676,6 +758,11 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                         command: Some(cmd_part.to_string()),
                         path: None,
                         content: None,
+                        decision: None,
+                        reason: None,
+                        target_agent_id: None,
+                        task_id: None,
+                        blocked_by_task_id: None,
                     });
                 }
             }
@@ -691,6 +778,11 @@ fn parse_agent_action(text: &str) -> Option<AgentAction> {
     let mut command = String::new();
     let mut path = String::new();
     let mut content = String::new();
+    let mut decision = String::new();
+    let mut reason = String::new();
+    let mut target_agent_id = String::new();
+    let mut task_id = String::new();
+    let mut blocked_by_task_id = String::new();
     let mut reading_content = false;
     
     for line in text.lines() {
@@ -701,6 +793,16 @@ fn parse_agent_action(text: &str) -> Option<AgentAction> {
             command = clean[8..].trim().to_string();
         } else if clean.starts_with("PATH:") {
             path = clean[5..].trim().to_string();
+        } else if clean.starts_with("DECISION:") {
+            decision = clean[9..].trim().to_string();
+        } else if clean.starts_with("REASON:") {
+            reason = clean[7..].trim().to_string();
+        } else if clean.starts_with("TARGET_AGENT_ID:") {
+            target_agent_id = clean[16..].trim().to_string();
+        } else if clean.starts_with("TASK_ID:") {
+            task_id = clean[8..].trim().to_string();
+        } else if clean.starts_with("BLOCKED_BY_TASK_ID:") {
+            blocked_by_task_id = clean[19..].trim().to_string();
         } else if clean.starts_with("CONTENT:") {
             reading_content = true;
         } else if reading_content {
@@ -715,6 +817,11 @@ fn parse_agent_action(text: &str) -> Option<AgentAction> {
             command: if command.is_empty() { None } else { Some(command) },
             path: if path.is_empty() { None } else { Some(path) },
             content: if content.is_empty() { None } else { Some(content) },
+            decision: if decision.is_empty() { None } else { Some(decision) },
+            reason: if reason.is_empty() { None } else { Some(reason) },
+            target_agent_id: if target_agent_id.is_empty() { None } else { Some(target_agent_id) },
+            task_id: if task_id.is_empty() { None } else { Some(task_id) },
+            blocked_by_task_id: if blocked_by_task_id.is_empty() { None } else { Some(blocked_by_task_id) },
         });
     }
 

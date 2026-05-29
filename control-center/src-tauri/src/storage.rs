@@ -153,6 +153,43 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         [],
     )?;
 
+    // 11. Workspaces
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS workspaces (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            path TEXT NOT NULL,
+            active INTEGER DEFAULT 0
+        )",
+        [],
+    )?;
+
+    // 12. Decisions
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS decisions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            workspace_id TEXT REFERENCES workspaces(id),
+            decision TEXT NOT NULL,
+            decided_by TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 13. Handoffs
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS handoffs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id TEXT REFERENCES tasks(id),
+            source_agent_id TEXT REFERENCES agents(id),
+            target_agent_id TEXT REFERENCES agents(id),
+            reason TEXT NOT NULL,
+            status TEXT DEFAULT 'pending',
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
     Ok(())
 }
 
@@ -203,6 +240,20 @@ pub fn seed_default_agents(conn: &Connection) -> Result<()> {
                 params![id, role, persona, provider, model],
             )?;
         }
+    }
+
+    // Seed default active workspace
+    let ws_exists: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM workspaces WHERE id = 'default')",
+        [],
+        |row| row.get(0),
+    )?;
+
+    if !ws_exists {
+        conn.execute(
+            "INSERT INTO workspaces (id, name, path, active) VALUES ('default', 'Cameleer Default Workspace', '~/Desktop', 1)",
+            [],
+        )?;
     }
 
     Ok(())

@@ -6,8 +6,6 @@ mod task_manager;
 mod context_engine;
 mod supervisor;
 mod event_bus;
-mod skills_manager;
-mod system_services;
 
 use storage::DbState;
 use tauri::Manager;
@@ -31,9 +29,6 @@ pub fn run() {
                 
             storage::init_db(&conn).expect("Failed to initialize database tables");
             storage::seed_default_agents(&conn).expect("Failed to seed default agents");
-            
-            // Seed default whitelisted playbooks in ~/.cameleer/skills/
-            skills_manager::seed_default_playbooks();
             
             // Manage SQLite connection in Tauri State
             app.manage(DbState {
@@ -80,13 +75,13 @@ pub fn run() {
             task_manager::get_artifacts,
             task_manager::read_artifact_file,
             context_engine::get_blackboard_awareness,
+            context_engine::get_workspace_context,
+            context_engine::record_decision_cmd,
+            context_engine::request_handoff_cmd,
+            context_engine::resolve_handoff_cmd,
+            context_engine::get_coordination_details,
             context_engine::update_shared_state,
-            supervisor::update_heartbeat,
-            skills_manager::get_skill_playbooks,
-            skills_manager::save_skill_playbook,
-            skills_manager::delete_skill_playbook,
-            system_services::get_sandbox_audit_logs,
-            system_services::run_model_benchmark
+            supervisor::update_heartbeat
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
