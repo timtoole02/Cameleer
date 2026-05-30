@@ -45,7 +45,7 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
 
   const handleDrop = async (e: React.DragEvent, newStatus: string) => {
     e.preventDefault();
-    const cardId = e.dataTransfer.getData("cardId");
+    const cardId = e.dataTransfer.getData("text/plain");
     if (!cardId) return;
 
     try {
@@ -57,7 +57,7 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
   };
 
   const handleDragStart = (e: React.DragEvent, cardId: string) => {
-    e.dataTransfer.setData("cardId", cardId);
+    e.dataTransfer.setData("text/plain", cardId);
   };
 
   return (
