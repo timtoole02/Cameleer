@@ -42,22 +42,16 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
         if current_state != AgentState::Idle {
             let conn = state.conn.lock().map_err(|e| e.to_string())?;
             let _ = transition_agent_state(&conn, &agent_id, current_state.clone(), AgentState::Idle, "No work available in queue");
+            current_state = AgentState::Idle;
         }
         println!("[AGENT RUNTIME KERNEL] Agent {} has no work. Going idle.", agent_id);
-        
-        let msg = "No work available in my Kanban queue. Entering idle state.".to_string();
-        save_and_emit_message(&app_handle, &session_id, &agent_id, msg);
-        
-        return Ok(());
-    }
-
-    let work = selected_work.unwrap();
-
-    // 5. Transition to Assigned/Working based on state
-    if current_state == AgentState::Idle || current_state == AgentState::Stopped {
-        let conn = state.conn.lock().map_err(|e| e.to_string())?;
-        let _ = transition_agent_state(&conn, &agent_id, current_state.clone(), AgentState::Working, "Pulled new task from queue");
-        current_state = AgentState::Working;
+    } else {
+        // 5. Transition to Assigned/Working based on state
+        if current_state == AgentState::Idle || current_state == AgentState::Stopped {
+            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+            let _ = transition_agent_state(&conn, &agent_id, current_state.clone(), AgentState::Working, "Pulled new task from queue");
+            current_state = AgentState::Working;
+        }
     }
 
     // 6. Compile relevant context (Scoped Context Compiler)
@@ -83,17 +77,19 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
     };
 
     // 7. Check dependencies / blockers
-    if work.status == "Blocked" || work.blocked_by.is_some() {
-        let conn = state.conn.lock().map_err(|e| e.to_string())?;
-        let _ = transition_agent_state(&conn, &agent_id, current_state.clone(), AgentState::Blocked, "Task is blocked by dependencies");
-        
-        let msg = format!("My active task '{}' is currently blocked by {}. Entering blocked state.", work.title, work.blocked_by.unwrap_or_else(|| "unknown".to_string()));
-        save_and_emit_message(&app_handle, &session_id, &agent_id, msg);
-        return Ok(());
+    if let Some(ref work) = selected_work {
+        if work.status == "Blocked" || work.blocked_by.is_some() {
+            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+            let _ = transition_agent_state(&conn, &agent_id, current_state.clone(), AgentState::Blocked, "Task is blocked by dependencies");
+            
+            let msg = format!("My active task '{}' is currently blocked by {}. Entering blocked state.", work.title, work.blocked_by.as_deref().unwrap_or("unknown"));
+            save_and_emit_message(&app_handle, &session_id, &agent_id, msg);
+            return Ok(());
+        }
     }
 
     // 8. Call Model for ONE deterministic safe step
-    let system_instructions = build_system_prompt(&identity, &contract, &work, &context_snapshot);
+    let system_instructions = build_system_prompt(&identity, &contract, selected_work.as_ref(), &context_snapshot);
     
     let mut history = vec![
         ChatMessage {
@@ -192,7 +188,7 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
     Ok(())
 }
 
-fn build_system_prompt(identity: &AgentIdentity, contract: &AgentContract, work: &KanbanCard, context: &str) -> String {
+fn build_system_prompt(identity: &AgentIdentity, contract: &AgentContract, work: Option<&KanbanCard>, context: &str) -> String {
     let mut prompt = format!(
         "You are {} (Role: {}).\nYour Persona: {}\n\n",
         identity.name, identity.role, identity.persona
@@ -214,8 +210,12 @@ fn build_system_prompt(identity: &AgentIdentity, contract: &AgentContract, work:
         prompt.push_str(&format!("- {}\n", done));
     }
 
-    prompt.push_str(&format!("\n### ACTIVE KANBAN TASK\nID: {}\nTitle: {}\nStatus: {}\nPriority: {}\nValidation Status: {}\n\n", 
-        work.id, work.title, work.status, work.priority, work.validation_status));
+    if let Some(w) = work {
+        prompt.push_str(&format!("\n### ACTIVE KANBAN TASK\nID: {}\nTitle: {}\nStatus: {}\nPriority: {}\nValidation Status: {}\n\n", 
+            w.id, w.title, w.status, w.priority, w.validation_status));
+    } else {
+        prompt.push_str("\n### ACTIVE KANBAN TASK\nNo active tasks assigned to you right now. You are currently in an Idle state. You may chat freely with the user.\n\n");
+    }
 
     prompt.push_str(context);
 
