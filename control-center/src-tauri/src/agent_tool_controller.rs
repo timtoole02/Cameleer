@@ -132,7 +132,7 @@ pub fn execute_tool(
         },
         "message.send" => {
             if let Some(content) = &action.content {
-                save_and_emit_message(app_handle, session_id, "system", format!("Message delivered: {}", content));
+                save_and_emit_message(app_handle, session_id, agent_id, content.clone());
                 Ok("Message sent.".to_string())
             } else {
                 Err("No content provided".to_string())

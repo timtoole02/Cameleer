@@ -144,8 +144,8 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
         }
     }
 
-    save_and_emit_message(&app_handle, &session_id, &agent_id, response_text.clone());
-
+    // Instead of saving raw JSON as a chat message, we just process the parsed action.
+    // The action reasoning is already saved in `agent_run_steps`.
     let run_id = format!("run_{}_{}", agent_id, std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis());
     let task_id = selected_work.as_ref().map(|w| w.id.clone());
 
