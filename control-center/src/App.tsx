@@ -6,6 +6,7 @@ import KanbanBoard from "./components/board/KanbanBoard";
 import { OrgSidebar } from "./components/org/OrgSidebar";
 import { ProjectDashboard } from "./components/org/ProjectDashboard";
 import { AgentOrgNode } from "./types";
+import RunsView from "./components/runs/RunsView";
 import "./App.css";
 
 interface Agent {
@@ -22,6 +23,8 @@ interface Agent {
   is_continuous: boolean;
   status: string;
   last_heartbeat: string | null;
+  parent_agent_id?: string | null;
+  allowed_tools?: string | null;
 }
 
 interface Message {
@@ -280,7 +283,7 @@ interface BackendRuntimeConfig {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "skills" | "channels" | "files" | "system" | "agents" | "models" | "missions" | "org_dashboard">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanban" | "runs" | "skills" | "channels" | "files" | "system" | "agents" | "models" | "missions" | "org_dashboard">("dashboard");
   const [kanbanView, setKanbanView] = useState<"board" | "backlog">("board");
   const [refreshKanban, setRefreshKanban] = useState(0);
   const [suggestions, setSuggestions] = useState<WorkSuggestion[]>([]);
@@ -314,6 +317,8 @@ function App() {
   const [editSpawnSubtasks, setEditSpawnSubtasks] = useState<boolean>(true);
   const [editTalkGlobally, setEditTalkGlobally] = useState<boolean>(true);
   const [editContinuous, setEditContinuous] = useState<boolean>(false);
+  const [editParentAgentId, setEditParentAgentId] = useState<string>("");
+  const [editAllowedTools, setEditAllowedTools] = useState<string[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>("agent-coder");
   const [activeOrgNode, setActiveOrgNode] = useState<AgentOrgNode | null>(null);
@@ -616,6 +621,8 @@ function App() {
     setEditSpawnSubtasks(agent.can_spawn_subtasks);
     setEditTalkGlobally(agent.can_talk_globally);
     setEditContinuous(agent.is_continuous);
+    setEditParentAgentId(agent.parent_agent_id || "");
+    setEditAllowedTools(agent.allowed_tools ? agent.allowed_tools.split(",").map(t => t.trim()) : ["task.create", "task.update", "memory.write"]);
   };
 
   useEffect(() => {
@@ -638,6 +645,8 @@ function App() {
   const [spawnTemp, setSpawnTemp] = useState(0.7);
   const [spawnMaxTokens, setSpawnMaxTokens] = useState(2048);
   const [spawnContinuous, setSpawnContinuous] = useState(false);
+  const [spawnParentAgentId, setSpawnParentAgentId] = useState("");
+  const [spawnAllowedTools, setSpawnAllowedTools] = useState<string[]>(["task.create", "task.update", "memory.write"]);
 
   // Task Creator Form
   const [taskTitle, setTaskTitle] = useState("");
@@ -1462,6 +1471,8 @@ function App() {
       is_continuous: spawnContinuous,
       status: "idle",
       last_heartbeat: null,
+      parent_agent_id: spawnParentAgentId || null,
+      allowed_tools: spawnAllowedTools.join(","),
     };
 
     try {
@@ -1470,6 +1481,8 @@ function App() {
       setSpawnName("");
       setSpawnRole("");
       setSpawnPersona("");
+      setSpawnParentAgentId("");
+      setSpawnAllowedTools(["task.create", "task.update", "memory.write"]);
       loadAgents();
     } catch (e) {
       console.error("Failed to spawn agent", e);
@@ -1499,6 +1512,8 @@ function App() {
       is_continuous: editContinuous,
       status: current ? current.status : "idle",
       last_heartbeat: current ? current.last_heartbeat : null,
+      parent_agent_id: editParentAgentId || null,
+      allowed_tools: editAllowedTools.join(","),
     };
 
     try {
@@ -2019,6 +2034,7 @@ function App() {
           <button className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>📊 Dashboard</button>
           <button className={`sidebar-nav-item ${activeTab === 'global' ? 'active' : ''}`} onClick={() => setActiveTab('global')}>🌐 Global Feed</button>
           <button className={`sidebar-nav-item ${activeTab === 'kanban' ? 'active' : ''}`} onClick={() => setActiveTab('kanban')}>📋 Task Backlog</button>
+          <button className={`sidebar-nav-item ${activeTab === 'runs' ? 'active' : ''}`} onClick={() => setActiveTab('runs')}>⏱️ Run Audit</button>
           <button className={`sidebar-nav-item ${activeTab === 'missions' ? 'active' : ''}`} onClick={() => setActiveTab('missions')}>🎯 Missions</button>
           <button className={`sidebar-nav-item ${activeTab === 'files' ? 'active' : ''}`} onClick={() => setActiveTab('files')}>🧠 Memory & Files</button>
           
@@ -2075,6 +2091,11 @@ function App() {
               <div>
                 <h2 className="chat-title">Task Objectives</h2>
                 <div className="chat-subtitle">Local Filesystem Coordination Kanban Workspace</div>
+              </div>
+            ) : activeTab === "runs" ? (
+              <div>
+                <h2 className="chat-title">Run Audit</h2>
+                <div className="chat-subtitle">Execution logs and audit trails for automated task sequences</div>
               </div>
             ) : activeTab === "skills" ? (
               <div>
@@ -2350,11 +2371,6 @@ function App() {
                     setIsCompletingTask(false);
                     setIsAddingBlocker(false);
                     setIsTaskModalOpen(false); // Make sure modal state is right if used
-                    // wait, KanbanBoard in App.tsx just does:
-                    // setSelectedKanbanTask(card as any);
-                    // setCompletionError(null);
-                    // setIsCompletingTask(false);
-                    // setIsAddingBlocker(false);
                   }}
                   refreshTrigger={refreshKanban}
                 />
@@ -2461,8 +2477,8 @@ function App() {
               )}
             </div>
           </div>
-            
-
+        ) : activeTab === "runs" ? (
+          <RunsView />
         ) : activeTab === "skills" ? (
           /* Skills Page */
           <div className="skills-container" style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
@@ -3364,6 +3380,42 @@ function App() {
                         </div>
                       </label>
                     </div>
+                  </div>
+
+                  <div className="form-group" style={{ gridColumn: "span 2", marginTop: "12px", padding: "12px", background: "rgba(0,0,0,0.2)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                    <label className="form-label">Allowed Tools Sandbox</label>
+                    <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "8px" }}>Select the tools this agent is permitted to execute autonomously.</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                      {["task.create", "task.update", "task.move", "task.comment", "memory.search", "memory.write", "agent.handoff", "project.read", "project.update", "repo.search", "repo.read_file", "repo.propose_patch"].map(tool => (
+                        <label key={tool} className="checkbox-label" style={{ fontSize: "0.8rem" }}>
+                          <input 
+                            type="checkbox" 
+                            checked={editAllowedTools.includes(tool)}
+                            onChange={(e) => {
+                              if (e.target.checked) setEditAllowedTools([...editAllowedTools, tool]);
+                              else setEditAllowedTools(editAllowedTools.filter(t => t !== tool));
+                            }}
+                          /> {tool}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ gridColumn: "span 2", marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed var(--border-color)" }}>
+                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      Parent Agent (Nesting)
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>(Optional)</span>
+                    </label>
+                    <select 
+                      className="form-input"
+                      value={editParentAgentId}
+                      onChange={(e) => setEditParentAgentId(e.target.value)}
+                    >
+                      <option value="">-- No Parent (Root Level) --</option>
+                      {agents.filter(a => a.id !== editAgentId).map(a => (
+                        <option key={a.id} value={a.id}>{a.name} ({a.role})</option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Submit Actions */}
@@ -4596,6 +4648,24 @@ function App() {
               </div>
 
               {/* Developer Configuration / Advanced Section */}
+              <div className="form-group" style={{ gridColumn: "span 2", padding: "12px", background: "rgba(0,0,0,0.2)", borderRadius: "8px", border: "1px solid var(--border-color)", marginBottom: "16px" }}>
+                <label className="form-label">Allowed Tools Sandbox</label>
+                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "8px" }}>Select the tools this agent is permitted to execute autonomously.</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  {["task.create", "task.update", "task.move", "task.comment", "memory.search", "memory.write", "agent.handoff", "project.read", "project.update", "repo.search", "repo.read_file", "repo.propose_patch"].map(tool => (
+                    <label key={tool} className="checkbox-label" style={{ fontSize: "0.8rem" }}>
+                      <input 
+                        type="checkbox" 
+                        checked={editAllowedTools.includes(tool)}
+                        onChange={(e) => {
+                          if (e.target.checked) setEditAllowedTools([...editAllowedTools, tool]);
+                          else setEditAllowedTools(editAllowedTools.filter(t => t !== tool));
+                        }}
+                      /> {tool}
+                    </label>
+                  ))}
+                </div>
+              </div>
               <details style={{ background: "rgba(255,255,255,0.01)", border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px", marginBottom: "16px" }}>
                 <summary style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", cursor: "pointer", userSelect: "none" }}>
                   🛠️ Developer / Advanced Options (Overhead overrides)
@@ -5184,9 +5254,48 @@ function App() {
                 onChange={(e) => setSpawnContinuous(e.target.checked)}
                 style={{ width: "16px", height: "16px", cursor: "pointer" }}
               />
-              <label htmlFor="continuous-run" className="form-label" style={{ cursor: "pointer", userSelect: "none" }}>
+              <label htmlFor="continuous-run" className="form-label" style={{ cursor: "pointer", userSelect: "none", margin: 0 }}>
                 Continuous Autonomous Loop Execution
               </label>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                Parent Agent (Nesting)
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>(Optional)</span>
+              </label>
+              <select 
+                className="form-input"
+                value={spawnParentAgentId}
+                onChange={(e) => setSpawnParentAgentId(e.target.value)}
+              >
+                <option value="">-- No Parent (Root Level) --</option>
+                {agents.map(a => (
+                  <option key={a.id} value={a.id}>{a.name} ({a.role})</option>
+                ))}
+              </select>
+              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px" }}>
+                Agent will inherit rules and report to this parent agent.
+              </p>
+            </div>
+
+            <div className="form-group" style={{ padding: "12px", background: "rgba(0,0,0,0.2)", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+              <label className="form-label">Allowed Tools Sandbox</label>
+              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "8px" }}>Select the tools this agent is permitted to execute autonomously.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                {["task.create", "task.update", "task.move", "task.comment", "memory.search", "memory.write", "agent.handoff", "project.read", "project.update", "repo.search", "repo.read_file", "repo.propose_patch"].map(tool => (
+                  <label key={tool} className="checkbox-label" style={{ fontSize: "0.8rem" }}>
+                    <input 
+                      type="checkbox" 
+                      checked={spawnAllowedTools.includes(tool)}
+                      onChange={(e) => {
+                        if (e.target.checked) setSpawnAllowedTools([...spawnAllowedTools, tool]);
+                        else setSpawnAllowedTools(spawnAllowedTools.filter(t => t !== tool));
+                      }}
+                    /> {tool}
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: "16px" }}>

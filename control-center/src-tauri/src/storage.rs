@@ -56,7 +56,8 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             kanban_permissions TEXT DEFAULT 'full',
             review_requirements INTEGER DEFAULT 0,
             safety_profile TEXT DEFAULT 'moderate',
-            escalation_rules TEXT
+            escalation_rules TEXT,
+            parent_agent_id TEXT REFERENCES agents(id)
         )",
         [],
     )?;
@@ -664,6 +665,17 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, project_id, team_id, parent_node_id, node_type, display_name, agent_id, sort_order)
             SELECT 'node_agent_' || id, 'default', 'proj_default', 'team_default', 'node_team', 'agent', name, id, 3 FROM agents
         ", []).ok();
+    }
+
+    // Epic 7 Migrations: Real Enterprise App
+    let has_parent_agent_id: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('agents') WHERE name='parent_agent_id')",
+        [],
+        |row| row.get(0),
+    ).unwrap_or(false);
+
+    if !has_parent_agent_id {
+        let _ = conn.execute("ALTER TABLE agents ADD COLUMN parent_agent_id TEXT REFERENCES agents(id)", []);
     }
 
     // 19. Agent Contracts

@@ -19,10 +19,12 @@ pub struct AgentContract {
 
 pub fn load_contract(agent_id: &str, role: &str, conn: &Connection) -> Result<AgentContract, String> {
     let row: Option<(
-        String, String, String, String, String, String, String, String
+        String, String, String, String, String, String, String, String, String
     )> = conn.query_row(
-        "SELECT responsibilities, allowed_actions, required_context_before_work, required_outputs, validation_rules, handoff_rules, escalation_rules, done_definition 
-         FROM mission_agent_contracts WHERE agent_id = ?1",
+        "SELECT c.responsibilities, c.allowed_actions, c.required_context_before_work, c.required_outputs, c.validation_rules, c.handoff_rules, c.escalation_rules, c.done_definition, a.allowed_tools 
+         FROM agents a
+         LEFT JOIN mission_agent_contracts c ON c.agent_id = a.id
+         WHERE a.id = ?1",
         [agent_id],
         |row| {
             Ok((
@@ -34,16 +36,22 @@ pub fn load_contract(agent_id: &str, role: &str, conn: &Connection) -> Result<Ag
                 row.get::<_, Option<String>>(5)?.unwrap_or_else(|| "[]".into()),
                 row.get::<_, Option<String>>(6)?.unwrap_or_else(|| "[]".into()),
                 row.get::<_, Option<String>>(7)?.unwrap_or_else(|| "[]".into()),
+                row.get::<_, Option<String>>(8)?.unwrap_or_else(|| "task.create,task.update,memory.write".into()),
             ))
         },
     ).optional().map_err(|e| e.to_string())?;
 
-    if let Some((res, allow, req_ctx, req_out, val, hand, esc, done)) = row {
+    if let Some((res, allow, req_ctx, req_out, val, hand, esc, done, agent_tools)) = row {
+        let mut final_allowed_actions: Vec<String> = serde_json::from_str(&allow).unwrap_or_default();
+        if final_allowed_actions.is_empty() {
+            final_allowed_actions = agent_tools.split(',').map(|s| s.trim().to_string()).collect();
+        }
+
         Ok(AgentContract {
             contract_id: format!("contract_{}", agent_id),
             role: role.to_string(),
             responsibilities: serde_json::from_str(&res).unwrap_or_default(),
-            allowed_actions: serde_json::from_str(&allow).unwrap_or_default(),
+            allowed_actions: final_allowed_actions,
             forbidden_actions: vec![
                 "do not work on unassigned cards".into(),
                 "do not overwrite unrelated files".into(),

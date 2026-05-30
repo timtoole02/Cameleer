@@ -43,6 +43,23 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
     return <div style={{ padding: "20px", color: "var(--text-muted)" }}>Loading board...</div>;
   }
 
+  const handleDrop = async (e: React.DragEvent, newStatus: string) => {
+    e.preventDefault();
+    const cardId = e.dataTransfer.getData("cardId");
+    if (!cardId) return;
+
+    try {
+      await invoke("move_card", { cardId, newStatus, reason: "Manual Drag and Drop" });
+      loadBoard();
+    } catch (err: any) {
+      alert(`Failed to move card: ${err}`);
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, cardId: string) => {
+    e.dataTransfer.setData("cardId", cardId);
+  };
+
   return (
     <div className="kanban-board">
       {columns.map(col => {
@@ -55,7 +72,12 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
         }
 
         return (
-          <div key={col.id} className="kanban-column">
+          <div 
+            key={col.id} 
+            className="kanban-column"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, col.id)}
+          >
             <div className="kanban-column-header">
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className={`status-badge ${col.colorClass}`} style={{ position: "static", display: "inline-block", width: "8px", height: "8px", margin: 0 }} />
@@ -85,7 +107,10 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
                     <div 
                       key={card.id} 
                       className="kanban-card"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, card.id)}
                       onClick={() => onCardClick(card)}
+                      style={{ cursor: "grab" }}
                     >
                       <div className="kanban-card-top">
                         <span className="kanban-card-id">{card.id.split('-')[0]}</span>

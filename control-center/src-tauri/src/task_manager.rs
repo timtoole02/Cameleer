@@ -1056,3 +1056,98 @@ pub fn approve_subtasks(
 
     Ok(())
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AgentRun {
+    pub id: String,
+    pub agent_id: Option<String>,
+    pub conversation_id: Option<String>,
+    pub task_id: Option<String>,
+    pub state: String,
+    pub input: Option<String>,
+    pub plan: Option<String>,
+    pub final_answer: Option<String>,
+    pub error: Option<String>,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AgentRunStep {
+    pub id: String,
+    pub run_id: Option<String>,
+    pub step_type: String,
+    pub content: String,
+    pub created_at: Option<String>,
+}
+
+#[tauri::command]
+pub fn get_agent_runs(state: State<'_, DbState>, agent_id: Option<String>, task_id: Option<String>) -> Result<Vec<AgentRun>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    
+    let mut query = "SELECT id, agent_id, conversation_id, task_id, state, input, plan, final_answer, error, created_at, updated_at FROM agent_runs WHERE 1=1".to_string();
+    let mut params: Vec<String> = vec![];
+    
+    if let Some(aid) = agent_id {
+        query.push_str(&format!(" AND agent_id = '?{}'", params.len() + 1));
+        params.push(aid);
+    }
+    
+    if let Some(tid) = task_id {
+        query.push_str(&format!(" AND task_id = '?{}'", params.len() + 1));
+        params.push(tid);
+    }
+    
+    query.push_str(" ORDER BY created_at DESC");
+
+    let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
+    
+    let iter = stmt.query_map(rusqlite::params_from_iter(params), |row| {
+        Ok(AgentRun {
+            id: row.get(0)?,
+            agent_id: row.get(1)?,
+            conversation_id: row.get(2)?,
+            task_id: row.get(3)?,
+            state: row.get(4)?,
+            input: row.get(5)?,
+            plan: row.get(6)?,
+            final_answer: row.get(7)?,
+            error: row.get(8)?,
+            created_at: row.get(9)?,
+            updated_at: row.get(10)?,
+        })
+    }).map_err(|e| e.to_string())?;
+
+    let mut runs = Vec::new();
+    for run in iter {
+        if let Ok(r) = run {
+            runs.push(r);
+        }
+    }
+    Ok(runs)
+}
+
+#[tauri::command]
+pub fn get_run_steps(state: State<'_, DbState>, run_id: String) -> Result<Vec<AgentRunStep>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    
+    let mut stmt = conn.prepare("SELECT id, run_id, step_type, content, created_at FROM agent_run_steps WHERE run_id = ?1 ORDER BY created_at ASC").map_err(|e| e.to_string())?;
+    
+    let iter = stmt.query_map([run_id], |row| {
+        Ok(AgentRunStep {
+            id: row.get(0)?,
+            run_id: row.get(1)?,
+            step_type: row.get(2)?,
+            content: row.get(3)?,
+            created_at: row.get(4)?,
+        })
+    }).map_err(|e| e.to_string())?;
+
+    let mut steps = Vec::new();
+    for step in iter {
+        if let Ok(s) = step {
+            steps.push(s);
+        }
+    }
+    Ok(steps)
+}

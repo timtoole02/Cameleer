@@ -168,7 +168,12 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
             
             let _ = conn.execute(
                 "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, ?3, ?4)",
-                params![format!("step_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros()), run_id, "reasoning_summary", if let Some(json) = &action.raw_json { &json.summary } else { "Failed to parse reasoning" }],
+                params![format!("step_reason_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros()), run_id, "reasoning_summary", if let Some(json) = &action.raw_json { &json.summary } else { "Failed to parse reasoning" }],
+            );
+            
+            let _ = conn.execute(
+                "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, ?3, ?4)",
+                params![format!("step_ctx_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros()), run_id, "context_loaded", "Loaded scoped context and memories for inference"],
             );
         }
         

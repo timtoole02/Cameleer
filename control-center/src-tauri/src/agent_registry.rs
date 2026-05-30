@@ -28,6 +28,7 @@ pub struct Agent {
     pub review_requirements: Option<bool>,
     pub safety_profile: Option<String>,
     pub escalation_rules: Option<String>,
+    pub parent_agent_id: Option<String>,
 }
 
 #[tauri::command]
@@ -38,7 +39,8 @@ pub fn get_agents(state: State<'_, DbState>) -> Result<Vec<Agent>, String> {
             "SELECT id, name, role, persona, model_provider, model_name, temperature, max_tokens, 
                     can_spawn_subtasks, can_talk_globally, is_continuous, status, last_heartbeat,
                     primary_skills, allowed_tools, reasoning_level, workspace_access, file_access_scope,
-                    command_permissions, kanban_permissions, review_requirements, safety_profile, escalation_rules
+                    command_permissions, kanban_permissions, review_requirements, safety_profile, escalation_rules,
+                    parent_agent_id
              FROM agents",
         )
         .map_err(|e| e.to_string())?;
@@ -69,6 +71,7 @@ pub fn get_agents(state: State<'_, DbState>) -> Result<Vec<Agent>, String> {
                 review_requirements: Some(row.get::<_, i32>(20)? != 0),
                 safety_profile: row.get(21)?,
                 escalation_rules: row.get(22)?,
+                parent_agent_id: row.get(23)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -87,8 +90,8 @@ pub fn create_agent(state: State<'_, DbState>, agent: Agent) -> Result<(), Strin
         "INSERT INTO agents (id, name, role, persona, model_provider, model_name, temperature, max_tokens, 
                              can_spawn_subtasks, can_talk_globally, is_continuous, status,
                              primary_skills, allowed_tools, reasoning_level, workspace_access, file_access_scope,
-                             command_permissions, kanban_permissions, review_requirements, safety_profile, escalation_rules)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
+                             command_permissions, kanban_permissions, review_requirements, safety_profile, escalation_rules, parent_agent_id)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23)",
         params![
             agent.id,
             agent.name,
@@ -112,6 +115,7 @@ pub fn create_agent(state: State<'_, DbState>, agent: Agent) -> Result<(), Strin
             if agent.review_requirements.unwrap_or(false) { 1 } else { 0 },
             agent.safety_profile,
             agent.escalation_rules,
+            agent.parent_agent_id,
         ],
     )
     .map_err(|e| e.to_string())?;
@@ -128,7 +132,7 @@ pub fn update_agent(state: State<'_, DbState>, agent: Agent) -> Result<(), Strin
              is_continuous = ?11, status = ?12, last_heartbeat = ?13,
              primary_skills = ?14, allowed_tools = ?15, reasoning_level = ?16, workspace_access = ?17,
              file_access_scope = ?18, command_permissions = ?19, kanban_permissions = ?20,
-             review_requirements = ?21, safety_profile = ?22, escalation_rules = ?23
+             review_requirements = ?21, safety_profile = ?22, escalation_rules = ?23, parent_agent_id = ?24
          WHERE id = ?1",
          params![
             agent.id,
@@ -154,6 +158,7 @@ pub fn update_agent(state: State<'_, DbState>, agent: Agent) -> Result<(), Strin
             if agent.review_requirements.unwrap_or(false) { 1 } else { 0 },
             agent.safety_profile,
             agent.escalation_rules,
+            agent.parent_agent_id,
         ],
     )
     .map_err(|e| e.to_string())?;

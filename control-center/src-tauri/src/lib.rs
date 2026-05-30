@@ -109,6 +109,8 @@ pub fn run() {
             task_manager::complete_card,
             task_manager::decompose_task,
             task_manager::approve_subtasks,
+            task_manager::get_agent_runs,
+            task_manager::get_run_steps,
             context_engine::get_blackboard_awareness,
             context_engine::get_workspace_context,
             context_engine::record_decision_cmd,
