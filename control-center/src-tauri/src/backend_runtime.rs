@@ -503,11 +503,16 @@ async fn perform_backend_start(
             *manager.last_start_time.lock().unwrap() = Some(Instant::now());
 
             // 6. Polling for readiness
-            let ready_url = format!("http://{}:{}/ready", config.bind_address, config.port);
+            let ready_url = format!("http://{}:{}/health", config.bind_address, config.port);
             let start_time = Instant::now();
             let timeout = Duration::from_millis(config.startup_timeout_ms);
 
             log_supervisor_event("Waiting for GGUF local daemon readiness check...");
+
+            let poll_client = Client::builder()
+                .timeout(Duration::from_millis(600000))
+                .build()
+                .unwrap_or_default();
 
             loop {
                 tokio::time::sleep(Duration::from_millis(500)).await;
@@ -541,8 +546,8 @@ async fn perform_backend_start(
                     }
                 }
 
-                // Poll /ready
-                if let Ok(resp) = client.get(&ready_url).send().await {
+                // Poll /health
+                if let Ok(resp) = poll_client.get(&ready_url).send().await {
                     if resp.status().is_success() {
                         log_supervisor_event("GGUF local daemon successfully started and ready!");
                         let mut status = manager.status.lock().unwrap();
