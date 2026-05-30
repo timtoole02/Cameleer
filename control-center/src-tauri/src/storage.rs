@@ -261,15 +261,47 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     )?;
 
     // 6. Continuous Work Runs
+    conn.execute("DROP TABLE IF EXISTS agent_runs", []).ok();
     conn.execute(
         "CREATE TABLE IF NOT EXISTS agent_runs (
             id TEXT PRIMARY KEY,
             agent_id TEXT REFERENCES agents(id),
-            task_id TEXT REFERENCES tasks(id),
-            status TEXT NOT NULL,
-            last_state TEXT,
-            started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            ended_at DATETIME
+            conversation_id TEXT,
+            task_id TEXT REFERENCES kanban_cards(id),
+            state TEXT NOT NULL,
+            input TEXT,
+            plan TEXT,
+            final_answer TEXT,
+            error TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 6b. Agent Run Steps
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS agent_run_steps (
+            id TEXT PRIMARY KEY,
+            run_id TEXT REFERENCES agent_runs(id) ON DELETE CASCADE,
+            step_type TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 6c. Memory System
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS memories (
+            id TEXT PRIMARY KEY,
+            agent_id TEXT REFERENCES agents(id),
+            workspace_id TEXT,
+            content TEXT NOT NULL,
+            context TEXT,
+            importance INTEGER DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_accessed_at DATETIME
         )",
         [],
     )?;

@@ -115,7 +115,7 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
     
     let settings = ModelSettings { temperature: Some(0.7), max_tokens: Some(2048) };
 
-    let response_text = match call_model(provider, model_name, history, settings, api_key, endpoint_url).await {
+    let mut response_text = match call_model(provider, model_name, history.clone(), settings.clone(), api_key.clone(), endpoint_url.clone()).await {
         Ok(text) => text,
         Err(e) => {
             let conn = state.conn.lock().map_err(|err| err.to_string())?;
@@ -125,16 +125,54 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
         }
     };
 
+    // Retry JSON parsing if it fails
+    let mut parsed_action = parse_agent_action(&response_text);
+    if parsed_action.is_none() || parsed_action.as_ref().unwrap().raw_json.is_none() {
+        println!("[AGENT RUNTIME KERNEL] JSON parse failed, retrying once...");
+        history.push(ChatMessage {
+            role: "assistant".to_string(),
+            content: response_text.clone(),
+        });
+        history.push(ChatMessage {
+            role: "user".to_string(),
+            content: "Your response was not valid JSON matching the schema. Please output only the strictly formatted JSON block.".to_string(),
+        });
+        
+        if let Ok(retry_text) = call_model(provider, model_name, history, settings, api_key, endpoint_url).await {
+            response_text = retry_text.clone();
+            parsed_action = parse_agent_action(&response_text);
+        }
+    }
+
     save_and_emit_message(&app_handle, &session_id, &agent_id, response_text.clone());
+
+    let run_id = format!("run_{}_{}", agent_id, std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis());
+    let task_id = selected_work.as_ref().map(|w| w.id.clone());
 
     // 9. Execute Action & Guard
     let mut target_state = AgentState::Idle;
     let mut transition_reason = "Completed cycle iteration".to_string();
 
-    if let Some(action) = parse_agent_action(&response_text) {
+    if let Some(action) = parsed_action {
         println!("[AGENT RUNTIME KERNEL] Agent triggered Action: {}", action.action_type);
         
-        if action.action_type == "complete_card" {
+        let plan_str = if let Some(json) = &action.raw_json { serde_json::to_string(&json.plan).unwrap_or_default() } else { "".to_string() };
+        let input_str = if let Some(json) = &action.raw_json { json.next_action.input.clone() } else { "".to_string() };
+
+        {
+            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+            let _ = conn.execute(
+                "INSERT INTO agent_runs (id, agent_id, conversation_id, task_id, state, input, plan) VALUES (?1, ?2, ?3, ?4, 'executing', ?5, ?6)",
+                params![run_id, agent_id, session_id, task_id, input_str, plan_str],
+            );
+            
+            let _ = conn.execute(
+                "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, ?3, ?4)",
+                params![format!("step_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros()), run_id, "reasoning_summary", if let Some(json) = &action.raw_json { &json.summary } else { "Failed to parse reasoning" }],
+            );
+        }
+        
+        if action.action_type == "task.complete" {
             if let Some(c_id) = action.card_id.as_ref() {
                 let val_res = {
                     let conn = state.conn.lock().map_err(|e| e.to_string())?;
@@ -222,13 +260,21 @@ fn build_system_prompt(identity: &AgentIdentity, contract: &AgentContract, work:
     prompt.push_str("\n\n### EXECUTION INSTRUCTIONS\n\
         You must follow the Agent Runtime Kernel loop.\n\
         You are executing ONE safe step for your active task. Analyze context, perform work via tools, and then STOP.\n\n\
-        Available Tools:\n\
-        - ACTION: write_file (PATH, CONTENT)\n\
-        - ACTION: execute_command (COMMAND)\n\
-        - ACTION: claim_card (CARD_ID)\n\
-        - ACTION: update_card_progress (CARD_ID, NOTES, FILES, VALIDATION_STATUS)\n\
-        - ACTION: complete_card (CARD_ID, EVIDENCE, VALIDATION_PASSED)\n\n\
-        CRITICAL: Output an ACTION block or speak directly to the user if finished.");
+        You MUST output your response strictly as a JSON object matching the following schema. Do NOT output any extra text outside the JSON block.\n\
+        ```json\n\
+        {\n  \
+          \"summary\": \"What you believe is happening\",\n  \
+          \"plan\": [\"step 1\", \"step 2\"],\n  \
+          \"next_action\": {\n    \
+            \"type\": \"command.run | file.write | task.claim | task.create | task.update | task.complete | agent.handoff | repo.search | memory.write | memory.search | message.send\",\n    \
+            \"target\": \"optional card, agent id, or file path\",\n    \
+            \"input\": \"the command string, file content, or message\"\n  \
+          },\n  \
+          \"confidence\": 0.9,\n  \
+          \"blockers\": [],\n  \
+          \"done_criteria\": []\n\
+        }\n\
+        ```\n");
 
     prompt
 }

@@ -17,12 +17,12 @@ pub fn execute_tool(
 ) -> Result<String, String> {
 
     // 1. Check allowed tools in contract
-    if !contract.allowed_actions.contains(&action.action_type) && action.action_type != "complete_card" && action.action_type != "claim_card" && action.action_type != "update_card_progress" && action.action_type != "handoff_card" {
+    if !contract.allowed_actions.contains(&action.action_type) && action.action_type != "task.complete" && action.action_type != "task.claim" && action.action_type != "task.update" && action.action_type != "agent.handoff" && action.action_type != "message.send" {
         return Err(format!("Action {} is not permitted in your Agent Contract", action.action_type));
     }
 
     match action.action_type.as_str() {
-        "execute_command" => {
+        "command.run" => {
             if let Some(cmd_str) = &action.command {
                 // Check dangerous commands
                 if cmd_str.contains("rm -rf /") {
@@ -56,7 +56,7 @@ pub fn execute_tool(
                 Err("No command provided".to_string())
             }
         },
-        "write_file" => {
+        "file.write" => {
             if let (Some(path), Some(content)) = (&action.path, &action.content) {
                 // Here we would use `resolve_path` safely
                 // But for safety in this stub, let's just log it or simulate it if it's restricted
@@ -72,7 +72,7 @@ pub fn execute_tool(
                 Err("Path and content required for write_file".to_string())
             }
         },
-        "claim_card" => {
+        "task.claim" => {
             if let Some(card_id) = &action.card_id {
                 let state = app_handle.state::<DbState>();
                 let conn = state.conn.lock().unwrap();
@@ -88,7 +88,7 @@ pub fn execute_tool(
                 Err("card_id required".to_string())
             }
         },
-        "update_card_progress" => {
+        "task.update" => {
             if let Some(card_id) = &action.card_id {
                 let state = app_handle.state::<DbState>();
                 let conn = state.conn.lock().unwrap();
@@ -105,7 +105,7 @@ pub fn execute_tool(
                 Err("card_id required".to_string())
             }
         },
-        "handoff_card" => {
+        "agent.handoff" => {
             if let (Some(card_id), Some(target_agent_id), Some(notes)) = (&action.card_id, &action.target_agent_id, &action.notes) {
                 let state = app_handle.state::<DbState>();
                 let conn = state.conn.lock().unwrap();
@@ -126,9 +126,86 @@ pub fn execute_tool(
                 Err("card_id, target_agent_id, and notes required for handoff".to_string())
             }
         },
-        "complete_card" => {
+        "task.complete" => {
             // Handled explicitly in the kernel's validation engine integration
             Ok("Complete card request sent to validation engine.".to_string())
+        },
+        "message.send" => {
+            if let Some(content) = &action.content {
+                save_and_emit_message(app_handle, session_id, "system", format!("Message delivered: {}", content));
+                Ok("Message sent.".to_string())
+            } else {
+                Err("No content provided".to_string())
+            }
+        },
+        "task.create" => {
+            if let Some(notes) = &action.notes {
+                // Stub for task creation
+                let msg = format!("Created new task: {}", notes);
+                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                Ok(msg)
+            } else {
+                Err("No task details provided".to_string())
+            }
+        },
+        "repo.search" => {
+            if let Some(cmd) = &action.command {
+                // Implement search logic here
+                let msg = format!("Searched repo for: {}", cmd);
+                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                Ok(msg)
+            } else {
+                Err("No search query provided".to_string())
+            }
+        },
+        "memory.write" => {
+            if let Some(content) = &action.memory_content {
+                let state = app_handle.state::<DbState>();
+                let conn = state.conn.lock().unwrap();
+                let ctx = action.memory_context.clone();
+                let imp = action.memory_importance.unwrap_or(1);
+                
+                // We default to writing memory to the active workspace of the agent or null
+                // We'll leave workspace_id null for now, or we could fetch it
+                
+                match crate::memory_engine::save_memory(&conn, Some(agent_id.to_string()), None, content.clone(), ctx, imp) {
+                    Ok(mem_id) => {
+                        let msg = format!("Successfully saved memory with ID {}", mem_id);
+                        save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                        Ok(msg)
+                    },
+                    Err(e) => Err(format!("Failed to write memory: {}", e))
+                }
+            } else {
+                Err("content is required for memory.write".to_string())
+            }
+        },
+        "memory.search" => {
+            if let Some(query) = &action.memory_query {
+                let state = app_handle.state::<DbState>();
+                let conn = state.conn.lock().unwrap();
+                
+                match crate::memory_engine::search_memories(&conn, Some(agent_id.to_string()), None, query, 5) {
+                    Ok(memories) => {
+                        if memories.is_empty() {
+                            let msg = "No relevant memories found.".to_string();
+                            save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                            return Ok(msg);
+                        }
+                        
+                        let mut result_text = format!("Found {} relevant memories:\n", memories.len());
+                        for mem in memories {
+                            result_text.push_str(&format!("- [{}] {}\n", mem.created_at, mem.content));
+                        }
+                        
+                        save_and_emit_message(app_handle, session_id, "system", result_text.clone());
+                        Ok(result_text)
+                    },
+                    Err(e) => Err(format!("Failed to search memory: {}", e))
+                }
+            } else {
+                Err("query is required for memory.search".to_string())
+            }
         },
         _ => {
             Err(format!("Unknown or unhandled tool: {}", action.action_type))

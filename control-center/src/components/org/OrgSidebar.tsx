@@ -84,7 +84,15 @@ export function OrgSidebar({ workspaceId, onNodeSelect, agents }: OrgSidebarProp
               >
                 {hasChildren ? (isExpanded ? '▼' : '▶') : ''}
               </span>
-              <span style={{ marginRight: '8px' }}>{icon}</span>
+              <span style={{ marginRight: '8px', position: 'relative' }}>
+                {icon}
+                {node.node_type === 'agent' && (
+                  <div 
+                    className={`status-badge ${agents.find(a => a.id === node.agent_id)?.status || 'idle'}`} 
+                    style={{ position: 'absolute', bottom: '-2px', right: '-4px', width: '8px', height: '8px', borderWidth: '1px' }} 
+                  />
+                )}
+              </span>
               <span style={{ fontSize: '0.9rem', fontWeight: node.node_type === 'agent' ? 400 : 600 }}>
                 {node.display_name}
               </span>

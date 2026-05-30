@@ -275,6 +275,17 @@ pub fn get_scoped_agent_context_snapshot(
     if events_summary.is_empty() {
         events_summary = "- No events logged yet.".to_string();
     }
+    
+    // 8b. Relevant Memories
+    let mut mems_summary = String::new();
+    if let Ok(memories) = crate::memory_engine::get_recent_memories(conn, agent_id.map(|s| s.to_string()), workspace_id.map(|s| s.to_string()), 5) {
+        for mem in memories {
+            mems_summary.push_str(&format!("- [{}] {}\n", mem.created_at, mem.content));
+        }
+    }
+    if mems_summary.is_empty() {
+        mems_summary = "- No memories recorded yet.".to_string();
+    }
 
     // 9. Suggested Next Action
     let suggested_action = match agent_id {
@@ -306,8 +317,9 @@ pub fn get_scoped_agent_context_snapshot(
          #### RECORDED ENGINEERING DECISIONS:\n{}\n\
          #### PENDING WORKFLOW HANDOFFS:\n{}\n\
          #### RECENT FIREWALL EVENTS:\n{}\n\
+         #### LONG-TERM MEMORY:\n{}\n\
          #### YOUR ROLE SUGGESTED NEXT ACTION:\n- {}\n",
-        ws_section, shared_obj, agents_summary, tasks_summary, arts_summary, decs_summary, handoffs_summary, events_summary, suggested_action
+        ws_section, shared_obj, agents_summary, tasks_summary, arts_summary, decs_summary, handoffs_summary, events_summary, mems_summary, suggested_action
     );
 
     Ok(snapshot)

@@ -25,6 +25,7 @@ mod agent_tool_controller;
 mod agent_recovery_engine;
 mod agent_handoff_manager;
 mod agent_conflict_detector;
+pub mod memory_engine;
 
 use storage::DbState;
 use tauri::Manager;
@@ -94,10 +95,12 @@ pub fn run() {
             chat_service::get_messages,
             chat_service::save_message,
             chat_service::trigger_agent_reply,
+            chat_service::trigger_org_reply,
             task_manager::get_tasks,
             task_manager::create_task,
             task_manager::update_task_status,
             task_manager::create_task_blocker,
+            task_manager::get_agent_run_timeline,
             task_manager::register_artifact,
             task_manager::get_artifacts,
             task_manager::read_artifact_file,
@@ -175,6 +178,7 @@ pub fn run() {
             org_services::create_team,
             org_services::get_agent_org_tree,
             org_services::move_agent_to_team,
+            org_services::get_org_node_metrics,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

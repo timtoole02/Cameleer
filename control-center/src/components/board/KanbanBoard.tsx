@@ -7,9 +7,11 @@ interface Props {
   agents: any[];
   onCardClick: (card: KanbanCard) => void;
   refreshTrigger: number;
+  scopeType?: string;
+  scopeId?: string;
 }
 
-export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshTrigger }: Props) {
+export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshTrigger, scopeType, scopeId }: Props) {
   const [cards, setCards] = useState<KanbanCard[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,8 +46,14 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
   return (
     <div className="kanban-board">
       {columns.map(col => {
-        const columnCards = cards.filter(c => c.status === col.id);
+        let displayCards = cards.filter(c => c.status === col.id);
         
+        if (scopeType === 'team' && scopeId) {
+          displayCards = displayCards.filter(c => c.team_id === scopeId);
+        } else if (scopeType === 'project' && scopeId) {
+          displayCards = displayCards.filter(c => c.project_id === scopeId);
+        }
+
         return (
           <div key={col.id} className="kanban-column">
             <div className="kanban-column-header">
@@ -53,14 +61,14 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
                 <span className={`status-badge ${col.colorClass}`} style={{ position: "static", display: "inline-block", width: "8px", height: "8px", margin: 0 }} />
                 <span>{col.label}</span>
               </div>
-              <span className="kanban-column-count">{columnCards.length}</span>
+              <span className="kanban-column-count">{displayCards.length}</span>
             </div>
             
             <div className="kanban-cards">
-              {columnCards.length === 0 ? (
+              {displayCards.length === 0 ? (
                 <div className="kanban-empty">No cards</div>
               ) : (
-                columnCards.map(card => {
+                displayCards.map(card => {
                   let completedCriteria = 0;
                   let totalCriteria = 0;
                   try {

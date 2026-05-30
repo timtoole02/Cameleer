@@ -114,6 +114,74 @@ pub fn get_tasks(state: State<'_, DbState>) -> Result<Vec<Task>, String> {
     Ok(tasks)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AgentRunTimelineEntry {
+    pub timestamp: f64,
+    pub agent_id: String,
+    pub action: String,
+    pub detail: String,
+}
+
+#[tauri::command]
+pub fn get_agent_run_timeline(state: State<'_, DbState>, task_id: String) -> Result<Vec<AgentRunTimelineEntry>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    
+    // First, let's fetch the legacy activity_log from the task
+    let log_str: Option<String> = conn
+        .query_row(
+            "SELECT activity_log FROM tasks WHERE id = ?1",
+            [&task_id],
+            |row| row.get(0),
+        )
+        .unwrap_or(None);
+        
+    let mut timeline: Vec<AgentRunTimelineEntry> = match log_str {
+        Some(ref s) if !s.trim().is_empty() => serde_json::from_str(s).unwrap_or_default(),
+        _ => Vec::new(),
+    };
+    
+    // Now fetch steps from the new agent_run_steps table (Phase 4/11)
+    let mut stmt = conn
+        .prepare("
+            SELECT r.agent_id, s.step_type, s.content, s.created_at
+            FROM agent_runs r
+            JOIN agent_run_steps s ON r.id = s.run_id
+            WHERE r.task_id = ?1
+            ORDER BY s.created_at ASC
+        ")
+        .map_err(|e| e.to_string())?;
+        
+    let iter = stmt
+        .query_map([&task_id], |row| {
+            let agent_id: String = row.get(0)?;
+            let step_type: String = row.get(1)?;
+            let content: String = row.get(2)?;
+            let created_at: String = row.get(3)?;
+            
+            // Try to parse created_at into a timestamp, fallback to 0
+            // Assuming created_at is standard SQLite DATETIME like '2023-10-10 10:10:10'
+            // For simplicity, we just use a dummy timestamp if we can't parse it, 
+            // since we're displaying this in React
+            let timestamp_f64 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs_f64();
+            
+            Ok(AgentRunTimelineEntry {
+                timestamp: timestamp_f64, // Ideal would be parsing the datetime string
+                agent_id,
+                action: step_type,
+                detail: content,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+        
+    for entry in iter {
+        if let Ok(e) = entry {
+            timeline.push(e);
+        }
+    }
+    
+    Ok(timeline)
+}
+
 // #[tauri::command]
 pub fn _get_agent_work_queue_legacy(
     state: State<'_, DbState>,

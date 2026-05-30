@@ -108,6 +108,42 @@ pub async fn trigger_agent_reply(
     crate::agent_runtime_kernel::run_agent_cycle(agent_id, session_id, app_handle).await
 }
 
+#[tauri::command]
+pub async fn trigger_org_reply(
+    state: State<'_, DbState>,
+    app_handle: AppHandle,
+    org_node_type: String,
+    org_node_id: String,
+    session_id: String,
+) -> Result<(), String> {
+    let lead_agent_id_opt: Option<String> = {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        if org_node_type == "team" {
+            conn.query_row(
+                "SELECT lead_agent_id FROM teams WHERE id = ?1",
+                [&org_node_id],
+                |row| row.get(0),
+            ).ok().flatten()
+        } else if org_node_type == "project" {
+            conn.query_row(
+                "SELECT owner_agent_id FROM projects WHERE id = ?1",
+                [&org_node_id],
+                |row| row.get(0),
+            ).ok().flatten()
+        } else {
+            None
+        }
+    };
+
+    if let Some(lead_agent_id) = lead_agent_id_opt {
+        crate::agent_runtime_kernel::run_agent_cycle(lead_agent_id, session_id, app_handle).await
+    } else {
+        // No lead agent to route to, do nothing
+        Ok(())
+    }
+}
+
+
 fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> {
     // Shared objective
     let shared_obj: String = conn.query_row(
@@ -153,6 +189,26 @@ fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> 
     Ok(blackboard)
 }
 
+
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AgentJsonOutput {
+    pub summary: String,
+    pub plan: Vec<String>,
+    pub next_action: AgentNextAction,
+    pub confidence: f64,
+    pub blockers: Vec<String>,
+    pub done_criteria: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AgentNextAction {
+    #[serde(rename = "type")]
+    pub action_type: String,
+    pub target: Option<String>,
+    pub input: String,
+}
+
 pub struct AgentAction {
     pub action_type: String,
     pub command: Option<String>,
@@ -170,6 +226,13 @@ pub struct AgentAction {
     pub evidence: Option<String>,
     pub validation_passed: Option<bool>,
     pub validation_notes: Option<String>,
+    pub raw_json: Option<AgentJsonOutput>, // Store the original parsed JSON if available
+    
+    // Memory System
+    pub memory_content: Option<String>,
+    pub memory_context: Option<String>,
+    pub memory_importance: Option<i32>,
+    pub memory_query: Option<String>,
 }
 
 fn resolve_path(path: &str) -> std::path::PathBuf {
@@ -193,6 +256,17 @@ fn resolve_path(path: &str) -> std::path::PathBuf {
     }
     
     resolved
+}
+
+fn extract_json_from_text(text: &str) -> Option<String> {
+    if let Some(start) = text.find('{') {
+        if let Some(end) = text.rfind('}') {
+            if end > start {
+                return Some(text[start..=end].to_string());
+            }
+        }
+    }
+    None
 }
 
 fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
@@ -265,6 +339,11 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                         evidence: None,
                         validation_passed: None,
                         validation_notes: None,
+                        raw_json: None,
+                        memory_content: None,
+                        memory_context: None,
+                        memory_importance: None,
+                        memory_query: None,
                     });
                 }
             }
@@ -321,6 +400,11 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                         evidence: None,
                         validation_passed: None,
                         validation_notes: None,
+                        raw_json: None,
+                        memory_content: None,
+                        memory_context: None,
+                        memory_importance: None,
+                        memory_query: None,
                     });
                 }
             }
@@ -331,6 +415,77 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
 }
 
 pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
+    // 0. Try to parse JSON first (Epic 5 structured output)
+    if let Some(json_str) = extract_json_from_text(text) {
+        if let Ok(parsed_json) = serde_json::from_str::<AgentJsonOutput>(&json_str) {
+            let mut action = AgentAction {
+                action_type: parsed_json.next_action.action_type.clone(),
+                command: None,
+                path: None,
+                content: Some(parsed_json.next_action.input.clone()),
+                decision: None,
+                reason: Some(parsed_json.summary.clone()),
+                target_agent_id: None,
+                task_id: parsed_json.next_action.target.clone(),
+                blocked_by_task_id: None,
+                card_id: parsed_json.next_action.target.clone(),
+                notes: None,
+                files: None,
+                validation_status: None,
+                evidence: None,
+                validation_passed: None,
+                validation_notes: None,
+                raw_json: Some(parsed_json.clone()),
+                memory_content: None,
+                memory_context: None,
+                memory_importance: None,
+                memory_query: None,
+            };
+
+            // Map specific JSON actions back to standardized internal types
+            if parsed_json.next_action.action_type == "tool_call" || parsed_json.next_action.action_type == "execute_command" || parsed_json.next_action.action_type == "command.run" {
+                action.action_type = "command.run".to_string();
+                action.command = Some(parsed_json.next_action.input.clone());
+            } else if parsed_json.next_action.action_type == "write_file" || parsed_json.next_action.action_type == "file.write" {
+                action.action_type = "file.write".to_string();
+                action.path = parsed_json.next_action.target.clone();
+                action.content = Some(parsed_json.next_action.input.clone());
+            } else if parsed_json.next_action.action_type == "handoff" || parsed_json.next_action.action_type == "agent.handoff" {
+                action.action_type = "agent.handoff".to_string();
+                action.target_agent_id = parsed_json.next_action.target.clone();
+                action.notes = Some(parsed_json.next_action.input.clone());
+            } else if parsed_json.next_action.action_type == "update_task" || parsed_json.next_action.action_type == "task.update" {
+                action.action_type = "task.update".to_string();
+                action.notes = Some(parsed_json.next_action.input.clone());
+            } else if parsed_json.next_action.action_type == "complete" || parsed_json.next_action.action_type == "task.complete" {
+                action.action_type = "task.complete".to_string();
+                action.evidence = Some(parsed_json.next_action.input.clone());
+            } else if parsed_json.next_action.action_type == "claim_card" || parsed_json.next_action.action_type == "task.claim" {
+                action.action_type = "task.claim".to_string();
+                action.card_id = parsed_json.next_action.target.clone();
+            } else if parsed_json.next_action.action_type == "task.create" {
+                action.action_type = "task.create".to_string();
+                action.notes = Some(parsed_json.next_action.input.clone()); // Assuming input contains task details
+            } else if parsed_json.next_action.action_type == "repo.search" {
+                action.action_type = "repo.search".to_string();
+                action.command = Some(parsed_json.next_action.input.clone()); // Assuming input is search query
+            } else if parsed_json.next_action.action_type == "memory.write" {
+                action.action_type = "memory.write".to_string();
+                action.memory_content = Some(parsed_json.next_action.input.clone());
+                action.memory_context = parsed_json.next_action.target.clone(); // use target as context
+                action.memory_importance = Some(1); // default
+            } else if parsed_json.next_action.action_type == "memory.search" {
+                action.action_type = "memory.search".to_string();
+                action.memory_query = Some(parsed_json.next_action.input.clone());
+            } else if parsed_json.next_action.action_type == "respond" || parsed_json.next_action.action_type == "message.send" {
+                action.action_type = "message.send".to_string();
+                action.content = Some(parsed_json.next_action.input.clone());
+            }
+
+            return Some(action);
+        }
+    }
+
     // 1. Try strict ReAct prefix parsing
     let mut action_type = String::new();
     let mut command = String::new();
@@ -429,6 +584,11 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
             evidence: if evidence.is_empty() { None } else { Some(evidence) },
             validation_passed: val_passed,
             validation_notes: if validation_notes.is_empty() { None } else { Some(validation_notes) },
+            raw_json: None,
+            memory_content: None,
+            memory_context: None,
+            memory_importance: None,
+            memory_query: None,
         });
     }
 

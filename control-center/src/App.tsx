@@ -372,6 +372,13 @@ function App() {
   // Hook: Load Agent Contracts & Work Receipts dynamically on Kanban Selection
   useEffect(() => {
     if (selectedKanbanTask) {
+      // Re-fetch details or timeline if needed
+      invoke("get_agent_run_timeline", { taskId: selectedKanbanTask.id }).then((entries: any) => {
+        setTimelineEntries(entries);
+      }).catch(console.error);
+    }
+    
+    if (selectedKanbanTask) {
       const agentId = selectedKanbanTask.assigned_agent_id || selectedKanbanTask.owner_id;
       if (agentId) {
         invoke("get_agent_contract", { agentId })
@@ -530,6 +537,9 @@ function App() {
   const [taskAcceptanceCriteria, setTaskAcceptanceCriteria] = useState("");
   const [taskDependencies, setTaskDependencies] = useState("");
   const [modalDetailsTab, setModalDetailsTab] = useState<"log" | "comments">("log");
+  const [timelineEntries, setTimelineEntries] = useState<any[]>([]);
+
+  // Telemetry (Cameleer stats from local daemon)
   const [blackboardText, setBlackboardText] = useState<string>("");
   const [inputText, setInputText] = useState<string>("");
   const [inspectorTab, setInspectorTab] = useState<"profile" | "snapshot">("snapshot");
@@ -577,6 +587,21 @@ function App() {
       });
     }, 2500);
     return () => clearInterval(timer);
+  }, []);
+
+  // Migrate localStorage keys from camelid.* to cameleer.* (Silent migration)
+  useEffect(() => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("camelid.")) {
+        const newKey = "cameleer." + key.slice("camelid.".length);
+        const value = localStorage.getItem(key);
+        if (value) {
+          localStorage.setItem(newKey, value);
+          localStorage.removeItem(key);
+        }
+      }
+    }
   }, []);
 
   const selectAgentForEdit = (agent: Agent) => {
@@ -1290,7 +1315,17 @@ function App() {
 
   const loadMessages = async () => {
     try {
-      const sessionId = activeTab === "global" ? "global" : `direct_${selectedAgentId}`;
+      let sessionId = "global";
+      if (activeTab === "dm") {
+        sessionId = `direct_${selectedAgentId}`;
+      } else if (activeTab === "org_dashboard" && activeOrgNode) {
+        if (activeOrgNode.node_type === "team") {
+          sessionId = `org_team_${activeOrgNode.team_id || activeOrgNode.id}`;
+        } else if (activeOrgNode.node_type === "project") {
+          sessionId = `org_proj_${activeOrgNode.project_id || activeOrgNode.id}`;
+        }
+      }
+
       const list = await invoke<Message[]>("get_messages", { sessionId });
       setMessages(list);
     } catch (e) {
@@ -1354,7 +1389,17 @@ function App() {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    const sessionId = activeTab === "global" ? "global" : `direct_${selectedAgentId}`;
+    let sessionId = "global";
+    if (activeTab === "dm") {
+      sessionId = `direct_${selectedAgentId}`;
+    } else if (activeTab === "org_dashboard" && activeOrgNode) {
+      if (activeOrgNode.node_type === "team") {
+        sessionId = `org_team_${activeOrgNode.team_id || activeOrgNode.id}`;
+      } else if (activeOrgNode.node_type === "project") {
+        sessionId = `org_proj_${activeOrgNode.project_id || activeOrgNode.id}`;
+      }
+    }
+    
     const userPrompt = inputText;
     setInputText("");
 
@@ -1371,13 +1416,22 @@ function App() {
       loadMessages();
 
       // 2. Identify agent recipient and trigger LLM reasoning loop asynchronously
-      const targetedAgentId = activeTab === "global" ? "agent-coder" : selectedAgentId;
       setIsThinking(true);
       
-      await invoke("trigger_agent_reply", {
-        agentId: targetedAgentId,
-        sessionId,
-      });
+      if (activeTab === "org_dashboard" && activeOrgNode) {
+        // Broadcast to team/project lead
+        await invoke("trigger_org_reply", {
+          orgNodeType: activeOrgNode.node_type,
+          orgNodeId: activeOrgNode.id,
+          sessionId,
+        });
+      } else {
+        const targetedAgentId = activeTab === "global" ? "agent-coder" : selectedAgentId;
+        await invoke("trigger_agent_reply", {
+          agentId: targetedAgentId,
+          sessionId,
+        });
+      }
 
       setIsThinking(false);
       loadMessages();
@@ -1528,8 +1582,8 @@ function App() {
     try {
       await invoke("create_card", { 
         workspaceId: "default",
-        projectId: activeOrgNode?.node_type === "project" ? activeOrgNode.id : (activeOrgNode?.node_type === "team" ? activeOrgNode.project_id : null),
-        teamId: activeOrgNode?.node_type === "team" ? activeOrgNode.id : null,
+        projectId: activeOrgNode?.project_id || null,
+        teamId: activeOrgNode?.team_id || null,
         title: taskTitle,
         description: taskDesc || null,
         typeName: "task",
@@ -1960,7 +2014,23 @@ function App() {
           </button>
         </div>
 
-        <div style={{ flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '0 16px 16px', gap: '4px' }}>
+          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '1px', marginBottom: '8px' }}>Workspace</div>
+          <button className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>📊 Dashboard</button>
+          <button className={`sidebar-nav-item ${activeTab === 'global' ? 'active' : ''}`} onClick={() => setActiveTab('global')}>🌐 Global Feed</button>
+          <button className={`sidebar-nav-item ${activeTab === 'kanban' ? 'active' : ''}`} onClick={() => setActiveTab('kanban')}>📋 Task Backlog</button>
+          <button className={`sidebar-nav-item ${activeTab === 'missions' ? 'active' : ''}`} onClick={() => setActiveTab('missions')}>🎯 Missions</button>
+          <button className={`sidebar-nav-item ${activeTab === 'files' ? 'active' : ''}`} onClick={() => setActiveTab('files')}>🧠 Memory & Files</button>
+          
+          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '1px', marginTop: '16px', marginBottom: '8px' }}>Orchestration</div>
+          <button className={`sidebar-nav-item ${activeTab === 'agents' ? 'active' : ''}`} onClick={() => setActiveTab('agents')}>🤖 Agents</button>
+          <button className={`sidebar-nav-item ${activeTab === 'models' ? 'active' : ''}`} onClick={() => setActiveTab('models')}>⚙️ Local Models</button>
+          <button className={`sidebar-nav-item ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => setActiveTab('skills')}>📚 Skills</button>
+          <button className={`sidebar-nav-item ${activeTab === 'channels' ? 'active' : ''}`} onClick={() => setActiveTab('channels')}>📡 Channels</button>
+          <button className={`sidebar-nav-item ${activeTab === 'system' ? 'active' : ''}`} onClick={() => setActiveTab('system')}>🔌 System</button>
+        </div>
+
+        <div style={{ flex: 1, overflow: 'hidden', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <OrgSidebar 
             workspaceId="default" 
             agents={agents}
@@ -2044,74 +2114,7 @@ function App() {
             )}
           </div>
 
-          <div className="panel-tabs">
-            <button
-              className={`panel-tab ${activeTab === "dashboard" ? "active" : ""}`}
-              onClick={() => setActiveTab("dashboard")}
-            >
-              Dashboard
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "global" ? "active" : ""}`}
-              onClick={() => setActiveTab("global")}
-            >
-              Global Feed
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "dm" ? "active" : ""}`}
-              onClick={() => setActiveTab("dm")}
-            >
-              Direct Chats
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "kanban" ? "active" : ""}`}
-              onClick={() => setActiveTab("kanban")}
-            >
-              Kanban Board
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "missions" ? "active" : ""}`}
-              onClick={() => setActiveTab("missions")}
-            >
-              Missions
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "agents" ? "active" : ""}`}
-              onClick={() => setActiveTab("agents")}
-            >
-              Agents
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "models" ? "active" : ""}`}
-              onClick={() => setActiveTab("models")}
-            >
-              Models
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "skills" ? "active" : ""}`}
-              onClick={() => setActiveTab("skills")}
-            >
-              Skills
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "channels" ? "active" : ""}`}
-              onClick={() => setActiveTab("channels")}
-            >
-              Channels
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "files" ? "active" : ""}`}
-              onClick={() => setActiveTab("files")}
-            >
-              Files
-            </button>
-            <button
-              className={`panel-tab ${activeTab === "system" ? "active" : ""}`}
-              onClick={() => setActiveTab("system")}
-            >
-              System
-            </button>
-          </div>
+          {/* panel-tabs moved to sidebar */}
         </header>
 
         {activeTab === "dashboard" ? (
@@ -2334,10 +2337,31 @@ function App() {
 
             </div>
           </div>
-        ) : activeTab === "global" || activeTab === "dm" ? (
-          <>
+        ) : activeTab === "global" || activeTab === "dm" || activeTab === "org_dashboard" ? (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            {activeTab === "org_dashboard" && activeOrgNode && (
+              <div style={{ flex: "0 0 auto", maxHeight: "45%", borderBottom: "1px solid rgba(255,255,255,0.05)", overflowY: "auto" }}>
+                <ProjectDashboard 
+                  activeNode={activeOrgNode} 
+                  agents={agents}
+                  onCardClick={(card) => {
+                    setSelectedKanbanTask(card as any);
+                    setCompletionError(null);
+                    setIsCompletingTask(false);
+                    setIsAddingBlocker(false);
+                    setIsTaskModalOpen(false); // Make sure modal state is right if used
+                    // wait, KanbanBoard in App.tsx just does:
+                    // setSelectedKanbanTask(card as any);
+                    // setCompletionError(null);
+                    // setIsCompletingTask(false);
+                    // setIsAddingBlocker(false);
+                  }}
+                  refreshTrigger={refreshKanban}
+                />
+              </div>
+            )}
             {/* Messages Feed */}
-            <div className="messages-feed">
+            <div className="messages-feed" style={{ flex: 1, overflowY: "auto" }}>
               {messages.length === 0 && (
                 <div style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "40px" }}>
                   No messages in this channel yet. Send a prompt to get started!
@@ -2389,7 +2413,7 @@ function App() {
                 </button>
               </div>
             </form>
-          </>
+          </div>
         ) : activeTab === "kanban" ? (
           /* Kanban System */
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -2439,8 +2463,6 @@ function App() {
           </div>
             
 
-        ) : activeTab === "org_dashboard" && activeOrgNode ? (
-          <ProjectDashboard activeNode={activeOrgNode} />
         ) : activeTab === "skills" ? (
           /* Skills Page */
           <div className="skills-container" style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
@@ -4229,7 +4251,7 @@ function App() {
               
               {/* Telemetry Card 1 */}
               <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "20px" }}>
-                <h4 style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "12px" }}>🧠 Local Inference (Camelid)</h4>
+                <h4 style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "12px" }}>🧠 Local Inference (Camelid Runtime Engine)</h4>
                 <div style={{ fontSize: "2rem", fontWeight: 700, display: "flex", alignItems: "baseline", gap: "6px" }}>
                   {tps} <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 500 }}>tok/sec</span>
                 </div>
@@ -4374,7 +4396,7 @@ function App() {
             <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "20px", marginTop: "16px" }}>
               <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--accent-primary)", marginBottom: "6px" }}>🔌 Backend Runtime Supervisor</h3>
               <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "16px", lineHeight: 1.4 }}>
-                Monitor status and modify supervisor policies for the local GGUF inference engine daemon (Camelid). Single source of truth.
+                Monitor status and modify supervisor policies for the local GGUF inference engine daemon (Camelid Runtime). Single source of truth.
               </p>
 
               {/* Status details sub-card */}
@@ -4611,7 +4633,7 @@ function App() {
 
             {/* OS Gateway & Camelid Configurations */}
             <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-color)", borderRadius: "14px", padding: "20px", marginTop: "16px" }}>
-              <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--accent-primary)", marginBottom: "6px" }}>⚙️ OS Gateway & Camelid Configurations</h3>
+              <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--accent-primary)", marginBottom: "6px" }}>⚙️ OS Gateway & Camelid Runtime Configurations</h3>
               <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "16px", lineHeight: 1.4 }}>Configure active connection gateways, local GGUF Metal endpoints, and cloud keys to power your local agent crew.</p>
               
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
@@ -5557,7 +5579,7 @@ function App() {
                     /* timeline component */
                     <div className="timeline-container">
                       {(() => {
-                        const logs = safeParseJson<any[]>(selectedKanbanTask.activity_log, []);
+                        const logs = timelineEntries;
                         if (logs.length === 0) {
                           return <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", padding: "10px 0" }}>No coordination logs recorded.</div>;
                         }
