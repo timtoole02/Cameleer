@@ -761,7 +761,7 @@ pub fn complete_card(
     // 5. Update SQLite Card
     conn.execute(
         "UPDATE kanban_cards 
-         SET status = 'done', validation_status = ?2, completion_evidence = ?3, 
+         SET status = 'in_review', validation_status = ?2, completion_evidence = ?3, 
              activity_log = ?4, updated_at = CURRENT_TIMESTAMP 
          WHERE id = ?1",
         params![card_id, val_status_str, evidence, new_log_str],
@@ -795,81 +795,157 @@ pub fn complete_card(
             event_type: "task_updated".to_string(),
             agent_id: Some(agent_id),
             task_id: Some(card_id.clone()),
-            payload: serde_json::json!({ "status": "done" }),
+            payload: serde_json::json!({ "status": "in_review" }),
         },
     );
 
-    // 8. Cross-Agent Dependency Unblocking
-    let mut stmt_blocked = conn
-        .prepare("SELECT task_id FROM task_blockers WHERE blocked_by_task_id = ?1")
-        .unwrap();
-    let blocked_tasks_iter = stmt_blocked
-        .query_map([&card_id], |row| row.get::<_, String>(0))
-        .unwrap();
+    Ok(())
+}
 
-    let mut unblocked_candidates = Vec::new();
-    for t_id in blocked_tasks_iter {
-        if let Ok(tid) = t_id {
-            unblocked_candidates.push(tid);
-        }
-    }
+#[tauri::command]
+pub fn submit_review(
+    state: State<'_, DbState>,
+    app_handle: AppHandle,
+    reviewer_id: String,
+    card_id: String,
+    approved: bool,
+    notes: String,
+) -> Result<(), String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
-    if !unblocked_candidates.is_empty() {
-        // Delete the resolved blockers
-        conn.execute(
-            "DELETE FROM task_blockers WHERE blocked_by_task_id = ?1",
-            params![&card_id],
+    // 1. Fetch card details
+    let (log_str, assigned_agent): (Option<String>, Option<String>) = conn
+        .query_row(
+            "SELECT activity_log, assigned_agent_id FROM kanban_cards WHERE id = ?1",
+            [&card_id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
         )
-        .unwrap();
+        .map_err(|e| format!("Card not found: {}", e))?;
 
-        for tid in unblocked_candidates {
-            // Check if it's completely unblocked
-            let remaining_blockers: i64 = conn
-                .query_row(
-                    "SELECT COUNT(*) FROM task_blockers WHERE task_id = ?1",
-                    params![&tid],
-                    |row| row.get(0),
-                )
-                .unwrap_or(1);
+    let mut log_arr = match log_str {
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
+        _ => Vec::new(),
+    };
 
-            if remaining_blockers == 0 {
-                // Update task status back to ready (or in_progress)
-                // Let's get the assigned agent to inject a message
-                let assigned_opt: Option<String> = conn
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
+    let new_status = if approved { "done" } else { "ready" };
+
+    log_arr.push(serde_json::json!({
+        "timestamp": now_secs,
+        "agent_id": reviewer_id,
+        "action": "kanban_card_reviewed",
+        "detail": format!("Review submitted. Approved: {}. Notes: {}", approved, notes)
+    }));
+    let new_log_str = serde_json::to_string(&log_arr).unwrap_or_else(|_| "[]".to_string());
+
+    // Update Card
+    conn.execute(
+        "UPDATE kanban_cards 
+         SET status = ?2, activity_log = ?3, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = ?1",
+        params![card_id, new_status, new_log_str],
+    )
+    .map_err(|e| e.to_string())?;
+
+    // Fire Event
+    emit_event(
+        &app_handle,
+        AppEvent {
+            event_type: "task_updated".to_string(),
+            agent_id: Some(reviewer_id.clone()),
+            task_id: Some(card_id.clone()),
+            payload: serde_json::json!({ "status": new_status, "approved": approved }),
+        },
+    );
+
+    if approved {
+        // Cross-Agent Dependency Unblocking
+        let mut stmt_blocked = conn
+            .prepare("SELECT task_id FROM task_blockers WHERE blocked_by_task_id = ?1")
+            .unwrap();
+        let blocked_tasks_iter = stmt_blocked
+            .query_map([&card_id], |row| row.get::<_, String>(0))
+            .unwrap();
+
+        let mut unblocked_candidates = Vec::new();
+        for t_id in blocked_tasks_iter {
+            if let Ok(tid) = t_id {
+                unblocked_candidates.push(tid);
+            }
+        }
+
+        if !unblocked_candidates.is_empty() {
+            // Delete the resolved blockers
+            conn.execute(
+                "DELETE FROM task_blockers WHERE blocked_by_task_id = ?1",
+                params![&card_id],
+            )
+            .unwrap();
+
+            for tid in unblocked_candidates {
+                // Check if it's completely unblocked
+                let remaining_blockers: i64 = conn
                     .query_row(
-                        "SELECT assigned_agent_id FROM kanban_cards WHERE id = ?1",
+                        "SELECT COUNT(*) FROM task_blockers WHERE task_id = ?1",
                         params![&tid],
                         |row| row.get(0),
                     )
-                    .unwrap_or(None);
+                    .unwrap_or(1);
 
-                conn.execute(
-                    "UPDATE kanban_cards SET status = 'ready', updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
-                    params![&tid],
-                ).unwrap();
+                if remaining_blockers == 0 {
+                    // Update task status back to ready
+                    let assigned_opt: Option<String> = conn
+                        .query_row(
+                            "SELECT assigned_agent_id FROM kanban_cards WHERE id = ?1",
+                            params![&tid],
+                            |row| row.get(0),
+                        )
+                        .unwrap_or(None);
 
-                // Inject notification to target agent if assigned
-                if let Some(_target_agent) = assigned_opt {
-                    let session_id = format!("task_{}", tid);
-                    let sys_msg = format!("System Notification: The blocker '{}' has been completed. Your task '{}' is now UNBLOCKED and ready to resume.", card_id, tid);
+                    conn.execute(
+                        "UPDATE kanban_cards SET status = 'ready', updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+                        params![&tid],
+                    ).unwrap();
 
-                    let _ = conn.execute(
-                        "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, 'system', 'unblock_manager', ?2)",
-                        params![session_id, sys_msg],
+                    // Inject notification to target agent if assigned
+                    if let Some(_target_agent) = assigned_opt {
+                        let session_id = format!("task_{}", tid);
+                        let sys_msg = format!("System Notification: The blocker '{}' has been completed. Your task '{}' is now UNBLOCKED and ready to resume.", card_id, tid);
+                        
+                        let _ = conn.execute(
+                            "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, 'system', 'unblock_manager', ?2)",
+                            params![session_id, sys_msg],
+                        );
+                    }
+
+                    emit_event(
+                        &app_handle,
+                        AppEvent {
+                            event_type: "task_updated".to_string(),
+                            agent_id: None,
+                            task_id: Some(tid.clone()),
+                            payload: serde_json::json!({ "status": "ready", "unblocked": true }),
+                        },
                     );
                 }
-
-                // Fire event
-                emit_event(
-                    &app_handle,
-                    AppEvent {
-                        event_type: "task_updated".to_string(),
-                        agent_id: None,
-                        task_id: Some(tid.clone()),
-                        payload: serde_json::json!({ "status": "ready", "unblocked": true }),
-                    },
-                );
             }
+        }
+    } else {
+        // If rejected, inject a message to the original assignee
+        if let Some(target_agent) = assigned_agent {
+            let session_id = format!("task_{}", card_id);
+            let sys_msg = format!("System Notification: Your task '{}' was REJECTED in review by {}. Notes: {}. It has been moved back to 'ready'.", card_id, reviewer_id, notes);
+            
+            let _ = conn.execute(
+                "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, 'system', 'review_tribunal', ?2)",
+                params![session_id, sys_msg],
+            );
         }
     }
 

@@ -72,3 +72,15 @@ This document tracks the verified end-to-end execution flows for the Cameleer ar
 **Status**: 🟢 PASS
 **Notes**:
 - Addressed Mac OS build cache `._` metadata issues during CI checks. Core engine passed syntax and logic assertions.
+
+### Agent Review Tribunal & Local Llama 3 Fine-Tuning Adapters (Sprint 8)
+**Scenario**: Senior agents review completed Kanban cards before unblocking, and successful execution traces are exported to ChatML format for local LoRA fine-tuning.
+**Steps**:
+1. Verify `task_manager::complete_card` pushes status to `in_review` instead of `done`.
+2. Ensure `work_engine::generate_work_suggestions` routes the `in_review` card to the UI for senior agent approval.
+3. Validate `submit_review` transitions the card to `done` and executes the unblock logic (or drops it back to `ready` with rejection notes).
+4. Export the fine-tuning dataset using the new `dataset_exporter.rs` module and verify `.jsonl` schemas match ChatML.
+
+**Status**: 🟢 PASS
+**Notes**:
+- The Llama 3 ChatML export successfully formats `input`, `plan`, and `final_answer` into the `system`, `user`, and `assistant` schema.

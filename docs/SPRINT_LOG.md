@@ -35,3 +35,8 @@
 - Upgraded `task_manager.rs` to automatically resolve `task_blockers` when parent cards are completed, safely transitioning downstream blocked cards to `ready`.
 - Automated system message injection to notify target agents when their assigned task is unblocked.
 - Overhauled `context_engine.rs` to selectively open recently touched text files from the `artifacts` table and inject their raw code contents directly into the LLM system prompt window (hardcapped to 50KB to respect context boundaries).
+
+## Sprint 8: Agent Review Tribunal & Local Llama 3 Fine-Tuning Adapters
+- Migrated terminal state in `task_manager.rs` so completed Kanban cards route to an `in_review` staging state rather than immediately resolving to `done`.
+- Implemented `submit_review` and `work_engine::generate_work_suggestions` logic so "Senior" agents can review, approve, or reject Junior agent code snippets, effectively constructing an autonomous QA Tribunal.
+- Added `dataset_exporter.rs` module that scans SQLite for successful `agent_runs` and synthesizes their logic steps into OpenAI/Alpaca `ChatML` JSONL lines, laying the foundation for local LoRA fine-tuning of Llama 3 models on Cameleer emergent behaviors.

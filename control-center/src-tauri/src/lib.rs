@@ -28,6 +28,8 @@ mod storage;
 mod supervisor;
 mod task_manager;
 mod work_engine;
+pub mod workspace_manager;
+pub mod dataset_exporter;
 
 use storage::DbState;
 use tauri::Manager;
@@ -98,8 +100,15 @@ pub fn run() {
             chat_service::trigger_agent_reply,
             chat_service::trigger_org_reply,
             task_manager::get_tasks,
-            task_manager::create_task,
             task_manager::update_task_status,
+            task_manager::update_task_priority,
+            task_manager::update_task_assignee,
+            task_manager::get_agent_runs,
+            task_manager::get_run_steps,
+            task_manager::submit_review,
+            dataset_exporter::export_finetuning_dataset,
+            workspace_manager::get_workspaces,
+            task_manager::create_task,
             task_manager::create_task_blocker,
             task_manager::get_agent_run_timeline,
             task_manager::register_artifact,

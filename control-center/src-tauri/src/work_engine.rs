@@ -60,7 +60,7 @@ pub fn get_work_engine_suggestions(
             "SELECT t.id, t.title, a.id, a.name 
              FROM kanban_cards t
              JOIN agents a ON t.assigned_agent_id = a.id
-             WHERE t.status = 'In Review' OR t.validation_status = 'pending_review' OR (t.status = 'Done' AND t.validation_status = 'pending')",
+             WHERE t.status = 'in_review' OR t.status = 'In Review' OR t.validation_status = 'pending_review' OR (t.status = 'done' AND t.validation_status = 'pending')",
         )
         .map_err(|e| e.to_string())?;
     let pending_reviews = stmt
