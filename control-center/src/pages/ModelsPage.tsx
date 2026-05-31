@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { listModelCatalog, runModelSmokeTest, listProviderConfigs, saveProviderConfig, importLocalModel, Model, ProviderConfig } from '../api/models';
-import { LoadingSpinner, ErrorBanner } from '../components/common/UIStates';
+import { listModelCatalog, runModelSmokeTest, listProviderConfigs, saveProviderConfig, Model, ProviderConfig } from '../api/models';
+import { LoadingState } from '../components/common/LoadingState';
+import { ErrorState } from '../components/common/ErrorState';
+import { PageShell } from '../components/common/PageShell';
 
 export const ModelsPage: React.FC = () => {
   const [models, setModels] = useState<Model[]>([]);
@@ -58,17 +60,10 @@ export const ModelsPage: React.FC = () => {
     }
   };
 
-  if (loading && models.length === 0) return <LoadingSpinner />;
+  if (loading) return <PageShell title="Model Catalog"><LoadingState /></PageShell>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%', overflowY: 'auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Models & Providers</h3>
-        <button onClick={loadData} style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}>Refresh</button>
-      </div>
-
-      {error && <ErrorBanner message={error} />}
-
+    <PageShell title="Model Catalog">
       <div style={{ display: 'flex', gap: '1rem' }}>
         {/* Providers Config Form */}
         <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '4px' }}>
@@ -136,6 +131,6 @@ export const ModelsPage: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 };

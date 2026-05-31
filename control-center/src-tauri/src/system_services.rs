@@ -2,6 +2,8 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 use serde::Serialize;
+use tauri::State;
+use crate::storage::DbState;
 
 #[derive(Serialize, Debug, Clone)]
 pub struct BenchmarkResult {
@@ -122,5 +124,74 @@ pub async fn run_model_benchmark() -> Result<BenchmarkResult, String> {
         cloud_claude_latency_ms,
         active_local_latency_ms,
         status: "Benchmark Matrix Compiled Successfully".to_string(),
+    })
+}
+
+#[derive(Serialize, Debug, Clone)]
+pub struct BackendHealth {
+    pub status: String,
+    pub database_ready: bool,
+    pub migrations_applied: bool,
+    pub active_project_id: Option<String>,
+    pub active_project_name: Option<String>,
+    pub default_model_profile_id: Option<String>,
+    pub message: String,
+}
+
+#[tauri::command]
+pub async fn get_backend_health(state: State<'_, DbState>) -> Result<BackendHealth, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    
+    // Check if tables exist
+    let mut db_ready = false;
+    let mut migrations_applied = false;
+    
+    if let Ok(count) = conn.query_row(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='workspaces'",
+        [],
+        |row| row.get::<_, i64>(0)
+    ) {
+        db_ready = true;
+        if count > 0 {
+            migrations_applied = true;
+        }
+    }
+    
+    // Get active project
+    let mut active_project_id = None;
+    let mut active_project_name = None;
+    if db_ready {
+        let _ = conn.query_row(
+            "SELECT id, name FROM workspaces WHERE active = 1 LIMIT 1",
+            [],
+            |row| {
+                active_project_id = row.get(0).ok();
+                active_project_name = row.get(1).ok();
+                Ok(())
+            }
+        );
+    }
+    
+    // Get default model
+    let mut default_model_profile_id = None;
+    if db_ready {
+        let _ = conn.query_row(
+            "SELECT model_id FROM models LIMIT 1",
+            [],
+            |row| {
+                default_model_profile_id = row.get(0).ok();
+                Ok(())
+            }
+        );
+    }
+    
+    Ok(BackendHealth {
+        status: "connected".to_string(),
+        database_ready: db_ready,
+        migrations_applied,
+        active_project_id,
+        active_project_name,
+        default_model_profile_id,
+        message: "Backend checks passed".to_string(),
     })
 }

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { getAgents, createAgent, getAgentOrgTree } from '../api/agents';
 import { Agent, AgentOrgNode } from '../types';
-import { LoadingSpinner, ErrorBanner, EmptyState } from '../components/common/UIStates';
+import { LoadingState } from '../components/common/LoadingState';
+import { ErrorState } from '../components/common/ErrorState';
+import { EmptyState } from '../components/common/EmptyState';
+import { PageShell } from '../components/common/PageShell';
 
 export const AgentsPage: React.FC = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -65,19 +68,10 @@ export const AgentsPage: React.FC = () => {
     }
   };
 
-  if (loading && agents.length === 0) return <LoadingSpinner />;
+  if (loading) return <PageShell title="Agent Roster"><LoadingState /></PageShell>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Agent Directory</h3>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: '0.5rem 1rem', cursor: 'pointer', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>
-          {showForm ? 'Cancel' : 'Hire Agent'}
-        </button>
-      </div>
-
-      {error && <ErrorBanner message={error} />}
-
+    <PageShell title="Agent Roster">
       {showForm && (
         <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ccc' }}>
           <input type="text" placeholder="Agent Name (e.g. Alice)" value={name} onChange={e => setName(e.target.value)} style={{ padding: '0.5rem' }} autoFocus />
@@ -135,6 +129,6 @@ export const AgentsPage: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 };
