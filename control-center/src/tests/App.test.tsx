@@ -84,7 +84,7 @@ describe('App component', () => {
       await Promise.resolve();
     });
 
-    const composer = screen.getByPlaceholderText('Type your message...');
+    const composer = screen.getByPlaceholderText('Message #global');
     fireEvent.change(composer, { target: { value: 'do not lose this draft' } });
 
     await act(async () => {
@@ -98,5 +98,26 @@ describe('App component', () => {
 
     expect(invokeMock.mock.calls.filter(([command]) => command === 'get_backend_health').length).toBeGreaterThanOrEqual(2);
     expect(invokeMock.mock.calls.filter(([command]) => command === 'get_messages')).toHaveLength(1);
+  });
+
+  it('renders global and direct agent chat channels', async () => {
+    mockHealthyInvoke();
+
+    render(<App />);
+
+    expect(await screen.findByText('Global')).toBeDefined();
+    expect(screen.getByText('Talk to everyone')).toBeDefined();
+    expect(screen.getByText('Coder')).toBeDefined();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Coder/ }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(await screen.findByPlaceholderText('Message Coder')).toBeDefined();
+    expect(invokeMock.mock.calls.some(([command, args]) => (
+      command === 'get_messages' && args?.sessionId === 'agent-chat:agent-coder'
+    ))).toBe(true);
   });
 });
