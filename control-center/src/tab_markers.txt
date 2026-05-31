@@ -1,0 +1,42 @@
+1997:                {!isStartingOrLoading ? (
+2091:            {activeTab === "dashboard" ? (
+2096:            ) : activeTab === "global" ? (
+2101:            ) : activeTab === "dm" ? (
+2111:            ) : activeTab === "kanban" ? (
+2116:            ) : activeTab === "runs" ? (
+2121:            ) : activeTab === "skills" ? (
+2126:            ) : activeTab === "channels" ? (
+2131:            ) : activeTab === "files" ? (
+2136:            ) : activeTab === "agents" ? (
+2141:            ) : activeTab === "models" ? (
+2146:            ) : activeTab === "org_dashboard" && activeOrgNode ? (
+2162:        {activeTab === "dashboard" ? (
+2215:                  {suggestions.length === 0 ? (
+2351:                  {tasks.filter((t) => t.status === "waiting_for_approval").length === 0 ? (
+2382:        ) : activeTab === "global" || activeTab === "dm" || activeTab === "org_dashboard" ? (
+2414:        ) : activeTab === "kanban" ? (
+2438:              {kanbanView === "backlog" ? (
+2461:        ) : activeTab === "runs" ? (
+2463:        ) : activeTab === "skills" ? (
+2543:        ) : activeTab === "channels" ? (
+2626:        ) : activeTab === "files" ? (
+2632:                {artifacts.length === 0 ? (
+2684:        ) : activeTab === "missions" ? (
+2804:                    {missionAuditEvents.length === 0 ? (
+2826:                    {activeMissions.length === 0 ? (
+2881:                {!missionPreview ? (
+3130:        ) : activeTab === "agents" ? (
+3191:              {!editAgentId ? (
+3454:        ) : activeTab === "models" ? (
+3586:                            {isInstalled ? (
+3630:                    {modelsCatalog.filter((m) => m.install_status === "installed").length === 0 ? (
+3806:                    {remoteModels.length === 0 ? (
+3832:                              {isInstalled ? (
+3836:                              ) : isDownloading ? (
+3861:                  {downloadState.downloading ? (
+4151:                              {modelDetails?.inspection?.gguf_version ? (
+4202:                              {modelDetails?.tensors && modelDetails.tensors.length > 0 ? (
+4837:        {inspectorTab === "profile" ? (
+4841:            {agents.find((a) => a.id === selectedAgentId) ? (
+4942:                {coordinationDetails.handoffs.length === 0 ? (
+5095:                {coordinationDetails.decisions.length === 0 ? (
