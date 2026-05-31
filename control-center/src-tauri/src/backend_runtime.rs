@@ -180,6 +180,9 @@ fn resolve_binary_path(config: &BackendRuntimeConfig) -> Result<PathBuf, String>
         .parent()
         .ok_or_else(|| "Cannot resolve executable directory".to_string())?
         .to_path_buf();
+    let resource_binary = exec_dir
+        .parent()
+        .map(|contents_dir| contents_dir.join("Resources").join("camelid"));
 
     let mut paths = vec![
         exec_dir.join("camelid"), // App bundle MacOS directory
@@ -188,6 +191,9 @@ fn resolve_binary_path(config: &BackendRuntimeConfig) -> Result<PathBuf, String>
         PathBuf::from("../target/release/camelid"),
         PathBuf::from("../camelid/target/release/camelid"),
     ];
+    if let Some(path) = resource_binary {
+        paths.insert(1, path);
+    }
 
     for p in paths.drain(..) {
         searched_paths.push(p.to_string_lossy().to_string());
@@ -1014,6 +1020,12 @@ pub async fn verify_packaged_runtime(app_handle: AppHandle) -> Result<RuntimeVer
         PathBuf::from("../target/release/camelid"),
         PathBuf::from("../camelid/target/release/camelid"),
     ]);
+    if let Some(resource_binary) = exec_dir
+        .parent()
+        .map(|contents_dir| contents_dir.join("Resources").join("camelid"))
+    {
+        paths_to_search.insert(1, resource_binary);
+    }
 
     for p in paths_to_search {
         result.searched_paths.push(p.to_string_lossy().to_string());
