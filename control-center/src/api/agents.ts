@@ -5,40 +5,18 @@ export async function getAgents(): Promise<Agent[]> {
   return apiCall<Agent[]>("get_agents");
 }
 
-export async function createAgent(
-  name: string,
-  role: string,
-  persona: string,
-  provider: string,
-  modelName: string,
-  temperature: number,
-  maxTokens: number,
-  spawnSubtasks: boolean,
-  talkGlobally: boolean,
-  isContinuous: boolean,
-  parentAgentId?: string,
-  allowedTools?: string
-): Promise<string> {
-  return apiCall<string>("create_agent", {
-    name,
-    role,
-    persona,
-    provider,
-    modelName,
-    temperature,
-    maxTokens,
-    spawnSubtasks,
-    talkGlobally,
-    isContinuous,
-    parentAgentId,
-    allowedTools
-  });
+export async function createAgent(agent: Agent): Promise<void> {
+  return apiCall<void>("create_agent", { agent });
 }
 
-export async function getAgentOrgTree(workspaceId: string): Promise<AgentOrgNode[]> {
-  return apiCall<AgentOrgNode[]>("get_agent_org_tree", { workspaceId });
+export async function updateAgent(agent: Agent): Promise<void> {
+  return apiCall<void>("update_agent", { agent });
 }
 
 export async function deleteAgent(id: string): Promise<void> {
   return apiCall<void>("delete_agent", { id });
+}
+
+export async function getAgentOrgTree(workspaceId: string, projectId?: string, teamId?: string): Promise<AgentOrgNode[]> {
+  return apiCall<AgentOrgNode[]>("get_agent_org_tree", { workspaceId, projectId, teamId });
 }
