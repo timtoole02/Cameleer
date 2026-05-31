@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 export COPYFILE_DISABLE=1
+export CARGO_TARGET_DIR="/tmp/cameleer-target"
 
 echo "📦 Starting Cameleer Production Build..."
 
@@ -19,4 +20,4 @@ echo "🖥️ Packaging Mac App Bundle..."
 cd control-center
 npm run tauri build
 
-echo "✅ Build Complete! App bundle is located in control-center/src-tauri/target/release/bundle/mac/"
+echo "✅ Build Complete! App bundle is located in /tmp/cameleer-target/release/bundle/mac/"
