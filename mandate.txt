@@ -1,0 +1,117 @@
+<USER_REQUEST>
+# Cameleer Production App Rebuild Mandate
+
+You are no longer allowed to make random UI patches, cosmetic changes, one-off scripts, fake demos, or placeholder workflows.
+
+Cameleer currently presents itself as an enterprise agentic AI workspace, but it does not behave like one. Your job is to turn it into an actual production app with working architecture, durable state, predictable agent behavior, clean UI, test coverage, and a clear release gate.
+
+Do not optimize for screenshots. Do not optimize for looking impressive. Optimize for a working app that can be opened, used, closed, reopened, and trusted.
+
+## Core Product Definition
+
+Cameleer is a local-first enterprise agent workspace powered by Camelid and compatible model backends.
+
+The production app must support:
+
+1. A real agent registry
+2. A real nested agent org chart
+3. A real chat workspace
+4. A real task and Kanban system
+5. A real backlog
+6. Real shared memory
+7. Real project context
+8. Real model profiles
+9. Real runtime execution state
+10. Real tool execution records
+11. Real audit logs
+12. Real persistence across app restarts
+13. Real error handling
+14. Real settings
+15. A working macOS Tauri app build
+
+Nothing counts as done unless it is persisted, reloadable, visible in the UI, and covered by at least one test or reproducible manual verification step.
+
+## Hard Reset Rules
+
+Before adding features, clean up the repo.
+
+Remove or quarantine all one-off repair scripts from the production path. Files like `fix_app`, `replace_app`, `rewrite_app`, `update_task`, and similar scripts are not production architecture. If any are still useful, move them to `tools/legacy-repair/` with a README explaining they are not part of runtime or build.
+
+Remove template language from the app README and internal docs. The project must no longer look like a Tauri starter template.
+
+Do not keep giant monolithic frontend files. Split the app by domain.
+
+Do not fake agent status. If an agent is idle, running, blocked, failed, waiting for approval, or complete, that
+<truncated 15206 bytes>
+ships
+* Implement agent status
+* Implement model assignment
+* Show hierarchy in sidebar and agents page
+
+Deliverable:
+
+* real nested agent system
+
+### Phase 6: Chat and memory
+
+* Implement persistent threads
+* Implement persistent messages
+* Implement scoped memory
+* Implement search
+* Attach memory to task/project/agent
+
+Deliverable:
+
+* real chat and memory system
+
+### Phase 7: Runtime MVP
+
+* Implement runtime_run lifecycle
+* Implement planning step
+* Implement tool invocation records
+* Implement approval-required flow
+* Implement task result receipt
+
+Deliverable:
+
+* one agent can take one task, generate a plan, write memory, create/update task records, and produce a receipt
+
+### Phase 8: Model router
+
+* Implement model profile connection test
+* Implement Camelid/OpenAI-compatible call path
+* Implement timeouts and structured errors
+* Remove hardcoded model assumptions
+
+Deliverable:
+
+* user can configure model endpoint and assign it to agents
+
+### Phase 9: Production polish
+
+* Add tests
+* Add docs
+* Add smoke test
+* Fix packaging
+* Make README honest
+* Prepare v0.1 release candidate
+
+Deliverable:
+
+* v0.1 production candidate branch
+
+## Definition of Done
+
+You are done only when this is true:
+
+A user can open Cameleer, create a project, create nested agents, configure a model, create backlog tasks, move tasks through Kanban, assign work to an agent, see runtime status, store memory, inspect audit logs, close the app, reopen it, and see the same state still there.
+
+Anything less is not production. Anything fake must be labeled fake. Anything broken must be documented. Anything untested is not done.
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-31T10:16:36-07:00.
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.5 Flash (High) to Gemini 3.1 Pro (High). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>
