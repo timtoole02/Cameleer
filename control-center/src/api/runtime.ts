@@ -1,14 +1,18 @@
 import { apiCall } from "./client";
-import { BackendStatus } from "../types";
+import { AgentRun, AgentRunStep, CommandApproval } from "../types";
 
-export async function getBackendStatus(): Promise<BackendStatus> {
-  return apiCall<BackendStatus>("get_backend_status");
+export async function getAgentRuns(agentId?: string, taskId?: string): Promise<AgentRun[]> {
+  return apiCall<AgentRun[]>("get_agent_runs", { agentId, taskId });
 }
 
-export async function ensureBackendRunning(): Promise<void> {
-  return apiCall<void>("ensure_backend_running");
+export async function getRunSteps(runId: string): Promise<AgentRunStep[]> {
+  return apiCall<AgentRunStep[]>("get_run_steps", { runId });
 }
-// Note: Agent runs/steps are fetched via task_manager in the backend
-export async function getAgentRuns(agentId: string): Promise<any[]> {
-  return apiCall<any[]>("get_agent_runs", { agentId });
+
+export async function getPendingCommandApproval(workspaceId: string): Promise<CommandApproval[]> {
+  return apiCall<CommandApproval[]>("get_pending_command_approval", { workspaceId });
+}
+
+export async function resolveCommandApproval(invocationId: string, approved: boolean, feedback?: string): Promise<void> {
+  return apiCall<void>("resolve_command_approval", { invocationId, approved, feedback });
 }
