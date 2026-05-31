@@ -1,0 +1,108 @@
+/* App Shell */
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr 300px;
+  grid-template-rows: 100vh;
+  background-color: var(--bg-main);
+  overflow: hidden;
+}
+
+/* Base Components */
+.card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.button {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-system);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+.button:hover {
+  background-color: var(--bg-surface-hover);
+}
+.button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+.button.primary {
+  background-color: var(--accent-blue);
+  color: white;
+  border-color: transparent;
+}
+.button.primary:hover {
+  background-color: var(--accent-blue-hover);
+}
+.button.danger {
+  color: var(--danger-red);
+  border-color: var(--border-default);
+}
+.button.danger:hover {
+  background-color: rgba(255, 69, 58, 0.1);
+  border-color: var(--danger-red);
+}
+
+.input {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  font-family: var(--font-system);
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: var(--bg-surface-hover);
+  color: var(--text-secondary);
+}
+.badge.success {
+  background-color: rgba(48, 209, 88, 0.1);
+  color: var(--success-green);
+}
+.badge.warning {
+  background-color: rgba(255, 214, 10, 0.1);
+  color: var(--warning-yellow);
+}
+.badge.danger {
+  background-color: rgba(255, 69, 58, 0.1);
+  color: var(--danger-red);
+}
+.badge.accent {
+  background-color: rgba(10, 132, 255, 0.1);
+  color: var(--accent-blue);
+}

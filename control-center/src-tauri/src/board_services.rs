@@ -224,20 +224,20 @@ pub fn update_backlog_item(
 pub fn convert_backlog_item_to_card(id: String, state: State<DbState>) -> Result<KanbanCard, String> {
     let conn = state.conn.lock().unwrap();
     
-    // Read the backlog item
-    let mut stmt = conn.prepare("SELECT workspace_id, title, description, type, priority, acceptance_criteria FROM backlog_items WHERE id = ?1").unwrap();
-    let row: (String, String, Option<String>, String, String, Option<String>) = stmt.query_row([&id], |row| {
-        Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?))
+    // Read the backlog item with all rich fields
+    let mut stmt = conn.prepare("SELECT workspace_id, title, description, type, priority, acceptance_criteria, dependencies, risk_level, labels FROM backlog_items WHERE id = ?1").unwrap();
+    let row: (String, String, Option<String>, String, String, Option<String>, Option<String>, String, Option<String>) = stmt.query_row([&id], |row| {
+        Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?, row.get(6)?, row.get(7)?, row.get(8)?))
     }).map_err(|e| e.to_string())?;
     
-    let (ws_id, title, desc, type_name, priority, acc) = row;
+    let (ws_id, title, desc, type_name, priority, acc, deps, risk, labels) = row;
     
     let card_id = Uuid::new_v4().to_string();
     
     conn.execute(
-        "INSERT INTO kanban_cards (id, workspace_id, backlog_id, title, description, type, priority, acceptance_criteria, status, created_by)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 'Ready', 'human')",
-        params![card_id, ws_id, id, title, desc, type_name, priority, acc],
+        "INSERT INTO kanban_cards (id, workspace_id, backlog_id, title, description, type, priority, acceptance_criteria, dependencies, risk_level, labels, status, created_by)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'Ready', 'human')",
+        params![card_id, ws_id, id, title, desc, type_name, priority, acc, deps, risk, labels],
     ).map_err(|e| e.to_string())?;
     
     // Mark backlog item as ready_for_board
@@ -246,8 +246,67 @@ pub fn convert_backlog_item_to_card(id: String, state: State<DbState>) -> Result
         params![id],
     ).map_err(|e| e.to_string())?;
     
-    // TODO: fetch back kanban card
-    Err("Converted successfully. Fetch the board snapshot to see it.".to_string())
+    // Return the created KanbanCard
+    let mut card_stmt = conn.prepare("SELECT 
+        id, workspace_id, NULL as project_id, NULL as team_id, board_id, backlog_id, parent_id,
+        title, description, type as type_name, status, priority, rank, severity, labels,
+        assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at,
+        due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria,
+        definition_of_done, required_files, related_files, related_artifacts, dependencies,
+        blocked_by, blocking, comments, activity_log, checklist, validation_status,
+        completion_evidence, work_receipt_id, risk_level, review_required, approval_required, reopen_reason
+        FROM kanban_cards WHERE id = ?1").unwrap();
+        
+    let card = card_stmt.query_row([&card_id], |row| {
+        Ok(KanbanCard {
+            id: row.get(0)?,
+            workspace_id: row.get(1)?,
+            project_id: row.get(2)?,
+            team_id: row.get(3)?,
+            board_id: row.get(4)?,
+            backlog_id: row.get(5)?,
+            parent_id: row.get(6)?,
+            title: row.get(7)?,
+            description: row.get(8)?,
+            type_name: row.get(9)?,
+            status: row.get(10)?,
+            priority: row.get(11)?,
+            rank: row.get(12)?,
+            severity: row.get(13)?,
+            labels: row.get(14)?,
+            assigned_agent_id: row.get(15)?,
+            assigned_human_id: row.get(16)?,
+            reporter: row.get(17)?,
+            created_by: row.get(18)?,
+            created_at: row.get(19)?,
+            updated_at: row.get(20)?,
+            due_date: row.get(21)?,
+            start_date: row.get(22)?,
+            completed_at: row.get(23)?,
+            estimate: row.get(24)?,
+            actual_time: row.get(25)?,
+            acceptance_criteria: row.get(26)?,
+            definition_of_done: row.get(27)?,
+            required_files: row.get(28)?,
+            related_files: row.get(29)?,
+            related_artifacts: row.get(30)?,
+            dependencies: row.get(31)?,
+            blocked_by: row.get(32)?,
+            blocking: row.get(33)?,
+            comments: row.get(34)?,
+            activity_log: row.get(35)?,
+            checklist: row.get(36)?,
+            validation_status: row.get(37)?,
+            completion_evidence: row.get(38)?,
+            work_receipt_id: row.get(39)?,
+            risk_level: row.get(40)?,
+            review_required: row.get(41)?,
+            approval_required: row.get(42)?,
+            reopen_reason: row.get(43)?,
+        })
+    }).map_err(|e| e.to_string())?;
+
+    Ok(card)
 }
 
 #[tauri::command]
@@ -406,20 +465,8 @@ pub fn move_card(card_id: String, new_status: String, reason: Option<String>, st
         }).map_err(|e| e.to_string())?;
         
         let has_evidence = row.1.is_some() && !row.1.as_ref().unwrap().is_empty();
-        
         if !has_evidence {
-            if reason.as_deref() == Some("Manual Drag and Drop") {
-                // Create a manual override receipt
-                let receipt_id = format!("receipt_manual_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros());
-                conn.execute(
-                    "INSERT INTO mission_work_receipts (card_id, agent_id, summary, validation_result) VALUES (?1, 'human_override', 'Card moved to Done manually by human without evidence.', 'manual_override')",
-                    params![card_id]
-                ).map_err(|e| e.to_string())?;
-                
-                conn.execute("UPDATE kanban_cards SET completion_evidence = 'Manual human override receipt', work_receipt_id = ?1 WHERE id = ?2", params![receipt_id, card_id]).map_err(|e| e.to_string())?;
-            } else {
-                return Err("Cannot mark Done. Completion evidence is missing and validation did not pass!".to_string());
-            }
+            return Err("Cannot mark Done. Completion evidence is missing and validation did not pass! An agent or human must upload a work receipt before moving this card to Done.".to_string());
         }
     }
 

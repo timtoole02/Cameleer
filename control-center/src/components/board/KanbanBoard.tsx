@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { KanbanCard } from "../../types";
+import { toastManager } from "../ui/Toast";
 
 interface Props {
   workspaceId: string;
@@ -19,8 +20,8 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
     try {
       const data = await invoke<KanbanCard[]>("get_board_snapshot", { workspaceId });
       setCards(data);
-    } catch (e) {
-      console.error("Failed to load board:", e);
+    } catch (e: any) {
+      toastManager.show(`Failed to load board: ${e}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -31,6 +32,7 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
   }, [workspaceId, refreshTrigger]);
 
   const columns = [
+    { id: "Backlog", label: "Backlog", colorClass: "backlog" },
     { id: "Ready", label: "Ready", colorClass: "ready" },
     { id: "Assigned", label: "Assigned", colorClass: "assigned" },
     { id: "In Progress", label: "In Progress", colorClass: "working" },
@@ -40,7 +42,7 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
   ];
 
   if (loading) {
-    return <div style={{ padding: "20px", color: "var(--text-muted)" }}>Loading board...</div>;
+    return <div style={{ padding: "var(--space-xl)", color: "var(--text-secondary)", textAlign: "center" }}>Loading workspace board...</div>;
   }
 
   const handleDrop = async (e: React.DragEvent, newStatus: string) => {
@@ -51,8 +53,9 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
     try {
       await invoke("move_card", { cardId, newStatus, reason: "Manual Drag and Drop" });
       loadBoard();
+      toastManager.show(`Card moved to ${newStatus}`, 'success');
     } catch (err: any) {
-      alert(`Failed to move card: ${err}`);
+      toastManager.show(`${err}`, 'error');
     }
   };
 
@@ -61,7 +64,14 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
   };
 
   return (
-    <div className="kanban-board">
+    <div style={{
+      display: "flex",
+      gap: "var(--space-md)",
+      padding: "var(--space-lg)",
+      overflowX: "auto",
+      height: "100%",
+      alignItems: "flex-start"
+    }}>
       {columns.map(col => {
         let displayCards = cards.filter(c => c.status === col.id);
         
@@ -74,21 +84,39 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
         return (
           <div 
             key={col.id} 
-            className="kanban-column"
+            style={{
+              minWidth: "280px",
+              maxWidth: "320px",
+              flex: "0 0 auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-sm)",
+              backgroundColor: "var(--bg-sidebar)",
+              padding: "var(--space-md)",
+              borderRadius: "var(--radius-lg)",
+              border: "1px solid var(--border-default)"
+            }}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleDrop(e, col.id)}
           >
-            <div className="kanban-column-header">
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span className={`status-badge ${col.colorClass}`} style={{ position: "static", display: "inline-block", width: "8px", height: "8px", margin: 0 }} />
-                <span>{col.label}</span>
-              </div>
-              <span className="kanban-column-count">{displayCards.length}</span>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "var(--space-sm)"
+            }}>
+              <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{col.label}</span>
+              <span className="badge" style={{ backgroundColor: "var(--bg-surface)" }}>{displayCards.length}</span>
             </div>
             
-            <div className="kanban-cards">
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-sm)",
+              minHeight: "100px"
+            }}>
               {displayCards.length === 0 ? (
-                <div className="kanban-empty">No cards</div>
+                <div style={{ padding: "var(--space-md)", textAlign: "center", color: "var(--text-tertiary)", fontSize: "13px" }}>No cards</div>
               ) : (
                 displayCards.map(card => {
                   let completedCriteria = 0;
@@ -106,31 +134,34 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
                   return (
                     <div 
                       key={card.id} 
-                      className="kanban-card"
+                      className="card"
                       draggable
                       onDragStart={(e) => handleDragStart(e, card.id)}
                       onClick={() => onCardClick(card)}
-                      style={{ cursor: "grab" }}
+                      style={{ cursor: "grab", position: "relative" }}
                     >
-                      <div className="kanban-card-top">
-                        <span className="kanban-card-id">{card.id.split('-')[0]}</span>
-                        <span className={`kanban-card-priority priority-${card.priority}`}>{card.priority}</span>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--space-xs)", fontSize: "12px", color: "var(--text-secondary)" }}>
+                        <span>{card.id.split('-')[0]}</span>
+                        <span style={{ 
+                          color: card.priority === 'high' ? "var(--danger-red)" : card.priority === 'low' ? "var(--success-green)" : "var(--text-secondary)"
+                        }}>{card.priority}</span>
                       </div>
-                      <div className="kanban-card-title">{card.title}</div>
+                      
+                      <div style={{ fontWeight: 500, fontSize: "14px", marginBottom: "var(--space-sm)", lineHeight: 1.4 }}>{card.title}</div>
                       
                       {totalCriteria > 0 && (
-                        <div className="kanban-card-progress">
-                          <div className="progress-bar-bg">
-                            <div className="progress-bar-fill" style={{ width: `${(completedCriteria / totalCriteria) * 100}%` }} />
+                        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "var(--space-sm)" }}>
+                          <div style={{ flex: 1, height: "4px", backgroundColor: "var(--bg-main)", borderRadius: "2px", overflow: "hidden" }}>
+                            <div style={{ height: "100%", backgroundColor: "var(--success-green)", width: `${(completedCriteria / totalCriteria) * 100}%` }} />
                           </div>
                           <span>{completedCriteria}/{totalCriteria}</span>
                         </div>
                       )}
                       
-                      <div className="kanban-card-meta">
-                        <span className="kanban-card-owner">{assigneeName}</span>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px" }}>
+                        <span className="badge">{assigneeName}</span>
                         {card.validation_status === 'passed' && (
-                          <span className="kanban-card-passed">✓ Passed</span>
+                          <span className="badge success">✓ Passed</span>
                         )}
                       </div>
                     </div>
