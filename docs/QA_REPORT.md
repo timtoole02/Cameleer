@@ -20,3 +20,19 @@ This document tracks the verified end-to-end execution flows for the Cameleer ar
 **Notes**:
 - Verified logic in `agent_validation_engine.rs` now properly cascades evidence strings down into the core `kanban_cards` table, ensuring the React UI immediately displays receipts on the history timeline.
 - Verified `command_guard.rs` successfully intercepts risky tasks and triggers the UI's safety review system.
+
+### Live Terminal and Error Recovery (Sprint 4)
+**Scenario**: Agent streams output to the UI and is safely blocked after repeated failure.
+**Steps**:
+1. Agent initiates a long running terminal command.
+2. `agent_tool_controller.rs` spawns stdout and stderr threads, emitting Tauri events.
+3. UI `TerminalDrawer` component listens to events and streams line-by-line output instantly.
+4. Agent attempts to submit a task without satisfying contract criteria.
+5. Validation Engine rejects the completion. 
+6. Process repeats 3 times.
+7. Validation Engine transitions Kanban Card to "Blocked", logs reason, and agent reverts to Idle safely.
+
+**Status**: 🟢 PASS
+**Notes**:
+- Verified `TerminalDrawer` isolates logs per task id preventing cross-contamination.
+- Verified `agent_runtime_kernel.rs` successfully handles the "Blocked" directive.

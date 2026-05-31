@@ -1,8 +1,8 @@
 # Known Broken Flows
 
 Currently, there are no known completely broken flows in the core lifecycle. 
-Sprint 3 successfully bridged the gap between backend validation and frontend receipt rendering. 
+Sprint 4 successfully eliminated the infinite recovery loop risk by introducing hard limits on validation failures (max 3), which gracefully transition tasks to a `Blocked` status requiring human/supervisor intervention.
 
 ## Areas for Further Hardening
 - **Agent Sandbox Edge Cases**: "Moderate" and "Loose" safety profiles might still block valid chained bash scripts if not parsed correctly.
-- **Recovery Loops**: If an agent continually fails validation, we need a better frontend UI notification indicating a "Stuck Task" or "Agent Assistance Required" flag.
+- **Concurrent Task Editing**: If two agents attempt to work on the exact same file simultaneously, there are no file-level locks.

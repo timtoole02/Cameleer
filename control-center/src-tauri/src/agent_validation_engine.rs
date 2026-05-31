@@ -78,16 +78,37 @@ pub fn validate_task_completion(
         errors.push("Agent contract requires explicit validation pass before marking Done".to_string());
     }
 
-    // 5. Determine next state
+    // 5. Determine next state and track failures
     if !errors.is_empty() {
+        let fail_key = format!("validation_fails:{}", card_id);
+        let current_fails: i32 = conn.query_row(
+            "SELECT value FROM shared_state WHERE key = ?1",
+            [&fail_key],
+            |row| row.get::<_, String>(0)
+        ).unwrap_or_else(|_| "0".to_string()).parse().unwrap_or(0);
+
+        let new_fails = current_fails + 1;
+        let _ = conn.execute(
+            "INSERT OR REPLACE INTO shared_state (key, value) VALUES (?1, ?2)",
+            params![fail_key, new_fails.to_string()]
+        );
+
+        let required_state = if new_fails >= 3 {
+            errors.push("Maximum validation failures (3) exceeded. Task is now blocked.".to_string());
+            "Blocked".to_string()
+        } else {
+            "In Progress".to_string()
+        };
+
         return Ok(ValidationResult {
             is_valid: false,
             errors,
-            required_state: "In Progress".to_string(), // Send back to work
+            required_state, // Send back to work or Block
         });
     }
 
-    // Passed basic checks, generate receipt
+    // Passed basic checks, generate receipt and clear failure count
+    let _ = conn.execute("DELETE FROM shared_state WHERE key = ?1", [format!("validation_fails:{}", card_id)]);
     let ev_str = evidence.as_deref().unwrap_or("No evidence provided");
     
     // Create work receipt

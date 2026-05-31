@@ -196,9 +196,16 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
                         let err_msg = format!("Validation failed. You must provide evidence or satisfy criteria:\n- {}", res.errors.join("\n- "));
                         save_and_emit_message(&app_handle, &session_id, "system", err_msg);
                         
-                        // If validation fails, agent must remain in Working state to fix it
-                        target_state = AgentState::Working;
-                        transition_reason = "Validation failed, returning to work".to_string();
+                        if res.required_state == "Blocked" {
+                            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+                            let _ = conn.execute("UPDATE kanban_cards SET status = 'Blocked', blocked_by = 'Validation failure limit exceeded' WHERE id = ?1", params![c_id]);
+                            target_state = AgentState::Idle;
+                            transition_reason = "Task Blocked due to repeated validation failures. Returning to Idle.".to_string();
+                        } else {
+                            // If validation fails, agent must remain in Working state to fix it
+                            target_state = AgentState::Working;
+                            transition_reason = "Validation failed, returning to work".to_string();
+                        }
                     }
                 }
             }

@@ -54,36 +54,97 @@ pub fn execute_tool(
                     .spawn()
                     .map_err(|e| format!("Failed to spawn {}: {}", binary, e))?;
 
-                // 3. Timeout and Output Capping
-                // (Using a simple wait for now, but capping output reads)
-                let mut stdout_str = String::new();
-                let mut stderr_str = String::new();
+                // 3. Live Streaming and Output Capture
+                use std::sync::{Arc, Mutex};
+                use std::io::{BufReader, BufRead};
                 
-                if let Some(mut stdout) = child.stdout.take() {
-                    stdout.read_to_string(&mut stdout_str).unwrap_or_default();
-                }
-                if let Some(mut stderr) = child.stderr.take() {
-                    stderr.read_to_string(&mut stderr_str).unwrap_or_default();
-                }
+                let stdout = child.stdout.take().unwrap();
+                let stderr = child.stderr.take().unwrap();
                 
-                let _ = child.wait(); // Wait to finish
+                let out_str = Arc::new(Mutex::new(String::new()));
+                let err_str = Arc::new(Mutex::new(String::new()));
+                
+                let out_clone = Arc::clone(&out_str);
+                let app_handle_out = app_handle.clone();
+                let task_id_out = task_id.clone();
+                let agent_id_out = agent_id.to_string();
+                
+                let out_thread = std::thread::spawn(move || {
+                    let reader = BufReader::new(stdout);
+                    for line in reader.lines() {
+                        if let Ok(l) = line {
+                            // Capping check inside lock
+                            let mut locked_out = out_clone.lock().unwrap();
+                            if locked_out.len() < 50000 {
+                                locked_out.push_str(&l);
+                                locked_out.push('\n');
+                            }
+                            
+                            // Emit live terminal event
+                            crate::event_bus::emit_event(
+                                &app_handle_out,
+                                AppEvent {
+                                    event_type: "terminal_output".to_string(),
+                                    agent_id: Some(agent_id_out.clone()),
+                                    task_id: Some(task_id_out.clone()),
+                                    payload: serde_json::json!({ "stream": "stdout", "line": l }),
+                                },
+                            );
+                        }
+                    }
+                });
 
-                // Cap output to 50KB to prevent payload overflow
-                if stdout_str.len() > 50000 {
-                    stdout_str.truncate(50000);
-                    stdout_str.push_str("\n...[STDOUT TRUNCATED DUE TO SIZE LIMIT]...");
-                }
-                if stderr_str.len() > 50000 {
-                    stderr_str.truncate(50000);
-                    stderr_str.push_str("\n...[STDERR TRUNCATED DUE TO SIZE LIMIT]...");
-                }
+                let err_clone = Arc::clone(&err_str);
+                let app_handle_err = app_handle.clone();
+                let task_id_err = task_id.clone();
+                let agent_id_err = agent_id.to_string();
+
+                let err_thread = std::thread::spawn(move || {
+                    let reader = BufReader::new(stderr);
+                    for line in reader.lines() {
+                        if let Ok(l) = line {
+                            // Capping check inside lock
+                            let mut locked_err = err_clone.lock().unwrap();
+                            if locked_err.len() < 50000 {
+                                locked_err.push_str(&l);
+                                locked_err.push('\n');
+                            }
+                            
+                            // Emit live terminal event
+                            crate::event_bus::emit_event(
+                                &app_handle_err,
+                                AppEvent {
+                                    event_type: "terminal_output".to_string(),
+                                    agent_id: Some(agent_id_err.clone()),
+                                    task_id: Some(task_id_err.clone()),
+                                    payload: serde_json::json!({ "stream": "stderr", "line": l }),
+                                },
+                            );
+                        }
+                    }
+                });
+
+                let _ = child.wait(); // Wait to finish
+                let _ = out_thread.join();
+                let _ = err_thread.join();
+
+                let stdout_final = out_str.lock().unwrap().clone();
+                let stderr_final = err_str.lock().unwrap().clone();
 
                 let mut result_text = String::new();
-                if !stdout_str.is_empty() {
-                    result_text.push_str(&format!("STDOUT:\n{}\n", stdout_str));
+                if !stdout_final.is_empty() {
+                    result_text.push_str(&format!("STDOUT:\n{}\n", stdout_final));
                 }
-                if !stderr_str.is_empty() {
-                    result_text.push_str(&format!("STDERR:\n{}\n", stderr_str));
+                if !stderr_final.is_empty() {
+                    result_text.push_str(&format!("STDERR:\n{}\n", stderr_final));
+                }
+                
+                // Add truncation warnings if needed
+                if stdout_final.len() >= 50000 {
+                    result_text.push_str("\n...[STDOUT TRUNCATED DUE TO SIZE LIMIT]...\n");
+                }
+                if stderr_final.len() >= 50000 {
+                    result_text.push_str("\n...[STDERR TRUNCATED DUE TO SIZE LIMIT]...\n");
                 }
                 
                 let msg = format!("Execution result:\n{}", result_text);

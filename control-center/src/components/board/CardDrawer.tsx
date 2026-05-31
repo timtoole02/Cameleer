@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { KanbanCard } from "../../types";
+import TerminalDrawer from "../chat/TerminalDrawer";
 
 interface Props {
   card: KanbanCard | null;
@@ -10,7 +11,7 @@ interface Props {
 export default function CardDrawer({ card, onClose, agents }: Props) {
   if (!card) return null;
   
-  const [activeTab, setActiveTab] = useState<'details' | 'history' | 'validation'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'history' | 'validation' | 'terminal'>('details');
 
   const assigneeName = agents.find(a => a.id === card.assigned_agent_id || a.id === card.assigned_human_id)?.name || "unassigned";
 
@@ -19,7 +20,7 @@ export default function CardDrawer({ card, onClose, agents }: Props) {
       position: "fixed",
       top: 0,
       right: 0,
-      width: "400px",
+      width: "450px", // widened slightly to accommodate terminal output
       height: "100vh",
       backgroundColor: "var(--bg-sidebar)",
       borderLeft: "1px solid var(--border-default)",
@@ -50,7 +51,7 @@ export default function CardDrawer({ card, onClose, agents }: Props) {
         <button onClick={onClose} style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontSize: "16px" }}>✕</button>
       </div>
 
-      <div style={{ padding: "var(--space-lg)", flex: 1, overflowY: "auto" }}>
+      <div style={{ padding: "var(--space-lg)", flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
         <h2 style={{ margin: "0 0 var(--space-md) 0", fontSize: "20px", fontWeight: 600, lineHeight: 1.3 }}>
           {card.title}
         </h2>
@@ -67,7 +68,7 @@ export default function CardDrawer({ card, onClose, agents }: Props) {
         </div>
 
         <div style={{ display: "flex", gap: "var(--space-sm)", borderBottom: "1px solid var(--border-default)", marginBottom: "var(--space-md)" }}>
-          {['details', 'history', 'validation'].map(tab => (
+          {['details', 'history', 'validation', 'terminal'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -211,6 +212,15 @@ export default function CardDrawer({ card, onClose, agents }: Props) {
                   No evidence provided. Card cannot be moved to Done.
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'terminal' && (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: "300px" }}>
+            <div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "var(--space-sm)", fontWeight: 600 }}>LIVE TERMINAL OUTPUT</div>
+            <div style={{ flex: 1, borderRadius: "var(--radius-sm)", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <TerminalDrawer taskId={card.id} />
             </div>
           </div>
         )}

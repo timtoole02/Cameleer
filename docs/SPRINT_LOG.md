@@ -15,3 +15,8 @@
 - Updated `agent_validation_engine.rs` to persist `completion_evidence`, `work_receipt_id`, and `validation_status` to `kanban_cards`.
 - Updated `QA_REPORT.md` and verified end-to-end sandbox review queues.
 - Confirmed `task.complete` generates a valid receipt rendering in the UI.
+
+## Sprint 4: Live Terminal Output and Agent Recovery Refinement
+- Refactored `command.run` handler in `agent_tool_controller.rs` to stream `stdout` and `stderr` asynchronously via Tauri events.
+- Created `TerminalDrawer.tsx` frontend component to render a live, scrolling, colored terminal output log within the Kanban `CardDrawer`.
+- Updated `agent_validation_engine.rs` to track validation failures, capping them at 3 before automatically transitioning the card to `Blocked` to prevent infinite loops.
