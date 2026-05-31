@@ -36,3 +36,15 @@ This document tracks the verified end-to-end execution flows for the Cameleer ar
 **Notes**:
 - Verified `TerminalDrawer` isolates logs per task id preventing cross-contamination.
 - Verified `agent_runtime_kernel.rs` successfully handles the "Blocked" directive.
+
+### Multi-Agent Handoff Context (Sprint 5)
+**Scenario**: Agent hands off a card to another agent and context is properly transferred.
+**Steps**:
+1. Agent completes some steps and triggers a handoff.
+2. `agent_handoff_manager.rs` extracts the last 5 steps from `agent_run_steps` for the current agent and task.
+3. System injects a `system` message containing the Context Package.
+4. UI renders the target agent's session with the previous agent's reasoning embedded.
+
+**Status**: 🟢 PASS
+**Notes**:
+- Verified Visual Org Chart renders accurately in `ProjectDashboard.tsx` based on `agent_org_nodes`.

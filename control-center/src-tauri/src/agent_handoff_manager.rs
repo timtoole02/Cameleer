@@ -33,7 +33,35 @@ pub fn execute_handoff(
         return Err("You are not assigned to this card".to_string());
     }
 
-    // 3. Execute the handoff
+    // 3. Fetch Context Package (Last 5 steps of the current agent on this task)
+    let run_id_opt: Option<String> = conn.query_row(
+        "SELECT id FROM agent_runs WHERE agent_id = ?1 AND task_id = ?2 ORDER BY created_at DESC LIMIT 1",
+        [current_agent_id, card_id],
+        |row| row.get(0),
+    ).optional().unwrap_or(None);
+
+    let mut context_package = String::new();
+    if let Some(run_id) = run_id_opt {
+        let mut stmt = conn.prepare("SELECT step_type, content FROM agent_run_steps WHERE run_id = ?1 ORDER BY created_at DESC LIMIT 5").unwrap();
+        let step_iter = stmt.query_map([run_id], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        }).unwrap();
+        
+        let mut steps = Vec::new();
+        for step in step_iter {
+            if let Ok((stype, scontent)) = step {
+                steps.push(format!("[{}] {}", stype, scontent));
+            }
+        }
+        steps.reverse(); // Chronological order
+        
+        if !steps.is_empty() {
+            context_package.push_str("\n\n--- Previous Agent's Recent Context ---\n");
+            context_package.push_str(&steps.join("\n"));
+        }
+    }
+
+    // 4. Execute the handoff
     let handoff_note = format!("\n--- Handoff from {} to {} ---\nNotes: {}", current_agent_id, target_agent_id, notes);
     
     conn.execute(
@@ -43,9 +71,9 @@ pub fn execute_handoff(
         params![target_agent_id, handoff_note, card_id],
     ).map_err(|e| e.to_string())?;
 
-    // 4. Inject system message into target agent's session
+    // 5. Inject system message into target agent's session
     let target_session_id = format!("task_{}", card_id);
-    let sys_msg = format!("Task '{}' has been handed off to you by {}.\nNotes: {}", title, current_agent_id, notes);
+    let sys_msg = format!("Task '{}' has been handed off to you by {}.\nNotes: {}{}", title, current_agent_id, notes, context_package);
     
     let _ = conn.execute(
         "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, 'system', 'handoff_manager', ?2)",

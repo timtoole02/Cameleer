@@ -20,3 +20,8 @@
 - Refactored `command.run` handler in `agent_tool_controller.rs` to stream `stdout` and `stderr` asynchronously via Tauri events.
 - Created `TerminalDrawer.tsx` frontend component to render a live, scrolling, colored terminal output log within the Kanban `CardDrawer`.
 - Updated `agent_validation_engine.rs` to track validation failures, capping them at 3 before automatically transitioning the card to `Blocked` to prevent infinite loops.
+
+## Sprint 5: Multi-Agent Handoff Context & Visual Org Chart
+- Upgraded `agent_handoff_manager.rs` to extract recent `agent_run_steps` for seamless agent context transfers during handoffs.
+- Constructed `VisualOrgChart.tsx` to dynamically render a hierarchical map of workspaces, projects, teams, and agents with Apple-class node aesthetics.
+- Embedded the visual org chart directly inside `ProjectDashboard.tsx` replacing the text placeholder.

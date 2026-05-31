@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { AgentOrgNode } from '../../types';
 import KanbanBoard from '../board/KanbanBoard';
+import { VisualOrgChart } from './VisualOrgChart';
 
 interface ProjectDashboardProps {
   activeNode: AgentOrgNode;
@@ -18,6 +19,7 @@ interface OrgMetrics {
 
 export function ProjectDashboard({ activeNode, agents, onCardClick, refreshTrigger }: ProjectDashboardProps) {
   const [metrics, setMetrics] = useState<OrgMetrics>({ active_work: 0, blocked_cards: 0, active_agents: 0 });
+  const [orgNodes, setOrgNodes] = useState<AgentOrgNode[]>([]);
 
   useEffect(() => {
     let targetId = null;
@@ -28,6 +30,10 @@ export function ProjectDashboard({ activeNode, agents, onCardClick, refreshTrigg
       nodeType: activeNode.node_type, 
       targetId 
     }).then(setMetrics).catch(console.error);
+
+    invoke<AgentOrgNode[]>('get_agent_org_tree', { workspaceId: 'default' })
+      .then(setOrgNodes)
+      .catch(console.error);
   }, [activeNode]);
 
   return (
@@ -55,10 +61,12 @@ export function ProjectDashboard({ activeNode, agents, onCardClick, refreshTrigg
       </div>
 
       <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-        <h2 style={{ marginBottom: '16px' }}>Scoped Context Snippet</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          When an agent operates in this scope, they receive narrowed memory boundaries. They will only see Kanban Cards, File Artifacts, and Handoffs explicitly registered to this {activeNode.node_type}.
+        <h2 style={{ marginBottom: '16px' }}>Organization Structure</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
+          When an agent operates in a specific scope, their memory and file context is narrowed to that boundary. 
+          The visual map below shows the current active structure.
         </p>
+        <VisualOrgChart nodes={orgNodes} activeNodeId={activeNode.id} onNodeClick={() => {}} agents={agents} />
       </div>
 
       <div>
