@@ -96,10 +96,9 @@ pub fn select_next_work(agent_id: &str, work_queue: &[KanbanCard]) -> Option<Kan
     }
 
     // 1. Continue current In Progress card if unblocked
-    if let Some(card) = work_queue
-        .iter()
-        .find(|c| (c.status == "in_progress" || c.status == "In Progress") && c.blocked_by.is_none())
-    {
+    if let Some(card) = work_queue.iter().find(|c| {
+        (c.status == "in_progress" || c.status == "In Progress") && c.blocked_by.is_none()
+    }) {
         return Some(card.clone());
     }
 
@@ -123,10 +122,10 @@ pub fn select_next_work(agent_id: &str, work_queue: &[KanbanCard]) -> Option<Kan
     }
 
     // 4. Handle review requests (cards in Review where validation is passed but review is needed)
-    if let Some(card) = work_queue
-        .iter()
-        .find(|c| (c.status == "in_review" || c.status == "Review" || c.status == "In Review") && c.blocked_by.is_none())
-    {
+    if let Some(card) = work_queue.iter().find(|c| {
+        (c.status == "in_review" || c.status == "Review" || c.status == "In Review")
+            && c.blocked_by.is_none()
+    }) {
         return Some(card.clone());
     }
 

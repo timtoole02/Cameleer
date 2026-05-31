@@ -20,17 +20,72 @@ pub fn get_db_path() -> PathBuf {
 }
 
 pub fn init_db(conn: &Connection) -> Result<()> {
-    // Phase 2 Wipe: Drop all existing tables to guarantee a clean state.
-    let _ = conn.execute_batch(
-        "PRAGMA writable_schema = 1;
-         DELETE FROM sqlite_master WHERE type IN ('table', 'index', 'trigger');
-         PRAGMA writable_schema = 0;
-         VACUUM;
-         PRAGMA integrity_check;"
-    );
+    // Create schema_migrations table if not exists with name and applied_at
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS schema_migrations (
+            version INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );",
+        [],
+    )?;
 
-    let schema = include_str!("schema.sql");
-    conn.execute_batch(schema)?;
+    // Handle old schema_migrations from previous versions
+    let has_name_column: bool = {
+        let mut stmt = conn.prepare("PRAGMA table_info(schema_migrations)")?;
+        let mut rows = stmt.query([])?;
+        let mut found = false;
+        while let Some(row) = rows.next()? {
+            let col_name: String = row.get(1)?;
+            if col_name == "name" {
+                found = true;
+                break;
+            }
+        }
+        found
+    };
+    if !has_name_column {
+        conn.execute_batch(
+            "DROP TABLE schema_migrations;
+             CREATE TABLE schema_migrations (
+                 version INTEGER PRIMARY KEY,
+                 name TEXT NOT NULL,
+                 applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+             );",
+        )?;
+    }
+
+    // Read currently applied migrations
+    let mut stmt = conn.prepare("SELECT version FROM schema_migrations")?;
+    let applied_versions: std::collections::HashSet<i64> = stmt
+        .query_map([], |row| row.get(0))?
+        .filter_map(Result::ok)
+        .collect();
+
+    // Embedded migrations matching physical files under migrations/
+    let migrations: &[(&str, &str)] = &[
+        (
+            "0001_initial_schema",
+            include_str!("../migrations/0001_initial_schema.sql"),
+        ),
+        (
+            "0002_agent_contract_done_definition",
+            include_str!("../migrations/0002_agent_contract_done_definition.sql"),
+        ),
+    ];
+
+    for (i, (name, sql)) in migrations.iter().enumerate() {
+        let version = (i + 1) as i64;
+        if !applied_versions.contains(&version) {
+            println!("[MIGRATION] Applying migration {}: {}", version, name);
+            conn.execute_batch(sql)?;
+            conn.execute(
+                "INSERT INTO schema_migrations (version, name) VALUES (?1, ?2)",
+                params![version, name],
+            )?;
+        }
+    }
+
     Ok(())
 }
 pub fn seed_default_agents(conn: &Connection) -> Result<()> {

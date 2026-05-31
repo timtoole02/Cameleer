@@ -553,7 +553,8 @@ pub fn assign_card(card_id: String, agent_id: String, state: State<DbState>) -> 
     let payload = serde_json::json!({
         "assigned_agent_id": agent_id,
         "status": "assigned"
-    }).to_string();
+    })
+    .to_string();
     let _ = conn.execute("INSERT INTO events (event_type, task_id, agent_id, payload) VALUES ('card_assigned', ?1, ?2, ?3)", params![card_id, agent_id, payload]);
 
     Ok(())
@@ -657,7 +658,8 @@ pub fn move_card(
         "old_status": current_status,
         "new_status": new_status,
         "reason": reason.unwrap_or_default()
-    }).to_string();
+    })
+    .to_string();
     let _ = conn.execute(
         "INSERT INTO events (event_type, task_id, payload) VALUES ('card_status_changed', ?1, ?2)",
         params![card_id, payload],

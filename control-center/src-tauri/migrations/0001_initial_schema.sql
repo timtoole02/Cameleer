@@ -499,8 +499,7 @@ CREATE TABLE IF NOT EXISTS mission_agent_contracts (
     required_outputs TEXT,
     validation_rules TEXT,
     handoff_rules TEXT,
-    escalation_rules TEXT,
-    done_definition TEXT
+    escalation_rules TEXT
 );
 
 -- 20. Work Receipts

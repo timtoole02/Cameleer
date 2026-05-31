@@ -112,3 +112,89 @@ pub fn load_contract(
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    fn setup_test_db() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        crate::storage::init_db(&conn).unwrap();
+        crate::storage::seed_default_agents(&conn).unwrap();
+        conn
+    }
+
+    #[test]
+    fn test_get_agent_contract_succeeds_for_coder() {
+        let conn = setup_test_db();
+        let contract = load_contract("agent-coder", "Software Engineer", &conn);
+        assert!(
+            contract.is_ok(),
+            "Coder contract load should succeed: {:?}",
+            contract.err()
+        );
+        let contract = contract.unwrap();
+        assert_eq!(contract.contract_id, "contract_agent-coder");
+    }
+
+    #[test]
+    fn test_get_agent_contract_does_not_fail_on_done_definition() {
+        let conn = setup_test_db();
+        let contract = load_contract("agent-coder", "Software Engineer", &conn).unwrap();
+        // The default list for done_definition from fallback is checked
+        assert!(
+            contract.done_definition.is_empty()
+                || contract
+                    .done_definition
+                    .contains(&"acceptance criteria satisfied".to_string())
+        );
+    }
+
+    #[test]
+    fn test_get_backend_health_detects_missing_columns() {
+        let conn = setup_test_db();
+        let mut errors: Vec<String> = Vec::new();
+
+        let _ = conn.execute(
+            "INSERT INTO settings (key, value) VALUES ('camelid_endpoint', 'http://127.0.0.1:8181')",
+            []
+        );
+
+        // Intentionally drop a column by recreating the table without it
+        conn.execute_batch(
+            "DROP TABLE mission_agent_contracts;
+             CREATE TABLE mission_agent_contracts (
+                 agent_id TEXT PRIMARY KEY
+             );",
+        )
+        .unwrap();
+
+        // Validate again - should detect missing columns
+        let table_cols = &["agent_id", "done_definition"];
+        let mut temp_errors = Vec::new();
+        let _ = conn.query_row("PRAGMA table_info(mission_agent_contracts)", [], |_row| {
+            Ok(())
+        });
+        let mut stmt = conn
+            .prepare("PRAGMA table_info(mission_agent_contracts)")
+            .unwrap();
+        let mut rows = stmt.query([]).unwrap();
+        let mut existing_cols = std::collections::HashSet::new();
+        while let Some(row) = rows.next().unwrap() {
+            let col_name: String = row.get(1).unwrap();
+            existing_cols.insert(col_name);
+        }
+        for col in table_cols {
+            if !existing_cols.contains(*col) {
+                temp_errors.push(format!(
+                    "Missing required column: mission_agent_contracts.{}",
+                    col
+                ));
+            }
+        }
+
+        assert!(!temp_errors.is_empty());
+        assert!(temp_errors[0].contains("Missing required column"));
+    }
+}

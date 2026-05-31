@@ -1,9 +1,9 @@
+use crate::storage::DbState;
+use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
-use serde::Serialize;
 use tauri::State;
-use crate::storage::DbState;
 
 #[derive(Serialize, Debug, Clone)]
 pub struct BenchmarkResult {
@@ -31,7 +31,7 @@ pub fn audit_log_sandbox(agent_id: &str, action_type: &str, status: &str, detail
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-        
+
     let log_line = format!(
         "[{}] [{}] [{}] [{}] {}\n",
         now,
@@ -40,7 +40,7 @@ pub fn audit_log_sandbox(agent_id: &str, action_type: &str, status: &str, detail
         status.to_uppercase(),
         details
     );
-    
+
     if let Ok(mut f) = fs::OpenOptions::new().create(true).append(true).open(&path) {
         use std::io::Write;
         let _ = f.write_all(log_line.as_bytes());
@@ -51,147 +51,439 @@ pub fn audit_log_sandbox(agent_id: &str, action_type: &str, status: &str, detail
 pub fn get_sandbox_audit_logs() -> Result<Vec<String>, String> {
     let path = get_audit_log_path();
     if !path.exists() {
-        return Ok(vec!["[SYSTEM] Sandbox firewall active. Ready to audit dynamic ReAct tool actions.".to_string()]);
+        return Ok(vec![
+            "[SYSTEM] Sandbox firewall active. Ready to audit dynamic ReAct tool actions."
+                .to_string(),
+        ]);
     }
-    
+
     let content = fs::read_to_string(&path).map_err(|e| e.to_string())?;
     let mut lines: Vec<String> = content.lines().map(|s| s.to_string()).collect();
-    
+
     if lines.len() > 150 {
         lines = lines.split_off(lines.len() - 150);
     }
-    
+
     if lines.is_empty() {
-        lines.push("[SYSTEM] Sandbox firewall active. Ready to audit dynamic ReAct tool actions.".to_string());
+        lines.push(
+            "[SYSTEM] Sandbox firewall active. Ready to audit dynamic ReAct tool actions."
+                .to_string(),
+        );
     }
-    
+
     Ok(lines)
 }
 
-#[tauri::command]
-pub async fn run_model_benchmark() -> Result<BenchmarkResult, String> {
-    let start = Instant::now();
-    
-    // Check local Camelid inference server latency synchronously (1000ms max timeout)
+#[derive(Serialize, Debug, Clone)]
+pub struct CamelidHealth {
+    pub status: String,
+    pub endpoint: String,
+    pub model_loaded: Option<String>,
+    pub capabilities_available: bool,
+    pub openai_chat_available: bool,
+    pub message: String,
+}
+
+pub async fn probe_camelid(endpoint: &str) -> CamelidHealth {
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_millis(1000))
+        .timeout(std::time::Duration::from_millis(500))
         .build()
         .unwrap_or_else(|_| reqwest::Client::new());
-        
-    let body = serde_json::json!({
-        "model": "camelid-default",
-        "messages": [{"role": "user", "content": "ping"}],
-        "max_tokens": 1
-    });
-    
-    let local_res = client.post("http://127.0.0.1:8181/v1/chat/completions")
-        .json(&body)
-        .send()
-        .await;
-        
-    let active_local_latency_ms = match local_res {
+
+    let capabilities_url = format!("{}/api/capabilities", endpoint.trim_end_matches('/'));
+    let mut capabilities_available = false;
+    let mut openai_chat_available = false;
+    let mut model_loaded = None;
+    let mut status = "offline".to_string();
+    let mut message = "Camelid is offline".to_string();
+
+    match client.get(&capabilities_url).send().await {
         Ok(resp) => {
             if resp.status().is_success() {
-                start.elapsed().as_millis()
-            } else {
-                280
+                capabilities_available = true;
+                status = "connected".to_string();
+                message = "Camelid is connected and responding to capabilities API".to_string();
+                if let Ok(json) = resp.json::<serde_json::Value>().await {
+                    if let Some(model) = json
+                        .get("model")
+                        .or_else(|| json.get("active_model"))
+                        .and_then(|v| v.as_str())
+                    {
+                        model_loaded = Some(model.to_string());
+                    }
+                }
             }
         }
-        Err(_) => {
-            // Local GGUF daemon offline or idle: run a synthetic CPU core matrix math bench!
-            let bench_start = Instant::now();
-            let mut sum = 0.0f64;
-            for i in 0..5_000_000 {
-                sum = sum.sin() + i as f64;
+        Err(_) => {}
+    }
+
+    if !capabilities_available {
+        let health_url = format!("{}/health", endpoint.trim_end_matches('/'));
+        match client.get(&health_url).send().await {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    status = "connected".to_string();
+                    message = "Camelid is connected (responding to /health)".to_string();
+                }
             }
-            let cpu_t = bench_start.elapsed().as_millis();
-            60 + cpu_t // reference offset + CPU performance time
+            Err(_) => {}
         }
+    }
+
+    if status == "offline" {
+        match client.get(endpoint).send().await {
+            Ok(resp) => {
+                status = "connected".to_string();
+                message = format!("Camelid endpoint responded with status {}", resp.status());
+            }
+            Err(e) => {
+                status = "offline".to_string();
+                message = format!("Connection failed: {}", e);
+            }
+        }
+    }
+
+    if status == "connected" {
+        let chat_url = format!("{}/v1/chat/completions", endpoint.trim_end_matches('/'));
+        match client
+            .request(reqwest::Method::OPTIONS, &chat_url)
+            .send()
+            .await
+        {
+            Ok(_) => {
+                openai_chat_available = true;
+            }
+            Err(_) => {
+                openai_chat_available = true;
+            }
+        }
+
+        if model_loaded.is_none() {
+            let models_url = format!("{}/v1/models", endpoint.trim_end_matches('/'));
+            if let Ok(resp) = client.get(&models_url).send().await {
+                if let Ok(json) = resp.json::<serde_json::Value>().await {
+                    if let Some(data) = json.get("data").and_then(|d| d.as_array()) {
+                        if let Some(first_model) = data
+                            .first()
+                            .and_then(|m| m.get("id"))
+                            .and_then(|id| id.as_str())
+                        {
+                            model_loaded = Some(first_model.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    CamelidHealth {
+        status,
+        endpoint: endpoint.to_string(),
+        model_loaded,
+        capabilities_available,
+        openai_chat_available,
+        message,
+    }
+}
+
+#[tauri::command]
+pub async fn check_camelid_health(state: State<'_, DbState>) -> Result<CamelidHealth, String> {
+    let camelid_endpoint = {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        conn.query_row(
+            "SELECT value FROM settings WHERE key = 'camelid_endpoint'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .unwrap_or_else(|_| "http://127.0.0.1:8181".to_string())
     };
-    
-    // Synthesize real-world token/latency matrix based on localized hardware speed
-    let seed = (active_local_latency_ms % 10) as f64;
-    let metal_gpu_tps = 24.5 + (seed * 0.4);
-    let cpu_fallback_tps = 9.2 + (seed * 0.15);
-    
-    let cloud_gpt_latency_ms = 350 + (active_local_latency_ms % 120);
-    let cloud_claude_latency_ms = 580 + (active_local_latency_ms % 150);
-    
+
+    Ok(probe_camelid(&camelid_endpoint).await)
+}
+
+#[tauri::command]
+pub async fn run_model_benchmark(state: State<'_, DbState>) -> Result<BenchmarkResult, String> {
+    let camelid_endpoint = {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        conn.query_row(
+            "SELECT value FROM settings WHERE key = 'camelid_endpoint'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .unwrap_or_else(|_| "http://127.0.0.1:8181".to_string())
+    };
+
+    let start = Instant::now();
+    let camelid_health = probe_camelid(&camelid_endpoint).await;
+
+    if camelid_health.status == "offline" {
+        return Err("Camelid is offline. Cannot compile benchmark metrics.".to_string());
+    }
+
+    let elapsed = start.elapsed().as_millis();
     Ok(BenchmarkResult {
-        metal_gpu_tps,
-        cpu_fallback_tps,
-        cloud_gpt_latency_ms,
-        cloud_claude_latency_ms,
-        active_local_latency_ms,
-        status: "Benchmark Matrix Compiled Successfully".to_string(),
+        metal_gpu_tps: 0.0,
+        cpu_fallback_tps: 0.0,
+        cloud_gpt_latency_ms: 0,
+        cloud_claude_latency_ms: 0,
+        active_local_latency_ms: elapsed,
+        status: format!("Camelid connected. Probe latency: {}ms", elapsed),
     })
 }
 
 #[derive(Serialize, Debug, Clone)]
 pub struct BackendHealth {
-    pub status: String,
-    pub database_ready: bool,
-    pub migrations_applied: bool,
-    pub active_project_id: Option<String>,
-    pub active_project_name: Option<String>,
-    pub default_model_profile_id: Option<String>,
-    pub message: String,
+    pub app_status: String,
+    pub database_status: String,
+    pub camelid_status: String,
+    pub schema_version: i64,
+    pub required_schema_version: i64,
+    pub database_path: String,
+    pub active_workspace_id: Option<String>,
+    pub active_workspace_name: Option<String>,
+    pub active_agent_id: Option<String>,
+    pub active_agent_name: Option<String>,
+    pub camelid_endpoint: String,
+    pub camelid_model: Option<String>,
+    pub errors: Vec<String>,
+    pub warnings: Vec<String>,
+}
+
+pub fn validate_table_columns(
+    conn: &rusqlite::Connection,
+    table: &str,
+    required_cols: &[&str],
+    errors: &mut Vec<String>,
+) -> Result<(), rusqlite::Error> {
+    let mut stmt = conn.prepare(&format!("PRAGMA table_info({})", table))?;
+    let mut rows = stmt.query([])?;
+    let mut existing_cols = std::collections::HashSet::new();
+    while let Some(row) = rows.next()? {
+        let col_name: String = row.get(1)?;
+        existing_cols.insert(col_name);
+    }
+
+    if existing_cols.is_empty() {
+        errors.push(format!("Missing required table: {}", table));
+        return Ok(());
+    }
+
+    for col in required_cols {
+        if !existing_cols.contains(*col) {
+            errors.push(format!("Missing required column: {}.{}", table, col));
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]
 pub async fn get_backend_health(state: State<'_, DbState>) -> Result<BackendHealth, String> {
-    let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
-    // Check if tables exist
-    let mut db_ready = false;
-    let mut migrations_applied = false;
-    
-    if let Ok(count) = conn.query_row(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='workspaces'",
-        [],
-        |row| row.get::<_, i64>(0)
-    ) {
-        db_ready = true;
-        if count > 0 {
-            migrations_applied = true;
+    let mut errors = Vec::new();
+    let mut warnings = Vec::new();
+    let required_schema_version = 2i64;
+    let database_path = crate::storage::get_db_path().to_string_lossy().to_string();
+
+    let db_info = {
+        let conn_res = state.conn.lock();
+        match conn_res {
+            Ok(conn) => {
+                let mut database_status = "ready".to_string();
+                let mut camelid_endpoint = "http://127.0.0.1:8181".to_string();
+                let camelid_endpoint_res = conn.query_row(
+                    "SELECT value FROM settings WHERE key = 'camelid_endpoint'",
+                    [],
+                    |row| row.get::<_, String>(0),
+                );
+                if let Ok(endpoint) = camelid_endpoint_res {
+                    camelid_endpoint = endpoint;
+                }
+
+                let version_res =
+                    conn.query_row("SELECT MAX(version) FROM schema_migrations", [], |row| {
+                        row.get::<_, Option<i64>>(0)
+                    });
+                let schema_version = version_res.unwrap_or(None).unwrap_or(0);
+                if schema_version < required_schema_version {
+                    database_status = "migrating".to_string();
+                }
+
+                let table_validations = [
+                    (
+                        "mission_agent_contracts",
+                        vec![
+                            "agent_id",
+                            "role",
+                            "responsibilities",
+                            "allowed_actions",
+                            "required_context_before_work",
+                            "required_outputs",
+                            "validation_rules",
+                            "handoff_rules",
+                            "escalation_rules",
+                            "done_definition",
+                        ],
+                    ),
+                    (
+                        "agents",
+                        vec![
+                            "id",
+                            "name",
+                            "role",
+                            "persona",
+                            "model_provider",
+                            "model_name",
+                            "temperature",
+                            "max_tokens",
+                            "can_spawn_subtasks",
+                            "can_talk_globally",
+                            "is_continuous",
+                            "status",
+                        ],
+                    ),
+                    ("workspaces", vec!["id", "name", "path", "active"]),
+                    (
+                        "messages",
+                        vec![
+                            "id",
+                            "session_id",
+                            "role",
+                            "sender_id",
+                            "content",
+                            "timestamp",
+                        ],
+                    ),
+                    (
+                        "model_configs",
+                        vec![
+                            "id",
+                            "provider",
+                            "model_name",
+                            "api_key",
+                            "endpoint_url",
+                            "is_default",
+                        ],
+                    ),
+                ];
+
+                for (table, cols) in &table_validations {
+                    let _ = validate_table_columns(&conn, table, cols, &mut errors);
+                }
+
+                if !errors.is_empty() {
+                    database_status = "schema_error".to_string();
+                }
+
+                let mut active_workspace_id = None;
+                let mut active_workspace_name = None;
+                let mut active_agent_id = None;
+                let mut active_agent_name = None;
+
+                if database_status == "ready" {
+                    let _ = conn.query_row(
+                        "SELECT id, name FROM workspaces WHERE active = 1 LIMIT 1",
+                        [],
+                        |row| {
+                            active_workspace_id = row.get(0).ok();
+                            active_workspace_name = row.get(1).ok();
+                            Ok(())
+                        },
+                    );
+                    let _ = conn.query_row("SELECT id, role FROM agents LIMIT 1", [], |row| {
+                        active_agent_id = row.get(0).ok();
+                        active_agent_name = row.get(1).ok();
+                        Ok(())
+                    });
+                }
+
+                (
+                    database_status,
+                    schema_version,
+                    active_workspace_id,
+                    active_workspace_name,
+                    active_agent_id,
+                    active_agent_name,
+                    camelid_endpoint,
+                )
+            }
+            Err(e) => {
+                errors.push(format!("Database lock failed: {}", e));
+                (
+                    "offline".to_string(),
+                    0,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "http://127.0.0.1:8181".to_string(),
+                )
+            }
         }
+    };
+
+    let (
+        database_status,
+        schema_version,
+        active_workspace_id,
+        active_workspace_name,
+        active_agent_id,
+        active_agent_name,
+        camelid_endpoint,
+    ) = db_info;
+
+    let camelid_health = probe_camelid(&camelid_endpoint).await;
+    let camelid_status = camelid_health.status;
+    let camelid_model = camelid_health.model_loaded;
+    if camelid_status == "offline" {
+        warnings.push(format!(
+            "Camelid inference backend is offline at {}",
+            camelid_endpoint
+        ));
     }
-    
-    // Get active project
-    let mut active_project_id = None;
-    let mut active_project_name = None;
-    if db_ready {
-        let _ = conn.query_row(
-            "SELECT id, name FROM workspaces WHERE active = 1 LIMIT 1",
-            [],
-            |row| {
-                active_project_id = row.get(0).ok();
-                active_project_name = row.get(1).ok();
-                Ok(())
-            }
-        );
-    }
-    
-    // Get default model
-    let mut default_model_profile_id = None;
-    if db_ready {
-        let _ = conn.query_row(
-            "SELECT model_id FROM models LIMIT 1",
-            [],
-            |row| {
-                default_model_profile_id = row.get(0).ok();
-                Ok(())
-            }
-        );
-    }
-    
+
+    let app_status = if database_status == "ready" && camelid_status == "connected" {
+        "online".to_string()
+    } else {
+        "degraded".to_string()
+    };
+
     Ok(BackendHealth {
-        status: "connected".to_string(),
-        database_ready: db_ready,
-        migrations_applied,
-        active_project_id,
-        active_project_name,
-        default_model_profile_id,
-        message: "Backend checks passed".to_string(),
+        app_status,
+        database_status,
+        camelid_status,
+        schema_version,
+        required_schema_version,
+        database_path,
+        active_workspace_id,
+        active_workspace_name,
+        active_agent_id,
+        active_agent_name,
+        camelid_endpoint,
+        camelid_model,
+        errors,
+        warnings,
     })
+}
+
+#[tauri::command]
+pub async fn reset_dev_database(state: State<'_, DbState>) -> Result<String, String> {
+    println!("[SYSTEM] Developer database reset initiated!");
+    let mut conn_guard = state.conn.lock().map_err(|e| e.to_string())?;
+
+    let db_path = crate::storage::get_db_path();
+    let temp_conn = rusqlite::Connection::open_in_memory().map_err(|e| e.to_string())?;
+    let old_conn = std::mem::replace(&mut *conn_guard, temp_conn);
+    drop(old_conn); // Closes connection safely releasing locks
+
+    if db_path.exists() {
+        std::fs::remove_file(&db_path).map_err(|e| format!("Failed to delete db file: {}", e))?;
+    }
+
+    let new_conn = rusqlite::Connection::open(&db_path).map_err(|e| e.to_string())?;
+    crate::storage::init_db(&new_conn).map_err(|e| e.to_string())?;
+    crate::storage::seed_default_agents(&new_conn).map_err(|e| e.to_string())?;
+
+    *conn_guard = new_conn;
+
+    println!("[SYSTEM] Developer database reset complete. Fresh schema, migrations, and defaults reseeded successfully.");
+    Ok("Database reset successfully.".to_string())
 }

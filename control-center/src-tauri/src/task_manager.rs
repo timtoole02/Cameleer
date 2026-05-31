@@ -208,15 +208,16 @@ pub fn get_card_timeline(
     let mut timeline = Vec::new();
 
     // 1. Card status and assignment events
-    if let Ok(mut stmt) = conn.prepare(
-        "SELECT timestamp, event_type, agent_id, payload FROM events WHERE task_id = ?1"
-    ) {
+    if let Ok(mut stmt) = conn
+        .prepare("SELECT timestamp, event_type, agent_id, payload FROM events WHERE task_id = ?1")
+    {
         if let Ok(event_iter) = stmt.query_map([&task_id], |row| {
             let timestamp: String = row.get(0)?;
             let event_type: String = row.get(1)?;
             let agent_id: Option<String> = row.get(2)?;
             let payload_str: String = row.get(3)?;
-            let payload: serde_json::Value = serde_json::from_str(&payload_str).unwrap_or(serde_json::Value::Null);
+            let payload: serde_json::Value =
+                serde_json::from_str(&payload_str).unwrap_or(serde_json::Value::Null);
 
             Ok(CardTimelineEntry {
                 timestamp,
@@ -244,7 +245,7 @@ pub fn get_card_timeline(
         "SELECT s.created_at, r.agent_id, s.step_type, s.content 
          FROM agent_runs r
          JOIN agent_run_steps s ON r.id = s.run_id
-         WHERE r.task_id = ?1"
+         WHERE r.task_id = ?1",
     ) {
         if let Ok(step_iter) = stmt.query_map([&task_id], |row| {
             let timestamp: String = row.get(0)?;
@@ -344,9 +345,9 @@ pub fn get_card_timeline(
     }
 
     // 5. Artifacts
-    if let Ok(mut stmt) = conn.prepare(
-        "SELECT created_at, path, artifact_type FROM artifacts WHERE task_id = ?1"
-    ) {
+    if let Ok(mut stmt) =
+        conn.prepare("SELECT created_at, path, artifact_type FROM artifacts WHERE task_id = ?1")
+    {
         if let Ok(artifact_iter) = stmt.query_map([&task_id], |row| {
             let timestamp: String = row.get(0)?;
             let path: String = row.get(1)?;
@@ -404,7 +405,7 @@ pub fn get_card_timeline(
 
     // 7. Review Verdicts
     if let Ok(mut stmt) = conn.prepare(
-        "SELECT created_at, reviewer_id, verdict, comments FROM review_verdicts WHERE card_id = ?1"
+        "SELECT created_at, reviewer_id, verdict, comments FROM review_verdicts WHERE card_id = ?1",
     ) {
         if let Ok(verdict_iter) = stmt.query_map([&task_id], |row| {
             let timestamp: String = row.get(0)?;
@@ -456,7 +457,8 @@ pub fn submit_review_verdict(
         "reviewer_id": reviewer_id,
         "verdict": verdict,
         "comments": comments.clone().unwrap_or_default()
-    }).to_string();
+    })
+    .to_string();
     let _ = conn.execute(
         "INSERT INTO events (event_type, task_id, agent_id, payload) VALUES ('review_submitted', ?1, ?2, ?3)",
         params![card_id, reviewer_id, payload]
@@ -465,12 +467,12 @@ pub fn submit_review_verdict(
     if verdict.to_lowercase() == "passed" {
         let _ = conn.execute(
             "UPDATE kanban_cards SET validation_status = 'passed' WHERE id = ?1",
-            [&card_id]
+            [&card_id],
         );
     } else {
         let _ = conn.execute(
             "UPDATE kanban_cards SET validation_status = 'failed' WHERE id = ?1",
-            [&card_id]
+            [&card_id],
         );
     }
 
