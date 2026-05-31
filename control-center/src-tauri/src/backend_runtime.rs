@@ -164,9 +164,13 @@ fn save_config_file(config: &BackendRuntimeConfig) {
 }
 
 fn resolve_binary_path(config: &BackendRuntimeConfig) -> Result<PathBuf, String> {
+    let mut searched_paths = Vec::new();
+
     if let Some(ref path_override) = config.backend_binary_path {
         let p = PathBuf::from(path_override);
+        searched_paths.push(p.to_string_lossy().to_string());
         if p.exists() {
+            log_supervisor_event(&format!("Found backend binary at configured path: {:?}", p));
             return Ok(p);
         }
     }
@@ -178,7 +182,7 @@ fn resolve_binary_path(config: &BackendRuntimeConfig) -> Result<PathBuf, String>
         .to_path_buf();
 
     let mut paths = vec![
-        exec_dir.join("camelid"),
+        exec_dir.join("camelid"), // App bundle MacOS directory
         PathBuf::from("./target/release/camelid"),
         PathBuf::from("./camelid/target/release/camelid"),
         PathBuf::from("../target/release/camelid"),
@@ -186,13 +190,31 @@ fn resolve_binary_path(config: &BackendRuntimeConfig) -> Result<PathBuf, String>
     ];
 
     for p in paths.drain(..) {
+        searched_paths.push(p.to_string_lossy().to_string());
         if p.exists() {
+            log_supervisor_event(&format!("Found backend binary at: {:?}", p));
             return Ok(p);
         }
     }
 
-    // Default lookup in PATH
-    Ok(PathBuf::from("camelid"))
+    // Default lookup in PATH (can't easily verify absolute path without `which`, so we just log we tried it)
+    searched_paths.push("$PATH/camelid".to_string());
+
+    // Instead of silently falling back to 'camelid', verify it exists via `which` or return error
+    if let Ok(path_output) = std::process::Command::new("which").arg("camelid").output() {
+        if path_output.status.success() {
+            let path_str = String::from_utf8_lossy(&path_output.stdout).trim().to_string();
+            log_supervisor_event(&format!("Found backend binary in PATH at: {}", path_str));
+            return Ok(PathBuf::from(path_str));
+        }
+    }
+
+    let error_msg = format!(
+        "Inference engine binary missing.\nSearched paths:\n- {}",
+        searched_paths.join("\n- ")
+    );
+    log_supervisor_event(&error_msg);
+    Err(error_msg)
 }
 
 // --- CORE LIFE CYCLES ---
@@ -942,4 +964,91 @@ mod tests {
             Some("Infinite crash loop blocked.")
         );
     }
+}
+
+#[derive(Serialize)]
+pub struct RuntimeVerification {
+    pub found: bool,
+    pub resolved_path: Option<String>,
+    pub executable: bool,
+    pub version_output: Option<String>,
+    pub searched_paths: Vec<String>,
+    pub error_message: Option<String>,
+}
+
+#[tauri::command]
+pub async fn verify_packaged_runtime(app_handle: AppHandle) -> Result<RuntimeVerification, String> {
+    let manager = app_handle.state::<BackendRuntimeManager>();
+    let config = {
+        let guard = manager.config.lock().unwrap();
+        guard.clone()
+    };
+
+    let mut result = RuntimeVerification {
+        found: false,
+        resolved_path: None,
+        executable: false,
+        version_output: None,
+        searched_paths: Vec::new(),
+        error_message: None,
+    };
+
+    let exec_dir = std::env::current_exe()
+        .map_err(|e| e.to_string())?
+        .parent()
+        .map(|p| p.to_path_buf())
+        .unwrap_or_default();
+
+    let mut paths_to_search = vec![];
+    
+    if let Some(ref path_override) = config.backend_binary_path {
+        paths_to_search.push(PathBuf::from(path_override));
+    }
+
+    paths_to_search.extend(vec![
+        exec_dir.join("camelid"), // Bundle MacOS
+        PathBuf::from("./target/release/camelid"),
+        PathBuf::from("./camelid/target/release/camelid"),
+        PathBuf::from("../target/release/camelid"),
+        PathBuf::from("../camelid/target/release/camelid"),
+    ]);
+
+    for p in paths_to_search {
+        result.searched_paths.push(p.to_string_lossy().to_string());
+        if p.exists() {
+            result.found = true;
+            result.resolved_path = Some(p.to_string_lossy().to_string());
+            
+            if let Ok(metadata) = std::fs::metadata(&p) {
+                if let Ok(output) = Command::new(&p).arg("--version").output() {
+                    result.executable = true;
+                    if output.status.success() {
+                        result.version_output = Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
+                    } else {
+                        result.version_output = Some(String::from_utf8_lossy(&output.stderr).trim().to_string());
+                    }
+                } else {
+                    result.error_message = Some("Found binary, but failed to execute it.".to_string());
+                }
+            }
+            return Ok(result);
+        }
+    }
+
+    result.searched_paths.push("$PATH/camelid".to_string());
+    if let Ok(path_output) = Command::new("which").arg("camelid").output() {
+        if path_output.status.success() {
+            let path_str = String::from_utf8_lossy(&path_output.stdout).trim().to_string();
+            result.found = true;
+            result.resolved_path = Some(path_str.clone());
+            if let Ok(output) = Command::new(&path_str).arg("--version").output() {
+                result.executable = true;
+                result.version_output = Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
+            }
+            return Ok(result);
+        }
+    }
+
+    result.error_message = Some("Inference engine binary not found in any standard path.".to_string());
+    Ok(result)
 }

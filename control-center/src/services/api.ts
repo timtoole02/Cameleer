@@ -51,6 +51,7 @@ export const api = {
     openBackendLogs: async () => { return invoke("open_backend_logs"); },
     saveBackendConfigCmd: async (payload?: any) => { return invoke("save_backend_config_cmd", payload); },
     resetBackendRuntimeState: async () => { return invoke("reset_backend_runtime_state"); },
+    verifyPackagedRuntime: async () => { return invoke("verify_packaged_runtime"); },
     getMessages: async (payload?: any) => { return invoke("get_messages", payload); },
     getBlackboardAwareness: async () => { return invoke("get_blackboard_awareness"); },
     getCoordinationDetails: async () => { return invoke("get_coordination_details"); },

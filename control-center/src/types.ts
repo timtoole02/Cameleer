@@ -385,3 +385,12 @@ export interface BackendRuntimeConfig {
     log_path: string | null;
     model_path: string | null;
 }
+
+export interface RuntimeVerification {
+    found: boolean;
+    resolved_path: string | null;
+    executable: boolean;
+    version_output: string | null;
+    searched_paths: string[];
+    error_message: string | null;
+}

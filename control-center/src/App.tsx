@@ -4583,6 +4583,16 @@ function App() {
                 }} className="action-btn">
                   🔍 Reveal Backend Binary
                 </button>
+                <button onClick={async () => {
+                  try {
+                    const res: any = await api.verifyPackagedRuntime();
+                    alert(`RUNTIME VERIFICATION\n\nFound: ${res.found}\nPath: ${res.resolved_path}\nExecutable: ${res.executable}\nVersion: ${res.version_output || "Unknown"}\n\nSearched: \n${res.searched_paths.join("\n")}\n\nError: ${res.error_message || "None"}`);
+                  } catch(e) {
+                    alert("Error verifying runtime: " + e);
+                  }
+                }} className="action-btn">
+                  🧪 Run System Diagnostics
+                </button>
                 <button onClick={handleResetBackendRuntime} className="action-btn danger-btn" style={{ marginLeft: "auto" }}>
                   ⚠️ Reset Runtime State
                 </button>

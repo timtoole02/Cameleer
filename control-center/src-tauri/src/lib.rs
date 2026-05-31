@@ -172,6 +172,7 @@ pub fn run() {
             backend_runtime::reset_backend_runtime_state,
             backend_runtime::reveal_backend_binary,
             backend_runtime::get_backend_config,
+            backend_runtime::verify_packaged_runtime,
             board_services::get_backlog_snapshot,
             board_services::create_backlog_item,
             board_services::update_backlog_item,
