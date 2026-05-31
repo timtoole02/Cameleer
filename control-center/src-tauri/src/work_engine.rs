@@ -138,7 +138,7 @@ pub fn get_work_engine_suggestions(
              FROM task_blockers tb
              JOIN kanban_cards t1 ON tb.task_id = t1.id
              JOIN kanban_cards t2 ON tb.blocked_by_task_id = t2.id
-             WHERE t1.status != 'Done' AND t2.status != 'Done'",
+             WHERE LOWER(t1.status) != 'done' AND LOWER(t2.status) != 'done'",
         )
         .map_err(|e| e.to_string())?;
     let blocked_tasks = stmt
@@ -197,7 +197,7 @@ pub fn get_work_engine_suggestions(
 
     if !idle_list.is_empty() {
         let mut stmt = conn
-            .prepare("SELECT id, title FROM kanban_cards WHERE status = 'Backlog' OR status = 'Ready' ORDER BY priority DESC LIMIT 3")
+            .prepare("SELECT id, title FROM kanban_cards WHERE LOWER(status) = 'backlog' OR LOWER(status) = 'ready' ORDER BY priority DESC LIMIT 3")
             .map_err(|e| e.to_string())?;
         let open_tasks = stmt
             .query_map([], |row| {

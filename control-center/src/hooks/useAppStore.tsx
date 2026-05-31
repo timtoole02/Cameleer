@@ -1330,7 +1330,7 @@ const [activeTab, setActiveTab] = useState<"dashboard" | "global" | "dm" | "kanb
         description: taskDesc || null,
         typeName: "task",
         priority: taskPriority,
-        status: "Ready",
+        status: "ready",
         assignedAgentId: taskOwner || null,
         acceptanceCriteria: JSON.stringify(criteria),
         requiredFiles: JSON.stringify(reqFiles),

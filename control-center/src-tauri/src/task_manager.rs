@@ -347,6 +347,7 @@ pub fn update_task_status(
     evidence_path: Option<String>,
 ) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let status = status.to_lowercase();
 
     // Get original card log
     let (log_str, owner_id): (Option<String>, Option<String>) = conn

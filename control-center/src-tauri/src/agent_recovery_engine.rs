@@ -20,7 +20,7 @@ pub async fn attempt_recovery(app_handle: AppHandle, agent_id: String) -> Result
     {
         let conn = state.conn.lock().map_err(|e| e.to_string())?;
         if let Ok(tid) = conn.query_row(
-            "SELECT id FROM kanban_cards WHERE assigned_agent_id = ?1 AND status = 'In Progress' LIMIT 1",
+            "SELECT id FROM kanban_cards WHERE assigned_agent_id = ?1 AND (status = 'in_progress' OR status = 'In Progress') LIMIT 1",
             [&agent_id],
             |row| row.get::<_, String>(0)
         ) {

@@ -74,7 +74,7 @@ pub fn execute_handoff(
 
     conn.execute(
         "UPDATE kanban_cards 
-         SET assigned_agent_id = ?1, status = 'Ready', comments = comments || ?2
+         SET assigned_agent_id = ?1, status = 'ready', comments = comments || ?2
          WHERE id = ?3",
         params![target_agent_id, handoff_note, card_id],
     )

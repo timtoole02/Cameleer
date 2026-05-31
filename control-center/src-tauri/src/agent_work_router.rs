@@ -18,7 +18,7 @@ pub fn get_agent_work_queue(agent_id: &str, conn: &Connection) -> Result<Vec<Kan
     let mut stmt = conn.prepare(
         "SELECT id, title, status, priority, assigned_agent_id, dependencies, blocked_by, review_required, validation_status 
          FROM kanban_cards 
-         WHERE (assigned_agent_id = ?1 OR reporter = ?1) AND status != 'Done'"
+         WHERE (assigned_agent_id = ?1 OR reporter = ?1) AND LOWER(status) != 'done'"
     ).map_err(|e| e.to_string())?;
 
     let iter = stmt
@@ -54,7 +54,7 @@ pub fn get_agent_work_queue(agent_id: &str, conn: &Connection) -> Result<Vec<Kan
         "SELECT k.id, k.title, k.status, k.priority, k.assigned_agent_id, k.dependencies, k.blocked_by, k.review_required, k.validation_status 
          FROM handoffs h
          JOIN kanban_cards k ON h.task_id = k.id
-         WHERE h.target_agent_id = ?1 AND h.status = 'pending' AND k.status != 'Done'"
+         WHERE h.target_agent_id = ?1 AND h.status = 'pending' AND LOWER(k.status) != 'done'"
     ).map_err(|e| e.to_string())?;
 
     let h_iter = handoff_stmt
@@ -98,7 +98,7 @@ pub fn select_next_work(agent_id: &str, work_queue: &[KanbanCard]) -> Option<Kan
     // 1. Continue current In Progress card if unblocked
     if let Some(card) = work_queue
         .iter()
-        .find(|c| c.status == "In Progress" && c.blocked_by.is_none())
+        .find(|c| (c.status == "in_progress" || c.status == "In Progress") && c.blocked_by.is_none())
     {
         return Some(card.clone());
     }
@@ -108,7 +108,7 @@ pub fn select_next_work(agent_id: &str, work_queue: &[KanbanCard]) -> Option<Kan
         c.assigned_agent_id.as_deref() == Some(agent_id)
             && c.blocked_by.is_none()
             && (c.priority == "high" || c.priority == "urgent")
-            && c.status == "Ready"
+            && (c.status == "ready" || c.status == "Ready")
     }) {
         return Some(card.clone());
     }
@@ -125,7 +125,7 @@ pub fn select_next_work(agent_id: &str, work_queue: &[KanbanCard]) -> Option<Kan
     // 4. Handle review requests (cards in Review where validation is passed but review is needed)
     if let Some(card) = work_queue
         .iter()
-        .find(|c| c.status == "Review" && c.blocked_by.is_none())
+        .find(|c| (c.status == "in_review" || c.status == "Review" || c.status == "In Review") && c.blocked_by.is_none())
     {
         return Some(card.clone());
     }
@@ -133,7 +133,7 @@ pub fn select_next_work(agent_id: &str, work_queue: &[KanbanCard]) -> Option<Kan
     // 5. Pull next assigned Ready card
     if let Some(card) = work_queue.iter().find(|c| {
         c.assigned_agent_id.as_deref() == Some(agent_id)
-            && c.status == "Ready"
+            && (c.status == "ready" || c.status == "Ready")
             && c.blocked_by.is_none()
     }) {
         return Some(card.clone());

@@ -107,9 +107,9 @@ pub fn validate_task_completion(
         let required_state = if new_fails >= 3 {
             errors
                 .push("Maximum validation failures (3) exceeded. Task is now blocked.".to_string());
-            "Blocked".to_string()
+            "blocked".to_string()
         } else {
-            "In Progress".to_string()
+            "in_progress".to_string()
         };
 
         return Ok(ValidationResult {
@@ -145,9 +145,9 @@ pub fn validate_task_completion(
         .unwrap_or(None);
 
     let next_state = if review_required == 1 {
-        "Review".to_string()
+        "in_review".to_string()
     } else {
-        "Done".to_string()
+        "done".to_string()
     };
 
     // Propagate evidence and receipt ID directly to the Kanban Card so the UI can display it

@@ -548,7 +548,7 @@ pub fn create_card(
 #[tauri::command]
 pub fn assign_card(card_id: String, agent_id: String, state: State<DbState>) -> Result<(), String> {
     let conn = state.conn.lock().unwrap();
-    conn.execute("UPDATE kanban_cards SET assigned_agent_id = ?1, status = 'Assigned', updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![agent_id, card_id]).map_err(|e| e.to_string())?;
+    conn.execute("UPDATE kanban_cards SET assigned_agent_id = ?1, status = 'assigned', updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![agent_id, card_id]).map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -565,11 +565,14 @@ pub fn move_card(
         .query_row(
             "SELECT status FROM kanban_cards WHERE id = ?1",
             [&card_id],
-            |row| row.get(0),
+            |row| row.get::<_, String>(0),
         )
-        .unwrap_or_default();
+        .unwrap_or_default()
+        .to_lowercase();
 
-    if new_status == "In Progress" && current_status != "In Progress" {
+    let new_status = new_status.to_lowercase();
+
+    if new_status == "in_progress" && current_status != "in_progress" {
         // Check dependencies before allowing execution
         let blocked_by: Option<String> = conn
             .query_row(
@@ -605,7 +608,7 @@ pub fn move_card(
                             |row| row.get(0),
                         )
                         .unwrap_or_default();
-                    if dep_status != "Done" {
+                    if dep_status.to_lowercase() != "done" {
                         return Err(format!(
                             "Cannot start work. Dependency '{}' is not Done.",
                             dep_id
@@ -617,7 +620,7 @@ pub fn move_card(
     }
 
     // If moving to Done, enforce rules!
-    if new_status == "Done" {
+    if new_status == "done" || new_status == "Done" {
         let mut stmt = conn.prepare("SELECT acceptance_criteria, completion_evidence, work_receipt_id, review_required, validation_status FROM kanban_cards WHERE id = ?1").unwrap();
         let row: (Option<String>, Option<String>, Option<String>, i32, String) = stmt
             .query_row([&card_id], |row| {
@@ -655,7 +658,7 @@ pub fn get_agent_work_queue(
 ) -> Result<Vec<KanbanCard>, String> {
     let conn = state.conn.lock().unwrap();
     // Prioritized pull: In Progress > Unblocked Assigned > Ready
-    let mut query = "SELECT id, workspace_id, project_id, team_id, board_id, backlog_id, parent_id, title, description, type, status, priority, rank, severity, labels, assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at, due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria, definition_of_done, required_files, related_files, related_artifacts, dependencies, blocked_by, blocking, comments, activity_log, checklist, validation_status, completion_evidence, work_receipt_id, risk_level, review_required, approval_required, reopen_reason FROM kanban_cards WHERE workspace_id = ?1 AND assigned_agent_id = ?2 AND status IN ('In Progress', 'Assigned', 'Ready')".to_string();
+    let mut query = "SELECT id, workspace_id, project_id, team_id, board_id, backlog_id, parent_id, title, description, type, status, priority, rank, severity, labels, assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at, due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria, definition_of_done, required_files, related_files, related_artifacts, dependencies, blocked_by, blocking, comments, activity_log, checklist, validation_status, completion_evidence, work_receipt_id, risk_level, review_required, approval_required, reopen_reason FROM kanban_cards WHERE workspace_id = ?1 AND assigned_agent_id = ?2 AND status IN ('In Progress', 'Assigned', 'Ready', 'in_progress', 'assigned', 'ready')".to_string();
 
     let mut params: Vec<String> = vec![workspace_id.clone(), agent_id.clone()];
     if let Some(pid) = project_id {

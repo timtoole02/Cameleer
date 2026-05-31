@@ -59,10 +59,10 @@ pub fn get_org_node_metrics(
     let mut active_agents = 0;
 
     if node_type == "workspace" {
-        active_work = conn.query_row("SELECT count(*) FROM kanban_cards WHERE status IN ('Ready', 'In Progress', 'In Review')", [], |r| r.get(0)).unwrap_or(0);
+        active_work = conn.query_row("SELECT count(*) FROM kanban_cards WHERE status IN ('Ready', 'In Progress', 'In Review', 'ready', 'in_progress', 'in_review')", [], |r| r.get(0)).unwrap_or(0);
         blocked_cards = conn
             .query_row(
-                "SELECT count(*) FROM kanban_cards WHERE status = 'Blocked'",
+                "SELECT count(*) FROM kanban_cards WHERE status IN ('Blocked', 'blocked')",
                 [],
                 |r| r.get(0),
             )
@@ -76,16 +76,16 @@ pub fn get_org_node_metrics(
             .unwrap_or(0);
     } else if node_type == "project" {
         if let Some(id) = &target_id {
-            active_work = conn.query_row("SELECT count(*) FROM kanban_cards WHERE project_id = ?1 AND status IN ('Ready', 'In Progress', 'In Review')", [id], |r| r.get(0)).unwrap_or(0);
-            blocked_cards = conn.query_row("SELECT count(*) FROM kanban_cards WHERE project_id = ?1 AND status = 'Blocked'", [id], |r| r.get(0)).unwrap_or(0);
+            active_work = conn.query_row("SELECT count(*) FROM kanban_cards WHERE project_id = ?1 AND status IN ('Ready', 'In Progress', 'In Review', 'ready', 'in_progress', 'in_review')", [id], |r| r.get(0)).unwrap_or(0);
+            blocked_cards = conn.query_row("SELECT count(*) FROM kanban_cards WHERE project_id = ?1 AND status IN ('Blocked', 'blocked')", [id], |r| r.get(0)).unwrap_or(0);
             active_agents = conn.query_row("SELECT count(DISTINCT agent_id) FROM agent_project_memberships WHERE project_id = ?1", [id], |r| r.get(0)).unwrap_or(0);
         }
     } else if node_type == "team" {
         if let Some(id) = &target_id {
-            active_work = conn.query_row("SELECT count(*) FROM kanban_cards WHERE team_id = ?1 AND status IN ('Ready', 'In Progress', 'In Review')", [id], |r| r.get(0)).unwrap_or(0);
+            active_work = conn.query_row("SELECT count(*) FROM kanban_cards WHERE team_id = ?1 AND status IN ('Ready', 'In Progress', 'In Review', 'ready', 'in_progress', 'in_review')", [id], |r| r.get(0)).unwrap_or(0);
             blocked_cards = conn
                 .query_row(
-                    "SELECT count(*) FROM kanban_cards WHERE team_id = ?1 AND status = 'Blocked'",
+                    "SELECT count(*) FROM kanban_cards WHERE team_id = ?1 AND status IN ('Blocked', 'blocked')",
                     [id],
                     |r| r.get(0),
                 )

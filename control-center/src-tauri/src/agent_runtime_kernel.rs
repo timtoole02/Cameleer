@@ -107,7 +107,7 @@ pub async fn run_agent_cycle(
 
     // 7. Check dependencies / blockers
     if let Some(ref work) = selected_work {
-        if work.status == "Blocked" || work.blocked_by.is_some() {
+        if work.status == "blocked" || work.status == "Blocked" || work.blocked_by.is_some() {
             let conn = state.conn.lock().map_err(|e| e.to_string())?;
             let _ = transition_agent_state(
                 &conn,
@@ -310,9 +310,9 @@ pub async fn run_agent_cycle(
                         let err_msg = format!("Validation failed. You must provide evidence or satisfy criteria:\n- {}", res.errors.join("\n- "));
                         save_and_emit_message(&app_handle, &session_id, "system", err_msg);
 
-                        if res.required_state == "Blocked" {
+                        if res.required_state == "blocked" || res.required_state == "Blocked" {
                             let conn = state.conn.lock().map_err(|e| e.to_string())?;
-                            let _ = conn.execute("UPDATE kanban_cards SET status = 'Blocked', blocked_by = 'Validation failure limit exceeded' WHERE id = ?1", params![c_id]);
+                            let _ = conn.execute("UPDATE kanban_cards SET status = 'blocked', blocked_by = 'Validation failure limit exceeded' WHERE id = ?1", params![c_id]);
                             target_state = AgentState::Idle;
                             transition_reason = "Task Blocked due to repeated validation failures. Returning to Idle.".to_string();
                         } else {

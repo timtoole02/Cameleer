@@ -38,7 +38,7 @@ pub fn detect_file_collisions(conn: &Connection, file_path: &str) -> Result<Vec<
     let mut stmt = conn
         .prepare(
             "SELECT assigned_agent_id FROM kanban_cards 
-         WHERE status = 'In Progress' AND required_files LIKE ?1",
+          WHERE (status = 'in_progress' OR status = 'In Progress') AND required_files LIKE ?1",
         )
         .map_err(|e| e.to_string())?;
 
@@ -137,9 +137,9 @@ mod tests {
     fn test_detect_file_collisions() {
         let conn = setup_test_db();
 
-        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('1', 'agent_x', 'In Progress', '[\"main.rs\", \"utils.rs\"]')", []).unwrap();
-        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('2', 'agent_y', 'In Progress', '[\"utils.rs\"]')", []).unwrap();
-        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('3', 'agent_z', 'Ready', '[\"utils.rs\"]')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('1', 'agent_x', 'in_progress', '[\"main.rs\", \"utils.rs\"]')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('2', 'agent_y', 'in_progress', '[\"utils.rs\"]')", []).unwrap();
+        conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('3', 'agent_z', 'ready', '[\"utils.rs\"]')", []).unwrap();
 
         let collisions = detect_file_collisions(&conn, "utils.rs").unwrap();
 
@@ -148,7 +148,7 @@ mod tests {
         assert!(collisions.contains(&"agent_y".to_string()));
         assert!(
             !collisions.contains(&"agent_z".to_string()),
-            "agent_z is not 'In Progress'"
+            "agent_z is not 'in_progress'"
         );
     }
 }

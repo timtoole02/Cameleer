@@ -206,7 +206,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             title TEXT NOT NULL,
             description TEXT,
             type TEXT DEFAULT 'feature',
-            status TEXT DEFAULT 'Ready',
+            status TEXT DEFAULT 'ready',
             priority TEXT DEFAULT 'medium',
             rank INTEGER DEFAULT 0,
             severity TEXT,

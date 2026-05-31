@@ -32,13 +32,15 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
   }, [workspaceId, refreshTrigger]);
 
   const columns = [
-    { id: "Backlog", label: "Backlog", colorClass: "backlog" },
-    { id: "Ready", label: "Ready", colorClass: "ready" },
-    { id: "Assigned", label: "Assigned", colorClass: "assigned" },
-    { id: "In Progress", label: "In Progress", colorClass: "working" },
-    { id: "Blocked", label: "Blocked", colorClass: "blocked" },
-    { id: "In Review", label: "In Review", colorClass: "review" },
-    { id: "Done", label: "Done", colorClass: "working" },
+    { id: "backlog", label: "Backlog", colorClass: "backlog" },
+    { id: "ready", label: "Ready", colorClass: "ready" },
+    { id: "assigned", label: "Assigned", colorClass: "assigned" },
+    { id: "in_progress", label: "In Progress", colorClass: "working" },
+    { id: "blocked", label: "Blocked", colorClass: "blocked" },
+    { id: "waiting_for_approval", label: "Waiting for Approval", colorClass: "review" },
+    { id: "in_review", label: "In Review", colorClass: "review" },
+    { id: "done", label: "Done", colorClass: "working" },
+    { id: "reopened", label: "Reopened", colorClass: "backlog" },
   ];
 
   if (loading) {
@@ -73,7 +75,14 @@ export default function KanbanBoard({ workspaceId, agents, onCardClick, refreshT
       alignItems: "flex-start"
     }}>
       {columns.map(col => {
-        let displayCards = cards.filter(c => c.status === col.id);
+        let displayCards = cards.filter(c => {
+          const cardStatus = (c.status || "").toLowerCase();
+          if (cardStatus === col.id) return true;
+          // Legacy mappings
+          if (col.id === 'in_progress' && cardStatus === 'in progress') return true;
+          if (col.id === 'in_review' && (cardStatus === 'review' || cardStatus === 'in review')) return true;
+          return false;
+        });
         
         if (scopeType === 'team' && scopeId) {
           displayCards = displayCards.filter(c => c.team_id === scopeId);

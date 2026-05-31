@@ -229,7 +229,7 @@ pub fn execute_tool(
                 let state = app_handle.state::<DbState>();
                 let conn = state.conn.lock().unwrap();
                 conn.execute(
-                    "UPDATE kanban_cards SET assigned_agent_id = ?1, status = 'In Progress' WHERE id = ?2",
+                    "UPDATE kanban_cards SET assigned_agent_id = ?1, status = 'in_progress' WHERE id = ?2",
                     params![agent_id, card_id]
                 ).map_err(|e| e.to_string())?;
 
