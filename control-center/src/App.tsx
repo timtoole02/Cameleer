@@ -50,6 +50,8 @@ function App() {
 
   useEffect(() => {
     checkHealth();
+    const timer = window.setInterval(checkHealth, 5000);
+    return () => window.clearInterval(timer);
   }, []);
 
   const renderPage = () => {

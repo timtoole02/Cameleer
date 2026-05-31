@@ -54,7 +54,7 @@ export const TopNav: React.FC = () => {
           border: styles.border,
           fontSize: '0.7rem',
           fontWeight: 700,
-          letterSpacing: '0.03em'
+          letterSpacing: 0
         }}>
           {displayValue}
         </span>
@@ -106,4 +106,3 @@ export const TopNav: React.FC = () => {
     </div>
   );
 };
-

@@ -1,11 +1,10 @@
 use crate::event_bus::{emit_event, AppEvent};
 use crate::router::{call_model, ChatMessage, ModelSettings};
 use crate::storage::DbState;
-use rusqlite::{params, Connection, OptionalExtension, Result};
+use crate::system_services::{inspect_database_health, probe_camelid};
+use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
-use std::process::Command;
-use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, State};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DbMessage {
@@ -110,7 +109,197 @@ pub async fn trigger_agent_reply(
     agent_id: String,
     session_id: String,
 ) -> Result<(), String> {
-    crate::agent_runtime_kernel::run_agent_cycle(agent_id, session_id, app_handle).await
+    let (database_status, camelid_endpoint) = {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        let db_health = inspect_database_health(
+            &conn,
+            crate::storage::get_db_path().display().to_string(),
+            2,
+        );
+        (db_health.database_status, db_health.camelid_endpoint)
+    };
+
+    if database_status != "ready" {
+        return Err(format!(
+            "Chat disabled: Database is not ready (Status: {}).",
+            database_status
+        ));
+    }
+
+    let camelid_health = probe_camelid(&camelid_endpoint).await;
+    if let Some(reason) = chat_send_block_reason(
+        &database_status,
+        &camelid_health.status,
+        camelid_health.model_loaded.as_deref(),
+        &camelid_endpoint,
+    ) {
+        return Err(reason);
+    }
+
+    let history = {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT role, content FROM messages
+                 WHERE session_id = ?1 AND role IN ('user', 'assistant')
+                 ORDER BY timestamp ASC, id ASC
+                 LIMIT 24",
+            )
+            .map_err(|e| e.to_string())?;
+        let iter = stmt
+            .query_map([&session_id], |row| {
+                Ok(ChatMessage {
+                    role: row.get(0)?,
+                    content: row.get(1)?,
+                })
+            })
+            .map_err(|e| e.to_string())?;
+
+        let mut messages = Vec::new();
+        for msg in iter {
+            messages.push(msg.map_err(|e| e.to_string())?);
+        }
+        messages
+    };
+
+    if history.is_empty() {
+        return Err("Chat disabled: No user message is available to send.".to_string());
+    }
+
+    let chat_endpoint = format!(
+        "{}/v1/chat/completions",
+        camelid_endpoint.trim_end_matches('/')
+    );
+    let response_text = call_model(
+        "camelid",
+        camelid_health.model_loaded.as_deref().unwrap_or("camelid"),
+        history,
+        ModelSettings {
+            temperature: Some(0.7),
+            max_tokens: Some(32),
+        },
+        None,
+        Some(chat_endpoint),
+    )
+    .await?;
+
+    save_assistant_message(
+        &state,
+        &app_handle,
+        &session_id,
+        &agent_id,
+        response_text.trim(),
+    )
+}
+
+fn save_assistant_message(
+    state: &State<'_, DbState>,
+    app_handle: &AppHandle,
+    session_id: &str,
+    agent_id: &str,
+    content: &str,
+) -> Result<(), String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT INTO messages (session_id, role, sender_id, content)
+         VALUES (?1, 'assistant', ?2, ?3)",
+        params![session_id, agent_id, content],
+    )
+    .map_err(|e| e.to_string())?;
+
+    let id = conn.last_insert_rowid() as i32;
+    let timestamp: String = conn
+        .query_row(
+            "SELECT timestamp FROM messages WHERE id = ?1",
+            [id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+
+    let db_msg = DbMessage {
+        id: Some(id),
+        session_id: session_id.to_string(),
+        role: "assistant".to_string(),
+        sender_id: Some(agent_id.to_string()),
+        content: content.to_string(),
+        timestamp,
+    };
+
+    emit_event(
+        app_handle,
+        AppEvent {
+            event_type: "message".to_string(),
+            agent_id: Some(agent_id.to_string()),
+            task_id: None,
+            payload: serde_json::to_value(&db_msg).unwrap_or(serde_json::Value::Null),
+        },
+    );
+
+    Ok(())
+}
+
+pub fn chat_send_block_reason(
+    database_status: &str,
+    camelid_status: &str,
+    camelid_model: Option<&str>,
+    camelid_endpoint: &str,
+) -> Option<String> {
+    if database_status != "ready" {
+        return Some(format!(
+            "Chat disabled: Database is not ready (Status: {}).",
+            database_status
+        ));
+    }
+    if camelid_status != "connected" {
+        return Some(format!(
+            "Chat disabled: Camelid is offline at {}.",
+            camelid_endpoint
+        ));
+    }
+    if camelid_model.is_none() {
+        return Some("Chat disabled: No model is loaded.".to_string());
+    }
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn chat_send_blocks_when_camelid_offline() {
+        let reason = chat_send_block_reason("ready", "offline", None, "http://127.0.0.1:8181");
+
+        assert_eq!(
+            reason.as_deref(),
+            Some("Chat disabled: Camelid is offline at http://127.0.0.1:8181.")
+        );
+    }
+
+    #[test]
+    fn chat_send_blocks_when_database_not_ready() {
+        let reason = chat_send_block_reason(
+            "schema_error",
+            "connected",
+            Some("camelid-default"),
+            "http://127.0.0.1:8181",
+        );
+
+        assert_eq!(
+            reason.as_deref(),
+            Some("Chat disabled: Database is not ready (Status: schema_error).")
+        );
+    }
+
+    #[test]
+    fn chat_send_blocks_when_model_missing() {
+        let reason = chat_send_block_reason("ready", "connected", None, "http://127.0.0.1:8181");
+
+        assert_eq!(
+            reason.as_deref(),
+            Some("Chat disabled: No model is loaded.")
+        );
+    }
 }
 
 #[tauri::command]

@@ -139,6 +139,16 @@ mod tests {
     }
 
     #[test]
+    fn agent_contract_query_succeeds_for_seeded_agent() {
+        let conn = setup_test_db();
+        let contract = load_contract("agent-coder", "Software Engineer", &conn)
+            .expect("seeded agent-coder contract query must succeed");
+
+        assert_eq!(contract.contract_id, "contract_agent-coder");
+        assert_eq!(contract.role, "Software Engineer");
+    }
+
+    #[test]
     fn test_get_agent_contract_does_not_fail_on_done_definition() {
         let conn = setup_test_db();
         let contract = load_contract("agent-coder", "Software Engineer", &conn).unwrap();
@@ -149,6 +159,24 @@ mod tests {
                     .done_definition
                     .contains(&"acceptance criteria satisfied".to_string())
         );
+    }
+
+    #[test]
+    fn chat_context_build_does_not_crash_on_mission_agent_contracts_query() {
+        let conn = setup_test_db();
+        let contract = load_contract("agent-coder", "Software Engineer", &conn)
+            .expect("contract query must survive mission_agent_contracts.done_definition access");
+        let context = crate::context_engine::get_scoped_agent_context_snapshot(
+            &conn,
+            Some("agent-coder"),
+            Some("default"),
+            None,
+            None,
+        )
+        .expect("scoped chat context should build with seeded schema");
+
+        assert_eq!(contract.contract_id, "contract_agent-coder");
+        assert!(context.contains("Active Workspace"));
     }
 
     #[test]
