@@ -14,7 +14,7 @@ pub struct BenchmarkResult {
 }
 
 pub fn get_audit_log_path() -> PathBuf {
-    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string()));
+    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()));
     path.push(".cameleer");
     if !path.exists() {
         let _ = fs::create_dir_all(&path);

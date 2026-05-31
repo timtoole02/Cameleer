@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Cameleer",
   "version": "0.1.0",
-  "identifier": "com.timtoole.cameleer",
+  "identifier": "com.cameleer.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",

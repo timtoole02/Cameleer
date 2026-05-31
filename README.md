@@ -26,11 +26,11 @@ Cameleer
         └── /v1/chat/completions
 ```
 
-- **Kanban Board**: Drag and drop tasks across Backlog, Ready, In Progress, Review, Blocked, and Done.
+- **Kanban Board**: Drag and drop tasks across Backlog, Ready, In Progress, Review, Blocked, and Done. Enforces strict cryptographic execution receipts and task dependency mapping.
 - **Nested Agent Org Chart**: Assign child agents to parent agents for massive task delegation.
 - **Shared Memory**: Global, project, and agent-scoped memory retrieval across the entire system.
-- **Tool Router**: Strict schemas allowing agents to interact with files, tasks, and memory.
-- **Local Inference Engine (`Camelid`)**: The powerful, background inference runner powering the intelligence.
+- **Tool Execution Sandbox**: Strict schemas allow agents to interact with files, tasks, and memory. The execution sandbox traps unsafe terminal commands (like `rm -rf`) and routes them to human approval. Path traversals outside the designated workspace are physically blocked.
+- **Local Inference Engine (`Camelid`)**: The powerful, background inference daemon executing local, offline `.gguf` models on Apple Silicon Metal.
 
 ---
 
@@ -47,13 +47,13 @@ Cameleer
   ```
 
 ### 2. Compile and Run
+We provide an automated package script that handles testing, building, and assembling the Mac `.app` bundle:
 ```bash
 git clone https://github.com/timtoole02/Cameleer.git
-cd Cameleer/control-center
-npm install
-CARGO_TARGET_DIR="target" npm run tauri build
+cd Cameleer
+./package.sh
 ```
-Once packaged, deploy the `Cameleer.app` bundle and launch the Enterprise Agent Workspace!
+Once packaged, deploy the `Cameleer.app` bundle from `control-center/src-tauri/target/release/bundle/mac/` into your `/Applications` folder and launch the Enterprise Agent Workspace!
 
 ---
 

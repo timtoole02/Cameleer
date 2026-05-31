@@ -100,7 +100,7 @@ impl BackendRuntimeManager {
 // --- HELPER UTILITIES ---
 
 fn get_app_dir() -> PathBuf {
-    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string()));
+    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()));
     path.push(".cameleer");
     let _ = fs::create_dir_all(&path);
     path
@@ -424,7 +424,7 @@ async fn perform_backend_start(
     }
 
     // 4. Resolve GGUF model path
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string());
+    let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
     let models_dir = PathBuf::from(&home).join(".cameleer").join("models");
 
     let model_name = match model_override {

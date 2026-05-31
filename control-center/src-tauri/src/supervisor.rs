@@ -53,7 +53,7 @@ pub fn spawn_camelid_daemon(
     println!("[DAEMON] Spawning camelid daemon from path: {:?}", exec_path);
 
     // 3. Resolve GGUF model path
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string());
+    let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
     let models_dir = PathBuf::from(&home).join(".cameleer").join("models");
 
     if !models_dir.exists() {

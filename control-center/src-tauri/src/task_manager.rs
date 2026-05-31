@@ -45,7 +45,7 @@ fn resolve_path(path: &str) -> std::path::PathBuf {
     let clean_path = path.trim();
     let mut resolved = std::path::PathBuf::new();
     
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string());
+    let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
     
     if clean_path.starts_with("~/") {
         resolved.push(&home);

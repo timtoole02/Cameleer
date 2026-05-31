@@ -248,7 +248,7 @@ fn get_models_dir() -> std::path::PathBuf {
         path.push("models");
         path
     } else {
-        let mut path = std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string()));
+        let mut path = std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()));
         path.push(".cameleer");
         path.push("models");
         path

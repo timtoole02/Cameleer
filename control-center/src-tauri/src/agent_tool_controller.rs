@@ -97,7 +97,8 @@ pub fn execute_tool(
         "file.write" => {
             if let (Some(path), Some(content)) = (&action.path, &action.content) {
                 // Enforce workspace bounds
-                let workspace_root = "/Users/timtoole/.gemini/antigravity/scratch/Cameleer"; // TODO: Dynamic from DB
+                let default_workspace = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()) + "/Documents/Cameleer Workspace";
+                let workspace_root = default_workspace.as_str(); // TODO: Dynamic from DB
                 let target_path = Path::new(workspace_root).join(path);
                 
                 // Canonicalization strictly checks against traversal out of the root

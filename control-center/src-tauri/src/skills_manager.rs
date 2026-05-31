@@ -19,7 +19,7 @@ pub struct PlaybookSkill {
 }
 
 pub fn get_skills_dir() -> PathBuf {
-    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string()));
+    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()));
     path.push(".cameleer");
     path.push("skills");
     if !path.exists() {

@@ -417,7 +417,7 @@ pub fn parse_gguf_minimal(bytes: &[u8]) -> Result<GgufFileMinimal, String> {
 }
 
 fn get_models_dir() -> PathBuf {
-    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/Users/timtoole".to_string()));
+    let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()));
     path.push(".cameleer");
     path.push("models");
     let _ = fs::create_dir_all(&path);
