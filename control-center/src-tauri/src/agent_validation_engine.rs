@@ -90,6 +90,7 @@ pub fn validate_task_completion(
     // Passed basic checks, generate receipt
     let ev_str = evidence.as_deref().unwrap_or("No evidence provided");
     
+    // Create work receipt
     let _ = conn.execute(
         "INSERT INTO mission_work_receipts (card_id, agent_id, summary, validation_status, evidence_links) 
          VALUES (?1, ?2, ?3, ?4, ?5)
@@ -98,11 +99,30 @@ pub fn validate_task_completion(
         params![card_id, agent_id, format!("Completed task {}", card_id), "passed", ev_str],
     );
 
+    // Fetch the ID of the receipt we just inserted or updated
+    let receipt_id: Option<i32> = conn.query_row(
+        "SELECT id FROM mission_work_receipts WHERE card_id = ?1",
+        [card_id],
+        |row| row.get(0)
+    ).unwrap_or(None);
+
     let next_state = if review_required == 1 {
         "Review".to_string()
     } else {
         "Done".to_string()
     };
+
+    // Propagate evidence and receipt ID directly to the Kanban Card so the UI can display it
+    let _ = conn.execute(
+        "UPDATE kanban_cards SET 
+            validation_status = 'passed', 
+            completion_evidence = ?1,
+            work_receipt_id = ?2,
+            status = ?3,
+            completed_at = CURRENT_TIMESTAMP
+         WHERE id = ?4",
+        params![ev_str, receipt_id.map(|id| id.to_string()), next_state, card_id],
+    );
 
     Ok(ValidationResult {
         is_valid: true,

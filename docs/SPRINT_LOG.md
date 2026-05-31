@@ -10,3 +10,8 @@
 - Extracted `AgentChat` component from `App.tsx`.
 - Updated `CardDrawer` to beautifully display progress logs (comments) and system activity logs alongside acceptance criteria and evidence.
 - Verified compilation and passing tests.
+
+## Sprint 3: Stabilize Agent Tool Workflows and Complete End-to-End Execution Flow
+- Updated `agent_validation_engine.rs` to persist `completion_evidence`, `work_receipt_id`, and `validation_status` to `kanban_cards`.
+- Updated `QA_REPORT.md` and verified end-to-end sandbox review queues.
+- Confirmed `task.complete` generates a valid receipt rendering in the UI.
