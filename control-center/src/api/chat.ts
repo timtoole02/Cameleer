@@ -26,8 +26,8 @@ export async function saveMessage(
     teamId?: string,
     agentId?: string,
     cardId?: string
-): Promise<number> {
-  return apiCall<number>("save_message", { sessionId, role, content, senderId, projectId, teamId, agentId, cardId });
+): Promise<Message> {
+  return apiCall<Message>("save_message", { sessionId, role, content, senderId, projectId, teamId, agentId, cardId });
 }
 
 export async function triggerAgentReply(
@@ -35,6 +35,6 @@ export async function triggerAgentReply(
     agentId: string,
     projectId?: string,
     teamId?: string
-): Promise<Message> {
-  return apiCall<Message>("trigger_agent_reply", { sessionId, agentId, projectId, teamId });
+): Promise<void> {
+  return apiCall<void>("trigger_agent_reply", { sessionId, agentId, projectId, teamId });
 }

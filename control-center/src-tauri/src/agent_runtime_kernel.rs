@@ -229,8 +229,19 @@ pub async fn run_agent_cycle(
         }
     }
 
-    // Instead of saving raw JSON as a chat message, we just process the parsed action.
-    // The action reasoning is already saved in `agent_run_steps`.
+    let visible_response = parsed_action
+        .as_ref()
+        .and_then(|action| action.raw_json.as_ref())
+        .map(|json| json.summary.trim())
+        .filter(|summary| !summary.is_empty())
+        .unwrap_or_else(|| response_text.trim());
+    save_and_emit_message(
+        &app_handle,
+        &session_id,
+        &agent_id,
+        visible_response.to_string(),
+    );
+
     let run_id = format!(
         "run_{}_{}",
         agent_id,

@@ -19,12 +19,16 @@ function App() {
   const [initError, setInitError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
-  const checkHealth = async () => {
-    setIsChecking(true);
-    setInitError(null);
+  const checkHealth = async (options: { blocking?: boolean } = {}) => {
+    const blocking = options.blocking ?? false;
+    if (blocking) {
+      setIsChecking(true);
+      setInitError(null);
+    }
     try {
       const health = await getBackendHealth();
       setBackendHealth(health);
+      setInitError(null);
     } catch (err: any) {
       setInitError(err.toString());
       setBackendHealth({
@@ -44,12 +48,16 @@ function App() {
         warnings: []
       });
     } finally {
-      setIsChecking(false);
+      if (blocking) {
+        setIsChecking(false);
+      }
     }
   };
 
   useEffect(() => {
-    checkHealth();
+    checkHealth({ blocking: true });
+    const timer = window.setInterval(() => checkHealth(), 5000);
+    return () => window.clearInterval(timer);
   }, []);
 
   const renderPage = () => {

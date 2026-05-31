@@ -78,7 +78,15 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         let version = (i + 1) as i64;
         if !applied_versions.contains(&version) {
             println!("[MIGRATION] Applying migration {}: {}", version, name);
-            conn.execute_batch(sql)?;
+            if version == 2 && table_has_column(conn, "mission_agent_contracts", "done_definition")?
+            {
+                println!(
+                    "[MIGRATION] mission_agent_contracts.done_definition already exists; recording migration {}",
+                    version
+                );
+            } else {
+                conn.execute_batch(sql)?;
+            }
             conn.execute(
                 "INSERT INTO schema_migrations (version, name) VALUES (?1, ?2)",
                 params![version, name],
@@ -87,6 +95,99 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    fn migration_count(conn: &Connection) -> i64 {
+        conn.query_row("SELECT COUNT(*) FROM schema_migrations", [], |row| {
+            row.get(0)
+        })
+        .unwrap()
+    }
+
+    #[test]
+    fn schema_has_done_definition() {
+        let conn = Connection::open_in_memory().unwrap();
+        init_db(&conn).unwrap();
+
+        assert!(
+            table_has_column(&conn, "mission_agent_contracts", "done_definition").unwrap(),
+            "base schema must include mission_agent_contracts.done_definition"
+        );
+    }
+
+    #[test]
+    fn migrations_apply_cleanly() {
+        let conn = Connection::open_in_memory().unwrap();
+        init_db(&conn).unwrap();
+
+        let schema_version: i64 = conn
+            .query_row("SELECT MAX(version) FROM schema_migrations", [], |row| {
+                row.get(0)
+            })
+            .unwrap();
+        assert_eq!(schema_version, 2);
+        assert_eq!(migration_count(&conn), 2);
+    }
+
+    #[test]
+    fn migrations_are_idempotent() {
+        let conn = Connection::open_in_memory().unwrap();
+        init_db(&conn).unwrap();
+        init_db(&conn).unwrap();
+
+        assert_eq!(migration_count(&conn), 2);
+        assert!(table_has_column(&conn, "mission_agent_contracts", "done_definition").unwrap());
+    }
+
+    #[test]
+    fn legacy_v1_migration_adds_done_definition() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE schema_migrations (
+                version INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+            INSERT INTO schema_migrations (version, name) VALUES (1, '0001_initial_schema');
+            CREATE TABLE mission_agent_contracts (
+                agent_id TEXT PRIMARY KEY,
+                role TEXT NOT NULL,
+                responsibilities TEXT,
+                allowed_actions TEXT,
+                required_context_before_work TEXT,
+                required_outputs TEXT,
+                validation_rules TEXT,
+                handoff_rules TEXT,
+                escalation_rules TEXT
+            );",
+        )
+        .unwrap();
+
+        init_db(&conn).unwrap();
+
+        assert!(
+            table_has_column(&conn, "mission_agent_contracts", "done_definition").unwrap(),
+            "migration 0002 must add done_definition to existing v1 databases"
+        );
+        assert_eq!(migration_count(&conn), 2);
+    }
+}
+
+pub fn table_has_column(conn: &Connection, table: &str, column: &str) -> Result<bool> {
+    let mut stmt = conn.prepare(&format!("PRAGMA table_info({})", table))?;
+    let mut rows = stmt.query([])?;
+    while let Some(row) = rows.next()? {
+        let col_name: String = row.get(1)?;
+        if col_name == column {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 pub fn seed_default_agents(conn: &Connection) -> Result<()> {
     let defaults = vec![
