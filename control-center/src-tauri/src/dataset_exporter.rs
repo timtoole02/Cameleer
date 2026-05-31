@@ -1,9 +1,9 @@
-use rusqlite::Connection;
-use tauri::State;
 use crate::storage::DbState;
+use rusqlite::Connection;
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
-use serde::{Deserialize, Serialize};
+use tauri::State;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChatMessage {
@@ -44,7 +44,7 @@ pub fn export_finetuning_dataset(
     for run in runs_iter {
         if let Ok((Some(input), plan, Some(final_answer))) = run {
             let plan_str = plan.unwrap_or_default();
-            
+
             // Build the assistant response
             let assistant_response = if plan_str.trim().is_empty() {
                 final_answer

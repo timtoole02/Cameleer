@@ -938,6 +938,26 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         [],
     )?;
 
+    // Sprint 10 Migrations: Backlog item enhancement
+    let has_dod_backlog: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM pragma_table_info('backlog_items') WHERE name='definition_of_done')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
+
+    if !has_dod_backlog {
+        let _ = conn.execute(
+            "ALTER TABLE backlog_items ADD COLUMN definition_of_done TEXT",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE backlog_items ADD COLUMN required_files TEXT",
+            [],
+        );
+    }
+
     Ok(())
 }
 

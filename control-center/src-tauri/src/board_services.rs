@@ -23,6 +23,8 @@ pub struct BacklogItem {
     pub owner_human_id: Option<String>,
     pub proposed_agent_role: Option<String>,
     pub acceptance_criteria: Option<String>,
+    pub definition_of_done: Option<String>,
+    pub required_files: Option<String>,
     pub refinement_notes: Option<String>,
     pub dependencies: Option<String>,
     pub risk_level: String,
@@ -109,7 +111,7 @@ pub fn get_backlog_snapshot(
     state: State<DbState>,
 ) -> Result<Vec<BacklogItem>, String> {
     let conn = state.conn.lock().unwrap();
-    let mut query = "SELECT id, workspace_id, project_id, team_id, backlog_id, title, description, type, priority, rank, labels, source, status, owner_agent_id, owner_human_id, proposed_agent_role, acceptance_criteria, refinement_notes, dependencies, risk_level, effort_estimate, readiness_score, created_at, updated_at FROM backlog_items WHERE workspace_id = ?1".to_string();
+    let mut query = "SELECT id, workspace_id, project_id, team_id, backlog_id, title, description, type, priority, rank, labels, source, status, owner_agent_id, owner_human_id, proposed_agent_role, acceptance_criteria, definition_of_done, required_files, refinement_notes, dependencies, risk_level, effort_estimate, readiness_score, created_at, updated_at FROM backlog_items WHERE workspace_id = ?1".to_string();
     let mut params: Vec<String> = vec![workspace_id.clone()];
 
     if let Some(pid) = project_id {
@@ -144,13 +146,15 @@ pub fn get_backlog_snapshot(
                 owner_human_id: row.get(14)?,
                 proposed_agent_role: row.get(15)?,
                 acceptance_criteria: row.get(16)?,
-                refinement_notes: row.get(17)?,
-                dependencies: row.get(18)?,
-                risk_level: row.get(19)?,
-                effort_estimate: row.get(20)?,
-                readiness_score: row.get(21)?,
-                created_at: row.get(22)?,
-                updated_at: row.get(23)?,
+                definition_of_done: row.get(17)?,
+                required_files: row.get(18)?,
+                refinement_notes: row.get(19)?,
+                dependencies: row.get(20)?,
+                risk_level: row.get(21)?,
+                effort_estimate: row.get(22)?,
+                readiness_score: row.get(23)?,
+                created_at: row.get(24)?,
+                updated_at: row.get(25)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -205,6 +209,15 @@ pub fn update_backlog_item(
     priority: Option<String>,
     status: Option<String>,
     acceptance_criteria: Option<String>,
+    definition_of_done: Option<String>,
+    required_files: Option<String>,
+    proposed_agent_role: Option<String>,
+    dependencies: Option<String>,
+    risk_level: Option<String>,
+    effort_estimate: Option<String>,
+    readiness_score: Option<i32>,
+    refinement_notes: Option<String>,
+    labels: Option<String>,
     state: State<DbState>,
 ) -> Result<(), String> {
     let conn = state.conn.lock().unwrap();
@@ -243,6 +256,37 @@ pub fn update_backlog_item(
     if let Some(v) = acceptance_criteria {
         conn.execute("UPDATE backlog_items SET acceptance_criteria = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
     }
+    if let Some(v) = definition_of_done {
+        conn.execute("UPDATE backlog_items SET definition_of_done = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = required_files {
+        conn.execute("UPDATE backlog_items SET required_files = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = proposed_agent_role {
+        conn.execute("UPDATE backlog_items SET proposed_agent_role = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = dependencies {
+        conn.execute("UPDATE backlog_items SET dependencies = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = risk_level {
+        conn.execute("UPDATE backlog_items SET risk_level = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = effort_estimate {
+        conn.execute("UPDATE backlog_items SET effort_estimate = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = readiness_score {
+        conn.execute("UPDATE backlog_items SET readiness_score = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = refinement_notes {
+        conn.execute("UPDATE backlog_items SET refinement_notes = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = labels {
+        conn.execute(
+            "UPDATE backlog_items SET labels = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
 
     Ok(())
 }
@@ -255,13 +299,15 @@ pub fn convert_backlog_item_to_card(
     let conn = state.conn.lock().unwrap();
 
     // Read the backlog item with all rich fields
-    let mut stmt = conn.prepare("SELECT workspace_id, title, description, type, priority, acceptance_criteria, dependencies, risk_level, labels FROM backlog_items WHERE id = ?1").unwrap();
+    let mut stmt = conn.prepare("SELECT workspace_id, title, description, type, priority, acceptance_criteria, definition_of_done, required_files, dependencies, risk_level, labels FROM backlog_items WHERE id = ?1").unwrap();
     let row: (
         String,
         String,
         Option<String>,
         String,
         String,
+        Option<String>,
+        Option<String>,
         Option<String>,
         Option<String>,
         String,
@@ -278,18 +324,20 @@ pub fn convert_backlog_item_to_card(
                 row.get(6)?,
                 row.get(7)?,
                 row.get(8)?,
+                row.get(9)?,
+                row.get(10)?,
             ))
         })
         .map_err(|e| e.to_string())?;
 
-    let (ws_id, title, desc, type_name, priority, acc, deps, risk, labels) = row;
+    let (ws_id, title, desc, type_name, priority, acc, dod, req_files, deps, risk, labels) = row;
 
     let card_id = Uuid::new_v4().to_string();
 
     conn.execute(
-        "INSERT INTO kanban_cards (id, workspace_id, backlog_id, title, description, type, priority, acceptance_criteria, dependencies, risk_level, labels, status, created_by)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'Ready', 'human')",
-        params![card_id, ws_id, id, title, desc, type_name, priority, acc, deps, risk, labels],
+        "INSERT INTO kanban_cards (id, workspace_id, backlog_id, title, description, type, priority, acceptance_criteria, definition_of_done, required_files, dependencies, risk_level, labels, status, created_by)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 'ready', 'human')",
+        params![card_id, ws_id, id, title, desc, type_name, priority, acc, dod, req_files, deps, risk, labels],
     ).map_err(|e| e.to_string())?;
 
     // Mark backlog item as ready_for_board

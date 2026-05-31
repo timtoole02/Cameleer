@@ -17,6 +17,7 @@ mod chat_service;
 mod checkpoint_store;
 mod command_guard;
 mod context_engine;
+pub mod dataset_exporter;
 mod event_bus;
 pub mod llm_adapter;
 pub mod memory_engine;
@@ -28,7 +29,6 @@ mod storage;
 mod supervisor;
 mod task_manager;
 mod work_engine;
-pub mod dataset_exporter;
 
 use storage::DbState;
 use tauri::Manager;

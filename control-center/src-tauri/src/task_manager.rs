@@ -917,7 +917,7 @@ pub fn submit_review(
                     if let Some(_target_agent) = assigned_opt {
                         let session_id = format!("task_{}", tid);
                         let sys_msg = format!("System Notification: The blocker '{}' has been completed. Your task '{}' is now UNBLOCKED and ready to resume.", card_id, tid);
-                        
+
                         let _ = conn.execute(
                             "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, 'system', 'unblock_manager', ?2)",
                             params![session_id, sys_msg],
@@ -941,7 +941,7 @@ pub fn submit_review(
         if let Some(target_agent) = assigned_agent {
             let session_id = format!("task_{}", card_id);
             let sys_msg = format!("System Notification: Your task '{}' was REJECTED in review by {}. Notes: {}. It has been moved back to 'ready'.", card_id, reviewer_id, notes);
-            
+
             let _ = conn.execute(
                 "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, 'system', 'review_tribunal', ?2)",
                 params![session_id, sys_msg],

@@ -16,6 +16,8 @@ export interface BacklogItem {
   owner_human_id?: string | null;
   proposed_agent_role?: string | null;
   acceptance_criteria?: string | null;
+  definition_of_done?: string | null;
+  required_files?: string | null;
   refinement_notes?: string | null;
   dependencies?: string | null;
   risk_level: string;

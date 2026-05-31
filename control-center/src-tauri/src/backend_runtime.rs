@@ -203,7 +203,9 @@ fn resolve_binary_path(config: &BackendRuntimeConfig) -> Result<PathBuf, String>
     // Instead of silently falling back to 'camelid', verify it exists via `which` or return error
     if let Ok(path_output) = std::process::Command::new("which").arg("camelid").output() {
         if path_output.status.success() {
-            let path_str = String::from_utf8_lossy(&path_output.stdout).trim().to_string();
+            let path_str = String::from_utf8_lossy(&path_output.stdout)
+                .trim()
+                .to_string();
             log_supervisor_event(&format!("Found backend binary in PATH at: {}", path_str));
             return Ok(PathBuf::from(path_str));
         }
@@ -1000,7 +1002,7 @@ pub async fn verify_packaged_runtime(app_handle: AppHandle) -> Result<RuntimeVer
         .unwrap_or_default();
 
     let mut paths_to_search = vec![];
-    
+
     if let Some(ref path_override) = config.backend_binary_path {
         paths_to_search.push(PathBuf::from(path_override));
     }
@@ -1018,17 +1020,20 @@ pub async fn verify_packaged_runtime(app_handle: AppHandle) -> Result<RuntimeVer
         if p.exists() {
             result.found = true;
             result.resolved_path = Some(p.to_string_lossy().to_string());
-            
+
             if let Ok(metadata) = std::fs::metadata(&p) {
                 if let Ok(output) = Command::new(&p).arg("--version").output() {
                     result.executable = true;
                     if output.status.success() {
-                        result.version_output = Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
+                        result.version_output =
+                            Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
                     } else {
-                        result.version_output = Some(String::from_utf8_lossy(&output.stderr).trim().to_string());
+                        result.version_output =
+                            Some(String::from_utf8_lossy(&output.stderr).trim().to_string());
                     }
                 } else {
-                    result.error_message = Some("Found binary, but failed to execute it.".to_string());
+                    result.error_message =
+                        Some("Found binary, but failed to execute it.".to_string());
                 }
             }
             return Ok(result);
@@ -1038,17 +1043,21 @@ pub async fn verify_packaged_runtime(app_handle: AppHandle) -> Result<RuntimeVer
     result.searched_paths.push("$PATH/camelid".to_string());
     if let Ok(path_output) = Command::new("which").arg("camelid").output() {
         if path_output.status.success() {
-            let path_str = String::from_utf8_lossy(&path_output.stdout).trim().to_string();
+            let path_str = String::from_utf8_lossy(&path_output.stdout)
+                .trim()
+                .to_string();
             result.found = true;
             result.resolved_path = Some(path_str.clone());
             if let Ok(output) = Command::new(&path_str).arg("--version").output() {
                 result.executable = true;
-                result.version_output = Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
+                result.version_output =
+                    Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
             }
             return Ok(result);
         }
     }
 
-    result.error_message = Some("Inference engine binary not found in any standard path.".to_string());
+    result.error_message =
+        Some("Inference engine binary not found in any standard path.".to_string());
     Ok(result)
 }
