@@ -373,6 +373,31 @@ pub fn assign_card(card_id: String, agent_id: String, state: State<DbState>) -> 
 pub fn move_card(card_id: String, new_status: String, reason: Option<String>, state: State<DbState>) -> Result<(), String> {
     let conn = state.conn.lock().unwrap();
     
+    let current_status: String = conn.query_row("SELECT status FROM kanban_cards WHERE id = ?1", [&card_id], |row| row.get(0)).unwrap_or_default();
+
+    if new_status == "In Progress" && current_status != "In Progress" {
+        // Check dependencies before allowing execution
+        let blocked_by: Option<String> = conn.query_row("SELECT blocked_by FROM kanban_cards WHERE id = ?1", [&card_id], |row| row.get(0)).unwrap_or_default();
+        if let Some(blocker) = blocked_by {
+            if !blocker.is_empty() {
+                return Err(format!("Cannot start work. Task is blocked by: {}", blocker));
+            }
+        }
+        
+        let deps: Option<String> = conn.query_row("SELECT dependencies FROM kanban_cards WHERE id = ?1", [&card_id], |row| row.get(0)).unwrap_or_default();
+        if let Some(deps_str) = deps {
+            if !deps_str.is_empty() {
+                let dep_ids: Vec<&str> = deps_str.split(',').collect();
+                for dep_id in dep_ids {
+                    let dep_status: String = conn.query_row("SELECT status FROM kanban_cards WHERE id = ?1", [dep_id.trim()], |row| row.get(0)).unwrap_or_default();
+                    if dep_status != "Done" {
+                        return Err(format!("Cannot start work. Dependency '{}' is not Done.", dep_id));
+                    }
+                }
+            }
+        }
+    }
+
     // If moving to Done, enforce rules!
     if new_status == "Done" {
         let mut stmt = conn.prepare("SELECT acceptance_criteria, completion_evidence, work_receipt_id, review_required, validation_status FROM kanban_cards WHERE id = ?1").unwrap();
@@ -380,12 +405,22 @@ pub fn move_card(card_id: String, new_status: String, reason: Option<String>, st
             Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?))
         }).map_err(|e| e.to_string())?;
         
-        // Simple enforcement checks for Phase 2!
-        if row.1.is_none() || row.1.as_ref().unwrap().is_empty() {
-            return Err("Cannot mark Done. Completion evidence is missing!".to_string());
-        }
+        let has_evidence = row.1.is_some() && !row.1.as_ref().unwrap().is_empty();
         
-        // If it requires review, check if it's approved (for now bypass if we are user)
+        if !has_evidence {
+            if reason.as_deref() == Some("Manual Drag and Drop") {
+                // Create a manual override receipt
+                let receipt_id = format!("receipt_manual_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros());
+                conn.execute(
+                    "INSERT INTO mission_work_receipts (card_id, agent_id, summary, validation_result) VALUES (?1, 'human_override', 'Card moved to Done manually by human without evidence.', 'manual_override')",
+                    params![card_id]
+                ).map_err(|e| e.to_string())?;
+                
+                conn.execute("UPDATE kanban_cards SET completion_evidence = 'Manual human override receipt', work_receipt_id = ?1 WHERE id = ?2", params![receipt_id, card_id]).map_err(|e| e.to_string())?;
+            } else {
+                return Err("Cannot mark Done. Completion evidence is missing and validation did not pass!".to_string());
+            }
+        }
     }
 
     conn.execute("UPDATE kanban_cards SET status = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![new_status, card_id]).map_err(|e| e.to_string())?;

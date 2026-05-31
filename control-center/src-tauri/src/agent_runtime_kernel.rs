@@ -207,7 +207,11 @@ pub async fn run_agent_cycle(agent_id: String, session_id: String, app_handle: A
             match crate::agent_tool_controller::execute_tool(&app_handle, &agent_id, &session_id, &contract, &action) {
                 Ok(result) => {
                     transition_reason = format!("Successfully executed {}", action.action_type);
-                    target_state = AgentState::Working; // Usually want them to continue working after a tool call
+                    if result.starts_with("Execution Suspended") {
+                        target_state = AgentState::WaitingForTool;
+                    } else {
+                        target_state = AgentState::Working; // Usually want them to continue working after a tool call
+                    }
                 },
                 Err(e) => {
                     let err_msg = format!("Tool execution failed: {}", e);

@@ -74,7 +74,7 @@ pub fn get_tasks(state: State<'_, DbState>) -> Result<Vec<Task>, String> {
                     acceptance_criteria, required_files, related_files, related_artifacts, 
                     dependencies, blockers, comments, activity_log, validation_status, 
                     completion_evidence 
-             FROM tasks",
+             FROM kanban_cards",
         )
         .map_err(|e| e.to_string())?;
 
@@ -129,7 +129,7 @@ pub fn get_agent_run_timeline(state: State<'_, DbState>, task_id: String) -> Res
     // First, let's fetch the legacy activity_log from the task
     let log_str: Option<String> = conn
         .query_row(
-            "SELECT activity_log FROM tasks WHERE id = ?1",
+            "SELECT activity_log FROM kanban_cards WHERE id = ?1",
             [&task_id],
             |row| row.get(0),
         )
@@ -196,7 +196,7 @@ pub fn _get_agent_work_queue_legacy(
                     acceptance_criteria, required_files, related_files, related_artifacts, 
                     dependencies, blockers, comments, activity_log, validation_status, 
                     completion_evidence 
-             FROM tasks 
+             FROM kanban_cards 
              WHERE (assigned_agent_id = ?1 OR owner_id = ?1) AND (workspace_id = ?2 OR workspace_id IS NULL)
              ORDER BY 
                CASE priority 
@@ -267,7 +267,7 @@ pub fn create_task(state: State<'_, DbState>, app_handle: AppHandle, task: Task)
     let workspace_id = task.workspace_id.clone().unwrap_or_else(|| "default".to_string());
 
     conn.execute(
-        "INSERT INTO tasks (id, workspace_id, title, description, owner_id, assigned_agent_id, 
+        "INSERT INTO kanban_cards (id, workspace_id, title, description, owner_id, assigned_agent_id, 
                             status, priority, created_by, due_date, acceptance_criteria, 
                             required_files, related_files, related_artifacts, dependencies, 
                             blockers, comments, activity_log, validation_status, completion_evidence)
@@ -330,7 +330,7 @@ pub fn update_task_status(
     // Get original card log
     let (log_str, owner_id): (Option<String>, Option<String>) = conn
         .query_row(
-            "SELECT activity_log, assigned_agent_id FROM tasks WHERE id = ?1",
+            "SELECT activity_log, assigned_agent_id FROM kanban_cards WHERE id = ?1",
             [&id],
             |row| Ok((row.get(0)?, row.get(1)?)),
         )
@@ -352,13 +352,13 @@ pub fn update_task_status(
 
     if let Some(ref path) = evidence_path {
         conn.execute(
-            "UPDATE tasks SET status = ?2, completion_evidence = ?3, activity_log = ?4, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+            "UPDATE kanban_cards SET status = ?2, completion_evidence = ?3, activity_log = ?4, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
             params![id, status, path, new_log_str],
         )
         .map_err(|e| e.to_string())?;
     } else {
         conn.execute(
-            "UPDATE tasks SET status = ?2, activity_log = ?3, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+            "UPDATE kanban_cards SET status = ?2, activity_log = ?3, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
             params![id, status, new_log_str],
         )
         .map_err(|e| e.to_string())?;
@@ -411,7 +411,7 @@ pub fn claim_card(
     // 1. Verify card status and assignee
     let (status, current_assignee): (String, Option<String>) = conn
         .query_row(
-            "SELECT status, assigned_agent_id FROM tasks WHERE id = ?1",
+            "SELECT status, assigned_agent_id FROM kanban_cards WHERE id = ?1",
             [&card_id],
             |row| Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?)),
         )
@@ -428,7 +428,7 @@ pub fn claim_card(
     // 2. Fetch log
     let log_str: Option<String> = conn
         .query_row(
-            "SELECT activity_log FROM tasks WHERE id = ?1",
+            "SELECT activity_log FROM kanban_cards WHERE id = ?1",
             [&card_id],
             |row| row.get(0),
         )
@@ -450,7 +450,7 @@ pub fn claim_card(
 
     // 3. Update task record
     conn.execute(
-        "UPDATE tasks 
+        "UPDATE kanban_cards 
          SET status = 'in_progress', owner_id = ?2, assigned_agent_id = ?2, 
              activity_log = ?3, updated_at = CURRENT_TIMESTAMP 
          WHERE id = ?1",
@@ -508,7 +508,7 @@ pub fn update_card_progress(
     // 1. Fetch current details
     let (log_str, rel_files_str, rel_arts_str, comms_str): (Option<String>, Option<String>, Option<String>, Option<String>) = conn
         .query_row(
-            "SELECT activity_log, related_files, related_artifacts, comments FROM tasks WHERE id = ?1",
+            "SELECT activity_log, related_files, related_artifacts, comments FROM kanban_cards WHERE id = ?1",
             [&card_id],
             |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
         )
@@ -577,7 +577,7 @@ pub fn update_card_progress(
     // 7. Update Task Card in database
     if let Some(ref val_status) = validation_status {
         conn.execute(
-            "UPDATE tasks 
+            "UPDATE kanban_cards 
              SET comments = ?2, activity_log = ?3, related_files = ?4, related_artifacts = ?5, 
                  blockers = ?6, validation_status = ?7, updated_at = CURRENT_TIMESTAMP 
              WHERE id = ?1",
@@ -586,7 +586,7 @@ pub fn update_card_progress(
         .map_err(|e| e.to_string())?;
     } else {
         conn.execute(
-            "UPDATE tasks 
+            "UPDATE kanban_cards 
              SET comments = ?2, activity_log = ?3, related_files = ?4, related_artifacts = ?5, 
                  blockers = ?6, updated_at = CURRENT_TIMESTAMP 
              WHERE id = ?1",
@@ -630,7 +630,7 @@ pub fn complete_card(
     // 1. Fetch card requirement lists
     let (req_files_str, log_str): (Option<String>, Option<String>) = conn
         .query_row(
-            "SELECT required_files, activity_log FROM tasks WHERE id = ?1",
+            "SELECT required_files, activity_log FROM kanban_cards WHERE id = ?1",
             [&card_id],
             |row| Ok((row.get(0)?, row.get(1)?)),
         )
@@ -680,7 +680,7 @@ pub fn complete_card(
 
     // 5. Update SQLite Card
     conn.execute(
-        "UPDATE tasks 
+        "UPDATE kanban_cards 
          SET status = 'done', validation_status = ?2, completion_evidence = ?3, 
              activity_log = ?4, updated_at = CURRENT_TIMESTAMP 
          WHERE id = ?1",
@@ -737,7 +737,7 @@ pub fn create_task_blocker(
     // Update log
     let log_str: Option<String> = conn
         .query_row(
-            "SELECT activity_log FROM tasks WHERE id = ?1",
+            "SELECT activity_log FROM kanban_cards WHERE id = ?1",
             [&task_id],
             |row| row.get(0),
         )
@@ -759,7 +759,7 @@ pub fn create_task_blocker(
 
     // Update status to blocked
     conn.execute(
-        "UPDATE tasks SET status = 'blocked', activity_log = ?2, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+        "UPDATE kanban_cards SET status = 'blocked', activity_log = ?2, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
         params![task_id, new_log_str],
     )
     .map_err(|e| e.to_string())?;
@@ -836,7 +836,7 @@ pub fn decompose_task(
     // Fetch parent details
     let (title, description): (String, Option<String>) = conn
         .query_row(
-            "SELECT title, description FROM tasks WHERE id = ?1",
+            "SELECT title, description FROM kanban_cards WHERE id = ?1",
             [&parent_task_id],
             |row| Ok((row.get(0)?, row.get(1)?)),
         )
@@ -940,7 +940,7 @@ pub fn approve_subtasks(
     // Get parent task details
     let (workspace_id, _parent_priority): (Option<String>, String) = conn
         .query_row(
-            "SELECT workspace_id, priority FROM tasks WHERE id = ?1",
+            "SELECT workspace_id, priority FROM kanban_cards WHERE id = ?1",
             [&parent_task_id],
             |row| Ok((row.get(0)?, row.get(1)?)),
         )
@@ -989,7 +989,7 @@ pub fn approve_subtasks(
         let smart_criteria_str = serde_json::to_string(&smart_criteria).unwrap_or_else(|_| "[]".to_string());
 
         conn.execute(
-            "INSERT OR REPLACE INTO tasks (id, workspace_id, title, description, owner_id, assigned_agent_id, status, priority, created_by, acceptance_criteria, required_files, related_files, related_artifacts, dependencies, blockers, comments, activity_log, validation_status)
+            "INSERT OR REPLACE INTO kanban_cards (id, workspace_id, title, description, owner_id, assigned_agent_id, status, priority, created_by, acceptance_criteria, required_files, related_files, related_artifacts, dependencies, blockers, comments, activity_log, validation_status)
              VALUES (?1, ?2, ?3, ?4, NULLIF(?5, ''), NULLIF(?5, ''), 'backlog', ?6, 'system', ?7, ?8, '[]', '[]', ?9, '[]', '[]', ?10, 'pending')",
             params![
                 sub.id,
@@ -1017,7 +1017,7 @@ pub fn approve_subtasks(
     // Set parent task status to 'blocked'
     let parent_log_str: Option<String> = conn
         .query_row(
-            "SELECT activity_log FROM tasks WHERE id = ?1",
+            "SELECT activity_log FROM kanban_cards WHERE id = ?1",
             [&parent_task_id],
             |row| row.get(0),
         )
@@ -1038,7 +1038,7 @@ pub fn approve_subtasks(
     let new_parent_log_str = serde_json::to_string(&parent_log).unwrap_or_else(|_| "[]".to_string());
 
     conn.execute(
-        "UPDATE tasks SET status = 'blocked', activity_log = ?2 WHERE id = ?1",
+        "UPDATE kanban_cards SET status = 'blocked', activity_log = ?2 WHERE id = ?1",
         params![parent_task_id, new_parent_log_str],
     )
     .map_err(|e| e.to_string())?;

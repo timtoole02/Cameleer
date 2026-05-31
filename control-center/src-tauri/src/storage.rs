@@ -20,7 +20,14 @@ pub fn get_db_path() -> PathBuf {
 }
 
 pub fn init_db(conn: &Connection) -> Result<()> {
-    // Migration: Check if agents has safety_profile column. If not, drop it to recreate.
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS schema_migrations (
+            version INTEGER PRIMARY KEY
+        )",
+        [],
+    )?;
+
+    // Migration: Check if agents has safety_profile column. If not, add it via ALTER TABLE.
     let has_safety_profile: bool = conn.query_row(
         "SELECT EXISTS(SELECT 1 FROM pragma_table_info('agents') WHERE name='safety_profile')",
         [],
@@ -28,7 +35,11 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     ).unwrap_or(false);
 
     if !has_safety_profile {
-        let _ = conn.execute("DROP TABLE IF EXISTS agents", []);
+        let _ = conn.execute("ALTER TABLE agents ADD COLUMN kanban_permissions TEXT DEFAULT 'full'", []);
+        let _ = conn.execute("ALTER TABLE agents ADD COLUMN review_requirements INTEGER DEFAULT 0", []);
+        let _ = conn.execute("ALTER TABLE agents ADD COLUMN safety_profile TEXT DEFAULT 'moderate'", []);
+        let _ = conn.execute("ALTER TABLE agents ADD COLUMN escalation_rules TEXT", []);
+        let _ = conn.execute("ALTER TABLE agents ADD COLUMN parent_agent_id TEXT REFERENCES agents(id)", []);
     }
 
     // 1. Agents Registry
@@ -96,11 +107,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     ).unwrap_or(false);
 
     if !has_workspace_id {
-        let _ = conn.execute("DROP TABLE IF EXISTS task_blockers", []);
-        let _ = conn.execute("DROP TABLE IF EXISTS agent_runs", []);
-        let _ = conn.execute("DROP TABLE IF EXISTS artifacts", []);
-        let _ = conn.execute("DROP TABLE IF EXISTS handoffs", []);
-        let _ = conn.execute("DROP TABLE IF EXISTS tasks", []);
+        let _ = conn.execute("ALTER TABLE kanban_cards ADD COLUMN workspace_id TEXT", []);
     }
 
     // Epic 5 Kanban System Schema
@@ -242,7 +249,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
                 status, priority, owner_id, created_by, created_at, updated_at,
                 acceptance_criteria, required_files, related_files, related_artifacts,
                 dependencies, validation_status, completion_evidence, comments, activity_log
-            FROM tasks",
+            FROM kanban_cards",
             [],
         ).unwrap_or(0);
         
@@ -262,7 +269,6 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     )?;
 
     // 6. Continuous Work Runs
-    conn.execute("DROP TABLE IF EXISTS agent_runs", []).ok();
     conn.execute(
         "CREATE TABLE IF NOT EXISTS agent_runs (
             id TEXT PRIMARY KEY,
@@ -334,7 +340,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS artifacts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            task_id TEXT REFERENCES tasks(id),
+            task_id TEXT REFERENCES kanban_cards(id),
             path TEXT NOT NULL,
             artifact_type TEXT NOT NULL,
             size_bytes INTEGER,
@@ -504,7 +510,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS handoffs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            task_id TEXT REFERENCES tasks(id),
+            task_id TEXT REFERENCES kanban_cards(id),
             source_agent_id TEXT REFERENCES agents(id),
             target_agent_id TEXT REFERENCES agents(id),
             reason TEXT NOT NULL,
@@ -519,7 +525,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         "CREATE TABLE IF NOT EXISTS checkpoints (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             agent_id TEXT REFERENCES agents(id),
-            task_id TEXT REFERENCES tasks(id),
+            task_id TEXT REFERENCES kanban_cards(id),
             plan TEXT,
             completed_steps TEXT,
             open_steps TEXT,
@@ -698,7 +704,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     // 20. Work Receipts
     conn.execute(
         "CREATE TABLE IF NOT EXISTS mission_work_receipts (
-            card_id TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,
+            card_id TEXT PRIMARY KEY REFERENCES kanban_cards(id) ON DELETE CASCADE,
             agent_id TEXT REFERENCES agents(id),
             summary TEXT NOT NULL,
             files_created TEXT, -- JSON Array

@@ -138,7 +138,7 @@ fn suspend_execution(
     // 2. Set task status to 'waiting_for_approval'
     let log_str: Option<String> = conn
         .query_row(
-            "SELECT activity_log FROM tasks WHERE id = ?1",
+            "SELECT activity_log FROM kanban_cards WHERE id = ?1",
             [task_id],
             |row| row.get(0),
         )
@@ -158,7 +158,7 @@ fn suspend_execution(
     let new_log_str = serde_json::to_string(&log_arr).unwrap_or_default();
 
     conn.execute(
-        "UPDATE tasks SET status = 'waiting_for_approval', activity_log = ?2 WHERE id = ?1",
+        "UPDATE kanban_cards SET status = 'waiting_for_approval', activity_log = ?2 WHERE id = ?1",
         params![task_id, new_log_str],
     )
     .map_err(|e| e.to_string())?;
@@ -246,7 +246,7 @@ pub fn resolve_command_approval(
 
         // 2. Set task status back to 'in_progress'
         conn.execute(
-            "UPDATE tasks SET status = 'in_progress' WHERE id = ?1",
+            "UPDATE kanban_cards SET status = 'in_progress' WHERE id = ?1",
             [&task_id],
         )
         .map_err(|e| e.to_string())?;
@@ -277,7 +277,7 @@ pub fn resolve_command_approval(
     } else {
         // Rejected: set task status back to 'ready'
         conn.execute(
-            "UPDATE tasks SET status = 'ready' WHERE id = ?1",
+            "UPDATE kanban_cards SET status = 'ready' WHERE id = ?1",
             [&task_id],
         )
         .map_err(|e| e.to_string())?;

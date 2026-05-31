@@ -644,7 +644,7 @@ pub fn apply_mission_preview(state: State<'_, DbState>, preview_id: String) -> R
         let dependencies_str = serde_json::to_string(&card.dependencies).unwrap_or_else(|_| "[]".to_string());
 
         conn.execute(
-            "INSERT OR REPLACE INTO tasks (id, workspace_id, title, description, owner_id, assigned_agent_id, status, priority, created_by, acceptance_criteria, required_files, related_files, related_artifacts, dependencies, blockers, comments, activity_log, validation_status)
+            "INSERT OR REPLACE INTO kanban_cards (id, workspace_id, title, description, owner_id, assigned_agent_id, status, priority, created_by, acceptance_criteria, required_files, related_files, related_artifacts, dependencies, blockers, comments, activity_log, validation_status)
              VALUES (?1, ?2, ?3, ?4, NULLIF(?5, ''), NULLIF(?5, ''), ?6, ?7, 'system', ?8, ?9, ?10, '[]', ?11, '[]', '[]', ?12, 'pending')",
             params![
                 card.id,
@@ -884,7 +884,7 @@ pub fn get_mission_recommendations(
     
     // Clear and build dynamic non-invasive suggestions based on current board state!
     let active_tasks: Vec<(String, String, Option<String>, Option<String>, Option<String>, Option<String>)> = {
-        let mut stmt = conn.prepare("SELECT id, title, dependencies, acceptance_criteria, assigned_agent_id, status FROM tasks WHERE workspace_id = ?1").map_err(|e| e.to_string())?;
+        let mut stmt = conn.prepare("SELECT id, title, dependencies, acceptance_criteria, assigned_agent_id, status FROM kanban_cards WHERE workspace_id = ?1").map_err(|e| e.to_string())?;
         let rows = stmt.query_map([&workspace_id], |row| {
             Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?))
         }).map_err(|e| e.to_string())?;
@@ -1082,7 +1082,7 @@ pub fn generate_work_receipt(
 
     // Fetch details of task
     let (title, desc_opt, evidence_opt, val_status_opt): (String, Option<String>, Option<String>, Option<String>) = conn.query_row(
-        "SELECT title, description, completion_evidence, validation_status FROM tasks WHERE id = ?1",
+        "SELECT title, description, completion_evidence, validation_status FROM kanban_cards WHERE id = ?1",
         [&card_id],
         |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
     ).map_err(|e| format!("Task not found: {}", e))?;

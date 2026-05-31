@@ -337,7 +337,7 @@ pub fn create_coding_sprint(
         let agent_id_val = assigned_agent_id.unwrap_or_else(|| "".to_string());
 
         conn.execute(
-            "INSERT OR REPLACE INTO tasks (id, workspace_id, title, description, assigned_agent_id, status, priority, acceptance_criteria, related_files, created_by, validation_status)
+            "INSERT OR REPLACE INTO kanban_cards (id, workspace_id, title, description, assigned_agent_id, status, priority, acceptance_criteria, related_files, created_by, validation_status)
              VALUES (?1, ?2, ?3, ?4, NULLIF(?5, ''), 'backlog', ?6, ?7, ?8, 'user', 'pending')",
             params![
                 id,

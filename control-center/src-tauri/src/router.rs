@@ -97,44 +97,9 @@ pub async fn call_model(
 
     match provider.to_lowercase().as_str() {
         "camelid" => {
-            // Local camelid: by default uses port 8181 or falls back to 8080.
-            let url = endpoint.unwrap_or_else(|| "http://127.0.0.1:8181/v1/chat/completions".to_string());
-            
-            // Build the payload. CRITICAL: Omit model parameter if we want it to fall back to the currently loaded model,
-            // or if it matches camelid defaults. We omit it here as recommended for best compatibility.
-            let mut payload = serde_json::json!({
-                "messages": messages,
-            });
-
-            if let Some(t) = settings.temperature {
-                payload["temperature"] = serde_json::json!(t);
-            }
-            if let Some(m) = settings.max_tokens {
-                payload["max_tokens"] = serde_json::json!(m);
-            }
-
-            let response = client
-                .post(&url)
-                .json(&payload)
-                .send()
-                .await
-                .map_err(|e| format!("Failed to connect to local camelid: {}", e))?;
-
-            if !response.status().is_success() {
-                let err_text = response.text().await.unwrap_or_default();
-                return Err(format!("Camelid error response: {}", err_text));
-            }
-
-            let json: serde_json::Value = response
-                .json()
-                .await
-                .map_err(|e| format!("Failed to parse Camelid response JSON: {}", e))?;
-
-            let text = json["choices"][0]["message"]["content"]
-                .as_str()
-                .ok_or_else(|| "Failed to retrieve content from choices".to_string())?;
-
-            Ok(text.to_string())
+            let adapter = crate::camelid_adapter::CamelidAdapter::new();
+            use crate::llm_adapter::LlmAdapter;
+            adapter.infer(model_name, messages, settings, api_key, endpoint).await
         }
         "ollama" => {
             let url = endpoint.unwrap_or_else(|| "http://127.0.0.1:11434/v1/chat/completions".to_string());

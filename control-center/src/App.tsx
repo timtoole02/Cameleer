@@ -433,7 +433,7 @@ function App() {
   // API Call: Propose Mission preview
   const handleGenerateProposal = async () => {
     if (!outcomeGoal.trim()) {
-      alert("Please specify your outcome goal first!");
+      window.toast("Please specify your outcome goal first!");
       return;
     }
     try {
@@ -446,7 +446,7 @@ function App() {
       loadMissionData();
       loadSuggestions();
     } catch (e) {
-      alert("Failed to generate mission preview: " + e);
+      window.toast("Failed to generate mission preview: " + e);
     }
   };
 
@@ -455,7 +455,7 @@ function App() {
     if (!missionPreview) return;
     try {
       await invoke("apply_mission_preview", { previewId: missionPreview.preview_id });
-      alert("🚀 Mission applied successfully! Real agents, cards, and contracts have been provisioned on the board.");
+      window.toast("🚀 Mission applied successfully! Real agents, cards, and contracts have been provisioned on the board.");
       setMissionPreview(null);
       setOutcomeGoal("");
       
@@ -467,7 +467,7 @@ function App() {
       loadMissionData();
       loadSuggestions();
     } catch (e) {
-      alert("Failed to apply mission: " + e);
+      window.toast("Failed to apply mission: " + e);
     }
   };
 
@@ -477,16 +477,16 @@ function App() {
     try {
       await invoke("discard_mission_preview", { previewId: missionPreview.preview_id });
       setMissionPreview(null);
-      alert("Proposal discarded.");
+      window.toast("Proposal discarded.");
     } catch (e) {
-      alert("Failed to discard proposal: " + e);
+      window.toast("Failed to discard proposal: " + e);
     }
   };
 
   // API Call: Save current proposal settings as reusable Custom Mission Pack
   const handleSaveCustomPack = async () => {
     if (!missionPreview || !customPackName.trim()) {
-      alert("Please specify a custom pack name!");
+      window.toast("Please specify a custom pack name!");
       return;
     }
     try {
@@ -494,11 +494,11 @@ function App() {
         previewId: missionPreview.preview_id,
         name: customPackName
       });
-      alert(`💾 Custom Mission Pack '${customPackName}' saved successfully!`);
+      window.toast(`💾 Custom Mission Pack '${customPackName}' saved successfully!`);
       setCustomPackName("");
       loadMissionData();
     } catch (e) {
-      alert("Failed to save custom pack: " + e);
+      window.toast("Failed to save custom pack: " + e);
     }
   };
 
@@ -523,7 +523,7 @@ function App() {
       setDoneApprovalRules(rules);
       loadMissionData();
     } catch (e) {
-      alert("Failed to update autopilot configurations: " + e);
+      window.toast("Failed to update autopilot configurations: " + e);
     }
   };
 
@@ -686,9 +686,9 @@ function App() {
     try {
       await invoke("create_software_team", { modelProvider: "camelid", modelName: "camelid-default" });
       await loadAgents();
-      alert("Turnkey Software Team successfully created!");
+      window.toast("Turnkey Software Team successfully created!");
     } catch (e) {
-      alert("Failed to create software team: " + e);
+      window.toast("Failed to create software team: " + e);
     }
   };
 
@@ -696,9 +696,9 @@ function App() {
     try {
       await invoke("create_coding_sprint", { workspaceId: "default" });
       await loadTasks();
-      alert("Tetris coding sprint enqueued into backlog!");
+      window.toast("Tetris coding sprint enqueued into backlog!");
     } catch (e) {
-      alert("Failed to create coding sprint: " + e);
+      window.toast("Failed to create coding sprint: " + e);
     }
   };
 
@@ -711,9 +711,9 @@ function App() {
         modelName: "camelid-default"
       });
       await loadAgents();
-      alert(`Agent "${wizardCustomName}" successfully launched into workforce!`);
+      window.toast(`Agent "${wizardCustomName}" successfully launched into workforce!`);
     } catch (e) {
-      alert("Failed to launch agent: " + e);
+      window.toast("Failed to launch agent: " + e);
     }
   };
 
@@ -723,7 +723,7 @@ function App() {
       const proposals = await invoke<SubtaskProposal[]>("decompose_task", { parentTaskId: taskId });
       setDecomposedProposals(proposals);
     } catch (e) {
-      alert("Failed to decompose task: " + e);
+      window.toast("Failed to decompose task: " + e);
     }
   };
 
@@ -736,9 +736,9 @@ function App() {
       setDecomposedProposals([]);
       setDecomposingTaskId("");
       await loadTasks();
-      alert("Subtask sprint approved and enqueued successfully!");
+      window.toast("Subtask sprint approved and enqueued successfully!");
     } catch (e) {
-      alert("Failed to approve subtasks: " + e);
+      window.toast("Failed to approve subtasks: " + e);
     }
   };
 
@@ -748,9 +748,9 @@ function App() {
       await loadSuggestions();
       await loadTasks();
       await loadAgents();
-      alert(approved ? "Command execution approved!" : "Command execution rejected.");
+      window.toast(approved ? "Command execution approved!" : "Command execution rejected.");
     } catch (e) {
-      alert("Failed to resolve command approval: " + e);
+      window.toast("Failed to resolve command approval: " + e);
     }
   };
 
@@ -769,28 +769,28 @@ function App() {
           }
         });
         await loadAgents();
-        alert("Agent status reset to idle.");
+        window.toast("Agent status reset to idle.");
       } else if (action === "approve_task") {
         const taskId = parts[1];
         await invoke("update_task_status", { id: taskId, status: "done", evidencePath: "User manual validation override." });
         await loadTasks();
-        alert("Task approved and completed!");
+        window.toast("Task approved and completed!");
       } else if (action === "accept_handoff") {
         const handoffId = parseInt(parts[1], 10);
         await invoke("resolve_handoff_cmd", { handoffId, resolution: "approved" });
         await loadTasks();
-        alert("Agent handoff resolved successfully!");
+        window.toast("Agent handoff resolved successfully!");
       } else if (action === "assign_task") {
         const taskId = parts[1];
         const agentId = parts[2];
         await invoke("claim_card", { agentId, cardId: taskId });
         await loadTasks();
         await loadAgents();
-        alert("Task claimed and assigned successfully!");
+        window.toast("Task claimed and assigned successfully!");
       }
       await loadSuggestions();
     } catch (e) {
-      alert("Failed to execute suggestion action: " + e);
+      window.toast("Failed to execute suggestion action: " + e);
     }
   };
 
@@ -908,7 +908,7 @@ function App() {
       });
       setRemoteModels(res);
     } catch (e) {
-      alert("Hugging Face Hub Search failed: " + e);
+      window.toast("Hugging Face Hub Search failed: " + e);
     }
   };
 
@@ -924,7 +924,7 @@ function App() {
       });
       setPreflightReport(report);
     } catch (e) {
-      alert("Preflight Check failed: " + e);
+      window.toast("Preflight Check failed: " + e);
     } finally {
       setPreflightLoading(false);
     }
@@ -938,7 +938,7 @@ function App() {
       loadLocalModels();
       setModelsSubTab("downloads");
     } catch (e) {
-      alert("Failed to queue model download: " + e);
+      window.toast("Failed to queue model download: " + e);
     }
   };
 
@@ -948,7 +948,7 @@ function App() {
       loadModelCatalog();
       loadLocalModels();
     } catch (e) {
-      alert("Failed to pause download: " + e);
+      window.toast("Failed to pause download: " + e);
     }
   };
 
@@ -959,13 +959,13 @@ function App() {
       loadStorageUsage();
       loadLocalModels();
     } catch (e) {
-      alert("Failed to cancel download: " + e);
+      window.toast("Failed to cancel download: " + e);
     }
   };
 
   const handleImportLocal = async () => {
     if (!importPath.trim()) {
-      alert("Please specify a valid local GGUF file path first.");
+      window.toast("Please specify a valid local GGUF file path first.");
       return;
     }
     try {
@@ -973,13 +973,13 @@ function App() {
         path: importPath,
         copyIntoStore: importCopy
       });
-      alert("Model successfully verified and imported into local catalog!");
+      window.toast("Model successfully verified and imported into local catalog!");
       setImportPath("");
       loadModelCatalog();
       loadStorageUsage();
       setModelsSubTab("installed");
     } catch (e) {
-      alert("Import failed: " + e);
+      window.toast("Import failed: " + e);
     }
   };
 
@@ -1004,14 +1004,14 @@ function App() {
         scopeType,
         scopeId
       });
-      alert(`Model successfully activated for ${scopeType} (${scopeId})!`);
+      window.toast(`Model successfully activated for ${scopeType} (${scopeId})!`);
       loadModelCatalog();
       loadLocalModels();
       if (selectedModelForInspect && selectedModelForInspect.model_id === modelId) {
         handleOpenModelInspect(selectedModelForInspect);
       }
     } catch (e) {
-      alert("Activation failed: " + e);
+      window.toast("Activation failed: " + e);
     }
   };
 
@@ -1024,7 +1024,7 @@ function App() {
       });
       setSmokeTestResult(res);
     } catch (e) {
-      alert("Smoke Test benchmark failed: " + e);
+      window.toast("Smoke Test benchmark failed: " + e);
     } finally {
       setSmokeTesting(false);
     }
@@ -1036,12 +1036,12 @@ function App() {
     }
     try {
       await invoke("delete_model", { modelId });
-      alert("Model payload successfully deleted.");
+      window.toast("Model payload successfully deleted.");
       setSelectedModelForInspect(null);
       loadModelCatalog();
       loadStorageUsage();
     } catch (e) {
-      alert("Failed to delete model: " + e);
+      window.toast("Failed to delete model: " + e);
     }
   };
 
@@ -1076,9 +1076,9 @@ function App() {
     try {
       const status = await invoke<BackendStatus>("check_backend_health");
       setBackendStatus(status);
-      alert(`Backend health check completed! Current state: ${status.state}`);
+      window.toast(`Backend health check completed! Current state: ${status.state}`);
     } catch (e) {
-      alert("Health check command failed: " + e);
+      window.toast("Health check command failed: " + e);
     }
   };
 
@@ -1086,10 +1086,10 @@ function App() {
     try {
       const status = await invoke<BackendStatus>("restart_backend", { reason: "user_requested" });
       setBackendStatus(status);
-      alert(`Backend successfully restarted! Current state: ${status.state}`);
+      window.toast(`Backend successfully restarted! Current state: ${status.state}`);
       handleGetBackendLogs();
     } catch (e) {
-      alert("Restart command failed: " + e);
+      window.toast("Restart command failed: " + e);
     }
   };
 
@@ -1097,9 +1097,9 @@ function App() {
     try {
       const status = await invoke<BackendStatus>("stop_backend");
       setBackendStatus(status);
-      alert("Backend inference daemon successfully stopped.");
+      window.toast("Backend inference daemon successfully stopped.");
     } catch (e) {
-      alert("Stop command failed: " + e);
+      window.toast("Stop command failed: " + e);
     }
   };
 
@@ -1116,7 +1116,7 @@ function App() {
     try {
       await invoke("open_backend_logs");
     } catch (e) {
-      alert("Failed to open logs: " + e);
+      window.toast("Failed to open logs: " + e);
     }
   };
 
@@ -1151,11 +1151,11 @@ function App() {
           await handleRestartBackend();
         }
       } else {
-        alert("Supervisor configuration successfully saved!");
+        window.toast("Supervisor configuration successfully saved!");
       }
       loadBackendStatus();
     } catch (e) {
-      alert("Failed to save config: " + e);
+      window.toast("Failed to save config: " + e);
     }
   };
 
@@ -1166,7 +1166,7 @@ function App() {
     try {
       const status = await invoke<BackendStatus>("reset_backend_runtime_state");
       setBackendStatus(status);
-      alert("Backend runtime supervisor reset successfully!");
+      window.toast("Backend runtime supervisor reset successfully!");
       setFormBinaryPath("");
       setFormBindAddress("127.0.0.1");
       setFormPort(8181);
@@ -1174,7 +1174,7 @@ function App() {
       setFormMaxRestarts(5);
       setFormBackoffPolicy("exponential");
     } catch (e) {
-      alert("Failed to reset supervisor state: " + e);
+      window.toast("Failed to reset supervisor state: " + e);
     }
   };
 
@@ -1374,7 +1374,7 @@ function App() {
       await invoke("resolve_handoff_cmd", { id, status });
       loadCoordinationDetails();
     } catch (e) {
-      alert("Failed to resolve handoff: " + e);
+      window.toast("Failed to resolve handoff: " + e);
     }
   };
 
@@ -1493,7 +1493,7 @@ function App() {
   const handleSaveAgentConfig = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editAgentId || !editName || !editRole) {
-      alert("Name and Role are required fields.");
+      window.toast("Name and Role are required fields.");
       return;
     }
 
@@ -1519,10 +1519,10 @@ function App() {
     try {
       await invoke("update_agent", { agent: updatedAgent });
       await loadAgents();
-      alert(`Agent directive for ${editName} updated successfully!`);
+      window.toast(`Agent directive for ${editName} updated successfully!`);
     } catch (err) {
       console.error("Failed to update agent", err);
-      alert(`Failed to update agent: ${err}`);
+      window.toast(`Failed to update agent: ${err}`);
     }
   };
 
@@ -1549,10 +1549,10 @@ function App() {
         setEditTalkGlobally(true);
         setEditContinuous(false);
       }
-      alert("Agent retired successfully!");
+      window.toast("Agent retired successfully!");
     } catch (err) {
       console.error("Failed to delete agent", err);
-      alert(`Failed to delete agent: ${err}`);
+      window.toast(`Failed to delete agent: ${err}`);
     }
   };
 
@@ -1620,7 +1620,7 @@ function App() {
       setRefreshKanban(prev => prev + 1);
     } catch (err: any) {
       console.error("Failed to create task", err);
-      alert("Failed to create task: " + err);
+      window.toast("Failed to create task: " + err);
     }
   };
 
@@ -1640,7 +1640,7 @@ function App() {
       }
       loadTasks();
     } catch (err: any) {
-      alert("Failed to transition status: " + err);
+      window.toast("Failed to transition status: " + err);
     }
   };
 
@@ -1656,7 +1656,7 @@ function App() {
         if (updated) setSelectedKanbanTask(updated);
       }
     } catch (err: any) {
-      alert("Failed to claim card: " + err);
+      window.toast("Failed to claim card: " + err);
     }
   };
 
@@ -1665,7 +1665,7 @@ function App() {
     e.preventDefault();
     if (!selectedKanbanTask) return;
     if (!selectedCompletingAgentId) {
-      alert("Please select the agent completing the task.");
+      window.toast("Please select the agent completing the task.");
       return;
     }
 
@@ -1712,7 +1712,7 @@ function App() {
       if (updated) setSelectedKanbanTask(updated);
       loadTasks();
     } catch (err: any) {
-      alert("Failed to add comment: " + err);
+      window.toast("Failed to add comment: " + err);
     }
   };
 
@@ -1735,7 +1735,7 @@ function App() {
       if (updated) setSelectedKanbanTask(updated);
       loadTasks();
     } catch (err: any) {
-      alert("Failed to add blocker: " + err);
+      window.toast("Failed to add blocker: " + err);
     }
   };
 
@@ -1774,7 +1774,7 @@ function App() {
       setSelectedKanbanTask(updatedTask);
       loadTasks();
     } catch (err: any) {
-      alert("Failed to toggle checklist item: " + err);
+      window.toast("Failed to toggle checklist item: " + err);
     }
   };
 
@@ -1833,7 +1833,7 @@ function App() {
         setBlackboardInput("");
         loadBlackboard();
       }
-      alert("Settings saved successfully!");
+      window.toast("Settings saved successfully!");
     } catch (e) {
       console.error("Failed to save settings", e);
     }
@@ -1997,7 +1997,7 @@ function App() {
                   try {
                     await invoke("reveal_backend_binary");
                   } catch(e) {
-                    alert("Failed to reveal binary: " + e);
+                    window.toast("Failed to reveal binary: " + e);
                   }
                 }} className="action-btn" style={{ margin: 0, height: "38px", padding: "0 16px", fontSize: "0.82rem" }}>
                   🔍 Reveal Binary
@@ -4559,7 +4559,7 @@ function App() {
                   try {
                     await invoke("reveal_backend_binary");
                   } catch(e) {
-                    alert("Failed to reveal binary: " + e);
+                    window.toast("Failed to reveal binary: " + e);
                   }
                 }} className="action-btn">
                   🔍 Reveal Backend Binary
@@ -5026,7 +5026,7 @@ function App() {
                         setNewDecisionText("");
                         loadCoordinationDetails();
                       } catch (err) {
-                        alert("Failed to record decision: " + err);
+                        window.toast("Failed to record decision: " + err);
                       }
                     }
                   }}
@@ -5054,7 +5054,7 @@ function App() {
                       setNewDecisionText("");
                       loadCoordinationDetails();
                     } catch (err) {
-                      alert("Failed to record decision: " + err);
+                      window.toast("Failed to record decision: " + err);
                     }
                   }}
                 >
@@ -5597,7 +5597,7 @@ function App() {
                                   handleSelectArtifact(art.path);
                                   setSelectedKanbanTask(null);
                                 } else {
-                                  alert(`File path: ${file}`);
+                                  window.toast(`File path: ${file}`);
                                 }
                               }}
                               style={{ fontSize: "0.72rem", fontFamily: "var(--font-mono)", background: "rgba(79, 172, 254, 0.08)", color: "var(--accent-secondary)", border: "1px solid rgba(79, 172, 254, 0.2)", padding: "4px 8px", borderRadius: "6px", cursor: "pointer" }}
@@ -5959,7 +5959,7 @@ function App() {
                             style={{ margin: 0, padding: "0 12px", height: "36px", fontSize: "0.78rem" }}
                             onClick={() => {
                               if (!selectedClaimingAgentId) {
-                                alert("Please select an agent to claim the card.");
+                                window.toast("Please select an agent to claim the card.");
                                 return;
                               }
                               handleClaimCard(selectedClaimingAgentId, selectedKanbanTask.id);

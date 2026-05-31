@@ -7,6 +7,10 @@ use crate::agent_contracts::AgentContract;
 use crate::chat_service::AgentAction;
 use crate::event_bus::{emit_event, AppEvent};
 use crate::chat_service::DbMessage;
+use crate::command_guard::{check_command, GuardResult};
+use std::path::Path;
+use std::io::Read;
+use std::os::unix::process::CommandExt;
 
 pub fn execute_tool(
     app_handle: &AppHandle,
@@ -20,32 +24,66 @@ pub fn execute_tool(
     if !contract.allowed_actions.contains(&action.action_type) && action.action_type != "task.complete" && action.action_type != "task.claim" && action.action_type != "task.update" && action.action_type != "agent.handoff" && action.action_type != "message.send" {
         return Err(format!("Action {} is not permitted in your Agent Contract", action.action_type));
     }
-
     match action.action_type.as_str() {
         "command.run" => {
             if let Some(cmd_str) = &action.command {
-                // Check dangerous commands
-                if cmd_str.contains("rm -rf /") {
-                    return Err("Command execution rejected by safety rules".to_string());
+                let state = app_handle.state::<DbState>();
+                let task_id = action.task_id.clone().unwrap_or_else(|| "global".to_string());
+                
+                // 1. Hook into Command Guard
+                match check_command(&state, agent_id, &task_id, cmd_str)? {
+                    GuardResult::Suspended(reason) => {
+                        let msg = format!("Execution Suspended pending human approval: {}", reason);
+                        save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                        return Ok(msg);
+                    },
+                    GuardResult::Allowed => {}
                 }
 
                 println!("[TOOL CONTROLLER] Agent {} executing: {}", agent_id, cmd_str);
                 
-                let output = Command::new("sh")
-                    .arg("-c")
-                    .arg(cmd_str)
-                    .output()
-                    .map_err(|e| e.to_string())?;
+                // 2. Prevent sh -c bypass by parsing args directly (rudimentary split)
+                let mut parts = cmd_str.split_whitespace();
+                let binary = parts.next().unwrap_or("");
+                let args: Vec<&str> = parts.collect();
 
-                let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-                let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+                let mut child = Command::new(binary)
+                    .args(&args)
+                    .stdout(std::process::Stdio::piped())
+                    .stderr(std::process::Stdio::piped())
+                    .spawn()
+                    .map_err(|e| format!("Failed to spawn {}: {}", binary, e))?;
+
+                // 3. Timeout and Output Capping
+                // (Using a simple wait for now, but capping output reads)
+                let mut stdout_str = String::new();
+                let mut stderr_str = String::new();
+                
+                if let Some(mut stdout) = child.stdout.take() {
+                    stdout.read_to_string(&mut stdout_str).unwrap_or_default();
+                }
+                if let Some(mut stderr) = child.stderr.take() {
+                    stderr.read_to_string(&mut stderr_str).unwrap_or_default();
+                }
+                
+                let _ = child.wait(); // Wait to finish
+
+                // Cap output to 50KB to prevent payload overflow
+                if stdout_str.len() > 50000 {
+                    stdout_str.truncate(50000);
+                    stdout_str.push_str("\n...[STDOUT TRUNCATED DUE TO SIZE LIMIT]...");
+                }
+                if stderr_str.len() > 50000 {
+                    stderr_str.truncate(50000);
+                    stderr_str.push_str("\n...[STDERR TRUNCATED DUE TO SIZE LIMIT]...");
+                }
 
                 let mut result_text = String::new();
-                if !stdout.is_empty() {
-                    result_text.push_str(&format!("STDOUT:\n{}\n", stdout));
+                if !stdout_str.is_empty() {
+                    result_text.push_str(&format!("STDOUT:\n{}\n", stdout_str));
                 }
-                if !stderr.is_empty() {
-                    result_text.push_str(&format!("STDERR:\n{}\n", stderr));
+                if !stderr_str.is_empty() {
+                    result_text.push_str(&format!("STDERR:\n{}\n", stderr_str));
                 }
                 
                 let msg = format!("Execution result:\n{}", result_text);
@@ -58,13 +96,30 @@ pub fn execute_tool(
         },
         "file.write" => {
             if let (Some(path), Some(content)) = (&action.path, &action.content) {
-                // Here we would use `resolve_path` safely
-                // But for safety in this stub, let's just log it or simulate it if it's restricted
-                println!("[TOOL CONTROLLER] Agent {} writing file: {}", agent_id, path);
+                // Enforce workspace bounds
+                let workspace_root = "/Users/timtoole/.gemini/antigravity/scratch/Cameleer"; // TODO: Dynamic from DB
+                let target_path = Path::new(workspace_root).join(path);
                 
-                std::fs::write(path, content).map_err(|e| format!("Failed to write file: {}", e))?;
+                // Canonicalization strictly checks against traversal out of the root
+                let target_normalized = std::fs::canonicalize(target_path.parent().unwrap_or(Path::new(workspace_root)))
+                    .unwrap_or_else(|_| Path::new(workspace_root).to_path_buf())
+                    .join(target_path.file_name().unwrap_or_default());
                 
-                let msg = format!("Successfully wrote to {}", path);
+                if !target_normalized.starts_with(workspace_root) {
+                    return Err("Security Violation: Path traversal outside workspace root blocked.".to_string());
+                }
+
+                if action.dry_run.unwrap_or(false) {
+                    let msg = format!("Dry-run mode: Would write {} bytes to {:?}", content.len(), target_normalized);
+                    save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                    return Ok(msg);
+                }
+
+                println!("[TOOL CONTROLLER] Agent {} writing file safely: {:?}", agent_id, target_normalized);
+                
+                std::fs::write(&target_normalized, content).map_err(|e| format!("Failed to write file: {}", e))?;
+                
+                let msg = format!("Successfully wrote to {:?}", target_normalized);
                 save_and_emit_message(app_handle, session_id, "system", msg.clone());
                 
                 Ok(msg)

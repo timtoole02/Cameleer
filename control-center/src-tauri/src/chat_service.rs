@@ -166,7 +166,7 @@ fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> 
     }
 
     // Latest tasks
-    let mut stmt_tasks = conn.prepare("SELECT title, status FROM tasks LIMIT 3")?;
+    let mut stmt_tasks = conn.prepare("SELECT title, status FROM kanban_cards LIMIT 3")?;
     let task_iter = stmt_tasks.query_map([], |row| {
         Ok(format!("- Task: \"{}\" | [{}]", row.get::<_, String>(0)?, row.get::<_, String>(1)?))
     })?;
@@ -207,6 +207,7 @@ pub struct AgentNextAction {
     pub action_type: String,
     pub target: Option<String>,
     pub input: String,
+    pub dry_run: Option<bool>,
 }
 
 pub struct AgentAction {
@@ -233,6 +234,7 @@ pub struct AgentAction {
     pub memory_context: Option<String>,
     pub memory_importance: Option<i32>,
     pub memory_query: Option<String>,
+    pub dry_run: Option<bool>,
 }
 
 fn resolve_path(path: &str) -> std::path::PathBuf {
@@ -323,6 +325,7 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                         content.push('\n');
                     }
                     return Some(AgentAction {
+                        dry_run: None,
                         action_type: "write_file".to_string(),
                         command: None,
                         path: Some(path_part.to_string()),
@@ -384,6 +387,7 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                 
                 if !cmd_part.is_empty() {
                     return Some(AgentAction {
+                        dry_run: None,
                         action_type: "execute_command".to_string(),
                         command: Some(cmd_part.to_string()),
                         path: None,
@@ -440,6 +444,7 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
                 memory_context: None,
                 memory_importance: None,
                 memory_query: None,
+                dry_run: parsed_json.next_action.dry_run,
             };
 
             // Map specific JSON actions back to standardized internal types
@@ -568,6 +573,7 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
         };
 
         return Some(AgentAction {
+            dry_run: None,
             action_type,
             command: if command.is_empty() { None } else { Some(command) },
             path: if path.is_empty() { None } else { Some(path) },

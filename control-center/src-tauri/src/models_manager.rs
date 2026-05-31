@@ -1081,7 +1081,7 @@ pub async fn activate_model_scoped(
     } else if scope_type == "task" {
         // Scoped to task owner
         conn.execute(
-            "UPDATE agents SET model_name = ?1, model_provider = 'camelid' WHERE id = (SELECT owner_id FROM tasks WHERE id = ?2 LIMIT 1)",
+            "UPDATE agents SET model_name = ?1, model_provider = 'camelid' WHERE id = (SELECT owner_id FROM kanban_cards WHERE id = ?2 LIMIT 1)",
             params![filename, scope_id]
         ).map_err(|e| e.to_string())?;
     }

@@ -26,6 +26,8 @@ mod agent_recovery_engine;
 mod agent_handoff_manager;
 mod agent_conflict_detector;
 pub mod memory_engine;
+pub mod llm_adapter;
+pub mod camelid_adapter;
 
 use storage::DbState;
 use tauri::Manager;
