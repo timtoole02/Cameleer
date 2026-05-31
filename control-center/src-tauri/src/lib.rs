@@ -189,6 +189,7 @@ pub fn run() {
             org_services::get_agent_org_tree,
             org_services::move_agent_to_team,
             org_services::get_org_node_metrics,
+            system_services::get_backend_health,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

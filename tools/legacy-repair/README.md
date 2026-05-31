@@ -1,0 +1,1 @@
+These files are legacy one-off repair scripts from prototype development. They are not part of the production runtime, build, package, or test flow. Do not run them unless intentionally recovering historical code.

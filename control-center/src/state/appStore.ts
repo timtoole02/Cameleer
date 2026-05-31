@@ -1,42 +1,32 @@
 import { create } from 'zustand';
+import { BackendHealth } from '../api/health';
 
-export interface AppState {
-  activeProjectId: string | null;
-  selectedAgentId: string | null;
-  selectedThreadId: string | null;
-  selectedTaskId: string | null;
+interface AppState {
   activeTab: string;
-  backendHealth: 'healthy' | 'degraded' | 'offline' | 'unknown';
-  globalError: string | null;
-  lastRefreshAt: number;
-  
-  // Actions
-  setActiveProjectId: (id: string | null) => void;
-  setSelectedAgentId: (id: string | null) => void;
-  setSelectedThreadId: (id: string | null) => void;
-  setSelectedTaskId: (id: string | null) => void;
   setActiveTab: (tab: string) => void;
-  setBackendHealth: (health: 'healthy' | 'degraded' | 'offline' | 'unknown') => void;
-  setGlobalError: (error: string | null) => void;
-  triggerRefresh: () => void;
+  
+  backendHealth: BackendHealth | null;
+  setBackendHealth: (health: BackendHealth) => void;
+  
+  activeProjectId: string | null;
+  activeProjectName: string | null;
+  selectedAgentId: string | null;
+  setSelectedAgentId: (id: string | null) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  activeProjectId: null,
-  selectedAgentId: null,
-  selectedThreadId: null,
-  selectedTaskId: null,
   activeTab: 'Chat',
-  backendHealth: 'unknown',
-  globalError: null,
-  lastRefreshAt: Date.now(),
-  
-  setActiveProjectId: (id) => set({ activeProjectId: id }),
-  setSelectedAgentId: (id) => set({ selectedAgentId: id }),
-  setSelectedThreadId: (id) => set({ selectedThreadId: id }),
-  setSelectedTaskId: (id) => set({ selectedTaskId: id }),
   setActiveTab: (tab) => set({ activeTab: tab }),
-  setBackendHealth: (health) => set({ backendHealth: health }),
-  setGlobalError: (error) => set({ globalError: error }),
-  triggerRefresh: () => set({ lastRefreshAt: Date.now() }),
+  
+  backendHealth: null,
+  setBackendHealth: (health) => set({ 
+    backendHealth: health,
+    activeProjectId: health.active_project_id,
+    activeProjectName: health.active_project_name
+  }),
+  
+  activeProjectId: null,
+  activeProjectName: null,
+  selectedAgentId: null,
+  setSelectedAgentId: (id) => set({ selectedAgentId: id }),
 }));
