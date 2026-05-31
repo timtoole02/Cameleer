@@ -25,3 +25,8 @@
 - Upgraded `agent_handoff_manager.rs` to extract recent `agent_run_steps` for seamless agent context transfers during handoffs.
 - Constructed `VisualOrgChart.tsx` to dynamically render a hierarchical map of workspaces, projects, teams, and agents with Apple-class node aesthetics.
 - Embedded the visual org chart directly inside `ProjectDashboard.tsx` replacing the text placeholder.
+
+## Sprint 6: Mission Execution Tracker & Context Pruning
+- Established hard context caps within the backend file sandbox and handoff manager to prevent infinite recursive token buildup.
+- Expanded `mission_builder.rs` with `get_active_missions_progress` to calculate real-time Kanban completion percentages.
+- Added a Live Missions execution view within `App.tsx` displaying interactive, dynamic glassmorphic progress bars mapped to mission lifecycles.

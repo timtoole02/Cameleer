@@ -143,6 +143,16 @@ interface SubtaskProposal {
   required_files: string;
 }
 
+interface MissionProgress {
+  preview_id: string;
+  title: string;
+  goal: string;
+  total_cards: number;
+  completed_cards: number;
+  progress_percent: number;
+  status: string;
+}
+
 interface ModelCatalogEntry {
   model_id: string;
   display_name: string;
@@ -343,6 +353,7 @@ function App() {
   const [networkPermissions, setNetworkPermissions] = useState("none");
   const [doneApprovalRules, setDoneApprovalRules] = useState("reviewer_or_user");
   const [missionAuditEvents, setMissionAuditEvents] = useState<any[]>([]);
+  const [activeMissions, setActiveMissions] = useState<MissionProgress[]>([]);
   const [activeContract, setActiveContract] = useState<any | null>(null);
   const [activeReceipt, setActiveReceipt] = useState<any | null>(null);
 
@@ -426,6 +437,9 @@ function App() {
 
       const audits = await invoke<any[]>("get_mission_audit_events", { workspaceId: "default" });
       setMissionAuditEvents(audits);
+
+      const active_progs = await invoke<MissionProgress[]>("get_active_missions_progress", { workspaceId: "default" });
+      setActiveMissions(active_progs);
     } catch (e) {
       console.error("Error loading mission configurations:", e);
     }
@@ -2797,6 +2811,44 @@ function App() {
                           </div>
                         ))}
                       </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Section 4: Live Missions Execution Tracker */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <h4 style={{ margin: 0, fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)" }}>
+                    📡 Live Missions Execution Tracker
+                  </h4>
+                  <div style={{ flex: 1, minHeight: "150px", padding: "12px", borderRadius: "10px", background: "rgba(0,0,0,0.5)", border: "1px solid var(--border-color)", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {activeMissions.length === 0 ? (
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.74rem", fontFamily: "var(--font-mono)" }}>// No active missions in progress.</div>
+                    ) : (
+                      activeMissions.map((m) => (
+                        <div key={m.preview_id} className="card-glass" style={{ padding: "12px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                            <div style={{ fontSize: "0.8rem", fontWeight: "bold", color: "var(--accent-primary)" }}>{m.title}</div>
+                            <button 
+                              onClick={() => {
+                                setKanbanView("board");
+                                setActiveTab("kanban");
+                              }}
+                              style={{ background: "none", border: "1px solid var(--accent-secondary)", borderRadius: "4px", padding: "2px 6px", fontSize: "0.65rem", color: "var(--accent-secondary)", cursor: "pointer", textTransform: "uppercase" }}>
+                              View Board
+                            </button>
+                          </div>
+                          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "10px", lineHeight: 1.3 }}>
+                            {m.goal}
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-main)", marginBottom: "4px" }}>
+                            <span>{m.completed_cards} / {m.total_cards} Tasks</span>
+                            <span>{m.progress_percent.toFixed(0)}%</span>
+                          </div>
+                          <div style={{ width: "100%", height: "6px", background: "rgba(255,255,255,0.1)", borderRadius: "3px", overflow: "hidden" }}>
+                            <div style={{ width: `${m.progress_percent}%`, height: "100%", background: "linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))", transition: "width 0.3s ease" }}></div>
+                          </div>
+                        </div>
+                      ))
                     )}
                   </div>
                 </div>

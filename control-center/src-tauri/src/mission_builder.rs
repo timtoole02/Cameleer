@@ -145,6 +145,72 @@ pub struct AuditEvent {
 
 // --- Tauri Commands ---
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MissionProgress {
+    pub preview_id: String,
+    pub title: String,
+    pub goal: String,
+    pub total_cards: i64,
+    pub completed_cards: i64,
+    pub progress_percent: f64,
+    pub status: String,
+}
+
+#[tauri::command]
+pub fn get_active_missions_progress(state: State<'_, DbState>, workspace_id: String) -> Result<Vec<MissionProgress>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    
+    let mut stmt = conn.prepare(
+        "SELECT id, mission_title, mission_goal, status FROM mission_previews WHERE workspace_id = ?1 AND status IN ('applied', 'in_progress')"
+    ).map_err(|e| e.to_string())?;
+    
+    let iter = stmt.query_map([&workspace_id], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?, row.get::<_, String>(3)?))
+    }).map_err(|e| e.to_string())?;
+
+    let mut progress_list = Vec::new();
+    for item in iter {
+        if let Ok((id, title, goal, status)) = item {
+            // How to count total cards vs completed cards?
+            // The kanban_cards have id generated like format!("{}-{}", preview_id, card.title...)
+            // But we can check kanban cards that start with this preview_id, 
+            // OR even better, kanban cards created from this mission.
+            // Since we generated the card.id as `{preview_id}-...` we can just match it.
+            let pattern = format!("{}-%", id);
+            
+            let total_cards: i64 = conn.query_row(
+                "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1",
+                [&pattern],
+                |row| row.get(0)
+            ).unwrap_or(0);
+            
+            let completed_cards: i64 = conn.query_row(
+                "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1 AND status = 'Done'",
+                [&pattern],
+                |row| row.get(0)
+            ).unwrap_or(0);
+            
+            let progress_percent = if total_cards > 0 {
+                (completed_cards as f64 / total_cards as f64) * 100.0
+            } else {
+                0.0
+            };
+            
+            progress_list.push(MissionProgress {
+                preview_id: id,
+                title,
+                goal,
+                total_cards,
+                completed_cards,
+                progress_percent,
+                status,
+            });
+        }
+    }
+    
+    Ok(progress_list)
+}
+
 #[tauri::command]
 pub fn list_mission_packs(state: State<'_, DbState>) -> Result<Vec<MissionPack>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;

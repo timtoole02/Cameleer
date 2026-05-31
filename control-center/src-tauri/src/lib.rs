@@ -136,6 +136,7 @@ pub fn run() {
             mission_builder::apply_mission_preview,
             mission_builder::discard_mission_preview,
             mission_builder::save_mission_pack_from_preview,
+            mission_builder::get_active_missions_progress,
             mission_builder::get_autopilot_settings,
             mission_builder::update_autopilot_settings,
             mission_builder::get_mission_recommendations,

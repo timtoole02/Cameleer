@@ -48,3 +48,15 @@ This document tracks the verified end-to-end execution flows for the Cameleer ar
 **Status**: 🟢 PASS
 **Notes**:
 - Verified Visual Org Chart renders accurately in `ProjectDashboard.tsx` based on `agent_org_nodes`.
+
+### Mission Execution Tracker (Sprint 6)
+**Scenario**: User tracks the progress of a generated Mission Pack.
+**Steps**:
+1. Open the "Missions" tab and apply a new Blueprint.
+2. The Live Missions section renders a progress bar tracking `0/N` tasks completed.
+3. Transition a generated kanban card to 'Done'.
+4. Verify the Mission Tracker correctly calculates and fills the progress bar.
+
+**Status**: 🟢 PASS
+**Notes**:
+- Token pruning successfully verified: Handoff context is strictly capped at 5 recent SQL entries.
