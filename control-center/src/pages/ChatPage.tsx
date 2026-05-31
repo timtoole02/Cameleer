@@ -42,7 +42,7 @@ export const ChatPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [backendHealth]);
+  }, [backendHealth?.database_status]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,4 +195,3 @@ export const ChatPage: React.FC = () => {
     </PageShell>
   );
 };
-
