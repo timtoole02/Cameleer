@@ -190,6 +190,293 @@ pub fn get_agent_run_timeline(
     Ok(timeline)
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CardTimelineEntry {
+    pub timestamp: String,
+    pub entry_type: String,
+    pub agent_id: Option<String>,
+    pub title: String,
+    pub details: serde_json::Value,
+}
+
+#[tauri::command]
+pub fn get_card_timeline(
+    state: State<'_, DbState>,
+    task_id: String,
+) -> Result<Vec<CardTimelineEntry>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let mut timeline = Vec::new();
+
+    // 1. Card status and assignment events
+    if let Ok(mut stmt) = conn.prepare(
+        "SELECT timestamp, event_type, agent_id, payload FROM events WHERE task_id = ?1"
+    ) {
+        if let Ok(event_iter) = stmt.query_map([&task_id], |row| {
+            let timestamp: String = row.get(0)?;
+            let event_type: String = row.get(1)?;
+            let agent_id: Option<String> = row.get(2)?;
+            let payload_str: String = row.get(3)?;
+            let payload: serde_json::Value = serde_json::from_str(&payload_str).unwrap_or(serde_json::Value::Null);
+
+            Ok(CardTimelineEntry {
+                timestamp,
+                entry_type: "event".to_string(),
+                agent_id,
+                title: match event_type.as_str() {
+                    "card_status_changed" => "Card status changed".to_string(),
+                    "card_assigned" => "Agent assigned to card".to_string(),
+                    "review_submitted" => "Review verdict submitted".to_string(),
+                    _ => format!("Event: {}", event_type),
+                },
+                details: payload,
+            })
+        }) {
+            for entry in event_iter {
+                if let Ok(e) = entry {
+                    timeline.push(e);
+                }
+            }
+        }
+    }
+
+    // 2. Agent Run Steps
+    if let Ok(mut stmt) = conn.prepare(
+        "SELECT s.created_at, r.agent_id, s.step_type, s.content 
+         FROM agent_runs r
+         JOIN agent_run_steps s ON r.id = s.run_id
+         WHERE r.task_id = ?1"
+    ) {
+        if let Ok(step_iter) = stmt.query_map([&task_id], |row| {
+            let timestamp: String = row.get(0)?;
+            let agent_id: Option<String> = row.get(1)?;
+            let step_type: String = row.get(2)?;
+            let content: String = row.get(3)?;
+
+            Ok(CardTimelineEntry {
+                timestamp,
+                entry_type: "run_step".to_string(),
+                agent_id,
+                title: format!("Agent reasoning step: {}", step_type),
+                details: serde_json::json!({
+                    "step_type": step_type,
+                    "content": content
+                }),
+            })
+        }) {
+            for entry in step_iter {
+                if let Ok(e) = entry {
+                    timeline.push(e);
+                }
+            }
+        }
+    }
+
+    // 3. Tool Invocations
+    if let Ok(mut stmt) = conn.prepare(
+        "SELECT created_at, agent_id, tool_name, arguments, output, status FROM tool_invocations WHERE task_id = ?1"
+    ) {
+        if let Ok(tool_iter) = stmt.query_map([&task_id], |row| {
+            let timestamp: String = row.get(0)?;
+            let agent_id: Option<String> = row.get(1)?;
+            let tool_name: String = row.get(2)?;
+            let args_str: String = row.get(3)?;
+            let output: Option<String> = row.get(4)?;
+            let status: String = row.get(5)?;
+            let args: serde_json::Value = serde_json::from_str(&args_str).unwrap_or(serde_json::Value::Null);
+
+            Ok(CardTimelineEntry {
+                timestamp,
+                entry_type: "tool_invocation".to_string(),
+                agent_id,
+                title: format!("Tool call: {}", tool_name),
+                details: serde_json::json!({
+                    "tool_name": tool_name,
+                    "arguments": args,
+                    "output": output.unwrap_or_default(),
+                    "status": status
+                }),
+            })
+        }) {
+            for entry in tool_iter {
+                if let Ok(e) = entry {
+                    timeline.push(e);
+                }
+            }
+        }
+    }
+
+    // 4. Tool Approvals
+    if let Ok(mut stmt) = conn.prepare(
+        "SELECT created_at, agent_id, tool_name, arguments, status, decided_by, feedback, decided_at FROM tool_approvals WHERE card_id = ?1"
+    ) {
+        if let Ok(approval_iter) = stmt.query_map([&task_id], |row| {
+            let timestamp: String = row.get(0)?;
+            let agent_id: Option<String> = row.get(1)?;
+            let tool_name: String = row.get(2)?;
+            let args_str: String = row.get(3)?;
+            let status: Option<String> = row.get(4)?;
+            let decided_by: Option<String> = row.get(5)?;
+            let feedback: Option<String> = row.get(6)?;
+            let decided_at: Option<String> = row.get(7)?;
+            let args: serde_json::Value = serde_json::from_str(&args_str).unwrap_or(serde_json::Value::Null);
+
+            Ok(CardTimelineEntry {
+                timestamp,
+                entry_type: "tool_approval".to_string(),
+                agent_id,
+                title: format!("Tool guard approval: {}", tool_name),
+                details: serde_json::json!({
+                    "tool_name": tool_name,
+                    "arguments": args,
+                    "status": status.unwrap_or_default(),
+                    "decided_by": decided_by.unwrap_or_default(),
+                    "feedback": feedback.unwrap_or_default(),
+                    "decided_at": decided_at.unwrap_or_default()
+                }),
+            })
+        }) {
+            for entry in approval_iter {
+                if let Ok(e) = entry {
+                    timeline.push(e);
+                }
+            }
+        }
+    }
+
+    // 5. Artifacts
+    if let Ok(mut stmt) = conn.prepare(
+        "SELECT created_at, path, artifact_type FROM artifacts WHERE task_id = ?1"
+    ) {
+        if let Ok(artifact_iter) = stmt.query_map([&task_id], |row| {
+            let timestamp: String = row.get(0)?;
+            let path: String = row.get(1)?;
+            let artifact_type: String = row.get(2)?;
+
+            Ok(CardTimelineEntry {
+                timestamp,
+                entry_type: "artifact".to_string(),
+                agent_id: None,
+                title: format!("Artifact registered: {}", path),
+                details: serde_json::json!({
+                    "path": path,
+                    "artifact_type": artifact_type
+                }),
+            })
+        }) {
+            for entry in artifact_iter {
+                if let Ok(e) = entry {
+                    timeline.push(e);
+                }
+            }
+        }
+    }
+
+    // 6. Work Receipts
+    if let Ok(mut stmt) = conn.prepare(
+        "SELECT completed_at, agent_id, summary, validation_status, evidence_links FROM mission_work_receipts WHERE card_id = ?1"
+    ) {
+        if let Ok(receipt_iter) = stmt.query_map([&task_id], |row| {
+            let timestamp: String = row.get(0)?;
+            let agent_id: Option<String> = row.get(1)?;
+            let summary: Option<String> = row.get(2)?;
+            let val_status: Option<String> = row.get(3)?;
+            let evidence: Option<String> = row.get(4)?;
+
+            Ok(CardTimelineEntry {
+                timestamp,
+                entry_type: "receipt".to_string(),
+                agent_id,
+                title: "Work receipt issued".to_string(),
+                details: serde_json::json!({
+                    "summary": summary.unwrap_or_default(),
+                    "validation_status": val_status.unwrap_or_default(),
+                    "evidence_links": evidence.unwrap_or_default()
+                }),
+            })
+        }) {
+            for entry in receipt_iter {
+                if let Ok(e) = entry {
+                    timeline.push(e);
+                }
+            }
+        }
+    }
+
+    // 7. Review Verdicts
+    if let Ok(mut stmt) = conn.prepare(
+        "SELECT created_at, reviewer_id, verdict, comments FROM review_verdicts WHERE card_id = ?1"
+    ) {
+        if let Ok(verdict_iter) = stmt.query_map([&task_id], |row| {
+            let timestamp: String = row.get(0)?;
+            let reviewer_id: Option<String> = row.get(1)?;
+            let verdict: String = row.get(2)?;
+            let comments: Option<String> = row.get(3)?;
+
+            Ok(CardTimelineEntry {
+                timestamp,
+                entry_type: "review".to_string(),
+                agent_id: reviewer_id,
+                title: format!("Review verdict: {}", verdict),
+                details: serde_json::json!({
+                    "verdict": verdict,
+                    "comments": comments.unwrap_or_default()
+                }),
+            })
+        }) {
+            for entry in verdict_iter {
+                if let Ok(e) = entry {
+                    timeline.push(e);
+                }
+            }
+        }
+    }
+
+    // Sort by timestamp ascending
+    timeline.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+
+    Ok(timeline)
+}
+
+#[tauri::command]
+pub fn submit_review_verdict(
+    state: State<'_, DbState>,
+    card_id: String,
+    reviewer_id: String,
+    verdict: String,
+    comments: Option<String>,
+) -> Result<(), String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+
+    conn.execute(
+        "INSERT INTO review_verdicts (card_id, reviewer_id, verdict, comments) VALUES (?1, ?2, ?3, ?4)",
+        params![card_id, reviewer_id, verdict, comments],
+    ).map_err(|e| e.to_string())?;
+
+    let payload = serde_json::json!({
+        "reviewer_id": reviewer_id,
+        "verdict": verdict,
+        "comments": comments.clone().unwrap_or_default()
+    }).to_string();
+    let _ = conn.execute(
+        "INSERT INTO events (event_type, task_id, agent_id, payload) VALUES ('review_submitted', ?1, ?2, ?3)",
+        params![card_id, reviewer_id, payload]
+    );
+
+    if verdict.to_lowercase() == "passed" {
+        let _ = conn.execute(
+            "UPDATE kanban_cards SET validation_status = 'passed' WHERE id = ?1",
+            [&card_id]
+        );
+    } else {
+        let _ = conn.execute(
+            "UPDATE kanban_cards SET validation_status = 'failed' WHERE id = ?1",
+            [&card_id]
+        );
+    }
+
+    Ok(())
+}
+
 // #[tauri::command]
 pub fn _get_agent_work_queue_legacy(
     state: State<'_, DbState>,

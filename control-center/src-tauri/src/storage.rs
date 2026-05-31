@@ -317,7 +317,55 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         [],
     )?;
 
-    // 6c. Memory System
+    // 6c. Tool Invocations
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS tool_invocations (
+            id TEXT PRIMARY KEY,
+            run_id TEXT REFERENCES agent_runs(id) ON DELETE CASCADE,
+            agent_id TEXT REFERENCES agents(id),
+            task_id TEXT REFERENCES kanban_cards(id),
+            tool_name TEXT NOT NULL,
+            arguments TEXT NOT NULL,
+            output TEXT,
+            status TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            completed_at DATETIME
+        )",
+        [],
+    )?;
+
+    // 6d. Tool Approvals
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS tool_approvals (
+            id TEXT PRIMARY KEY,
+            invocation_id TEXT REFERENCES tool_invocations(id) ON DELETE CASCADE,
+            card_id TEXT REFERENCES kanban_cards(id),
+            agent_id TEXT REFERENCES agents(id),
+            tool_name TEXT NOT NULL,
+            arguments TEXT NOT NULL,
+            status TEXT DEFAULT 'pending',
+            decided_by TEXT,
+            feedback TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            decided_at DATETIME
+        )",
+        [],
+    )?;
+
+    // 6e. Review Verdicts
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS review_verdicts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            card_id TEXT REFERENCES kanban_cards(id),
+            reviewer_id TEXT,
+            verdict TEXT NOT NULL,
+            comments TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        [],
+    )?;
+
+    // 6f. Memory System
     conn.execute(
         "CREATE TABLE IF NOT EXISTS memories (
             id TEXT PRIMARY KEY,

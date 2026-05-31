@@ -2,6 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 
 export const api = {
     getAgentRunTimeline: async (payload?: any) => { return invoke("get_agent_run_timeline", payload); },
+    getCardTimeline: async (payload?: any) => { return invoke("get_card_timeline", payload); },
+    submitReviewVerdict: async (payload?: any) => { return invoke("submit_review_verdict", payload); },
     getAgentContract: async (payload?: any) => { return invoke("get_agent_contract", payload); },
     getWorkReceipt: async (payload?: any) => { return invoke("get_work_receipt", payload); },
     listMissionPacks: async () => { return invoke("list_mission_packs"); },

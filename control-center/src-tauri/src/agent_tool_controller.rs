@@ -18,6 +18,112 @@ pub fn execute_tool(
     session_id: &str,
     contract: &AgentContract,
     action: &AgentAction,
+    run_id: Option<&str>,
+) -> Result<String, String> {
+    let invocation_id = format!(
+        "tool_inv_{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_micros()
+    );
+
+    let task_id = action.card_id.clone()
+        .or_else(|| action.task_id.clone())
+        .unwrap_or_else(|| "global".to_string());
+
+    let state = app_handle.state::<DbState>();
+    {
+        if let Ok(conn) = state.conn.lock() {
+            let arguments_str = serde_json::json!({
+                "command": action.command,
+                "path": action.path,
+                "content": action.content,
+                "notes": action.notes,
+                "evidence": action.evidence,
+                "target_agent_id": action.target_agent_id,
+                "card_id": action.card_id,
+            }).to_string();
+
+            let _ = conn.execute(
+                "INSERT INTO tool_invocations (id, run_id, agent_id, task_id, tool_name, arguments, status) 
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, 'running')",
+                params![
+                    invocation_id,
+                    run_id,
+                    agent_id,
+                    task_id,
+                    action.action_type,
+                    arguments_str
+                ],
+            );
+        }
+    }
+
+    let result = execute_tool_inner(app_handle, agent_id, session_id, contract, action, &invocation_id, &task_id);
+
+    {
+        if let Ok(conn) = state.conn.lock() {
+            let (status, output_str) = match &result {
+                Ok(out) => {
+                    if out.starts_with("Execution Suspended") {
+                        ("pending".to_string(), out.clone())
+                    } else {
+                        ("success".to_string(), out.clone())
+                    }
+                }
+                Err(err) => ("error".to_string(), err.clone()),
+            };
+
+            let capped_output = if output_str.len() > 50000 {
+                format!("{}... [TRUNCATED]", &output_str[..50000])
+            } else {
+                output_str
+            };
+
+            let _ = conn.execute(
+                "UPDATE tool_invocations SET status = ?1, output = ?2, completed_at = CURRENT_TIMESTAMP WHERE id = ?3",
+                params![status, capped_output, invocation_id],
+            );
+
+            if status == "pending" {
+                let arguments_str = serde_json::json!({
+                    "command": action.command,
+                    "path": action.path,
+                    "content": action.content,
+                    "notes": action.notes,
+                    "evidence": action.evidence,
+                    "target_agent_id": action.target_agent_id,
+                    "card_id": action.card_id,
+                }).to_string();
+
+                let _ = conn.execute(
+                    "INSERT INTO tool_approvals (id, invocation_id, card_id, agent_id, tool_name, arguments, status) 
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, 'pending')",
+                    params![
+                        format!("appr_{}", invocation_id),
+                        invocation_id,
+                        task_id,
+                        agent_id,
+                        action.action_type,
+                        arguments_str
+                    ],
+                );
+            }
+        }
+    }
+
+    result
+}
+
+fn execute_tool_inner(
+    app_handle: &AppHandle,
+    agent_id: &str,
+    session_id: &str,
+    contract: &AgentContract,
+    action: &AgentAction,
+    _invocation_id: &str,
+    _task_id: &str,
 ) -> Result<String, String> {
     // 1. Check allowed tools in contract
     if !contract.allowed_actions.contains(&action.action_type)

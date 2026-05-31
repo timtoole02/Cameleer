@@ -105,6 +105,8 @@ pub fn run() {
             task_manager::create_task,
             task_manager::create_task_blocker,
             task_manager::get_agent_run_timeline,
+            task_manager::get_card_timeline,
+            task_manager::submit_review_verdict,
             task_manager::register_artifact,
             task_manager::get_artifacts,
             task_manager::read_artifact_file,

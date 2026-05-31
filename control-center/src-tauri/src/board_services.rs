@@ -549,6 +549,13 @@ pub fn create_card(
 pub fn assign_card(card_id: String, agent_id: String, state: State<DbState>) -> Result<(), String> {
     let conn = state.conn.lock().unwrap();
     conn.execute("UPDATE kanban_cards SET assigned_agent_id = ?1, status = 'assigned', updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![agent_id, card_id]).map_err(|e| e.to_string())?;
+
+    let payload = serde_json::json!({
+        "assigned_agent_id": agent_id,
+        "status": "assigned"
+    }).to_string();
+    let _ = conn.execute("INSERT INTO events (event_type, task_id, agent_id, payload) VALUES ('card_assigned', ?1, ?2, ?3)", params![card_id, agent_id, payload]);
+
     Ok(())
 }
 
@@ -645,6 +652,17 @@ pub fn move_card(
         params![new_status, card_id],
     )
     .map_err(|e| e.to_string())?;
+
+    let payload = serde_json::json!({
+        "old_status": current_status,
+        "new_status": new_status,
+        "reason": reason.unwrap_or_default()
+    }).to_string();
+    let _ = conn.execute(
+        "INSERT INTO events (event_type, task_id, payload) VALUES ('card_status_changed', ?1, ?2)",
+        params![card_id, payload],
+    );
+
     Ok(())
 }
 

@@ -331,6 +331,7 @@ pub async fn run_agent_cycle(
                 &session_id,
                 &contract,
                 &action,
+                Some(&run_id),
             ) {
                 Ok(result) => {
                     transition_reason = format!("Successfully executed {}", action.action_type);
