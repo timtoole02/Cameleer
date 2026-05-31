@@ -27,6 +27,7 @@ mod org_services;
 mod router;
 mod storage;
 mod supervisor;
+mod system_services;
 mod task_manager;
 mod work_engine;
 
@@ -190,6 +191,8 @@ pub fn run() {
             org_services::move_agent_to_team,
             org_services::get_org_node_metrics,
             system_services::get_backend_health,
+            system_services::check_camelid_health,
+            system_services::reset_dev_database,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

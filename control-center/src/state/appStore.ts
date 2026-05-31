@@ -21,8 +21,8 @@ export const useAppStore = create<AppState>((set) => ({
   backendHealth: null,
   setBackendHealth: (health) => set({ 
     backendHealth: health,
-    activeProjectId: health.active_project_id,
-    activeProjectName: health.active_project_name
+    activeProjectId: health.active_workspace_id,
+    activeProjectName: health.active_workspace_name
   }),
   
   activeProjectId: null,
@@ -30,3 +30,4 @@ export const useAppStore = create<AppState>((set) => ({
   selectedAgentId: null,
   setSelectedAgentId: (id) => set({ selectedAgentId: id }),
 }));
+

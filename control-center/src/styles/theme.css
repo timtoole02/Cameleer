@@ -1,24 +1,50 @@
 :root {
-  --color-bg: #0b1120;
-  --color-bg-dark: #050a12;
-  --color-sidebar: #07111d;
-  --color-header: #07111d;
-  --color-panel: #ffffff;
-  --color-panel-muted: #f3f4f6;
-  --color-border: #d1d5db;
+  --app-bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f2f2f7;
+  --sidebar-bg: #111827;
+  --sidebar-text: #f9fafb;
+  --sidebar-muted: #cbd5e1;
+  --sidebar-active-bg: #1f2937;
+  --sidebar-active-border: #60a5fa;
 
-  --color-text: #111827;
-  --color-text-muted: #4b5563;
-  --color-text-on-dark: #f9fafb;
-  --color-text-muted-on-dark: #cbd5e1;
+  --text: #111827;
+  --text-muted: #4b5563;
+  --border: #d1d5db;
 
-  --color-primary: #2563eb;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+
+  --success-bg: #dcfce7;
+  --success-text: #166534;
+  --warning-bg: #fef3c7;
+  --warning-text: #92400e;
+  --danger-bg: #fee2e2;
+  --danger-text: #991b1b;
+
+  --radius: 10px;
+
+  /* Old variable mappings to keep existing layout styles functional but modern */
+  --color-bg: var(--app-bg);
+  --color-bg-dark: var(--surface-2);
+  --color-sidebar: var(--sidebar-bg);
+  --color-header: var(--sidebar-bg);
+  --color-panel: var(--surface);
+  --color-panel-muted: var(--surface-2);
+  --color-border: var(--border);
+
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-on-dark: var(--sidebar-text);
+  --color-text-muted-on-dark: var(--sidebar-muted);
+
+  --color-primary: var(--accent);
   --color-primary-hover: #1d4ed8;
-  --color-danger: #dc2626;
-  --color-warning: #d97706;
-  --color-success: #16a34a;
+  --color-danger: var(--danger-text);
+  --color-warning: var(--warning-text);
+  --color-success: var(--success-text);
 
   --radius-sm: 6px;
-  --radius-md: 10px;
+  --radius-md: var(--radius);
   --radius-lg: 14px;
 }

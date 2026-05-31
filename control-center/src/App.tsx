@@ -28,13 +28,20 @@ function App() {
     } catch (err: any) {
       setInitError(err.toString());
       setBackendHealth({
-        status: 'offline',
-        database_ready: false,
-        migrations_applied: false,
-        active_project_id: null,
-        active_project_name: null,
-        default_model_profile_id: null,
-        message: err.toString()
+        app_status: 'offline',
+        database_status: 'offline',
+        camelid_status: 'unknown',
+        schema_version: 0,
+        required_schema_version: 2,
+        database_path: '',
+        active_workspace_id: null,
+        active_workspace_name: null,
+        active_agent_id: null,
+        active_agent_name: null,
+        camelid_endpoint: '',
+        camelid_model: null,
+        errors: [err.toString()],
+        warnings: []
       });
     } finally {
       setIsChecking(false);
@@ -66,8 +73,8 @@ function App() {
     </div>;
   }
 
-  // If degraded or offline, show recovery panel
-  if (backendHealth?.status === 'offline' || backendHealth?.status === 'degraded') {
+  // If app is completely offline, show recovery panel
+  if (backendHealth?.app_status === 'offline') {
     return <RecoveryPanel health={backendHealth} errorMsg={initError} onRetry={checkHealth} />;
   }
 

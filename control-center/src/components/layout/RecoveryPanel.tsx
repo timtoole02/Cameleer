@@ -15,14 +15,14 @@ export const RecoveryPanel: React.FC<RecoveryPanelProps> = ({ health, errorMsg, 
         <h3 style={{ color: 'var(--color-danger)', marginBottom: '1rem' }}>Backend offline</h3>
         <p style={{ marginBottom: '1rem' }}>The Cameleer frontend loaded, but Tauri backend commands are failing or degraded.</p>
         
-        <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.9rem' }}>
-          <p><strong>Backend status:</strong> {health?.status || 'offline'}</p>
-          <p><strong>Database status:</strong> {health?.database_ready ? 'Ready' : 'Not Ready'}</p>
-          <p><strong>Migration status:</strong> {health?.migrations_applied ? 'Applied' : 'Pending'}</p>
-          <p><strong>Active project:</strong> {health?.active_project_id || 'None'}</p>
-          <p><strong>Default model profile:</strong> {health?.default_model_profile_id || 'None'}</p>
+        <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.9rem', color: '#111827' }}>
+          <p><strong>App status:</strong> {health?.app_status || 'offline'}</p>
+          <p><strong>Database status:</strong> {health?.database_status || 'offline'}</p>
+          <p><strong>Camelid status:</strong> {health?.camelid_status || 'unknown'}</p>
+          <p><strong>Schema version:</strong> {health?.schema_version} / {health?.required_schema_version}</p>
+          <p><strong>Database path:</strong> {health?.database_path || 'unknown'}</p>
           <div style={{ marginTop: '0.5rem', color: 'var(--color-danger)' }}>
-            <strong>Error message:</strong> {errorMsg || health?.message || 'Unknown connection error.'}
+            <strong>Errors:</strong> {errorMsg || health?.errors.join(', ') || 'Unknown connection error.'}
           </div>
         </div>
 

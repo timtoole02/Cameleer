@@ -28,16 +28,19 @@ export const Sidebar: React.FC = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                background: isActive ? 'var(--color-primary)' : 'transparent',
-                color: isActive ? '#ffffff' : 'var(--color-text-muted-on-dark)',
+                background: isActive ? 'var(--sidebar-active-bg, #1f2937)' : 'transparent',
+                color: isActive ? 'var(--sidebar-text, #f9fafb)' : 'var(--sidebar-muted, #cbd5e1)',
                 textAlign: 'left',
                 padding: '0.8rem 1.5rem',
                 border: 'none',
+                borderLeft: isActive ? '4px solid var(--sidebar-active-border, #60a5fa)' : '4px solid transparent',
                 borderRadius: '0',
                 cursor: 'pointer',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
+                fontWeight: isActive ? 600 : 500,
                 width: '100%',
-                display: 'block'
+                display: 'block',
+                transition: 'all 0.15s ease'
               }}
             >
               {tab}

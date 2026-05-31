@@ -28,7 +28,9 @@ pub fn execute_tool(
             .as_micros()
     );
 
-    let task_id = action.card_id.clone()
+    let task_id = action
+        .card_id
+        .clone()
         .or_else(|| action.task_id.clone())
         .unwrap_or_else(|| "global".to_string());
 
@@ -43,7 +45,8 @@ pub fn execute_tool(
                 "evidence": action.evidence,
                 "target_agent_id": action.target_agent_id,
                 "card_id": action.card_id,
-            }).to_string();
+            })
+            .to_string();
 
             let _ = conn.execute(
                 "INSERT INTO tool_invocations (id, run_id, agent_id, task_id, tool_name, arguments, status) 
@@ -60,7 +63,15 @@ pub fn execute_tool(
         }
     }
 
-    let result = execute_tool_inner(app_handle, agent_id, session_id, contract, action, &invocation_id, &task_id);
+    let result = execute_tool_inner(
+        app_handle,
+        agent_id,
+        session_id,
+        contract,
+        action,
+        &invocation_id,
+        &task_id,
+    );
 
     {
         if let Ok(conn) = state.conn.lock() {
@@ -95,7 +106,8 @@ pub fn execute_tool(
                     "evidence": action.evidence,
                     "target_agent_id": action.target_agent_id,
                     "card_id": action.card_id,
-                }).to_string();
+                })
+                .to_string();
 
                 let _ = conn.execute(
                     "INSERT INTO tool_approvals (id, invocation_id, card_id, agent_id, tool_name, arguments, status) 
