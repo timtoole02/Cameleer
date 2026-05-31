@@ -1,5 +1,5 @@
+use rusqlite::{Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
-use rusqlite::{Connection, Result, OptionalExtension};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentContract {
@@ -17,7 +17,11 @@ pub struct AgentContract {
     pub done_definition: Vec<String>,
 }
 
-pub fn load_contract(agent_id: &str, role: &str, conn: &Connection) -> Result<AgentContract, String> {
+pub fn load_contract(
+    agent_id: &str,
+    role: &str,
+    conn: &Connection,
+) -> Result<AgentContract, String> {
     let row: Option<(
         String, String, String, String, String, String, String, String, String
     )> = conn.query_row(
@@ -42,9 +46,13 @@ pub fn load_contract(agent_id: &str, role: &str, conn: &Connection) -> Result<Ag
     ).optional().map_err(|e| e.to_string())?;
 
     if let Some((res, allow, req_ctx, req_out, val, hand, esc, done, agent_tools)) = row {
-        let mut final_allowed_actions: Vec<String> = serde_json::from_str(&allow).unwrap_or_default();
+        let mut final_allowed_actions: Vec<String> =
+            serde_json::from_str(&allow).unwrap_or_default();
         if final_allowed_actions.is_empty() {
-            final_allowed_actions = agent_tools.split(',').map(|s| s.trim().to_string()).collect();
+            final_allowed_actions = agent_tools
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .collect();
         }
 
         Ok(AgentContract {
@@ -56,7 +64,7 @@ pub fn load_contract(agent_id: &str, role: &str, conn: &Connection) -> Result<Ag
                 "do not work on unassigned cards".into(),
                 "do not overwrite unrelated files".into(),
                 "do not mark Done without evidence".into(),
-                "do not skip validation if validation exists".into()
+                "do not skip validation if validation exists".into(),
             ],
             required_context_before_work: serde_json::from_str(&req_ctx).unwrap_or_default(),
             required_outputs: serde_json::from_str(&req_out).unwrap_or_default(),
@@ -72,15 +80,23 @@ pub fn load_contract(agent_id: &str, role: &str, conn: &Connection) -> Result<Ag
             contract_id: format!("default_contract_{}", role),
             role: role.to_string(),
             responsibilities: vec![format!("Execute assigned tasks for role: {}", role)],
-            allowed_actions: vec!["view_file".into(), "write_file".into(), "execute_command".into()],
+            allowed_actions: vec![
+                "view_file".into(),
+                "write_file".into(),
+                "execute_command".into(),
+            ],
             forbidden_actions: vec![
                 "do not work on unassigned cards".into(),
                 "do not overwrite unrelated files".into(),
                 "do not mark Done without evidence".into(),
                 "do not skip validation if validation exists".into(),
-                "do not pretend success from build alone when runtime validation is required".into()
+                "do not pretend success from build alone when runtime validation is required"
+                    .into(),
             ],
-            required_context_before_work: vec!["Card description".into(), "Acceptance criteria".into()],
+            required_context_before_work: vec![
+                "Card description".into(),
+                "Acceptance criteria".into(),
+            ],
             required_outputs: vec!["Modified files".into(), "Test logs".into()],
             validation_rules: vec!["Must pass all acceptance criteria".into()],
             evidence_rules: vec!["Must link modified files and command outputs".into()],
@@ -91,7 +107,7 @@ pub fn load_contract(agent_id: &str, role: &str, conn: &Connection) -> Result<Ag
                 "files attached".into(),
                 "validation run".into(),
                 "errors recorded".into(),
-                "Work Receipt generated".into()
+                "Work Receipt generated".into(),
             ],
         })
     }

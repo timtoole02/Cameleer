@@ -30,3 +30,8 @@
 - Established hard context caps within the backend file sandbox and handoff manager to prevent infinite recursive token buildup.
 - Expanded `mission_builder.rs` with `get_active_missions_progress` to calculate real-time Kanban completion percentages.
 - Added a Live Missions execution view within `App.tsx` displaying interactive, dynamic glassmorphic progress bars mapped to mission lifecycles.
+
+## Sprint 7: Cross-Agent Dependency Unblocking & File Context Ingestion
+- Upgraded `task_manager.rs` to automatically resolve `task_blockers` when parent cards are completed, safely transitioning downstream blocked cards to `ready`.
+- Automated system message injection to notify target agents when their assigned task is unblocked.
+- Overhauled `context_engine.rs` to selectively open recently touched text files from the `artifacts` table and inject their raw code contents directly into the LLM system prompt window (hardcapped to 50KB to respect context boundaries).

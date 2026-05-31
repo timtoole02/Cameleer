@@ -1,9 +1,9 @@
+use crate::event_bus::{emit_event, AppEvent};
+use crate::storage::DbState;
 use rusqlite::{params, OptionalExtension};
 use serde::{Deserialize, Serialize};
-use crate::storage::DbState;
-use crate::event_bus::{emit_event, AppEvent};
-use tauri::{State, AppHandle};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, State};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PendingApproval {
@@ -60,10 +60,13 @@ pub fn check_command(
 
     // Dangerous shell commands
     let risky_commands = vec![
-        "rm", "sudo", "chmod", "chown", "mv", "rmdir", "curl", "wget", "dd", "mkfs", "shutdown", "reboot", "ssh", "scp",
+        "rm", "sudo", "chmod", "chown", "mv", "rmdir", "curl", "wget", "dd", "mkfs", "shutdown",
+        "reboot", "ssh", "scp",
     ];
 
-    let is_risky = risky_commands.contains(&first_token.as_str()) || cmd_clean.contains(" > ") || cmd_clean.contains(" >> ");
+    let is_risky = risky_commands.contains(&first_token.as_str())
+        || cmd_clean.contains(" > ")
+        || cmd_clean.contains(" >> ");
 
     // Verify whitelists
     let whitelist: Vec<String> = if let Some(ref wl_str) = command_permissions_str {
@@ -80,19 +83,32 @@ pub fn check_command(
         // Strict: only allow standard non-mutating search/read tools
         let strictly_safe = vec!["ls", "cat", "grep", "pwd", "git"];
         if !strictly_safe.contains(&first_token.as_str()) || is_risky {
-            suspend_reason = Some(format!("Strict Safety Profile blocks execution of command binary '{}'.", first_token));
+            suspend_reason = Some(format!(
+                "Strict Safety Profile blocks execution of command binary '{}'.",
+                first_token
+            ));
         }
     } else if safety_profile == "moderate" {
         // Moderate: allow building and searching but block mutating actions
         if is_risky {
-            suspend_reason = Some(format!("Moderate Safety Profile blocks risky shell execution for binary '{}'.", first_token));
-        } else if outside_whitelist && !vec!["ls", "cat", "grep", "pwd"].contains(&first_token.as_str()) {
-            suspend_reason = Some(format!("Command binary '{}' is outside the agent's whitelisted command permissions.", first_token));
+            suspend_reason = Some(format!(
+                "Moderate Safety Profile blocks risky shell execution for binary '{}'.",
+                first_token
+            ));
+        } else if outside_whitelist
+            && !vec!["ls", "cat", "grep", "pwd"].contains(&first_token.as_str())
+        {
+            suspend_reason = Some(format!(
+                "Command binary '{}' is outside the agent's whitelisted command permissions.",
+                first_token
+            ));
         }
     } else {
         // Loose: only block recursive delete
         if first_token == "rm" && (cmd_clean.contains("-rf") || cmd_clean.contains("-r")) {
-            suspend_reason = Some("Loose Safety Profile blocks dangerous recursive directory deletion.".to_string());
+            suspend_reason = Some(
+                "Loose Safety Profile blocks dangerous recursive directory deletion.".to_string(),
+            );
         }
     }
 
@@ -131,7 +147,10 @@ fn suspend_execution(
     // 1. Store pending approval in shared_state
     conn.execute(
         "INSERT OR REPLACE INTO shared_state (key, value) VALUES (?1, ?2)",
-        [format!("pending_command_approval:{}", task_id), approval_str],
+        [
+            format!("pending_command_approval:{}", task_id),
+            approval_str,
+        ],
     )
     .map_err(|e| e.to_string())?;
 
@@ -145,7 +164,9 @@ fn suspend_execution(
         .unwrap_or(None);
 
     let mut log_arr = match log_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
 
@@ -229,7 +250,8 @@ pub fn resolve_command_approval(
         None => return Err("No pending command approval found for this task.".to_string()),
     };
 
-    let approval: PendingApproval = serde_json::from_str(&approval_data).map_err(|e| e.to_string())?;
+    let approval: PendingApproval =
+        serde_json::from_str(&approval_data).map_err(|e| e.to_string())?;
 
     // Delete pending record
     conn.execute("DELETE FROM shared_state WHERE key = ?1", [&pending_key])

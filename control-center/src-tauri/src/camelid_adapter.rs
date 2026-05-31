@@ -1,8 +1,8 @@
-use reqwest::Client;
+use crate::llm_adapter::LlmAdapter;
 use crate::router::{ChatMessage, ModelSettings};
+use reqwest::Client;
 use std::future::Future;
 use std::pin::Pin;
-use crate::llm_adapter::LlmAdapter;
 
 pub struct CamelidAdapter {
     client: Client,
@@ -26,10 +26,11 @@ impl LlmAdapter for CamelidAdapter {
         endpoint: Option<String>,
     ) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>> {
         let client = self.client.clone();
-        
+
         Box::pin(async move {
-            let url = endpoint.unwrap_or_else(|| "http://127.0.0.1:8181/v1/chat/completions".to_string());
-            
+            let url =
+                endpoint.unwrap_or_else(|| "http://127.0.0.1:8181/v1/chat/completions".to_string());
+
             let mut payload = serde_json::json!({
                 "messages": messages,
             });

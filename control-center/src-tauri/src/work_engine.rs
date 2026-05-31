@@ -1,6 +1,6 @@
+use crate::storage::DbState;
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
-use crate::storage::DbState;
 use tauri::State;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -8,8 +8,8 @@ pub struct WorkSuggestion {
     pub id: String,
     pub title: String,
     pub description: String,
-    pub severity: String,          // "info", "warning", "critical", "success"
-    pub suggestion_type: String,   // "blocker", "assignment", "handoff", "review", "recovery"
+    pub severity: String,        // "info", "warning", "critical", "success"
+    pub suggestion_type: String, // "blocker", "assignment", "handoff", "review", "recovery"
     pub action_label: Option<String>,
     pub action_command: Option<String>,
     pub related_agent_id: Option<String>,
@@ -28,7 +28,13 @@ pub fn get_work_engine_suggestions(
         .prepare("SELECT id, name, role FROM agents WHERE status = 'recovering'")
         .map_err(|e| e.to_string())?;
     let recovering_agents = stmt
-        .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?)))
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })
         .map_err(|e| e.to_string())?;
 
     for agent in recovering_agents {
@@ -152,7 +158,10 @@ pub fn get_work_engine_suggestions(
             suggestions.push(WorkSuggestion {
                 id: format!("blocker-{}", id),
                 title: format!("Task Blocked"),
-                description: format!("'{}' is blocked by unfinished task '{}'. Reason: {}.", title, blocked_by_title, reason),
+                description: format!(
+                    "'{}' is blocked by unfinished task '{}'. Reason: {}.",
+                    title, blocked_by_title, reason
+                ),
                 severity: "warning".to_string(),
                 suggestion_type: "blocker".to_string(),
                 action_label: Some("Prioritize Blocker".to_string()),
@@ -169,7 +178,13 @@ pub fn get_work_engine_suggestions(
         .prepare("SELECT id, name, role FROM agents WHERE status = 'idle'")
         .map_err(|e| e.to_string())?;
     let idle_agents = stmt
-        .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?)))
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })
         .map_err(|e| e.to_string())?;
 
     let mut idle_list = Vec::new();
@@ -185,7 +200,9 @@ pub fn get_work_engine_suggestions(
             .prepare("SELECT id, title FROM kanban_cards WHERE status = 'Backlog' OR status = 'Ready' ORDER BY priority DESC LIMIT 3")
             .map_err(|e| e.to_string())?;
         let open_tasks = stmt
-            .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
             .map_err(|e| e.to_string())?;
 
         let mut tasks_list = Vec::new();

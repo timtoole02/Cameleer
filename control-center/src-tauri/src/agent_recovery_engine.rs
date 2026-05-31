@@ -1,15 +1,18 @@
-use tauri::{AppHandle, Manager};
-use rusqlite::params;
-use crate::storage::DbState;
+use crate::agent_state_machine::{transition_agent_state, AgentState};
 use crate::checkpoint_store::get_latest_checkpoint;
 use crate::event_bus::{emit_event, AppEvent};
-use crate::agent_state_machine::{AgentState, transition_agent_state};
+use crate::storage::DbState;
+use rusqlite::params;
+use tauri::{AppHandle, Manager};
 
 pub async fn attempt_recovery(app_handle: AppHandle, agent_id: String) -> Result<(), String> {
-    println!("[RECOVERY ENGINE] Attempting to recover agent: {}", agent_id);
+    println!(
+        "[RECOVERY ENGINE] Attempting to recover agent: {}",
+        agent_id
+    );
 
     let state = app_handle.state::<DbState>();
-    
+
     // 1. Identify active task for this agent to find its session/checkpoint
     let mut task_id = String::new();
     let mut session_id = format!("session_{}", agent_id); // Fallback
@@ -27,13 +30,17 @@ pub async fn attempt_recovery(app_handle: AppHandle, agent_id: String) -> Result
     }
 
     // 2. Load latest checkpoint
-    let checkpoint = get_latest_checkpoint(state.clone(), agent_id.clone(), task_id.clone())
-        .unwrap_or(None);
+    let checkpoint =
+        get_latest_checkpoint(state.clone(), agent_id.clone(), task_id.clone()).unwrap_or(None);
 
     let mut recovery_msg = String::new();
-    
+
     if let Some(cp) = checkpoint {
-        println!("[RECOVERY ENGINE] Found checkpoint {} for agent {}", cp.id.unwrap_or(0), agent_id);
+        println!(
+            "[RECOVERY ENGINE] Found checkpoint {} for agent {}",
+            cp.id.unwrap_or(0),
+            agent_id
+        );
         recovery_msg = format!(
             "⚠️ SYSTEM RECOVERY WARNING ⚠️\n\
              Your process crashed, timed out, or entered an invalid state.\n\
@@ -46,7 +53,10 @@ pub async fn attempt_recovery(app_handle: AppHandle, agent_id: String) -> Result
             cp.completed_steps, cp.open_steps, cp.reasoning_summary, cp.files_touched
         );
     } else {
-        println!("[RECOVERY ENGINE] No checkpoint found for agent {}. Initiating cold recovery.", agent_id);
+        println!(
+            "[RECOVERY ENGINE] No checkpoint found for agent {}. Initiating cold recovery.",
+            agent_id
+        );
         recovery_msg = "⚠️ SYSTEM RECOVERY WARNING ⚠️\n\
              Your process crashed or timed out. No checkpoint was found. Please restart your task from the beginning and avoid the previous action that caused the crash.".to_string();
     }
@@ -59,13 +69,17 @@ pub async fn attempt_recovery(app_handle: AppHandle, agent_id: String) -> Result
             params![session_id, recovery_msg],
         );
     }
-    
+
     emit_event(
         &app_handle,
         AppEvent {
             event_type: "agent_run_status".to_string(),
             agent_id: Some(agent_id.clone()),
-            task_id: if task_id.is_empty() { None } else { Some(task_id.clone()) },
+            task_id: if task_id.is_empty() {
+                None
+            } else {
+                Some(task_id.clone())
+            },
             payload: serde_json::json!({ "status": "recovering", "message": recovery_msg }),
         },
     );
@@ -73,10 +87,19 @@ pub async fn attempt_recovery(app_handle: AppHandle, agent_id: String) -> Result
     // 4. Reset state to Idle so the runtime kernel can pull it again
     {
         let conn = state.conn.lock().map_err(|e| e.to_string())?;
-        let _ = transition_agent_state(&conn, &agent_id, AgentState::Recovering, AgentState::Idle, "Recovery engine rebooting agent");
+        let _ = transition_agent_state(
+            &conn,
+            &agent_id,
+            AgentState::Recovering,
+            AgentState::Idle,
+            "Recovery engine rebooting agent",
+        );
     }
-    
-    println!("[RECOVERY ENGINE] Agent {} recovery sequence completed. Set to Idle.", agent_id);
+
+    println!(
+        "[RECOVERY ENGINE] Agent {} recovery sequence completed. Set to Idle.",
+        agent_id
+    );
 
     Ok(())
 }

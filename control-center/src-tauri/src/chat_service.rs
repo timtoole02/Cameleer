@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
-use rusqlite::{params, Connection, Result, OptionalExtension};
-use tauri::{State, AppHandle, Manager};
-use crate::storage::DbState;
-use crate::router::{call_model, ChatMessage, ModelSettings};
 use crate::event_bus::{emit_event, AppEvent};
-use std::time::{SystemTime, UNIX_EPOCH};
+use crate::router::{call_model, ChatMessage, ModelSettings};
+use crate::storage::DbState;
+use rusqlite::{params, Connection, OptionalExtension, Result};
+use serde::{Deserialize, Serialize};
 use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, Manager, State};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DbMessage {
@@ -18,7 +18,10 @@ pub struct DbMessage {
 }
 
 #[tauri::command]
-pub fn get_messages(state: State<'_, DbState>, session_id: String) -> Result<Vec<DbMessage>, String> {
+pub fn get_messages(
+    state: State<'_, DbState>,
+    session_id: String,
+) -> Result<Vec<DbMessage>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     let mut stmt = conn
         .prepare(
@@ -59,7 +62,7 @@ pub fn save_message(
     content: String,
 ) -> Result<DbMessage, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     conn.execute(
         "INSERT INTO messages (session_id, role, sender_id, content) 
          VALUES (?1, ?2, ?3, ?4)",
@@ -69,11 +72,13 @@ pub fn save_message(
 
     let id = conn.last_insert_rowid() as i32;
 
-    let timestamp: String = conn.query_row(
-        "SELECT timestamp FROM messages WHERE id = ?1",
-        [id],
-        |row| row.get(0),
-    ).map_err(|e| e.to_string())?;
+    let timestamp: String = conn
+        .query_row(
+            "SELECT timestamp FROM messages WHERE id = ?1",
+            [id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
 
     let db_msg = DbMessage {
         id: Some(id),
@@ -123,13 +128,17 @@ pub async fn trigger_org_reply(
                 "SELECT lead_agent_id FROM teams WHERE id = ?1",
                 [&org_node_id],
                 |row| row.get(0),
-            ).ok().flatten()
+            )
+            .ok()
+            .flatten()
         } else if org_node_type == "project" {
             conn.query_row(
                 "SELECT owner_agent_id FROM projects WHERE id = ?1",
                 [&org_node_id],
                 |row| row.get(0),
-            ).ok().flatten()
+            )
+            .ok()
+            .flatten()
         } else {
             None
         }
@@ -143,21 +152,27 @@ pub async fn trigger_org_reply(
     }
 }
 
-
 fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> {
     // Shared objective
-    let shared_obj: String = conn.query_row(
-        "SELECT value FROM shared_state WHERE key = 'objective'",
-        [],
-        |row| row.get(0),
-    ).unwrap_or_else(|_| "None".to_string());
+    let shared_obj: String = conn
+        .query_row(
+            "SELECT value FROM shared_state WHERE key = 'objective'",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or_else(|_| "None".to_string());
 
     // Active crew
     let mut stmt = conn.prepare("SELECT name, role, status FROM agents")?;
     let agent_iter = stmt.query_map([], |row| {
-        Ok(format!("- {} ({}): [{}]", row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?))
+        Ok(format!(
+            "- {} ({}): [{}]",
+            row.get::<_, String>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?
+        ))
     })?;
-    
+
     let mut agents = Vec::new();
     for agent in agent_iter {
         if let Ok(a) = agent {
@@ -168,7 +183,11 @@ fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> 
     // Latest tasks
     let mut stmt_tasks = conn.prepare("SELECT title, status FROM kanban_cards LIMIT 3")?;
     let task_iter = stmt_tasks.query_map([], |row| {
-        Ok(format!("- Task: \"{}\" | [{}]", row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        Ok(format!(
+            "- Task: \"{}\" | [{}]",
+            row.get::<_, String>(0)?,
+            row.get::<_, String>(1)?
+        ))
     })?;
 
     let mut tasks = Vec::new();
@@ -183,13 +202,13 @@ fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> 
          - Shared Global Goal: {}\n\n\
          Active crew status:\n{}\n\n\
          Recent task objectives:\n{}",
-        shared_obj, agents.join("\n"), tasks.join("\n")
+        shared_obj,
+        agents.join("\n"),
+        tasks.join("\n")
     );
 
     Ok(blackboard)
 }
-
-
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AgentJsonOutput {
@@ -228,7 +247,7 @@ pub struct AgentAction {
     pub validation_passed: Option<bool>,
     pub validation_notes: Option<String>,
     pub raw_json: Option<AgentJsonOutput>, // Store the original parsed JSON if available
-    
+
     // Memory System
     pub memory_content: Option<String>,
     pub memory_context: Option<String>,
@@ -240,9 +259,9 @@ pub struct AgentAction {
 fn resolve_path(path: &str) -> std::path::PathBuf {
     let clean_path = path.trim();
     let mut resolved = std::path::PathBuf::new();
-    
+
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
-    
+
     if clean_path.starts_with("~/") {
         resolved.push(&home);
         resolved.push(&clean_path[2..]);
@@ -256,7 +275,7 @@ fn resolve_path(path: &str) -> std::path::PathBuf {
         resolved.push("Desktop");
         resolved.push(clean_path);
     }
-    
+
     resolved
 }
 
@@ -275,10 +294,10 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
     if lines.is_empty() {
         return None;
     }
-    
+
     // Check first 3 lines
     let check_limit = std::cmp::min(lines.len(), 3);
-    
+
     // 1. Check for file path patterns
     let filepath_prefixes = [
         "// filepath:",
@@ -292,9 +311,9 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
         "/* save:",
         "<!-- filepath:",
         "<!-- path:",
-        "<!-- save:"
+        "<!-- save:",
     ];
-    
+
     for i in 0..check_limit {
         let line = lines[i].trim();
         for prefix in filepath_prefixes {
@@ -306,15 +325,16 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                 } else if path_part.ends_with("-->") {
                     path_part = path_part[..path_part.len() - 3].trim();
                 }
-                
+
                 // Remove surrounding quotes if any
-                if (path_part.starts_with('"') && path_part.ends_with('"')) || 
-                   (path_part.starts_with('\'') && path_part.ends_with('\'')) {
+                if (path_part.starts_with('"') && path_part.ends_with('"'))
+                    || (path_part.starts_with('\'') && path_part.ends_with('\''))
+                {
                     if path_part.len() > 2 {
                         path_part = &path_part[1..path_part.len() - 1];
                     }
                 }
-                
+
                 if !path_part.is_empty() {
                     let mut content = String::new();
                     for (idx, l) in lines.iter().enumerate() {
@@ -352,7 +372,7 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
             }
         }
     }
-    
+
     // 2. Check for execute/run patterns
     let run_prefixes = [
         "// execute:",
@@ -362,9 +382,9 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
         "/* execute:",
         "/* run:",
         "<!-- execute:",
-        "<!-- run:"
+        "<!-- run:",
     ];
-    
+
     for i in 0..check_limit {
         let line = lines[i].trim();
         for prefix in run_prefixes {
@@ -376,15 +396,16 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                 } else if cmd_part.ends_with("-->") {
                     cmd_part = cmd_part[..cmd_part.len() - 3].trim();
                 }
-                
+
                 // Remove surrounding quotes if any
-                if (cmd_part.starts_with('"') && cmd_part.ends_with('"')) || 
-                   (cmd_part.starts_with('\'') && cmd_part.ends_with('\'')) {
+                if (cmd_part.starts_with('"') && cmd_part.ends_with('"'))
+                    || (cmd_part.starts_with('\'') && cmd_part.ends_with('\''))
+                {
                     if cmd_part.len() > 2 {
                         cmd_part = &cmd_part[1..cmd_part.len() - 1];
                     }
                 }
-                
+
                 if !cmd_part.is_empty() {
                     return Some(AgentAction {
                         dry_run: None,
@@ -414,7 +435,7 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
             }
         }
     }
-    
+
     None
 }
 
@@ -448,24 +469,37 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
             };
 
             // Map specific JSON actions back to standardized internal types
-            if parsed_json.next_action.action_type == "tool_call" || parsed_json.next_action.action_type == "execute_command" || parsed_json.next_action.action_type == "command.run" {
+            if parsed_json.next_action.action_type == "tool_call"
+                || parsed_json.next_action.action_type == "execute_command"
+                || parsed_json.next_action.action_type == "command.run"
+            {
                 action.action_type = "command.run".to_string();
                 action.command = Some(parsed_json.next_action.input.clone());
-            } else if parsed_json.next_action.action_type == "write_file" || parsed_json.next_action.action_type == "file.write" {
+            } else if parsed_json.next_action.action_type == "write_file"
+                || parsed_json.next_action.action_type == "file.write"
+            {
                 action.action_type = "file.write".to_string();
                 action.path = parsed_json.next_action.target.clone();
                 action.content = Some(parsed_json.next_action.input.clone());
-            } else if parsed_json.next_action.action_type == "handoff" || parsed_json.next_action.action_type == "agent.handoff" {
+            } else if parsed_json.next_action.action_type == "handoff"
+                || parsed_json.next_action.action_type == "agent.handoff"
+            {
                 action.action_type = "agent.handoff".to_string();
                 action.target_agent_id = parsed_json.next_action.target.clone();
                 action.notes = Some(parsed_json.next_action.input.clone());
-            } else if parsed_json.next_action.action_type == "update_task" || parsed_json.next_action.action_type == "task.update" {
+            } else if parsed_json.next_action.action_type == "update_task"
+                || parsed_json.next_action.action_type == "task.update"
+            {
                 action.action_type = "task.update".to_string();
                 action.notes = Some(parsed_json.next_action.input.clone());
-            } else if parsed_json.next_action.action_type == "complete" || parsed_json.next_action.action_type == "task.complete" {
+            } else if parsed_json.next_action.action_type == "complete"
+                || parsed_json.next_action.action_type == "task.complete"
+            {
                 action.action_type = "task.complete".to_string();
                 action.evidence = Some(parsed_json.next_action.input.clone());
-            } else if parsed_json.next_action.action_type == "claim_card" || parsed_json.next_action.action_type == "task.claim" {
+            } else if parsed_json.next_action.action_type == "claim_card"
+                || parsed_json.next_action.action_type == "task.claim"
+            {
                 action.action_type = "task.claim".to_string();
                 action.card_id = parsed_json.next_action.target.clone();
             } else if parsed_json.next_action.action_type == "task.create" {
@@ -482,7 +516,9 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
             } else if parsed_json.next_action.action_type == "memory.search" {
                 action.action_type = "memory.search".to_string();
                 action.memory_query = Some(parsed_json.next_action.input.clone());
-            } else if parsed_json.next_action.action_type == "respond" || parsed_json.next_action.action_type == "message.send" {
+            } else if parsed_json.next_action.action_type == "respond"
+                || parsed_json.next_action.action_type == "message.send"
+            {
                 action.action_type = "message.send".to_string();
                 action.content = Some(parsed_json.next_action.input.clone());
             }
@@ -509,7 +545,7 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
     let mut validation_passed = String::new();
     let mut validation_notes = String::new();
     let mut reading_content = false;
-    
+
     for line in text.lines() {
         let clean = line.trim();
         if clean.starts_with("ACTION:") {
@@ -549,7 +585,7 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
             content.push('\n');
         }
     }
-    
+
     // Fallback task_id <-> card_id symmetry
     if card_id.is_empty() && !task_id.is_empty() {
         card_id = task_id.clone();
@@ -562,34 +598,89 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
         let files_vec = if files.is_empty() {
             None
         } else {
-            Some(files.split(',').map(|f| f.trim().to_string()).filter(|f| !f.is_empty()).collect())
+            Some(
+                files
+                    .split(',')
+                    .map(|f| f.trim().to_string())
+                    .filter(|f| !f.is_empty())
+                    .collect(),
+            )
         };
 
         let val_passed = if validation_passed.is_empty() {
             None
         } else {
             let clean_val = validation_passed.to_lowercase();
-            Some(clean_val == "true" || clean_val == "yes" || clean_val == "1" || clean_val == "passed")
+            Some(
+                clean_val == "true"
+                    || clean_val == "yes"
+                    || clean_val == "1"
+                    || clean_val == "passed",
+            )
         };
 
         return Some(AgentAction {
             dry_run: None,
             action_type,
-            command: if command.is_empty() { None } else { Some(command) },
+            command: if command.is_empty() {
+                None
+            } else {
+                Some(command)
+            },
             path: if path.is_empty() { None } else { Some(path) },
-            content: if content.is_empty() { None } else { Some(content) },
-            decision: if decision.is_empty() { None } else { Some(decision) },
-            reason: if reason.is_empty() { None } else { Some(reason) },
-            target_agent_id: if target_agent_id.is_empty() { None } else { Some(target_agent_id) },
-            task_id: if task_id.is_empty() { None } else { Some(task_id) },
-            blocked_by_task_id: if blocked_by_task_id.is_empty() { None } else { Some(blocked_by_task_id) },
-            card_id: if card_id.is_empty() { None } else { Some(card_id) },
+            content: if content.is_empty() {
+                None
+            } else {
+                Some(content)
+            },
+            decision: if decision.is_empty() {
+                None
+            } else {
+                Some(decision)
+            },
+            reason: if reason.is_empty() {
+                None
+            } else {
+                Some(reason)
+            },
+            target_agent_id: if target_agent_id.is_empty() {
+                None
+            } else {
+                Some(target_agent_id)
+            },
+            task_id: if task_id.is_empty() {
+                None
+            } else {
+                Some(task_id)
+            },
+            blocked_by_task_id: if blocked_by_task_id.is_empty() {
+                None
+            } else {
+                Some(blocked_by_task_id)
+            },
+            card_id: if card_id.is_empty() {
+                None
+            } else {
+                Some(card_id)
+            },
             notes: if notes.is_empty() { None } else { Some(notes) },
             files: files_vec,
-            validation_status: if validation_status.is_empty() { None } else { Some(validation_status) },
-            evidence: if evidence.is_empty() { None } else { Some(evidence) },
+            validation_status: if validation_status.is_empty() {
+                None
+            } else {
+                Some(validation_status)
+            },
+            evidence: if evidence.is_empty() {
+                None
+            } else {
+                Some(evidence)
+            },
             validation_passed: val_passed,
-            validation_notes: if validation_notes.is_empty() { None } else { Some(validation_notes) },
+            validation_notes: if validation_notes.is_empty() {
+                None
+            } else {
+                Some(validation_notes)
+            },
             raw_json: None,
             memory_content: None,
             memory_context: None,
@@ -601,7 +692,7 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
     // 2. Fallback: Parse markdown code blocks for filepath / run comments
     let mut in_block = false;
     let mut current_block_lines = Vec::new();
-    
+
     for line in text.lines() {
         if line.trim().starts_with("```") {
             if in_block {
@@ -619,12 +710,12 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
             current_block_lines.push(line.to_string());
         }
     }
-    
+
     if in_block && !current_block_lines.is_empty() {
         if let Some(parsed_action) = parse_code_block_for_action(&current_block_lines) {
             return Some(parsed_action);
         }
     }
-    
+
     None
 }

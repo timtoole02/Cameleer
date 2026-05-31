@@ -1,33 +1,33 @@
-mod storage;
+mod agent_conflict_detector;
+mod agent_contracts;
+mod agent_handoff_manager;
+mod agent_identity;
+mod agent_recovery_engine;
 mod agent_registry;
-mod router;
-mod chat_service;
-mod task_manager;
-mod context_engine;
-mod supervisor;
-mod event_bus;
+mod agent_runtime_kernel;
+mod agent_state_machine;
 mod agent_templates;
-mod checkpoint_store;
-mod work_engine;
-mod command_guard;
-mod mission_builder;
-mod models_manager;
+mod agent_tool_controller;
+mod agent_validation_engine;
+mod agent_work_router;
 mod backend_runtime;
 mod board_services;
-mod org_services;
-mod agent_identity;
-mod agent_contracts;
-mod agent_state_machine;
-mod agent_work_router;
-mod agent_runtime_kernel;
-mod agent_validation_engine;
-mod agent_tool_controller;
-mod agent_recovery_engine;
-mod agent_handoff_manager;
-mod agent_conflict_detector;
-pub mod memory_engine;
-pub mod llm_adapter;
 pub mod camelid_adapter;
+mod chat_service;
+mod checkpoint_store;
+mod command_guard;
+mod context_engine;
+mod event_bus;
+pub mod llm_adapter;
+pub mod memory_engine;
+mod mission_builder;
+mod models_manager;
+mod org_services;
+mod router;
+mod storage;
+mod supervisor;
+mod task_manager;
+mod work_engine;
 
 use storage::DbState;
 use tauri::Manager;
@@ -45,18 +45,17 @@ pub fn run() {
             // 1. Initialize SQLite Database
             let db_path = storage::get_db_path();
             println!("[DATABASE] Path: {:?}", db_path);
-            
-            let conn = rusqlite::Connection::open(db_path)
-                .expect("Failed to open SQLite database");
-                
+
+            let conn = rusqlite::Connection::open(db_path).expect("Failed to open SQLite database");
+
             storage::init_db(&conn).expect("Failed to initialize database tables");
             storage::seed_default_agents(&conn).expect("Failed to seed default agents");
-            
+
             // Manage SQLite connection in Tauri State
             app.manage(DbState {
                 conn: std::sync::Mutex::new(conn),
             });
-            
+
             // Initialize and Manage DaemonState in Tauri State for legacy handlers
             let daemon_state = supervisor::DaemonState {
                 child: std::sync::Arc::new(std::sync::Mutex::new(None)),
@@ -66,10 +65,10 @@ pub fn run() {
             // Initialize and Manage BackendRuntimeManager in Tauri State
             let backend_manager = backend_runtime::BackendRuntimeManager::new();
             app.manage(backend_manager);
-            
+
             // 2. Start Supervisor Watchdogs
             let app_handle = app.handle().clone();
-            
+
             // Spawn asynchronous backend manager to keep UI responsive on startup
             tauri::async_runtime::spawn(async move {
                 let _ = backend_runtime::ensure_backend_running(app_handle.clone()).await;
@@ -79,7 +78,7 @@ pub fn run() {
             // Start agent recovery watchdogs
             let app_handle_agents = app.handle().clone();
             supervisor::start_watchdog(app_handle_agents);
-            
+
             println!("[SYSTEM] Cameleer core services successfully started.");
             Ok(())
         })
@@ -199,13 +198,16 @@ pub fn run() {
                 }
             }
 
-            if let Some(manager) = app_handle.try_state::<backend_runtime::BackendRuntimeManager>() {
+            if let Some(manager) = app_handle.try_state::<backend_runtime::BackendRuntimeManager>()
+            {
                 let stop_on_exit = {
                     let guard = manager.config.lock().unwrap();
                     guard.stop_on_app_exit
                 };
                 if stop_on_exit {
-                    println!("[SUPERVISOR] Cleaning up supervised local inference daemon on exit...");
+                    println!(
+                        "[SUPERVISOR] Cleaning up supervised local inference daemon on exit..."
+                    );
                     let mut child_guard = manager.child.lock().unwrap();
                     if let Some(mut child) = child_guard.take() {
                         let _ = child.kill();

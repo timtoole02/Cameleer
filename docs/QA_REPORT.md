@@ -60,3 +60,15 @@ This document tracks the verified end-to-end execution flows for the Cameleer ar
 **Status**: 🟢 PASS
 **Notes**:
 - Token pruning successfully verified: Handoff context is strictly capped at 5 recent SQL entries.
+
+### File Explorer Context Ingestion & Dependency Unblocking (Sprint 7)
+**Scenario**: Agent resolves a task, automatically unblocking downstream agents, and newly generated files are ingested into context.
+**Steps**:
+1. Complete a Kanban card that blocks another card.
+2. Verify the `task_blockers` record is deleted and the downstream card status flips to `ready`.
+3. Verify the target agent receives a System Notification indicating their unblocked status.
+4. Verify the `context_engine` successfully parses text file payloads (up to 50KB/200 lines) and injects them into the `#### RECENT FILE CONTENTS` prompt.
+
+**Status**: 🟢 PASS
+**Notes**:
+- Addressed Mac OS build cache `._` metadata issues during CI checks. Core engine passed syntax and logic assertions.

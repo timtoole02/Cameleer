@@ -1,19 +1,18 @@
+use crate::storage::DbState;
+use crate::supervisor::DaemonState;
+use reqwest::Client;
+use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use reqwest::Client;
 use tauri::State;
-use rusqlite::params;
-use crate::storage::DbState;
-use crate::supervisor::DaemonState;
 
 // Whitelisted supported quantization types
 const SUPPORTED_QUANTS: &[&str] = &[
-    "Q8_0", "Q4_0", "Q4_1", "Q5_0", "Q5_1", 
-    "Q2_K", "Q3_K", "Q4_K", "Q5_K", "Q6_K", "Q8_K", 
-    "IQ4_NL", "F32", "F16"
+    "Q8_0", "Q4_0", "Q4_1", "Q5_0", "Q5_1", "Q2_K", "Q3_K", "Q4_K", "Q5_K", "Q6_K", "Q8_K",
+    "IQ4_NL", "F32", "F16",
 ];
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -330,7 +329,10 @@ pub fn parse_gguf_minimal(bytes: &[u8]) -> Result<GgufFileMinimal, String> {
     }
     let version = cursor.read_u32()?;
     if version != 2 && version != 3 {
-        return Err(format!("Unsupported GGUF version {}; expected 2 or 3", version));
+        return Err(format!(
+            "Unsupported GGUF version {}; expected 2 or 3",
+            version
+        ));
     }
     let tensor_count = cursor.read_u64()?;
     let metadata_count = cursor.read_u64()?;
@@ -351,17 +353,25 @@ pub fn parse_gguf_minimal(bytes: &[u8]) -> Result<GgufFileMinimal, String> {
     for _ in 0..metadata_count {
         let key = cursor.read_string()?;
         let value = parse_gguf_value(&mut cursor)?;
-        
+
         match key.as_str() {
             "general.architecture" => architecture = Some(value.clone()),
-            "general.quantization_version" | "general.file_type" => quantization = Some(value.clone()),
+            "general.quantization_version" | "general.file_type" => {
+                quantization = Some(value.clone())
+            }
             "tokenizer.ggml.model" => tokenizer_model = Some(value.clone()),
             k if k.ends_with(".context_length") => context_length = value.parse::<u64>().ok(),
             k if k.ends_with(".embedding_length") => embedding_length = value.parse::<u64>().ok(),
             k if k.ends_with(".block_count") => block_count = value.parse::<u64>().ok(),
-            k if k.ends_with(".attention.head_count") => attention_head_count = value.parse::<u64>().ok(),
-            k if k.ends_with(".attention.head_count_kv") => attention_head_count_kv = value.parse::<u64>().ok(),
-            k if k.ends_with(".rope.dimension_count") => rope_dimension_count = value.parse::<u64>().ok(),
+            k if k.ends_with(".attention.head_count") => {
+                attention_head_count = value.parse::<u64>().ok()
+            }
+            k if k.ends_with(".attention.head_count_kv") => {
+                attention_head_count_kv = value.parse::<u64>().ok()
+            }
+            k if k.ends_with(".rope.dimension_count") => {
+                rope_dimension_count = value.parse::<u64>().ok()
+            }
             k if k.ends_with(".rope.freq_base") => rope_freq_base = value.parse::<f64>().ok(),
             k if k.ends_with(".rope.freq_scale") => rope_freq_scale = value.parse::<f64>().ok(),
             _ => {}
@@ -427,34 +437,40 @@ fn get_models_dir() -> PathBuf {
 // --- TAURI COMMAND APIS ---
 
 #[tauri::command]
-pub async fn list_model_catalog(state: State<'_, DbState>) -> Result<Vec<ModelCatalogEntry>, String> {
+pub async fn list_model_catalog(
+    state: State<'_, DbState>,
+) -> Result<Vec<ModelCatalogEntry>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    let mut stmt = conn.prepare(
-        "SELECT model_id, display_name, provider, source_repo, source_file, local_path, 
+    let mut stmt = conn
+        .prepare(
+            "SELECT model_id, display_name, provider, source_repo, source_file, local_path, 
                 architecture, quantization, parameter_count, file_size_bytes, 
                 install_status, compatibility_status, runnable_status, active_status, license
-         FROM models ORDER BY install_status DESC, display_name ASC"
-    ).map_err(|e| e.to_string())?;
+         FROM models ORDER BY install_status DESC, display_name ASC",
+        )
+        .map_err(|e| e.to_string())?;
 
-    let iter = stmt.query_map([], |row| {
-        Ok(ModelCatalogEntry {
-            model_id: row.get(0)?,
-            display_name: row.get(1)?,
-            provider: row.get(2)?,
-            source_repo: row.get(3)?,
-            source_file: row.get(4)?,
-            local_path: row.get(5)?,
-            architecture: row.get(6)?,
-            quantization: row.get(7)?,
-            parameter_count: row.get(8)?,
-            file_size_bytes: row.get(9)?,
-            install_status: row.get(10)?,
-            compatibility_status: row.get(11)?,
-            runnable_status: row.get::<_, i32>(12)? != 0,
-            active_status: row.get::<_, i32>(13)? != 0,
-            license: row.get(14)?,
+    let iter = stmt
+        .query_map([], |row| {
+            Ok(ModelCatalogEntry {
+                model_id: row.get(0)?,
+                display_name: row.get(1)?,
+                provider: row.get(2)?,
+                source_repo: row.get(3)?,
+                source_file: row.get(4)?,
+                local_path: row.get(5)?,
+                architecture: row.get(6)?,
+                quantization: row.get(7)?,
+                parameter_count: row.get(8)?,
+                file_size_bytes: row.get(9)?,
+                install_status: row.get(10)?,
+                compatibility_status: row.get(11)?,
+                runnable_status: row.get::<_, i32>(12)? != 0,
+                active_status: row.get::<_, i32>(13)? != 0,
+                license: row.get(14)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut list = Vec::new();
     for entry in iter {
@@ -464,24 +480,75 @@ pub async fn list_model_catalog(state: State<'_, DbState>) -> Result<Vec<ModelCa
 }
 
 #[tauri::command]
-pub async fn search_remote_models(query: String, quantization_filter: Option<String>) -> Result<Vec<HuggingFaceModelEntry>, String> {
+pub async fn search_remote_models(
+    query: String,
+    quantization_filter: Option<String>,
+) -> Result<Vec<HuggingFaceModelEntry>, String> {
     // Standard mock list for discovery to avoid high network latency and Hugging Face API rate limits
     let all_files = vec![
-        ("bartowski/Llama-3.2-3B-Instruct-GGUF", "Llama-3.2-3B-Instruct-Q8_0.gguf", 3480000000i64, "Q8_0"),
-        ("bartowski/Llama-3.2-3B-Instruct-GGUF", "Llama-3.2-3B-Instruct-Q4_K_M.gguf", 2020000000i64, "Q4_K_M"),
-        ("bartowski/Llama-3.2-1B-Instruct-GGUF", "Llama-3.2-1B-Instruct-Q8_0.gguf", 1240000000i64, "Q8_0"),
-        ("bartowski/Llama-3.2-1B-Instruct-GGUF", "Llama-3.2-1B-Instruct-Q4_K_M.gguf", 780000000i64, "Q4_K_M"),
-        ("TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF", "tinyllama-1.1b-chat-v1.0.Q8_0.gguf", 1100000000i64, "Q8_0"),
-        ("maziyarpanahi/Mistral-7B-Instruct-v0.3-GGUF", "Mistral-7B-Instruct-v0.3.Q8_0.gguf", 7700000000i64, "Q8_0"),
-        ("bartowski/Meta-Llama-3-8B-Instruct-GGUF", "Meta-Llama-3-8B-Instruct-Q4_K_M.gguf", 4800000000i64, "Q4_K_M"),
-        ("bartowski/Meta-Llama-3-8B-Instruct-GGUF", "Meta-Llama-3-8B-Instruct-Q8_0.gguf", 8500000000i64, "Q8_0"),
-        ("bartowski/Llama-3.2-3B-Instruct-GGUF", "Llama-3.2-3B-Instruct-IQ4_NL.gguf", 1950000000i64, "IQ4_NL"),
+        (
+            "bartowski/Llama-3.2-3B-Instruct-GGUF",
+            "Llama-3.2-3B-Instruct-Q8_0.gguf",
+            3480000000i64,
+            "Q8_0",
+        ),
+        (
+            "bartowski/Llama-3.2-3B-Instruct-GGUF",
+            "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+            2020000000i64,
+            "Q4_K_M",
+        ),
+        (
+            "bartowski/Llama-3.2-1B-Instruct-GGUF",
+            "Llama-3.2-1B-Instruct-Q8_0.gguf",
+            1240000000i64,
+            "Q8_0",
+        ),
+        (
+            "bartowski/Llama-3.2-1B-Instruct-GGUF",
+            "Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+            780000000i64,
+            "Q4_K_M",
+        ),
+        (
+            "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF",
+            "tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
+            1100000000i64,
+            "Q8_0",
+        ),
+        (
+            "maziyarpanahi/Mistral-7B-Instruct-v0.3-GGUF",
+            "Mistral-7B-Instruct-v0.3.Q8_0.gguf",
+            7700000000i64,
+            "Q8_0",
+        ),
+        (
+            "bartowski/Meta-Llama-3-8B-Instruct-GGUF",
+            "Meta-Llama-3-8B-Instruct-Q4_K_M.gguf",
+            4800000000i64,
+            "Q4_K_M",
+        ),
+        (
+            "bartowski/Meta-Llama-3-8B-Instruct-GGUF",
+            "Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+            8500000000i64,
+            "Q8_0",
+        ),
+        (
+            "bartowski/Llama-3.2-3B-Instruct-GGUF",
+            "Llama-3.2-3B-Instruct-IQ4_NL.gguf",
+            1950000000i64,
+            "IQ4_NL",
+        ),
     ];
 
     let query_lower = query.to_lowercase();
     let mut results = Vec::new();
     for (repo, file, size, quant) in all_files {
-        if (!query.is_empty() && !repo.to_lowercase().contains(&query_lower) && !file.to_lowercase().contains(&query_lower)) {
+        if (!query.is_empty()
+            && !repo.to_lowercase().contains(&query_lower)
+            && !file.to_lowercase().contains(&query_lower))
+        {
             continue;
         }
         if let Some(ref filter) = quantization_filter {
@@ -507,13 +574,20 @@ pub async fn generate_model_preflight(
     repo: Option<String>,
     file: Option<String>,
 ) -> Result<PreflightResponse, String> {
-    if !url.to_lowercase().ends_with(".gguf") && !file.as_deref().unwrap_or("").to_lowercase().ends_with(".gguf") {
+    if !url.to_lowercase().ends_with(".gguf")
+        && !file
+            .as_deref()
+            .unwrap_or("")
+            .to_lowercase()
+            .ends_with(".gguf")
+    {
         return Err("Preflight requires a valid .gguf model extension".to_string());
     }
 
     // Attempt partial Range HTTP GET request for the first 256KB to inspect headers
     let client = Client::new();
-    let res_res = client.get(&url)
+    let res_res = client
+        .get(&url)
         .header("Range", "bytes=0-262144")
         .send()
         .await;
@@ -536,8 +610,12 @@ pub async fn generate_model_preflight(
                     tensor_paths_supported: false,
                     tokenizer_supported: false,
                     estimated_memory_required: "Unknown".to_string(),
-                    recommended_action: "Preflight unavailable. Full download required to inspect compatibility.".to_string(),
-                    warnings: vec!["Range requests are not supported by the provider endpoint.".to_string()],
+                    recommended_action:
+                        "Preflight unavailable. Full download required to inspect compatibility."
+                            .to_string(),
+                    warnings: vec![
+                        "Range requests are not supported by the provider endpoint.".to_string()
+                    ],
                     blockers: vec![],
                 });
             }
@@ -547,17 +625,26 @@ pub async fn generate_model_preflight(
 
     match parse_gguf_minimal(&bytes) {
         Ok(gguf) => {
-            let arch = gguf.architecture.clone().unwrap_or_else(|| "llama".to_string());
+            let arch = gguf
+                .architecture
+                .clone()
+                .unwrap_or_else(|| "llama".to_string());
             let context = gguf.context_length.unwrap_or(2048);
             let mut warnings = Vec::new();
             let mut blockers = Vec::new();
-            
+
             // Check tokenizer and architecture
-            let tokenizer_supported = gguf.tokenizer_model.is_some() || arch == "llama" || arch == "qwen2" || arch == "mistral";
+            let tokenizer_supported = gguf.tokenizer_model.is_some()
+                || arch == "llama"
+                || arch == "qwen2"
+                || arch == "mistral";
             let arch_supported = arch == "llama" || arch == "qwen2" || arch == "mistral";
 
             if !arch_supported {
-                blockers.push(format!("Unsupported model architecture '{}'. Only llama/qwen2/mistral are runnable.", arch));
+                blockers.push(format!(
+                    "Unsupported model architecture '{}'. Only llama/qwen2/mistral are runnable.",
+                    arch
+                ));
             }
 
             // Check Whitelisted Quantization layouts
@@ -620,29 +707,40 @@ pub async fn generate_model_preflight(
 }
 
 #[tauri::command]
-pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -> Result<(), String> {
+pub async fn queue_model_download(
+    state: State<'_, DbState>,
+    model_id: String,
+) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // Check if download already in progress
-    let existing_dl: Option<(String, String)> = conn.query_row(
-        "SELECT download_id, status FROM model_downloads WHERE status = 'downloading'",
-        [],
-        |row| Ok((row.get(0)?, row.get(1)?))
-    ).ok();
+    let existing_dl: Option<(String, String)> = conn
+        .query_row(
+            "SELECT download_id, status FROM model_downloads WHERE status = 'downloading'",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .ok();
 
     if existing_dl.is_some() {
         return Err("A model download is already active in the queue.".to_string());
     }
 
     // Get model file parameters
-    let (filename, url, size): (String, String, i64) = conn.query_row(
-        "SELECT filename, provider_url, file_size_bytes FROM model_files WHERE model_id = ?1",
-        [&model_id],
-        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?))
-    ).map_err(|e| format!("Model catalog ID not found: {}", e))?;
+    let (filename, url, size): (String, String, i64) = conn
+        .query_row(
+            "SELECT filename, provider_url, file_size_bytes FROM model_files WHERE model_id = ?1",
+            [&model_id],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .map_err(|e| format!("Model catalog ID not found: {}", e))?;
 
     let download_id = format!("{}-dl", model_id);
-    let dest_path = get_models_dir().join("downloads").join(&filename).to_string_lossy().to_string();
+    let dest_path = get_models_dir()
+        .join("downloads")
+        .join(&filename)
+        .to_string_lossy()
+        .to_string();
     let _ = fs::create_dir_all(get_models_dir().join("downloads"));
 
     // Save download record
@@ -654,8 +752,9 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
 
     conn.execute(
         "UPDATE models SET install_status = 'downloading' WHERE model_id = ?1",
-        [&model_id]
-    ).map_err(|e| e.to_string())?;
+        [&model_id],
+    )
+    .map_err(|e| e.to_string())?;
 
     // Spawn download runner
     let db_path = crate::storage::get_db_path();
@@ -681,10 +780,14 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
                 );
 
                 if finished {
-                    let install_val = if status == "completed" { "installed" } else { "not_installed" };
+                    let install_val = if status == "completed" {
+                        "installed"
+                    } else {
+                        "not_installed"
+                    };
                     let _ = c.execute(
                         "UPDATE models SET install_status = ?1 WHERE model_id = ?2",
-                        params![install_val, model_id_clone]
+                        params![install_val, model_id_clone],
                     );
 
                     if status == "completed" {
@@ -697,7 +800,7 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
 
         let part_path = format!("{}.part", dest_path);
         let dest = Path::new(&part_path);
-        
+
         // 1. Check existing downloaded size for resumability
         let mut start_bytes = 0u64;
         if dest.exists() {
@@ -723,7 +826,11 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
             Ok(res) => {
                 let status = res.status();
                 if !status.is_success() {
-                    update_dl_progress(start_bytes as i64, false, Some(format!("Server returned HTTP {}", status)));
+                    update_dl_progress(
+                        start_bytes as i64,
+                        false,
+                        Some(format!("Server returned HTTP {}", status)),
+                    );
                     return;
                 }
 
@@ -732,7 +839,11 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
                     match fs::OpenOptions::new().append(true).open(dest) {
                         Ok(f) => f,
                         Err(e) => {
-                            update_dl_progress(start_bytes as i64, false, Some(format!("Failed to open part file: {}", e)));
+                            update_dl_progress(
+                                start_bytes as i64,
+                                false,
+                                Some(format!("Failed to open part file: {}", e)),
+                            );
                             return;
                         }
                     }
@@ -741,7 +852,11 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
                     match fs::File::create(dest) {
                         Ok(f) => f,
                         Err(e) => {
-                            update_dl_progress(0, false, Some(format!("Failed to create part file: {}", e)));
+                            update_dl_progress(
+                                0,
+                                false,
+                                Some(format!("Failed to create part file: {}", e)),
+                            );
                             return;
                         }
                     }
@@ -758,7 +873,11 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
                     match chunk_res {
                         Ok(chunk) => {
                             if let Err(e) = file.write_all(&chunk) {
-                                update_dl_progress(downloaded, false, Some(format!("Write failed: {}", e)));
+                                update_dl_progress(
+                                    downloaded,
+                                    false,
+                                    Some(format!("Write failed: {}", e)),
+                                );
                                 return;
                             }
                             downloaded += chunk.len() as i64;
@@ -770,7 +889,11 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
                             }
                         }
                         Err(e) => {
-                            update_dl_progress(downloaded, false, Some(format!("Stream error: {}", e)));
+                            update_dl_progress(
+                                downloaded,
+                                false,
+                                Some(format!("Stream error: {}", e)),
+                            );
                             return;
                         }
                     }
@@ -780,16 +903,28 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
                 if downloaded >= size || size == 0 {
                     // Atomic rename
                     if let Err(e) = fs::rename(&part_path, &dest_path) {
-                        update_dl_progress(downloaded, false, Some(format!("Failed to rename final file: {}", e)));
+                        update_dl_progress(
+                            downloaded,
+                            false,
+                            Some(format!("Failed to rename final file: {}", e)),
+                        );
                         return;
                     }
                     update_dl_progress(downloaded, true, None);
                 } else {
-                    update_dl_progress(downloaded, false, Some("Connection dropped before file was fully downloaded".to_string()));
+                    update_dl_progress(
+                        downloaded,
+                        false,
+                        Some("Connection dropped before file was fully downloaded".to_string()),
+                    );
                 }
             }
             Err(e) => {
-                update_dl_progress(start_bytes as i64, false, Some(format!("Network request failed: {}", e)));
+                update_dl_progress(
+                    start_bytes as i64,
+                    false,
+                    Some(format!("Network request failed: {}", e)),
+                );
             }
         }
     });
@@ -799,11 +934,13 @@ pub async fn queue_model_download(state: State<'_, DbState>, model_id: String) -
 
 fn inspect_and_verify_model(conn: &rusqlite::Connection, model_id: &str) -> Result<(), String> {
     // 1. Move file out of download and construct atomic final path
-    let (filename, dest_path): (String, String) = conn.query_row(
-        "SELECT filename, destination_path FROM model_downloads WHERE model_id = ?1",
-        [model_id],
-        |row| Ok((row.get(0)?, row.get(1)?))
-    ).map_err(|e| e.to_string())?;
+    let (filename, dest_path): (String, String) = conn
+        .query_row(
+            "SELECT filename, destination_path FROM model_downloads WHERE model_id = ?1",
+            [model_id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .map_err(|e| e.to_string())?;
 
     let final_dir = get_models_dir().join("installed").join(model_id);
     let _ = fs::create_dir_all(&final_dir);
@@ -836,7 +973,11 @@ fn inspect_and_verify_model(conn: &rusqlite::Connection, model_id: &str) -> Resu
                     }
                 }
 
-                let comp_tier = if unsupported_list.is_empty() { "recommended" } else { "inspectable_only" };
+                let comp_tier = if unsupported_list.is_empty() {
+                    "recommended"
+                } else {
+                    "inspectable_only"
+                };
                 let runnable = unsupported_list.is_empty();
 
                 // Save to SQLite models manifest
@@ -845,7 +986,14 @@ fn inspect_and_verify_model(conn: &rusqlite::Connection, model_id: &str) -> Resu
                                      architecture = ?2, quantization = ?3, 
                                      compatibility_status = ?4, runnable_status = ?5, 
                                      last_inspected_at = CURRENT_TIMESTAMP WHERE model_id = ?6",
-                    params![final_path.to_string_lossy().to_string(), arch, quant, comp_tier, if runnable { 1 } else { 0 }, model_id]
+                    params![
+                        final_path.to_string_lossy().to_string(),
+                        arch,
+                        quant,
+                        comp_tier,
+                        if runnable { 1 } else { 0 },
+                        model_id
+                    ],
                 );
 
                 // Save inspection details
@@ -882,49 +1030,78 @@ fn inspect_and_verify_model(conn: &rusqlite::Connection, model_id: &str) -> Resu
 }
 
 #[tauri::command]
-pub async fn pause_model_download(state: State<'_, DbState>, download_id: String) -> Result<(), String> {
+pub async fn pause_model_download(
+    state: State<'_, DbState>,
+    download_id: String,
+) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "UPDATE model_downloads SET status = 'paused' WHERE download_id = ?1",
-        [&download_id]
-    ).map_err(|e| e.to_string())?;
+        [&download_id],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn resume_model_download(state: State<'_, DbState>, download_id: String) -> Result<(), String> {
+pub async fn resume_model_download(
+    state: State<'_, DbState>,
+    download_id: String,
+) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "UPDATE model_downloads SET status = 'downloading' WHERE download_id = ?1",
-        [&download_id]
-    ).map_err(|e| e.to_string())?;
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn cancel_model_download(state: State<'_, DbState>, download_id: String) -> Result<(), String> {
-    let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
-    let model_id: String = conn.query_row(
-        "SELECT model_id FROM model_downloads WHERE download_id = ?1",
         [&download_id],
-        |row| row.get(0)
-    ).map_err(|e| e.to_string())?;
-
-    conn.execute("DELETE FROM model_downloads WHERE download_id = ?1", [&download_id]).map_err(|e| e.to_string())?;
-    conn.execute("UPDATE models SET install_status = 'not_installed' WHERE model_id = ?1", [&model_id]).map_err(|e| e.to_string())?;
-    
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn import_local_model(state: State<'_, DbState>, path: String, copy_into_store: bool) -> Result<(), String> {
+pub async fn cancel_model_download(
+    state: State<'_, DbState>,
+    download_id: String,
+) -> Result<(), String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+
+    let model_id: String = conn
+        .query_row(
+            "SELECT model_id FROM model_downloads WHERE download_id = ?1",
+            [&download_id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+
+    conn.execute(
+        "DELETE FROM model_downloads WHERE download_id = ?1",
+        [&download_id],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE models SET install_status = 'not_installed' WHERE model_id = ?1",
+        [&model_id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn import_local_model(
+    state: State<'_, DbState>,
+    path: String,
+    copy_into_store: bool,
+) -> Result<(), String> {
     let src_path = Path::new(&path);
     if !src_path.exists() {
         return Err("Target local model path does not exist".to_string());
     }
 
-    let filename = src_path.file_name().unwrap_or_default().to_string_lossy().to_string();
+    let filename = src_path
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
     if !filename.to_lowercase().ends_with(".gguf") {
         return Err("Import target must be a valid GGUF binary".to_string());
     }
@@ -947,7 +1124,10 @@ pub async fn import_local_model(state: State<'_, DbState>, path: String, copy_in
     };
 
     let size = fs::metadata(src_path).map_err(|e| e.to_string())?.len();
-    let model_id = format!("local-{}", filename.to_lowercase().replace(' ', "-").replace('.', "-"));
+    let model_id = format!(
+        "local-{}",
+        filename.to_lowercase().replace(' ', "-").replace('.', "-")
+    );
 
     // Save imported manifest
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
@@ -967,21 +1147,25 @@ pub async fn delete_model(state: State<'_, DbState>, model_id: String) -> Result
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // Block deletion of active models
-    let active: i32 = conn.query_row(
-        "SELECT COUNT(*) FROM models WHERE model_id = ?1 AND active_status = 1",
-        [&model_id],
-        |row| row.get(0)
-    ).unwrap_or(0);
+    let active: i32 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM models WHERE model_id = ?1 AND active_status = 1",
+            [&model_id],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
 
     if active > 0 {
         return Err("Cannot delete the model because it is currently activated.".to_string());
     }
 
-    let local_path: Option<String> = conn.query_row(
-        "SELECT local_path FROM models WHERE model_id = ?1",
-        [&model_id],
-        |row| row.get(0)
-    ).ok();
+    let local_path: Option<String> = conn
+        .query_row(
+            "SELECT local_path FROM models WHERE model_id = ?1",
+            [&model_id],
+            |row| row.get(0),
+        )
+        .ok();
 
     if let Some(path) = local_path {
         let p = Path::new(&path);
@@ -996,10 +1180,26 @@ pub async fn delete_model(state: State<'_, DbState>, model_id: String) -> Result
         }
     }
 
-    conn.execute("UPDATE models SET install_status = 'not_installed', local_path = NULL WHERE model_id = ?1", [&model_id]).map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM model_inspections WHERE model_id = ?1", [&model_id]).map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM model_tensor_summaries WHERE model_id = ?1", [&model_id]).map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM model_downloads WHERE model_id = ?1", [&model_id]).map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE models SET install_status = 'not_installed', local_path = NULL WHERE model_id = ?1",
+        [&model_id],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM model_inspections WHERE model_id = ?1",
+        [&model_id],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM model_tensor_summaries WHERE model_id = ?1",
+        [&model_id],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM model_downloads WHERE model_id = ?1",
+        [&model_id],
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -1015,31 +1215,43 @@ pub async fn activate_model_scoped(
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // Check if model is runnable
-    let runnable: i32 = conn.query_row(
-        "SELECT runnable_status FROM models WHERE model_id = ?1",
-        [&model_id],
-        |row| row.get(0)
-    ).map_err(|e| format!("Model ID not found: {}", e))?;
+    let runnable: i32 = conn
+        .query_row(
+            "SELECT runnable_status FROM models WHERE model_id = ?1",
+            [&model_id],
+            |row| row.get(0),
+        )
+        .map_err(|e| format!("Model ID not found: {}", e))?;
 
     if runnable == 0 {
-        return Err("Cannot activate model because it failed compatibility validation.".to_string());
+        return Err(
+            "Cannot activate model because it failed compatibility validation.".to_string(),
+        );
     }
 
-    let filename: String = conn.query_row(
-        "SELECT source_file FROM models WHERE model_id = ?1",
-        [&model_id],
-        |row| row.get(0)
-    ).map_err(|e| e.to_string())?;
+    let filename: String = conn
+        .query_row(
+            "SELECT source_file FROM models WHERE model_id = ?1",
+            [&model_id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
 
     // Record scoped activation binding
     conn.execute(
         "INSERT INTO model_activations (model_id, scope_type, scope_id) VALUES (?1, ?2, ?3)",
-        params![model_id, scope_type, scope_id]
-    ).map_err(|e| e.to_string())?;
+        params![model_id, scope_type, scope_id],
+    )
+    .map_err(|e| e.to_string())?;
 
     if scope_type == "global" {
-        conn.execute("UPDATE models SET active_status = 0", []).map_err(|e| e.to_string())?;
-        conn.execute("UPDATE models SET active_status = 1 WHERE model_id = ?1", [&model_id]).map_err(|e| e.to_string())?;
+        conn.execute("UPDATE models SET active_status = 0", [])
+            .map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE models SET active_status = 1 WHERE model_id = ?1",
+            [&model_id],
+        )
+        .map_err(|e| e.to_string())?;
 
         // 1. Update shared_state active_local_model
         conn.execute(
@@ -1047,19 +1259,22 @@ pub async fn activate_model_scoped(
              VALUES ('active_local_model', ?1, CURRENT_TIMESTAMP)
              ON CONFLICT(key) DO UPDATE SET value = ?1, updated_at = CURRENT_TIMESTAMP",
             [&filename],
-        ).map_err(|e| e.to_string())?;
+        )
+        .map_err(|e| e.to_string())?;
 
         // 2. Update model_configs table for camelid provider to use this model name
         conn.execute(
             "UPDATE model_configs SET model_name = ?1 WHERE provider = 'camelid'",
             [&filename],
-        ).map_err(|e| e.to_string())?;
+        )
+        .map_err(|e| e.to_string())?;
 
         // 3. Update all agents using 'camelid' provider
         conn.execute(
             "UPDATE agents SET model_name = ?1 WHERE model_provider = 'camelid'",
             [&filename],
-        ).map_err(|e| e.to_string())?;
+        )
+        .map_err(|e| e.to_string())?;
 
         // Drop the connection lock explicitly before spawning the daemon
         drop(conn);
@@ -1070,14 +1285,16 @@ pub async fn activate_model_scoped(
         // Scoped to specific agent
         conn.execute(
             "UPDATE agents SET model_name = ?1, model_provider = 'camelid' WHERE id = ?2",
-            params![filename, scope_id]
-        ).map_err(|e| e.to_string())?;
+            params![filename, scope_id],
+        )
+        .map_err(|e| e.to_string())?;
     } else if scope_type == "workspace" {
         // Scoped to workspace
         conn.execute(
             "UPDATE agents SET model_name = ?1, model_provider = 'camelid' WHERE workspace_id = ?2",
-            params![filename, scope_id]
-        ).map_err(|e| e.to_string())?;
+            params![filename, scope_id],
+        )
+        .map_err(|e| e.to_string())?;
     } else if scope_type == "task" {
         // Scoped to task owner
         conn.execute(
@@ -1097,16 +1314,18 @@ pub async fn run_model_smoke_test(
 ) -> Result<SmokeTestResult, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
-    let filename: String = conn.query_row(
-        "SELECT source_file FROM models WHERE model_id = ?1",
-        [&model_id],
-        |row| row.get(0)
-    ).map_err(|e| e.to_string())?;
+    let filename: String = conn
+        .query_row(
+            "SELECT source_file FROM models WHERE model_id = ?1",
+            [&model_id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
 
     drop(conn);
 
     let start = std::time::Instant::now();
-    
+
     // Simulate hotloading check in daemon
     let _ = crate::supervisor::spawn_camelid_daemon(&state, &daemon_state, Some(filename.clone()))?;
     let load_latency = start.elapsed().as_millis() as u64;
@@ -1126,89 +1345,101 @@ pub async fn run_model_smoke_test(
 }
 
 #[tauri::command]
-pub async fn get_model_details(state: State<'_, DbState>, model_id: String) -> Result<ModelDetailsResponse, String> {
+pub async fn get_model_details(
+    state: State<'_, DbState>,
+    model_id: String,
+) -> Result<ModelDetailsResponse, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // 1. Get model entry
-    let entry = conn.query_row(
-        "SELECT model_id, display_name, provider, source_repo, source_file, local_path, 
+    let entry = conn
+        .query_row(
+            "SELECT model_id, display_name, provider, source_repo, source_file, local_path, 
                 architecture, quantization, parameter_count, file_size_bytes, 
                 install_status, compatibility_status, runnable_status, active_status, license
          FROM models WHERE model_id = ?1",
-        [&model_id],
-        |row| {
-            Ok(ModelCatalogEntry {
-                model_id: row.get(0)?,
-                display_name: row.get(1)?,
-                provider: row.get(2)?,
-                source_repo: row.get(3)?,
-                source_file: row.get(4)?,
-                local_path: row.get(5)?,
-                architecture: row.get(6)?,
-                quantization: row.get(7)?,
-                parameter_count: row.get(8)?,
-                file_size_bytes: row.get(9)?,
-                install_status: row.get(10)?,
-                compatibility_status: row.get(11)?,
-                runnable_status: row.get::<_, i32>(12)? != 0,
-                active_status: row.get::<_, i32>(13)? != 0,
-                license: row.get(14)?,
-            })
-        }
-    ).map_err(|e| e.to_string())?;
+            [&model_id],
+            |row| {
+                Ok(ModelCatalogEntry {
+                    model_id: row.get(0)?,
+                    display_name: row.get(1)?,
+                    provider: row.get(2)?,
+                    source_repo: row.get(3)?,
+                    source_file: row.get(4)?,
+                    local_path: row.get(5)?,
+                    architecture: row.get(6)?,
+                    quantization: row.get(7)?,
+                    parameter_count: row.get(8)?,
+                    file_size_bytes: row.get(9)?,
+                    install_status: row.get(10)?,
+                    compatibility_status: row.get(11)?,
+                    runnable_status: row.get::<_, i32>(12)? != 0,
+                    active_status: row.get::<_, i32>(13)? != 0,
+                    license: row.get(14)?,
+                })
+            },
+        )
+        .map_err(|e| e.to_string())?;
 
     // 2. Get inspections
-    let inspection = conn.query_row(
-        "SELECT gguf_version, architecture, tokenizer_model, context_length, embedding_length, 
+    let inspection = conn
+        .query_row(
+            "SELECT gguf_version, architecture, tokenizer_model, context_length, embedding_length, 
                 block_count, feed_forward_length, attention_head_count, attention_head_count_kv, 
                 rope_dimension_count, rope_freq_base, rope_freq_scale, quantization_summary, 
                 tensor_count, supported_tensor_types, unsupported_tensor_types, 
                 required_runtime_features, inspection_status, inspection_errors
          FROM model_inspections WHERE model_id = ?1",
-        [&model_id],
-        |row| {
-            let supported_str: String = row.get(14)?;
-            let unsupported_str: String = row.get(15)?;
-            let features_str: String = row.get(16)?;
-            Ok(InspectionDetails {
-                gguf_version: row.get(0)?,
-                architecture: row.get(1)?,
-                tokenizer_model: row.get(2)?,
-                context_length: row.get(3)?,
-                embedding_length: row.get(4)?,
-                block_count: row.get(5)?,
-                feed_forward_length: row.get(6)?,
-                attention_head_count: row.get(7)?,
-                attention_head_count_kv: row.get(8)?,
-                rope_dimension_count: row.get(9)?,
-                rope_freq_base: row.get(10)?,
-                rope_freq_scale: row.get(11)?,
-                quantization_summary: row.get(12)?,
-                tensor_count: row.get(13)?,
-                supported_tensor_types: serde_json::from_str(&supported_str).unwrap_or_default(),
-                unsupported_tensor_types: serde_json::from_str(&unsupported_str).unwrap_or_default(),
-                required_runtime_features: serde_json::from_str(&features_str).unwrap_or_default(),
-                inspection_status: row.get(17)?,
-                inspection_errors: row.get(18)?,
-            })
-        }
-    ).ok();
+            [&model_id],
+            |row| {
+                let supported_str: String = row.get(14)?;
+                let unsupported_str: String = row.get(15)?;
+                let features_str: String = row.get(16)?;
+                Ok(InspectionDetails {
+                    gguf_version: row.get(0)?,
+                    architecture: row.get(1)?,
+                    tokenizer_model: row.get(2)?,
+                    context_length: row.get(3)?,
+                    embedding_length: row.get(4)?,
+                    block_count: row.get(5)?,
+                    feed_forward_length: row.get(6)?,
+                    attention_head_count: row.get(7)?,
+                    attention_head_count_kv: row.get(8)?,
+                    rope_dimension_count: row.get(9)?,
+                    rope_freq_base: row.get(10)?,
+                    rope_freq_scale: row.get(11)?,
+                    quantization_summary: row.get(12)?,
+                    tensor_count: row.get(13)?,
+                    supported_tensor_types: serde_json::from_str(&supported_str)
+                        .unwrap_or_default(),
+                    unsupported_tensor_types: serde_json::from_str(&unsupported_str)
+                        .unwrap_or_default(),
+                    required_runtime_features: serde_json::from_str(&features_str)
+                        .unwrap_or_default(),
+                    inspection_status: row.get(17)?,
+                    inspection_errors: row.get(18)?,
+                })
+            },
+        )
+        .ok();
 
     // 3. Get tensors
     let mut t_stmt = conn.prepare(
         "SELECT tensor_name, tensor_type, shape, supported, notes FROM model_tensor_summaries WHERE model_id = ?1"
     ).map_err(|e| e.to_string())?;
 
-    let t_iter = t_stmt.query_map([&model_id], |row| {
-        let shape_str: String = row.get(2)?;
-        Ok(TensorDetails {
-            tensor_name: row.get(0)?,
-            tensor_type: row.get(1)?,
-            shape: serde_json::from_str(&shape_str).unwrap_or_default(),
-            supported: row.get::<_, i32>(3)? != 0,
-            notes: row.get(4)?,
+    let t_iter = t_stmt
+        .query_map([&model_id], |row| {
+            let shape_str: String = row.get(2)?;
+            Ok(TensorDetails {
+                tensor_name: row.get(0)?,
+                tensor_type: row.get(1)?,
+                shape: serde_json::from_str(&shape_str).unwrap_or_default(),
+                supported: row.get::<_, i32>(3)? != 0,
+                notes: row.get(4)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut tensors = Vec::new();
     for t in t_iter {
@@ -1235,17 +1466,21 @@ pub async fn get_model_details(state: State<'_, DbState>, model_id: String) -> R
     ).ok();
 
     // 5. Get activations
-    let mut act_stmt = conn.prepare(
-        "SELECT scope_type, scope_id, activated_at FROM model_activations WHERE model_id = ?1"
-    ).map_err(|e| e.to_string())?;
+    let mut act_stmt = conn
+        .prepare(
+            "SELECT scope_type, scope_id, activated_at FROM model_activations WHERE model_id = ?1",
+        )
+        .map_err(|e| e.to_string())?;
 
-    let act_iter = act_stmt.query_map([&model_id], |row| {
-        Ok(ActivationDetails {
-            scope_type: row.get(0)?,
-            scope_id: row.get(1)?,
-            activated_at: row.get(2)?,
+    let act_iter = act_stmt
+        .query_map([&model_id], |row| {
+            Ok(ActivationDetails {
+                scope_type: row.get(0)?,
+                scope_id: row.get(1)?,
+                activated_at: row.get(2)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut activations = Vec::new();
     for act in act_iter {
@@ -1262,26 +1497,34 @@ pub async fn get_model_details(state: State<'_, DbState>, model_id: String) -> R
 }
 
 #[tauri::command]
-pub async fn get_model_storage_usage(state: State<'_, DbState>) -> Result<StorageUsageResponse, String> {
+pub async fn get_model_storage_usage(
+    state: State<'_, DbState>,
+) -> Result<StorageUsageResponse, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
-    let total_allocated: i64 = conn.query_row(
-        "SELECT SUM(file_size_bytes) FROM models WHERE install_status = 'installed'",
-        [],
-        |row| row.get(0)
-    ).unwrap_or(0);
+    let total_allocated: i64 = conn
+        .query_row(
+            "SELECT SUM(file_size_bytes) FROM models WHERE install_status = 'installed'",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
 
-    let space_saved_partial: i64 = conn.query_row(
-        "SELECT SUM(downloaded_bytes) FROM model_downloads WHERE status != 'completed'",
-        [],
-        |row| row.get(0)
-    ).unwrap_or(0);
+    let space_saved_partial: i64 = conn
+        .query_row(
+            "SELECT SUM(downloaded_bytes) FROM model_downloads WHERE status != 'completed'",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
 
-    let count: i32 = conn.query_row(
-        "SELECT COUNT(*) FROM models WHERE install_status = 'installed'",
-        [],
-        |row| row.get(0)
-    ).unwrap_or(0);
+    let count: i32 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM models WHERE install_status = 'installed'",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
 
     Ok(StorageUsageResponse {
         total_allocated_bytes: total_allocated,

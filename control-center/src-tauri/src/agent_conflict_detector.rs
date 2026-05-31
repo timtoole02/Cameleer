@@ -9,11 +9,13 @@ pub fn detect_circular_dependencies(conn: &Connection, card_id: &str) -> Result<
     loop {
         visited.insert(current_id.clone());
 
-        let blocked_by: Option<String> = conn.query_row(
-            "SELECT blocked_by FROM kanban_cards WHERE id = ?1",
-            [&current_id],
-            |row| row.get(0),
-        ).unwrap_or(None);
+        let blocked_by: Option<String> = conn
+            .query_row(
+                "SELECT blocked_by FROM kanban_cards WHERE id = ?1",
+                [&current_id],
+                |row| row.get(0),
+            )
+            .unwrap_or(None);
 
         if let Some(blocker) = blocked_by {
             if visited.contains(&blocker) {
@@ -33,13 +35,17 @@ pub fn detect_file_collisions(conn: &Connection, file_path: &str) -> Result<Vec<
     // Check if multiple active tasks are working on the same file
     let mut conflicting_agents = Vec::new();
 
-    let mut stmt = conn.prepare(
-        "SELECT assigned_agent_id FROM kanban_cards 
-         WHERE status = 'In Progress' AND required_files LIKE ?1"
-    ).map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT assigned_agent_id FROM kanban_cards 
+         WHERE status = 'In Progress' AND required_files LIKE ?1",
+        )
+        .map_err(|e| e.to_string())?;
 
     let pattern = format!("%{}%", file_path);
-    let iter = stmt.query_map([pattern], |row| row.get::<_, Option<String>>(0)).unwrap();
+    let iter = stmt
+        .query_map([pattern], |row| row.get::<_, Option<String>>(0))
+        .unwrap();
 
     for agent_opt in iter {
         if let Ok(Some(agent_id)) = agent_opt {
@@ -66,49 +72,83 @@ mod tests {
                 required_files TEXT
             )",
             [],
-        ).unwrap();
+        )
+        .unwrap();
         conn
     }
 
     #[test]
     fn test_detect_circular_dependencies() {
         let conn = setup_test_db();
-        
+
         // Setup circular chain: A -> B -> C -> A
-        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('A', 'B')", []).unwrap();
-        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('B', 'C')", []).unwrap();
-        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('C', 'A')", []).unwrap();
-        
+        conn.execute(
+            "INSERT INTO kanban_cards (id, blocked_by) VALUES ('A', 'B')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO kanban_cards (id, blocked_by) VALUES ('B', 'C')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO kanban_cards (id, blocked_by) VALUES ('C', 'A')",
+            [],
+        )
+        .unwrap();
+
         let has_cycle = detect_circular_dependencies(&conn, "A").unwrap();
-        assert!(has_cycle, "Should detect A -> B -> C -> A circular dependency");
+        assert!(
+            has_cycle,
+            "Should detect A -> B -> C -> A circular dependency"
+        );
     }
 
     #[test]
     fn test_no_circular_dependency() {
         let conn = setup_test_db();
-        
+
         // Setup linear chain: A -> B -> C
-        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('A', 'B')", []).unwrap();
-        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('B', 'C')", []).unwrap();
-        conn.execute("INSERT INTO kanban_cards (id, blocked_by) VALUES ('C', NULL)", []).unwrap();
-        
+        conn.execute(
+            "INSERT INTO kanban_cards (id, blocked_by) VALUES ('A', 'B')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO kanban_cards (id, blocked_by) VALUES ('B', 'C')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO kanban_cards (id, blocked_by) VALUES ('C', NULL)",
+            [],
+        )
+        .unwrap();
+
         let has_cycle = detect_circular_dependencies(&conn, "A").unwrap();
-        assert!(!has_cycle, "Should NOT detect circular dependency in linear chain");
+        assert!(
+            !has_cycle,
+            "Should NOT detect circular dependency in linear chain"
+        );
     }
 
     #[test]
     fn test_detect_file_collisions() {
         let conn = setup_test_db();
-        
+
         conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('1', 'agent_x', 'In Progress', '[\"main.rs\", \"utils.rs\"]')", []).unwrap();
         conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('2', 'agent_y', 'In Progress', '[\"utils.rs\"]')", []).unwrap();
         conn.execute("INSERT INTO kanban_cards (id, assigned_agent_id, status, required_files) VALUES ('3', 'agent_z', 'Ready', '[\"utils.rs\"]')", []).unwrap();
-        
+
         let collisions = detect_file_collisions(&conn, "utils.rs").unwrap();
-        
+
         assert_eq!(collisions.len(), 2, "Should find 2 conflicting agents");
         assert!(collisions.contains(&"agent_x".to_string()));
         assert!(collisions.contains(&"agent_y".to_string()));
-        assert!(!collisions.contains(&"agent_z".to_string()), "agent_z is not 'In Progress'");
+        assert!(
+            !collisions.contains(&"agent_z".to_string()),
+            "agent_z is not 'In Progress'"
+        );
     }
 }

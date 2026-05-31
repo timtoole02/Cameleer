@@ -1,11 +1,11 @@
-use std::time::{SystemTime, UNIX_EPOCH, Duration};
-use tauri::{AppHandle, Manager};
-use crate::storage::DbState;
 use crate::event_bus::{emit_event, AppEvent};
-use std::process::{Command, Child, Stdio};
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use crate::storage::DbState;
 use std::fs;
+use std::path::PathBuf;
+use std::process::{Child, Command, Stdio};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, Manager};
 
 pub struct DaemonState {
     pub child: Arc<Mutex<Option<Child>>>,
@@ -50,7 +50,10 @@ pub fn spawn_camelid_daemon(
         exec_path = PathBuf::from("camelid"); // Fallback to PATH lookup
     }
 
-    println!("[DAEMON] Spawning camelid daemon from path: {:?}", exec_path);
+    println!(
+        "[DAEMON] Spawning camelid daemon from path: {:?}",
+        exec_path
+    );
 
     // 3. Resolve GGUF model path
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
@@ -101,7 +104,10 @@ pub fn spawn_camelid_daemon(
         println!("[DAEMON] Loading model GGUF: {:?}", model_path);
         cmd.arg("--model").arg(model_path);
     } else {
-        println!("[DAEMON] WARNING: Model GGUF not found at {:?}. Spawning headless camelid.", model_path);
+        println!(
+            "[DAEMON] WARNING: Model GGUF not found at {:?}. Spawning headless camelid.",
+            model_path
+        );
     }
 
     // Set stdout/stderr to ~/.cameleer/camelid.log
@@ -141,33 +147,33 @@ pub fn start_watchdog(app_handle: AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(5)).await;
-            
+
             let mut crashed_agents = Vec::new();
-            
+
             {
                 let state = match app_handle.try_state::<DbState>() {
                     Some(s) => s,
                     None => continue,
                 };
-                
+
                 let conn = match state.conn.lock() {
                     Ok(c) => c,
                     Err(_) => continue,
                 };
-                
+
                 // Query agents currently working
                 let mut stmt = match conn.prepare(
-                    "SELECT id, name, role, last_heartbeat FROM agents WHERE status = 'working'"
+                    "SELECT id, name, role, last_heartbeat FROM agents WHERE status = 'working'",
                 ) {
                     Ok(s) => s,
                     Err(_) => continue,
                 };
-                
+
                 let now = SystemTime::now()
                     .duration_since(UNIX_EPOCH)
                     .unwrap()
                     .as_secs();
-                    
+
                 let iter = match stmt.query_map([], |row| {
                     Ok((
                         row.get::<_, String>(0)?,
@@ -179,11 +185,11 @@ pub fn start_watchdog(app_handle: AppHandle) {
                     Ok(it) => it,
                     Err(_) => continue,
                 };
-                
+
                 for agent in iter {
                     if let Ok((id, name, role, hb)) = agent {
                         let hb_sec = hb.and_then(|h| h.parse::<u64>().ok()).unwrap_or(0);
-                        
+
                         // Heartbeat timed out (> 20 seconds ago)
                         if hb_sec > 0 && now.saturating_sub(hb_sec) > 20 {
                             crashed_agents.push((id, name, role));
@@ -191,10 +197,10 @@ pub fn start_watchdog(app_handle: AppHandle) {
                     }
                 }
             } // conn and stmt drop here
-            
+
             for (id, name, role) in crashed_agents {
                 println!("[WATCHDOG] Agent {} ({}) stalled due to heartbeat timeout. Initiating recovery...", name, role);
-                
+
                 {
                     let state = match app_handle.try_state::<DbState>() {
                         Some(s) => s,
@@ -206,16 +212,16 @@ pub fn start_watchdog(app_handle: AppHandle) {
                     };
                     let _ = conn.execute(
                         "UPDATE agents SET status = 'recovering' WHERE id = ?1",
-                        [&id]
+                        [&id],
                     );
-                    
+
                     let _ = conn.execute(
                         "INSERT INTO events (event_type, agent_id, payload) 
                          VALUES ('agent_stalled_recovery', ?1, ?2)",
                         rusqlite::params![id, format!("{{\"status\":\"recovering\",\"error\":\"Heartbeat timed out. Agent {} stalled for >20s. Rolling back to last checkpoint.\"}}", name)]
                     );
                 }
-                
+
                 emit_event(
                     &app_handle,
                     AppEvent {
@@ -223,10 +229,12 @@ pub fn start_watchdog(app_handle: AppHandle) {
                         agent_id: Some(id.clone()),
                         task_id: None,
                         payload: serde_json::json!({ "status": "recovering", "error": "Heartbeat timed out. Stalled for >20s. Recovering state." }),
-                    }
+                    },
                 );
-                
-                let _ = crate::agent_recovery_engine::attempt_recovery(app_handle.clone(), id.clone()).await;
+
+                let _ =
+                    crate::agent_recovery_engine::attempt_recovery(app_handle.clone(), id.clone())
+                        .await;
             }
         }
     });
@@ -240,11 +248,12 @@ pub fn update_heartbeat(state: tauri::State<'_, DbState>, agent_id: String) -> R
         .unwrap()
         .as_secs()
         .to_string();
-        
+
     conn.execute(
         "UPDATE agents SET last_heartbeat = ?2 WHERE id = ?1",
         [agent_id, now],
-    ).map_err(|e| e.to_string())?;
-    
+    )
+    .map_err(|e| e.to_string())?;
+
     Ok(())
 }

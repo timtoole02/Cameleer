@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection, Result, OptionalExtension};
+use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9,12 +9,11 @@ pub struct ValidationResult {
 }
 
 pub fn validate_task_completion(
-    conn: &Connection, 
-    agent_id: &str, 
-    card_id: &str, 
-    evidence: &Option<String>
+    conn: &Connection,
+    agent_id: &str,
+    card_id: &str,
+    evidence: &Option<String>,
 ) -> Result<ValidationResult, String> {
-
     let mut errors = Vec::new();
 
     // 1. Fetch the card details
@@ -60,41 +59,54 @@ pub fn validate_task_completion(
     }
 
     // 4. Contract requirement
-    let done_req: Option<String> = conn.query_row(
-        "SELECT done_definition FROM mission_agent_contracts WHERE agent_id = ?1",
-        [agent_id],
-        |row| row.get(0),
-    ).optional().unwrap_or(None);
+    let done_req: Option<String> = conn
+        .query_row(
+            "SELECT done_definition FROM mission_agent_contracts WHERE agent_id = ?1",
+            [agent_id],
+            |row| row.get(0),
+        )
+        .optional()
+        .unwrap_or(None);
 
     let mut requires_validation = false;
     if let Some(done_str) = done_req {
         let defs: Vec<String> = serde_json::from_str(&done_str).unwrap_or_default();
-        if defs.iter().any(|d| d.contains("validation") || d.contains("test")) {
+        if defs
+            .iter()
+            .any(|d| d.contains("validation") || d.contains("test"))
+        {
             requires_validation = true;
         }
     }
 
     if requires_validation && val_status != "passed" {
-        errors.push("Agent contract requires explicit validation pass before marking Done".to_string());
+        errors.push(
+            "Agent contract requires explicit validation pass before marking Done".to_string(),
+        );
     }
 
     // 5. Determine next state and track failures
     if !errors.is_empty() {
         let fail_key = format!("validation_fails:{}", card_id);
-        let current_fails: i32 = conn.query_row(
-            "SELECT value FROM shared_state WHERE key = ?1",
-            [&fail_key],
-            |row| row.get::<_, String>(0)
-        ).unwrap_or_else(|_| "0".to_string()).parse().unwrap_or(0);
+        let current_fails: i32 = conn
+            .query_row(
+                "SELECT value FROM shared_state WHERE key = ?1",
+                [&fail_key],
+                |row| row.get::<_, String>(0),
+            )
+            .unwrap_or_else(|_| "0".to_string())
+            .parse()
+            .unwrap_or(0);
 
         let new_fails = current_fails + 1;
         let _ = conn.execute(
             "INSERT OR REPLACE INTO shared_state (key, value) VALUES (?1, ?2)",
-            params![fail_key, new_fails.to_string()]
+            params![fail_key, new_fails.to_string()],
         );
 
         let required_state = if new_fails >= 3 {
-            errors.push("Maximum validation failures (3) exceeded. Task is now blocked.".to_string());
+            errors
+                .push("Maximum validation failures (3) exceeded. Task is now blocked.".to_string());
             "Blocked".to_string()
         } else {
             "In Progress".to_string()
@@ -108,9 +120,12 @@ pub fn validate_task_completion(
     }
 
     // Passed basic checks, generate receipt and clear failure count
-    let _ = conn.execute("DELETE FROM shared_state WHERE key = ?1", [format!("validation_fails:{}", card_id)]);
+    let _ = conn.execute(
+        "DELETE FROM shared_state WHERE key = ?1",
+        [format!("validation_fails:{}", card_id)],
+    );
     let ev_str = evidence.as_deref().unwrap_or("No evidence provided");
-    
+
     // Create work receipt
     let _ = conn.execute(
         "INSERT INTO mission_work_receipts (card_id, agent_id, summary, validation_status, evidence_links) 
@@ -121,11 +136,13 @@ pub fn validate_task_completion(
     );
 
     // Fetch the ID of the receipt we just inserted or updated
-    let receipt_id: Option<i32> = conn.query_row(
-        "SELECT id FROM mission_work_receipts WHERE card_id = ?1",
-        [card_id],
-        |row| row.get(0)
-    ).unwrap_or(None);
+    let receipt_id: Option<i32> = conn
+        .query_row(
+            "SELECT id FROM mission_work_receipts WHERE card_id = ?1",
+            [card_id],
+            |row| row.get(0),
+        )
+        .unwrap_or(None);
 
     let next_state = if review_required == 1 {
         "Review".to_string()
@@ -142,7 +159,12 @@ pub fn validate_task_completion(
             status = ?3,
             completed_at = CURRENT_TIMESTAMP
          WHERE id = ?4",
-        params![ev_str, receipt_id.map(|id| id.to_string()), next_state, card_id],
+        params![
+            ev_str,
+            receipt_id.map(|id| id.to_string()),
+            next_state,
+            card_id
+        ],
     );
 
     Ok(ValidationResult {

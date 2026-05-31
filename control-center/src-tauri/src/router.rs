@@ -1,8 +1,8 @@
+use crate::storage::DbState;
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use reqwest::Client;
 use tauri::State;
-use crate::storage::DbState;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {
@@ -27,10 +27,14 @@ pub struct ProviderConfig {
 }
 
 #[tauri::command]
-pub async fn list_provider_configs(state: State<'_, DbState>) -> Result<Vec<ProviderConfig>, String> {
+pub async fn list_provider_configs(
+    state: State<'_, DbState>,
+) -> Result<Vec<ProviderConfig>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     let mut stmt = conn
-        .prepare("SELECT id, provider, model_name, api_key, endpoint_url, is_default FROM model_configs")
+        .prepare(
+            "SELECT id, provider, model_name, api_key, endpoint_url, is_default FROM model_configs",
+        )
         .map_err(|e| e.to_string())?;
 
     let iter = stmt
@@ -63,10 +67,13 @@ pub async fn save_provider_config(
     is_default: bool,
 ) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     if is_default {
-        conn.execute("UPDATE model_configs SET is_default = 0 WHERE provider = ?1", [&provider])
-            .map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE model_configs SET is_default = 0 WHERE provider = ?1",
+            [&provider],
+        )
+        .map_err(|e| e.to_string())?;
     }
 
     conn.execute(
@@ -99,10 +106,13 @@ pub async fn call_model(
         "camelid" => {
             let adapter = crate::camelid_adapter::CamelidAdapter::new();
             use crate::llm_adapter::LlmAdapter;
-            adapter.infer(model_name, messages, settings, api_key, endpoint).await
+            adapter
+                .infer(model_name, messages, settings, api_key, endpoint)
+                .await
         }
         "ollama" => {
-            let url = endpoint.unwrap_or_else(|| "http://127.0.0.1:11434/v1/chat/completions".to_string());
+            let url = endpoint
+                .unwrap_or_else(|| "http://127.0.0.1:11434/v1/chat/completions".to_string());
             let mut payload = serde_json::json!({
                 "model": model_name,
                 "messages": messages,
@@ -136,7 +146,8 @@ pub async fn call_model(
             Ok(text.to_string())
         }
         "openai" => {
-            let url = endpoint.unwrap_or_else(|| "https://api.openai.com/v1/chat/completions".to_string());
+            let url = endpoint
+                .unwrap_or_else(|| "https://api.openai.com/v1/chat/completions".to_string());
             let key = api_key.ok_or_else(|| "Missing API key for OpenAI".to_string())?;
 
             let mut payload = serde_json::json!({
@@ -173,7 +184,8 @@ pub async fn call_model(
             Ok(text.to_string())
         }
         "anthropic" => {
-            let url = endpoint.unwrap_or_else(|| "https://api.anthropic.com/v1/messages".to_string());
+            let url =
+                endpoint.unwrap_or_else(|| "https://api.anthropic.com/v1/messages".to_string());
             let key = api_key.ok_or_else(|| "Missing API key for Anthropic".to_string())?;
 
             // Anthropic has a different payload format
@@ -248,7 +260,8 @@ fn get_models_dir() -> std::path::PathBuf {
         path.push("models");
         path
     } else {
-        let mut path = std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()));
+        let mut path =
+            std::path::PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()));
         path.push(".cameleer");
         path.push("models");
         path
@@ -375,21 +388,23 @@ pub async fn download_model(state: State<'_, DbState>, model_id: String) -> Resu
         "model": filename,
         "progress": 0.0,
         "error": null
-    }).to_string();
+    })
+    .to_string();
 
     conn.execute(
         "INSERT INTO shared_state (key, value, updated_at) 
          VALUES ('download_progress', ?1, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = ?1, updated_at = CURRENT_TIMESTAMP",
         [initial_progress],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     let dl_url = url.to_string();
     let dl_filename = filename.to_string();
 
     tokio::spawn(async move {
         let client = Client::new();
-        
+
         let update_progress = |percent: f64, downloading: bool, error: Option<String>| {
             let db_path = crate::storage::get_db_path();
             if let Ok(conn) = rusqlite::Connection::open(db_path) {
@@ -398,7 +413,8 @@ pub async fn download_model(state: State<'_, DbState>, model_id: String) -> Resu
                     "model": dl_filename,
                     "progress": percent,
                     "error": error
-                }).to_string();
+                })
+                .to_string();
                 let _ = conn.execute(
                     "INSERT INTO shared_state (key, value, updated_at) 
                      VALUES ('download_progress', ?1, CURRENT_TIMESTAMP)
@@ -413,7 +429,11 @@ pub async fn download_model(state: State<'_, DbState>, model_id: String) -> Resu
                 let total_size = res.content_length().unwrap_or(0);
                 let models_dir = get_models_dir();
                 if let Err(e) = std::fs::create_dir_all(&models_dir) {
-                    update_progress(0.0, false, Some(format!("Failed to create models directory: {}", e)));
+                    update_progress(
+                        0.0,
+                        false,
+                        Some(format!("Failed to create models directory: {}", e)),
+                    );
                     return;
                 }
                 let file_path = models_dir.join(&dl_filename);
@@ -428,8 +448,14 @@ pub async fn download_model(state: State<'_, DbState>, model_id: String) -> Resu
                         while let Some(chunk_res) = stream.next().await {
                             match chunk_res {
                                 Ok(chunk) => {
-                                    if let Err(e) = tokio::io::AsyncWriteExt::write_all(&mut file, &chunk).await {
-                                        update_progress(0.0, false, Some(format!("Write failed: {}", e)));
+                                    if let Err(e) =
+                                        tokio::io::AsyncWriteExt::write_all(&mut file, &chunk).await
+                                    {
+                                        update_progress(
+                                            0.0,
+                                            false,
+                                            Some(format!("Write failed: {}", e)),
+                                        );
                                         return;
                                     }
                                     downloaded += chunk.len() as u64;
@@ -445,7 +471,11 @@ pub async fn download_model(state: State<'_, DbState>, model_id: String) -> Resu
                                     }
                                 }
                                 Err(e) => {
-                                    update_progress(0.0, false, Some(format!("Stream error: {}", e)));
+                                    update_progress(
+                                        0.0,
+                                        false,
+                                        Some(format!("Stream error: {}", e)),
+                                    );
                                     return;
                                 }
                             }
@@ -482,19 +512,22 @@ pub async fn activate_model(
          VALUES ('active_local_model', ?1, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = ?1, updated_at = CURRENT_TIMESTAMP",
         [&model_name],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     // 2. Update model_configs table for camelid provider to use the new model_name
     conn.execute(
         "UPDATE model_configs SET model_name = ?1 WHERE provider = 'camelid'",
         [&model_name],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     // 3. Update all agents using 'camelid' provider to have model_name set to this
     conn.execute(
         "UPDATE agents SET model_name = ?1 WHERE model_provider = 'camelid'",
         [&model_name],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     // Drop the connection lock explicitly before spawning the daemon
     drop(conn);
@@ -504,4 +537,3 @@ pub async fn activate_model(
 
     Ok(())
 }
-

@@ -1,6 +1,6 @@
+use crate::storage::DbState;
 use rusqlite::{params, OptionalExtension};
 use serde::{Deserialize, Serialize};
-use crate::storage::DbState;
 use tauri::State;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

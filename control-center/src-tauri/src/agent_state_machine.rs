@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use rusqlite::{params, Connection, Result};
+use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -69,18 +69,18 @@ pub fn is_transition_allowed(from: &AgentState, to: &AgentState) -> bool {
     match (from, to) {
         // Any state can transition to stopped/paused
         (_, AgentState::Stopped) | (_, AgentState::Paused) => true,
-        
+
         // Idle transitions
         (AgentState::Idle, AgentState::Assigned) => true,
-        
+
         // Assigned transitions
         (AgentState::Assigned, AgentState::Planning) => true,
         (AgentState::Assigned, AgentState::Working) => true,
-        
+
         // Planning transitions
         (AgentState::Planning, AgentState::Working) => true,
         (AgentState::Planning, AgentState::Blocked) => true,
-        
+
         // Working transitions
         (AgentState::Working, AgentState::WaitingForTool) => true,
         (AgentState::Working, AgentState::WaitingForHuman) => true,
@@ -89,53 +89,55 @@ pub fn is_transition_allowed(from: &AgentState, to: &AgentState) -> bool {
         (AgentState::Working, AgentState::Validating) => true,
         (AgentState::Working, AgentState::Failed) => true,
         (AgentState::Working, AgentState::Idle) => true, // Done and waiting for new work
-        
+
         // Wait transitions
         (AgentState::WaitingForTool, AgentState::Working) => true,
         (AgentState::WaitingForTool, AgentState::Failed) => true,
-        
+
         (AgentState::WaitingForHuman, AgentState::Working) => true,
         (AgentState::WaitingForAgent, AgentState::Working) => true,
-        
+
         // Validating transitions
         (AgentState::Validating, AgentState::WaitingForReview) => true,
         (AgentState::Validating, AgentState::Working) => true, // Validation failed, go back to work
         (AgentState::Validating, AgentState::Failed) => true,
-        
+
         // Review transitions
         (AgentState::WaitingForReview, AgentState::Completed) => true,
         (AgentState::WaitingForReview, AgentState::Working) => true, // Review rejected
-        
+
         // Blocked transitions
         (AgentState::Blocked, AgentState::Working) => true,
-        
+
         // Failed / Recovering transitions
         (AgentState::Failed, AgentState::Recovering) => true,
         (AgentState::Recovering, AgentState::Working) => true,
         (AgentState::Recovering, AgentState::Blocked) => true,
         (AgentState::Recovering, AgentState::Failed) => true, // Recovery failed
-        
+
         // Paused transitions
         (AgentState::Paused, AgentState::Working) => true,
         (AgentState::Paused, AgentState::Idle) => true,
-        
+
         // Completed transitions
         (AgentState::Completed, AgentState::Idle) => true, // Ready for next task
-        
-        _ => false
+
+        _ => false,
     }
 }
 
 pub fn transition_agent_state(
-    conn: &Connection, 
-    agent_id: &str, 
-    from_state: AgentState, 
-    to_state: AgentState, 
-    reason: &str
+    conn: &Connection,
+    agent_id: &str,
+    from_state: AgentState,
+    to_state: AgentState,
+    reason: &str,
 ) -> Result<(), String> {
-    
     if !is_transition_allowed(&from_state, &to_state) {
-        return Err(format!("Transition from {:?} to {:?} is not allowed. Reason given: {}", from_state, to_state, reason));
+        return Err(format!(
+            "Transition from {:?} to {:?} is not allowed. Reason given: {}",
+            from_state, to_state, reason
+        ));
     }
 
     let now = SystemTime::now()
@@ -150,7 +152,8 @@ pub fn transition_agent_state(
     conn.execute(
         "UPDATE agents SET status = ?1, last_heartbeat = ?2 WHERE id = ?3",
         params![to_str, now, agent_id],
-    ).map_err(|e| format!("Failed to update agent status: {}", e))?;
+    )
+    .map_err(|e| format!("Failed to update agent status: {}", e))?;
 
     // Record the transition event
     let payload = serde_json::json!({
@@ -162,9 +165,16 @@ pub fn transition_agent_state(
     conn.execute(
         "INSERT INTO events (event_type, agent_id, payload) VALUES ('state_transition', ?1, ?2)",
         params![agent_id, payload.to_string()],
-    ).map_err(|e| format!("Failed to log state transition event: {}", e))?;
+    )
+    .map_err(|e| format!("Failed to log state transition event: {}", e))?;
 
-    println!("[STATE MACHINE] Agent {} transitioned {} -> {}. Reason: {}", agent_id, from_state.as_str(), to_str, reason);
+    println!(
+        "[STATE MACHINE] Agent {} transitioned {} -> {}. Reason: {}",
+        agent_id,
+        from_state.as_str(),
+        to_str,
+        reason
+    );
 
     Ok(())
 }
@@ -175,20 +185,50 @@ mod tests {
 
     #[test]
     fn test_valid_transitions() {
-        assert!(is_transition_allowed(&AgentState::Idle, &AgentState::Assigned));
-        assert!(is_transition_allowed(&AgentState::Assigned, &AgentState::Working));
-        assert!(is_transition_allowed(&AgentState::Working, &AgentState::Validating));
-        assert!(is_transition_allowed(&AgentState::Validating, &AgentState::Working));
-        assert!(is_transition_allowed(&AgentState::Working, &AgentState::Idle));
-        assert!(is_transition_allowed(&AgentState::Recovering, &AgentState::Working));
-        assert!(is_transition_allowed(&AgentState::Working, &AgentState::Stopped));
+        assert!(is_transition_allowed(
+            &AgentState::Idle,
+            &AgentState::Assigned
+        ));
+        assert!(is_transition_allowed(
+            &AgentState::Assigned,
+            &AgentState::Working
+        ));
+        assert!(is_transition_allowed(
+            &AgentState::Working,
+            &AgentState::Validating
+        ));
+        assert!(is_transition_allowed(
+            &AgentState::Validating,
+            &AgentState::Working
+        ));
+        assert!(is_transition_allowed(
+            &AgentState::Working,
+            &AgentState::Idle
+        ));
+        assert!(is_transition_allowed(
+            &AgentState::Recovering,
+            &AgentState::Working
+        ));
+        assert!(is_transition_allowed(
+            &AgentState::Working,
+            &AgentState::Stopped
+        ));
     }
 
     #[test]
     fn test_invalid_transitions() {
-        assert!(!is_transition_allowed(&AgentState::Idle, &AgentState::Validating));
-        assert!(!is_transition_allowed(&AgentState::Validating, &AgentState::Assigned));
-        assert!(!is_transition_allowed(&AgentState::Idle, &AgentState::Completed));
+        assert!(!is_transition_allowed(
+            &AgentState::Idle,
+            &AgentState::Validating
+        ));
+        assert!(!is_transition_allowed(
+            &AgentState::Validating,
+            &AgentState::Assigned
+        ));
+        assert!(!is_transition_allowed(
+            &AgentState::Idle,
+            &AgentState::Completed
+        ));
     }
 
     #[test]

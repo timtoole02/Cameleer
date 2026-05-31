@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
-use rusqlite::{params, Connection, Result, OptionalExtension};
-use tauri::{State, AppHandle};
-use crate::storage::DbState;
 use crate::event_bus::{emit_event, AppEvent};
+use crate::storage::DbState;
+use rusqlite::{params, Connection, OptionalExtension, Result};
+use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, State};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Task {
@@ -44,9 +44,9 @@ pub struct Artifact {
 fn resolve_path(path: &str) -> std::path::PathBuf {
     let clean_path = path.trim();
     let mut resolved = std::path::PathBuf::new();
-    
+
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
-    
+
     if clean_path.starts_with("~/") {
         resolved.push(&home);
         resolved.push(&clean_path[2..]);
@@ -60,7 +60,7 @@ fn resolve_path(path: &str) -> std::path::PathBuf {
         resolved.push("Desktop");
         resolved.push(clean_path);
     }
-    
+
     resolved
 }
 
@@ -123,9 +123,12 @@ pub struct AgentRunTimelineEntry {
 }
 
 #[tauri::command]
-pub fn get_agent_run_timeline(state: State<'_, DbState>, task_id: String) -> Result<Vec<AgentRunTimelineEntry>, String> {
+pub fn get_agent_run_timeline(
+    state: State<'_, DbState>,
+    task_id: String,
+) -> Result<Vec<AgentRunTimelineEntry>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     // First, let's fetch the legacy activity_log from the task
     let log_str: Option<String> = conn
         .query_row(
@@ -134,36 +137,41 @@ pub fn get_agent_run_timeline(state: State<'_, DbState>, task_id: String) -> Res
             |row| row.get(0),
         )
         .unwrap_or(None);
-        
+
     let mut timeline: Vec<AgentRunTimelineEntry> = match log_str {
         Some(ref s) if !s.trim().is_empty() => serde_json::from_str(s).unwrap_or_default(),
         _ => Vec::new(),
     };
-    
+
     // Now fetch steps from the new agent_run_steps table (Phase 4/11)
     let mut stmt = conn
-        .prepare("
+        .prepare(
+            "
             SELECT r.agent_id, s.step_type, s.content, s.created_at
             FROM agent_runs r
             JOIN agent_run_steps s ON r.id = s.run_id
             WHERE r.task_id = ?1
             ORDER BY s.created_at ASC
-        ")
+        ",
+        )
         .map_err(|e| e.to_string())?;
-        
+
     let iter = stmt
         .query_map([&task_id], |row| {
             let agent_id: String = row.get(0)?;
             let step_type: String = row.get(1)?;
             let content: String = row.get(2)?;
             let created_at: String = row.get(3)?;
-            
+
             // Try to parse created_at into a timestamp, fallback to 0
             // Assuming created_at is standard SQLite DATETIME like '2023-10-10 10:10:10'
-            // For simplicity, we just use a dummy timestamp if we can't parse it, 
+            // For simplicity, we just use a dummy timestamp if we can't parse it,
             // since we're displaying this in React
-            let timestamp_f64 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs_f64();
-            
+            let timestamp_f64 = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs_f64();
+
             Ok(AgentRunTimelineEntry {
                 timestamp: timestamp_f64, // Ideal would be parsing the datetime string
                 agent_id,
@@ -172,13 +180,13 @@ pub fn get_agent_run_timeline(state: State<'_, DbState>, task_id: String) -> Res
             })
         })
         .map_err(|e| e.to_string())?;
-        
+
     for entry in iter {
         if let Ok(e) = entry {
             timeline.push(e);
         }
     }
-    
+
     Ok(timeline)
 }
 
@@ -252,10 +260,17 @@ pub fn _get_agent_work_queue_legacy(
 }
 
 #[tauri::command]
-pub fn create_task(state: State<'_, DbState>, app_handle: AppHandle, task: Task) -> Result<(), String> {
+pub fn create_task(
+    state: State<'_, DbState>,
+    app_handle: AppHandle,
+    task: Task,
+) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
     let initial_log = serde_json::json!([{
         "timestamp": now_secs,
         "agent_id": "system",
@@ -264,7 +279,10 @@ pub fn create_task(state: State<'_, DbState>, app_handle: AppHandle, task: Task)
     }]);
     let initial_log_str = serde_json::to_string(&initial_log).unwrap_or_else(|_| "[]".to_string());
 
-    let workspace_id = task.workspace_id.clone().unwrap_or_else(|| "default".to_string());
+    let workspace_id = task
+        .workspace_id
+        .clone()
+        .unwrap_or_else(|| "default".to_string());
 
     conn.execute(
         "INSERT INTO kanban_cards (id, workspace_id, title, description, owner_id, assigned_agent_id, 
@@ -308,7 +326,10 @@ pub fn create_task(state: State<'_, DbState>, app_handle: AppHandle, task: Task)
         &app_handle,
         AppEvent {
             event_type: "task_updated".to_string(),
-            agent_id: task.assigned_agent_id.clone().or_else(|| task.owner_id.clone()),
+            agent_id: task
+                .assigned_agent_id
+                .clone()
+                .or_else(|| task.owner_id.clone()),
             task_id: Some(task.id.clone()),
             payload: serde_json::to_value(&task).unwrap_or(serde_json::Value::Null),
         },
@@ -326,7 +347,7 @@ pub fn update_task_status(
     evidence_path: Option<String>,
 ) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     // Get original card log
     let (log_str, owner_id): (Option<String>, Option<String>) = conn
         .query_row(
@@ -337,11 +358,16 @@ pub fn update_task_status(
         .unwrap_or((None, None));
 
     let mut log_arr = match log_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
 
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
     log_arr.push(serde_json::json!({
         "timestamp": now_secs,
         "agent_id": owner_id.clone().unwrap_or_else(|| "user".to_string()),
@@ -421,8 +447,14 @@ pub fn claim_card(
         return Err("Cannot claim a card that is already completed or in review.".to_string());
     }
 
-    if status == "in_progress" && current_assignee.is_some() && current_assignee.clone().unwrap() != agent_id {
-        return Err(format!("Card is already actively claimed by agent: {:?}", current_assignee));
+    if status == "in_progress"
+        && current_assignee.is_some()
+        && current_assignee.clone().unwrap() != agent_id
+    {
+        return Err(format!(
+            "Card is already actively claimed by agent: {:?}",
+            current_assignee
+        ));
     }
 
     // 2. Fetch log
@@ -435,11 +467,16 @@ pub fn claim_card(
         .unwrap_or(None);
 
     let mut log_arr = match log_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
 
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
     log_arr.push(serde_json::json!({
         "timestamp": now_secs,
         "agent_id": agent_id,
@@ -514,11 +551,16 @@ pub fn update_card_progress(
         )
         .map_err(|e| format!("Card not found: {}", e))?;
 
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
 
     // 2. Append progress comments if present
     let mut comms_arr = match comms_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
     if let Some(ref note_text) = notes {
@@ -532,7 +574,9 @@ pub fn update_card_progress(
 
     // 3. Append Activity Log
     let mut log_arr = match log_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
     log_arr.push(serde_json::json!({
@@ -545,7 +589,9 @@ pub fn update_card_progress(
 
     // 4. Merge Related Files
     let mut files_arr = match rel_files_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<String>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<String>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
     if let Some(ref new_files) = files {
@@ -559,7 +605,9 @@ pub fn update_card_progress(
 
     // 5. Merge Related Artifacts
     let mut arts_arr = match rel_arts_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<String>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<String>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
     if let Some(ref new_arts) = artifacts {
@@ -581,7 +629,15 @@ pub fn update_card_progress(
              SET comments = ?2, activity_log = ?3, related_files = ?4, related_artifacts = ?5, 
                  blockers = ?6, validation_status = ?7, updated_at = CURRENT_TIMESTAMP 
              WHERE id = ?1",
-            params![card_id, new_comms_str, new_log_str, new_files_str, new_arts_str, final_blockers, val_status],
+            params![
+                card_id,
+                new_comms_str,
+                new_log_str,
+                new_files_str,
+                new_arts_str,
+                final_blockers,
+                val_status
+            ],
         )
         .map_err(|e| e.to_string())?;
     } else {
@@ -590,7 +646,14 @@ pub fn update_card_progress(
              SET comments = ?2, activity_log = ?3, related_files = ?4, related_artifacts = ?5, 
                  blockers = ?6, updated_at = CURRENT_TIMESTAMP 
              WHERE id = ?1",
-            params![card_id, new_comms_str, new_log_str, new_files_str, new_arts_str, final_blockers],
+            params![
+                card_id,
+                new_comms_str,
+                new_log_str,
+                new_files_str,
+                new_arts_str,
+                final_blockers
+            ],
         )
         .map_err(|e| e.to_string())?;
     }
@@ -638,7 +701,9 @@ pub fn complete_card(
 
     // 2. Verify all required files physically exist on the host system!
     let req_files = match req_files_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<String>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<String>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
 
@@ -657,17 +722,28 @@ pub fn complete_card(
         return Err("Validation Error: Card cannot be marked Done without attaching explicit completion evidence.".to_string());
     }
 
-    if !validation_passed && validation_notes.clone().unwrap_or_default().trim().is_empty() {
+    if !validation_passed
+        && validation_notes
+            .clone()
+            .unwrap_or_default()
+            .trim()
+            .is_empty()
+    {
         return Err("Validation Error: If validation is not passed/applicable, a detailed validation explanation note must be supplied.".to_string());
     }
 
     // 4. Update activity log
     let mut log_arr = match log_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
 
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
     log_arr.push(serde_json::json!({
         "timestamp": now_secs,
         "agent_id": agent_id,
@@ -676,7 +752,11 @@ pub fn complete_card(
     }));
     let new_log_str = serde_json::to_string(&log_arr).unwrap_or_else(|_| "[]".to_string());
 
-    let val_status_str = if validation_passed { "passed" } else { "not_applicable" };
+    let val_status_str = if validation_passed {
+        "passed"
+    } else {
+        "not_applicable"
+    };
 
     // 5. Update SQLite Card
     conn.execute(
@@ -689,7 +769,11 @@ pub fn complete_card(
     .map_err(|e| e.to_string())?;
 
     // 5b. Generate Work Receipt relational record
-    let _ = crate::mission_builder::generate_work_receipt(state.clone(), card_id.clone(), agent_id.clone());
+    let _ = crate::mission_builder::generate_work_receipt(
+        state.clone(),
+        card_id.clone(),
+        agent_id.clone(),
+    );
 
     // 6. Reset agent status back to idle
     conn.execute(
@@ -710,10 +794,84 @@ pub fn complete_card(
         AppEvent {
             event_type: "task_updated".to_string(),
             agent_id: Some(agent_id),
-            task_id: Some(card_id),
+            task_id: Some(card_id.clone()),
             payload: serde_json::json!({ "status": "done" }),
         },
     );
+
+    // 8. Cross-Agent Dependency Unblocking
+    let mut stmt_blocked = conn
+        .prepare("SELECT task_id FROM task_blockers WHERE blocked_by_task_id = ?1")
+        .unwrap();
+    let blocked_tasks_iter = stmt_blocked
+        .query_map([&card_id], |row| row.get::<_, String>(0))
+        .unwrap();
+
+    let mut unblocked_candidates = Vec::new();
+    for t_id in blocked_tasks_iter {
+        if let Ok(tid) = t_id {
+            unblocked_candidates.push(tid);
+        }
+    }
+
+    if !unblocked_candidates.is_empty() {
+        // Delete the resolved blockers
+        conn.execute(
+            "DELETE FROM task_blockers WHERE blocked_by_task_id = ?1",
+            params![&card_id],
+        )
+        .unwrap();
+
+        for tid in unblocked_candidates {
+            // Check if it's completely unblocked
+            let remaining_blockers: i64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM task_blockers WHERE task_id = ?1",
+                    params![&tid],
+                    |row| row.get(0),
+                )
+                .unwrap_or(1);
+
+            if remaining_blockers == 0 {
+                // Update task status back to ready (or in_progress)
+                // Let's get the assigned agent to inject a message
+                let assigned_opt: Option<String> = conn
+                    .query_row(
+                        "SELECT assigned_agent_id FROM kanban_cards WHERE id = ?1",
+                        params![&tid],
+                        |row| row.get(0),
+                    )
+                    .unwrap_or(None);
+
+                conn.execute(
+                    "UPDATE kanban_cards SET status = 'ready', updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+                    params![&tid],
+                ).unwrap();
+
+                // Inject notification to target agent if assigned
+                if let Some(_target_agent) = assigned_opt {
+                    let session_id = format!("task_{}", tid);
+                    let sys_msg = format!("System Notification: The blocker '{}' has been completed. Your task '{}' is now UNBLOCKED and ready to resume.", card_id, tid);
+
+                    let _ = conn.execute(
+                        "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, 'system', 'unblock_manager', ?2)",
+                        params![session_id, sys_msg],
+                    );
+                }
+
+                // Fire event
+                emit_event(
+                    &app_handle,
+                    AppEvent {
+                        event_type: "task_updated".to_string(),
+                        agent_id: None,
+                        task_id: Some(tid.clone()),
+                        payload: serde_json::json!({ "status": "ready", "unblocked": true }),
+                    },
+                );
+            }
+        }
+    }
 
     Ok(())
 }
@@ -726,7 +884,7 @@ pub fn create_task_blocker(
     reason: String,
 ) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     // Add blocker mapping record
     conn.execute(
         "INSERT INTO task_blockers (task_id, blocked_by_task_id, reason) VALUES (?1, ?2, ?3)",
@@ -744,11 +902,16 @@ pub fn create_task_blocker(
         .unwrap_or(None);
 
     let mut log_arr = match log_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
 
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
     log_arr.push(serde_json::json!({
         "timestamp": now_secs,
         "agent_id": "system",
@@ -893,7 +1056,8 @@ pub fn decompose_task(
             SubtaskProposal {
                 id: format!("{}-sub-1", parent_task_id),
                 title: format!("Architect: Blueprint Design for '{}'", title),
-                description: "Design structural design documents and file layout guidelines.".to_string(),
+                description: "Design structural design documents and file layout guidelines."
+                    .to_string(),
                 priority: "high".to_string(),
                 preferred_role: "Architect".to_string(),
                 required_files: "[\"architecture.md\"]".to_string(),
@@ -901,7 +1065,9 @@ pub fn decompose_task(
             SubtaskProposal {
                 id: format!("{}-sub-2", parent_task_id),
                 title: format!("Developer: Functional Code Core for '{}'", title),
-                description: "Implement the primary logic and data handlers matching system design.".to_string(),
+                description:
+                    "Implement the primary logic and data handlers matching system design."
+                        .to_string(),
                 priority: "high".to_string(),
                 preferred_role: "Software Engineer".to_string(),
                 required_files: "[\"src/main.ts\"]".to_string(),
@@ -909,7 +1075,8 @@ pub fn decompose_task(
             SubtaskProposal {
                 id: format!("{}-sub-3", parent_task_id),
                 title: format!("QA: Unit Integration Tests for '{}'", title),
-                description: "Draft complete mock testing rigs and execute assertion validations.".to_string(),
+                description: "Draft complete mock testing rigs and execute assertion validations."
+                    .to_string(),
                 priority: "medium".to_string(),
                 preferred_role: "QA Engineer".to_string(),
                 required_files: "[\"tests/main.test.ts\"]".to_string(),
@@ -917,7 +1084,9 @@ pub fn decompose_task(
             SubtaskProposal {
                 id: format!("{}-sub-4", parent_task_id),
                 title: format!("Writer: Readme Documentation for '{}'", title),
-                description: "Compose user reference guides and deployment walkthroughs in markdown.".to_string(),
+                description:
+                    "Compose user reference guides and deployment walkthroughs in markdown."
+                        .to_string(),
                 priority: "low".to_string(),
                 preferred_role: "Technical Writer".to_string(),
                 required_files: "[\"README.md\"]".to_string(),
@@ -950,43 +1119,61 @@ pub fn approve_subtasks(
 
     for sub in proposals {
         // Find matching agent
-        let assigned_agent_id: Option<String> = conn.query_row(
-            "SELECT id FROM agents WHERE role LIKE ?1 LIMIT 1",
-            [format!("%{}%", sub.preferred_role)],
-            |row| row.get(0),
-        )
-        .optional()
-        .unwrap_or(None);
+        let assigned_agent_id: Option<String> = conn
+            .query_row(
+                "SELECT id FROM agents WHERE role LIKE ?1 LIMIT 1",
+                [format!("%{}%", sub.preferred_role)],
+                |row| row.get(0),
+            )
+            .optional()
+            .unwrap_or(None);
 
-        let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+        let now_secs = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
         let initial_log = serde_json::json!([{
             "timestamp": now_secs,
             "agent_id": "system",
             "action": "kanban_card_created",
             "detail": format!("Subtask card created under parent '{}'", parent_task_id)
         }]);
-        let initial_log_str = serde_json::to_string(&initial_log).unwrap_or_else(|_| "[]".to_string());
+        let initial_log_str =
+            serde_json::to_string(&initial_log).unwrap_or_else(|_| "[]".to_string());
 
         let agent_id_val = assigned_agent_id.unwrap_or_else(|| "".to_string());
 
         let smart_criteria = match sub.preferred_role.to_lowercase().as_str() {
             "software engineer" | "coder" | "developer" => {
-                vec!["Build compiles cleanly".to_string(), "Core functionality satisfies criteria".to_string()]
+                vec![
+                    "Build compiles cleanly".to_string(),
+                    "Core functionality satisfies criteria".to_string(),
+                ]
             }
             "technical writer" | "writer" => {
-                vec!["README.md updated with run instructions".to_string(), "Known limitations documented".to_string()]
+                vec![
+                    "README.md updated with run instructions".to_string(),
+                    "Known limitations documented".to_string(),
+                ]
             }
             "qa engineer" | "qa" => {
-                vec!["Test suite execution logs attached".to_string(), "All assertions pass successfully".to_string()]
+                vec![
+                    "Test suite execution logs attached".to_string(),
+                    "All assertions pass successfully".to_string(),
+                ]
             }
             "architect" => {
-                vec!["System architecture blueprints mapped".to_string(), "Tradeoffs and risks documented".to_string()]
+                vec![
+                    "System architecture blueprints mapped".to_string(),
+                    "Tradeoffs and risks documented".to_string(),
+                ]
             }
             _ => {
                 vec!["Task completed successfully".to_string()]
             }
         };
-        let smart_criteria_str = serde_json::to_string(&smart_criteria).unwrap_or_else(|_| "[]".to_string());
+        let smart_criteria_str =
+            serde_json::to_string(&smart_criteria).unwrap_or_else(|_| "[]".to_string());
 
         conn.execute(
             "INSERT OR REPLACE INTO kanban_cards (id, workspace_id, title, description, owner_id, assigned_agent_id, status, priority, created_by, acceptance_criteria, required_files, related_files, related_artifacts, dependencies, blockers, comments, activity_log, validation_status)
@@ -1024,18 +1211,24 @@ pub fn approve_subtasks(
         .unwrap_or(None);
 
     let mut parent_log = match parent_log_str {
-        Some(ref s) if !s.trim().is_empty() => serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default(),
+        Some(ref s) if !s.trim().is_empty() => {
+            serde_json::from_str::<Vec<serde_json::Value>>(s).unwrap_or_default()
+        }
         _ => Vec::new(),
     };
 
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
     parent_log.push(serde_json::json!({
         "timestamp": now_secs,
         "agent_id": "system",
         "action": "kanban_card_blocked",
         "detail": "Parent task split into subtasks and set to blocked pending child completions."
     }));
-    let new_parent_log_str = serde_json::to_string(&parent_log).unwrap_or_else(|_| "[]".to_string());
+    let new_parent_log_str =
+        serde_json::to_string(&parent_log).unwrap_or_else(|_| "[]".to_string());
 
     conn.execute(
         "UPDATE kanban_cards SET status = 'blocked', activity_log = ?2 WHERE id = ?1",
@@ -1082,41 +1275,47 @@ pub struct AgentRunStep {
 }
 
 #[tauri::command]
-pub fn get_agent_runs(state: State<'_, DbState>, agent_id: Option<String>, task_id: Option<String>) -> Result<Vec<AgentRun>, String> {
+pub fn get_agent_runs(
+    state: State<'_, DbState>,
+    agent_id: Option<String>,
+    task_id: Option<String>,
+) -> Result<Vec<AgentRun>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     let mut query = "SELECT id, agent_id, conversation_id, task_id, state, input, plan, final_answer, error, created_at, updated_at FROM agent_runs WHERE 1=1".to_string();
     let mut params: Vec<String> = vec![];
-    
+
     if let Some(aid) = agent_id {
         query.push_str(&format!(" AND agent_id = '?{}'", params.len() + 1));
         params.push(aid);
     }
-    
+
     if let Some(tid) = task_id {
         query.push_str(&format!(" AND task_id = '?{}'", params.len() + 1));
         params.push(tid);
     }
-    
+
     query.push_str(" ORDER BY created_at DESC");
 
     let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
-    
-    let iter = stmt.query_map(rusqlite::params_from_iter(params), |row| {
-        Ok(AgentRun {
-            id: row.get(0)?,
-            agent_id: row.get(1)?,
-            conversation_id: row.get(2)?,
-            task_id: row.get(3)?,
-            state: row.get(4)?,
-            input: row.get(5)?,
-            plan: row.get(6)?,
-            final_answer: row.get(7)?,
-            error: row.get(8)?,
-            created_at: row.get(9)?,
-            updated_at: row.get(10)?,
+
+    let iter = stmt
+        .query_map(rusqlite::params_from_iter(params), |row| {
+            Ok(AgentRun {
+                id: row.get(0)?,
+                agent_id: row.get(1)?,
+                conversation_id: row.get(2)?,
+                task_id: row.get(3)?,
+                state: row.get(4)?,
+                input: row.get(5)?,
+                plan: row.get(6)?,
+                final_answer: row.get(7)?,
+                error: row.get(8)?,
+                created_at: row.get(9)?,
+                updated_at: row.get(10)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut runs = Vec::new();
     for run in iter {
@@ -1128,20 +1327,25 @@ pub fn get_agent_runs(state: State<'_, DbState>, agent_id: Option<String>, task_
 }
 
 #[tauri::command]
-pub fn get_run_steps(state: State<'_, DbState>, run_id: String) -> Result<Vec<AgentRunStep>, String> {
+pub fn get_run_steps(
+    state: State<'_, DbState>,
+    run_id: String,
+) -> Result<Vec<AgentRunStep>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     let mut stmt = conn.prepare("SELECT id, run_id, step_type, content, created_at FROM agent_run_steps WHERE run_id = ?1 ORDER BY created_at ASC").map_err(|e| e.to_string())?;
-    
-    let iter = stmt.query_map([run_id], |row| {
-        Ok(AgentRunStep {
-            id: row.get(0)?,
-            run_id: row.get(1)?,
-            step_type: row.get(2)?,
-            content: row.get(3)?,
-            created_at: row.get(4)?,
+
+    let iter = stmt
+        .query_map([run_id], |row| {
+            Ok(AgentRunStep {
+                id: row.get(0)?,
+                run_id: row.get(1)?,
+                step_type: row.get(2)?,
+                content: row.get(3)?,
+                created_at: row.get(4)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut steps = Vec::new();
     for step in iter {

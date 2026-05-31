@@ -1,5 +1,5 @@
+use rusqlite::{Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
-use rusqlite::{Connection, Result, OptionalExtension};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentIdentity {
@@ -43,13 +43,15 @@ pub fn load_identity(agent_id: &str, conn: &Connection) -> Result<AgentIdentity,
 
     // 2. Load scoped memberships
     let mut stmt = conn.prepare("SELECT workspace_id, project_id, team_id FROM agent_project_memberships WHERE agent_id = ?1").map_err(|e| e.to_string())?;
-    let iter = stmt.query_map([agent_id], |row| {
-        Ok((
-            row.get::<_, String>(0)?,
-            row.get::<_, Option<String>>(1)?,
-            row.get::<_, Option<String>>(2)?,
-        ))
-    }).map_err(|e| e.to_string())?;
+    let iter = stmt
+        .query_map([agent_id], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, Option<String>>(1)?,
+                row.get::<_, Option<String>>(2)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
 
     let mut workspace_id = "default".to_string();
     let mut project_ids = Vec::new();

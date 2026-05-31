@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
-use rusqlite::{params, Connection, Result, OptionalExtension};
-use tauri::State;
 use crate::storage::DbState;
+use rusqlite::{params, Connection, OptionalExtension, Result};
+use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::State;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ProposedAgent {
@@ -157,45 +157,59 @@ pub struct MissionProgress {
 }
 
 #[tauri::command]
-pub fn get_active_missions_progress(state: State<'_, DbState>, workspace_id: String) -> Result<Vec<MissionProgress>, String> {
+pub fn get_active_missions_progress(
+    state: State<'_, DbState>,
+    workspace_id: String,
+) -> Result<Vec<MissionProgress>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     let mut stmt = conn.prepare(
         "SELECT id, mission_title, mission_goal, status FROM mission_previews WHERE workspace_id = ?1 AND status IN ('applied', 'in_progress')"
     ).map_err(|e| e.to_string())?;
-    
-    let iter = stmt.query_map([&workspace_id], |row| {
-        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?, row.get::<_, String>(3)?))
-    }).map_err(|e| e.to_string())?;
+
+    let iter = stmt
+        .query_map([&workspace_id], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
 
     let mut progress_list = Vec::new();
     for item in iter {
         if let Ok((id, title, goal, status)) = item {
             // How to count total cards vs completed cards?
             // The kanban_cards have id generated like format!("{}-{}", preview_id, card.title...)
-            // But we can check kanban cards that start with this preview_id, 
+            // But we can check kanban cards that start with this preview_id,
             // OR even better, kanban cards created from this mission.
             // Since we generated the card.id as `{preview_id}-...` we can just match it.
             let pattern = format!("{}-%", id);
-            
-            let total_cards: i64 = conn.query_row(
-                "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1",
-                [&pattern],
-                |row| row.get(0)
-            ).unwrap_or(0);
-            
-            let completed_cards: i64 = conn.query_row(
-                "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1 AND status = 'Done'",
-                [&pattern],
-                |row| row.get(0)
-            ).unwrap_or(0);
-            
+
+            let total_cards: i64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1",
+                    [&pattern],
+                    |row| row.get(0),
+                )
+                .unwrap_or(0);
+
+            let completed_cards: i64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1 AND status = 'Done'",
+                    [&pattern],
+                    |row| row.get(0),
+                )
+                .unwrap_or(0);
+
             let progress_percent = if total_cards > 0 {
                 (completed_cards as f64 / total_cards as f64) * 100.0
             } else {
                 0.0
             };
-            
+
             progress_list.push(MissionProgress {
                 preview_id: id,
                 title,
@@ -207,7 +221,7 @@ pub fn get_active_missions_progress(state: State<'_, DbState>, workspace_id: Str
             });
         }
     }
-    
+
     Ok(progress_list)
 }
 
@@ -218,31 +232,36 @@ pub fn list_mission_packs(state: State<'_, DbState>) -> Result<Vec<MissionPack>,
         .prepare("SELECT id, name, description, category, default_agents, default_columns, default_cards, default_evidence_gates, default_review_flow, default_permissions, user_editable, version FROM custom_mission_packs")
         .map_err(|e| e.to_string())?;
 
-    let iter = stmt.query_map([], |row| {
-        let default_agents_str: String = row.get(4)?;
-        let default_columns_str: String = row.get(5)?;
-        let default_cards_str: String = row.get(6)?;
+    let iter = stmt
+        .query_map([], |row| {
+            let default_agents_str: String = row.get(4)?;
+            let default_columns_str: String = row.get(5)?;
+            let default_cards_str: String = row.get(6)?;
 
-        let default_agents: Vec<ProposedAgent> = serde_json::from_str(&default_agents_str).unwrap_or_default();
-        let default_columns: Vec<String> = serde_json::from_str(&default_columns_str).unwrap_or_default();
-        let default_cards: Vec<ProposedCard> = serde_json::from_str(&default_cards_str).unwrap_or_default();
-        let user_editable_int: i32 = row.get(10)?;
+            let default_agents: Vec<ProposedAgent> =
+                serde_json::from_str(&default_agents_str).unwrap_or_default();
+            let default_columns: Vec<String> =
+                serde_json::from_str(&default_columns_str).unwrap_or_default();
+            let default_cards: Vec<ProposedCard> =
+                serde_json::from_str(&default_cards_str).unwrap_or_default();
+            let user_editable_int: i32 = row.get(10)?;
 
-        Ok(MissionPack {
-            mission_pack_id: row.get(0)?,
-            name: row.get(1)?,
-            description: row.get(2)?,
-            category: row.get(3)?,
-            default_agents,
-            default_columns,
-            default_cards,
-            default_evidence_gates: row.get(7)?,
-            default_review_flow: row.get(8)?,
-            default_permissions: row.get(9)?,
-            user_editable: user_editable_int != 0,
-            version: row.get(11)?,
+            Ok(MissionPack {
+                mission_pack_id: row.get(0)?,
+                name: row.get(1)?,
+                description: row.get(2)?,
+                category: row.get(3)?,
+                default_agents,
+                default_columns,
+                default_cards,
+                default_evidence_gates: row.get(7)?,
+                default_review_flow: row.get(8)?,
+                default_permissions: row.get(9)?,
+                user_editable: user_editable_int != 0,
+                version: row.get(11)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut list = Vec::new();
     for pack in iter {
@@ -264,15 +283,31 @@ pub fn generate_mission_preview(
     let goal_lower = user_goal.to_lowercase();
     let type_slug = if let Some(ref t) = mission_type {
         t.clone()
-    } else if goal_lower.contains("fix") || goal_lower.contains("bug") || goal_lower.contains("compile") || goal_lower.contains("error") {
+    } else if goal_lower.contains("fix")
+        || goal_lower.contains("bug")
+        || goal_lower.contains("compile")
+        || goal_lower.contains("error")
+    {
         "fix_existing_repo".to_string()
-    } else if goal_lower.contains("document") || goal_lower.contains("readme") || goal_lower.contains("guide") {
+    } else if goal_lower.contains("document")
+        || goal_lower.contains("readme")
+        || goal_lower.contains("guide")
+    {
         "documentation_pass".to_string()
-    } else if goal_lower.contains("test") || goal_lower.contains("qa") || goal_lower.contains("sprint") && goal_lower.contains("validate") {
+    } else if goal_lower.contains("test")
+        || goal_lower.contains("qa")
+        || goal_lower.contains("sprint") && goal_lower.contains("validate")
+    {
         "qa_sprint".to_string()
-    } else if goal_lower.contains("launch") || goal_lower.contains("open source") || goal_lower.contains("release") {
+    } else if goal_lower.contains("launch")
+        || goal_lower.contains("open source")
+        || goal_lower.contains("release")
+    {
         "open_source_launch".to_string()
-    } else if goal_lower.contains("bench") || goal_lower.contains("performance") || goal_lower.contains("speed") {
+    } else if goal_lower.contains("bench")
+        || goal_lower.contains("performance")
+        || goal_lower.contains("speed")
+    {
         "local_ai_benchmark".to_string()
     } else {
         "build_small_app".to_string()
@@ -310,7 +345,10 @@ pub fn generate_mission_preview(
     ).map_err(|e| format!("Default pack template '{}' not found: {}", type_slug, e))?;
 
     // Create unique preview ID
-    let now_micros = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_micros();
+    let now_micros = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_micros();
     let preview_id = format!("prev-{}", now_micros);
     let preview_title = format!("Mission: {}", pack.name);
 
@@ -321,8 +359,14 @@ pub fn generate_mission_preview(
 
     // Map existing agents if possible to avoid duplicates
     let existing_agents: Vec<(String, String)> = {
-        let mut stmt = conn.prepare("SELECT id, role FROM agents").map_err(|e| e.to_string())?;
-        let rows = stmt.query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))).map_err(|e| e.to_string())?;
+        let mut stmt = conn
+            .prepare("SELECT id, role FROM agents")
+            .map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .map_err(|e| e.to_string())?;
         let mut list = Vec::new();
         for r in rows {
             list.push(r.map_err(|e| e.to_string())?);
@@ -332,13 +376,19 @@ pub fn generate_mission_preview(
 
     for agent in &mut proposed_agents {
         // Personalize rationale
-        agent.rationale = Some(format!("Custom provisioned to perform '{}' role tasks for goal '{}'", agent.role, user_goal));
-        
+        agent.rationale = Some(format!(
+            "Custom provisioned to perform '{}' role tasks for goal '{}'",
+            agent.role, user_goal
+        ));
+
         // Find existing match
         for (ex_id, ex_role) in &existing_agents {
             if ex_role.to_lowercase() == agent.role.to_lowercase() {
                 agent.suggested_agent_id = Some(ex_id.clone());
-                agent.rationale = Some(format!("(Matches existing agent '{}') Preferred worker for '{}'", ex_id, agent.role));
+                agent.rationale = Some(format!(
+                    "(Matches existing agent '{}') Preferred worker for '{}'",
+                    ex_id, agent.role
+                ));
                 break;
             }
         }
@@ -346,9 +396,25 @@ pub fn generate_mission_preview(
 
     // Personalize Cards
     for card in &mut proposed_cards {
-        let clean_title = card.title.replace("application", &user_goal).replace("repo", &user_goal).replace("doc", &user_goal);
-        let clean_desc = card.description.as_ref().map(|d| d.replace("application", &user_goal).replace("repo", &user_goal).replace("doc", &user_goal)).unwrap_or_default();
-        card.id = format!("{}-{}", preview_id, card.title.to_lowercase().replace(' ', "_"));
+        let clean_title = card
+            .title
+            .replace("application", &user_goal)
+            .replace("repo", &user_goal)
+            .replace("doc", &user_goal);
+        let clean_desc = card
+            .description
+            .as_ref()
+            .map(|d| {
+                d.replace("application", &user_goal)
+                    .replace("repo", &user_goal)
+                    .replace("doc", &user_goal)
+            })
+            .unwrap_or_default();
+        card.id = format!(
+            "{}-{}",
+            preview_id,
+            card.title.to_lowercase().replace(' ', "_")
+        );
         card.title = clean_title;
         card.description = Some(clean_desc);
         card.rationale = Some(format!("Proposed to satisfy outcome: {}", user_goal));
@@ -356,7 +422,8 @@ pub fn generate_mission_preview(
         // Re-map dependencies
         let mut new_deps = Vec::new();
         for dep in &card.dependencies {
-            let matching_dep_id = format!("{}-{}", preview_id, dep.to_lowercase().replace(' ', "_"));
+            let matching_dep_id =
+                format!("{}-{}", preview_id, dep.to_lowercase().replace(' ', "_"));
             new_deps.push(matching_dep_id.clone());
             proposed_dependencies.push(ProposedDependency {
                 card_id: card.id.clone(),
@@ -438,7 +505,10 @@ pub fn generate_mission_preview(
     }
 
     // Build final preview object
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
     let preview = MissionPreview {
         preview_id,
         workspace_id,
@@ -473,11 +543,20 @@ pub fn edit_mission_preview(
     conn.execute(
         "UPDATE mission_previews SET status = 'edited' WHERE id = ?1",
         [&preview_id],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     // Delete existing preview components
-    conn.execute("DELETE FROM mission_preview_agents WHERE preview_id = ?1", [&preview_id]).map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM mission_preview_cards WHERE preview_id = ?1", [&preview_id]).map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM mission_preview_agents WHERE preview_id = ?1",
+        [&preview_id],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM mission_preview_cards WHERE preview_id = ?1",
+        [&preview_id],
+    )
+    .map_err(|e| e.to_string())?;
 
     // Re-insert edited agents
     for agent in proposed_agents {
@@ -536,39 +615,44 @@ pub fn apply_mission_preview(state: State<'_, DbState>, preview_id: String) -> R
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // Load preview metadata
-    let (workspace_id, mission_title): (String, String) = conn.query_row(
-        "SELECT workspace_id, mission_title FROM mission_previews WHERE id = ?1",
-        [&preview_id],
-        |row| Ok((row.get(0)?, row.get(1)?))
-    ).map_err(|e| format!("Mission Preview '{}' not found: {}", preview_id, e))?;
+    let (workspace_id, mission_title): (String, String) = conn
+        .query_row(
+            "SELECT workspace_id, mission_title FROM mission_previews WHERE id = ?1",
+            [&preview_id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .map_err(|e| format!("Mission Preview '{}' not found: {}", preview_id, e))?;
 
     // Load proposed agents
     let mut stmt_agents = conn.prepare(
         "SELECT name, role, description, template_id, suggested_model, reasoning_level, allowed_tools, command_permissions, file_access_scope, kanban_permissions, safety_profile, escalation_rules FROM mission_preview_agents WHERE preview_id = ?1"
     ).map_err(|e| e.to_string())?;
 
-    let proposed_agents_iter = stmt_agents.query_map([&preview_id], |row| {
-        let allowed_tools_str: String = row.get(6)?;
-        let command_permissions_str: String = row.get(7)?;
-        let file_access_scope_str: String = row.get(8)?;
+    let proposed_agents_iter = stmt_agents
+        .query_map([&preview_id], |row| {
+            let allowed_tools_str: String = row.get(6)?;
+            let command_permissions_str: String = row.get(7)?;
+            let file_access_scope_str: String = row.get(8)?;
 
-        Ok(ProposedAgent {
-            name: row.get(0)?,
-            role: row.get(1)?,
-            description: row.get(2)?,
-            template_id: row.get(3)?,
-            suggested_model: row.get(4)?,
-            suggested_agent_id: None,
-            reasoning_level: row.get(5)?,
-            allowed_tools: serde_json::from_str(&allowed_tools_str).unwrap_or_default(),
-            command_permissions: serde_json::from_str(&command_permissions_str).unwrap_or_default(),
-            file_access_scope: serde_json::from_str(&file_access_scope_str).unwrap_or_default(),
-            kanban_permissions: row.get(9)?,
-            safety_profile: row.get(10)?,
-            escalation_rules: row.get(11)?,
-            rationale: None,
+            Ok(ProposedAgent {
+                name: row.get(0)?,
+                role: row.get(1)?,
+                description: row.get(2)?,
+                template_id: row.get(3)?,
+                suggested_model: row.get(4)?,
+                suggested_agent_id: None,
+                reasoning_level: row.get(5)?,
+                allowed_tools: serde_json::from_str(&allowed_tools_str).unwrap_or_default(),
+                command_permissions: serde_json::from_str(&command_permissions_str)
+                    .unwrap_or_default(),
+                file_access_scope: serde_json::from_str(&file_access_scope_str).unwrap_or_default(),
+                kanban_permissions: row.get(9)?,
+                safety_profile: row.get(10)?,
+                escalation_rules: row.get(11)?,
+                rationale: None,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut applied_agents = Vec::new();
     for item in proposed_agents_iter {
@@ -581,19 +665,28 @@ pub fn apply_mission_preview(state: State<'_, DbState>, preview_id: String) -> R
 
     for proposed in &applied_agents {
         // Deduplicate: check if an agent with the same role and name exists already
-        let existing_id: Option<String> = conn.query_row(
-            "SELECT id FROM agents WHERE name = ?1 AND role = ?2",
-            [&proposed.name, &proposed.role],
-            |row| row.get(0)
-        ).optional().unwrap_or(None);
+        let existing_id: Option<String> = conn
+            .query_row(
+                "SELECT id FROM agents WHERE name = ?1 AND role = ?2",
+                [&proposed.name, &proposed.role],
+                |row| row.get(0),
+            )
+            .optional()
+            .unwrap_or(None);
 
         let agent_id = if let Some(id) = existing_id {
             id
         } else {
             // Spawn new agent
             let new_id = format!("agent-{}", proposed.name.to_lowercase().replace(' ', "_"));
-            let persona = proposed.description.clone().unwrap_or_else(|| format!("A specialized {} agent.", proposed.role));
-            let model_name = proposed.suggested_model.clone().unwrap_or_else(|| "camelid-default".to_string());
+            let persona = proposed
+                .description
+                .clone()
+                .unwrap_or_else(|| format!("A specialized {} agent.", proposed.role));
+            let model_name = proposed
+                .suggested_model
+                .clone()
+                .unwrap_or_else(|| "camelid-default".to_string());
 
             conn.execute(
                 "INSERT INTO agents (id, name, role, persona, model_provider, model_name, reasoning_level, allowed_tools, command_permissions, file_access_scope, kanban_permissions, safety_profile, escalation_rules, status)
@@ -620,10 +713,15 @@ pub fn apply_mission_preview(state: State<'_, DbState>, preview_id: String) -> R
                 "Maintain local file context and follow command sandbox permissions.".to_string(),
             ];
             let allowed_actions = proposed.allowed_tools.clone();
-            let required_context = vec!["Workspace structure and active Kanban dependencies".to_string()];
+            let required_context =
+                vec!["Workspace structure and active Kanban dependencies".to_string()];
             let required_outputs = vec!["A complete Work Receipt detailing files created, changed, and validation commands executed.".to_string()];
-            let validation_rules = vec!["Must pass active build validation if available.".to_string()];
-            let done_definition = vec!["All acceptance criteria met and verified with complete work receipt evidence.".to_string()];
+            let validation_rules =
+                vec!["Must pass active build validation if available.".to_string()];
+            let done_definition = vec![
+                "All acceptance criteria met and verified with complete work receipt evidence."
+                    .to_string(),
+            ];
 
             conn.execute(
                 "INSERT OR REPLACE INTO mission_agent_contracts (agent_id, role, responsibilities, allowed_actions, required_context_before_work, required_outputs, validation_rules, handoff_rules, escalation_rules, done_definition)
@@ -651,30 +749,33 @@ pub fn apply_mission_preview(state: State<'_, DbState>, preview_id: String) -> R
         "SELECT id, title, description, suggested_agent_role, suggested_agent_id, priority, status, acceptance_criteria, required_files, related_files, dependencies, evidence_gate, review_required FROM mission_preview_cards WHERE preview_id = ?1"
     ).map_err(|e| e.to_string())?;
 
-    let proposed_cards_iter = stmt_cards.query_map([&preview_id], |row| {
-        let acceptance_criteria_str: String = row.get(7)?;
-        let required_files_str: String = row.get(8)?;
-        let related_files_str: String = row.get(9)?;
-        let dependencies_str: String = row.get(10)?;
-        let review_required_int: i32 = row.get(12)?;
+    let proposed_cards_iter = stmt_cards
+        .query_map([&preview_id], |row| {
+            let acceptance_criteria_str: String = row.get(7)?;
+            let required_files_str: String = row.get(8)?;
+            let related_files_str: String = row.get(9)?;
+            let dependencies_str: String = row.get(10)?;
+            let review_required_int: i32 = row.get(12)?;
 
-        Ok(ProposedCard {
-            id: row.get(0)?,
-            title: row.get(1)?,
-            description: row.get(2)?,
-            suggested_agent_role: row.get(3)?,
-            suggested_agent_id: row.get(4)?,
-            priority: row.get(5)?,
-            status: row.get(6)?,
-            acceptance_criteria: serde_json::from_str(&acceptance_criteria_str).unwrap_or_default(),
-            required_files: serde_json::from_str(&required_files_str).unwrap_or_default(),
-            related_files: serde_json::from_str(&related_files_str).unwrap_or_default(),
-            dependencies: serde_json::from_str(&dependencies_str).unwrap_or_default(),
-            evidence_gate: row.get(11)?,
-            review_required: review_required_int != 0,
-            rationale: None,
+            Ok(ProposedCard {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                description: row.get(2)?,
+                suggested_agent_role: row.get(3)?,
+                suggested_agent_id: row.get(4)?,
+                priority: row.get(5)?,
+                status: row.get(6)?,
+                acceptance_criteria: serde_json::from_str(&acceptance_criteria_str)
+                    .unwrap_or_default(),
+                required_files: serde_json::from_str(&required_files_str).unwrap_or_default(),
+                related_files: serde_json::from_str(&related_files_str).unwrap_or_default(),
+                dependencies: serde_json::from_str(&dependencies_str).unwrap_or_default(),
+                evidence_gate: row.get(11)?,
+                review_required: review_required_int != 0,
+                rationale: None,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut applied_cards = Vec::new();
     for item in proposed_cards_iter {
@@ -695,19 +796,27 @@ pub fn apply_mission_preview(state: State<'_, DbState>, preview_id: String) -> R
             role_to_agent_id.get(&card.suggested_agent_role).cloned()
         };
 
-        let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+        let now_secs = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
         let initial_log = serde_json::json!([{
             "timestamp": now_secs,
             "agent_id": "system",
             "action": "kanban_card_created",
             "detail": format!("Task card auto-generated via mission apply '{}'", mission_title)
         }]);
-        let initial_log_str = serde_json::to_string(&initial_log).unwrap_or_else(|_| "[]".to_string());
+        let initial_log_str =
+            serde_json::to_string(&initial_log).unwrap_or_else(|_| "[]".to_string());
 
-        let criteria_str = serde_json::to_string(&card.acceptance_criteria).unwrap_or_else(|_| "[]".to_string());
-        let required_files_str = serde_json::to_string(&card.required_files).unwrap_or_else(|_| "[]".to_string());
-        let related_files_str = serde_json::to_string(&card.related_files).unwrap_or_else(|_| "[]".to_string());
-        let dependencies_str = serde_json::to_string(&card.dependencies).unwrap_or_else(|_| "[]".to_string());
+        let criteria_str =
+            serde_json::to_string(&card.acceptance_criteria).unwrap_or_else(|_| "[]".to_string());
+        let required_files_str =
+            serde_json::to_string(&card.required_files).unwrap_or_else(|_| "[]".to_string());
+        let related_files_str =
+            serde_json::to_string(&card.related_files).unwrap_or_else(|_| "[]".to_string());
+        let dependencies_str =
+            serde_json::to_string(&card.dependencies).unwrap_or_else(|_| "[]".to_string());
 
         conn.execute(
             "INSERT OR REPLACE INTO kanban_cards (id, workspace_id, title, description, owner_id, assigned_agent_id, status, priority, created_by, acceptance_criteria, required_files, related_files, related_artifacts, dependencies, blockers, comments, activity_log, validation_status)
@@ -741,14 +850,16 @@ pub fn apply_mission_preview(state: State<'_, DbState>, preview_id: String) -> R
     conn.execute(
         "UPDATE mission_previews SET status = 'applied' WHERE id = ?1",
         [&preview_id],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     // 6. Record Audit Event
     let payload = serde_json::json!({
         "preview_id": preview_id,
         "title": mission_title,
         "agents_spawned": role_to_agent_id.values().cloned().collect::<Vec<String>>()
-    }).to_string();
+    })
+    .to_string();
 
     conn.execute(
         "INSERT INTO mission_audit_events (workspace_id, event_type, payload) VALUES (?1, 'preview_applied', ?2)",
@@ -759,12 +870,16 @@ pub fn apply_mission_preview(state: State<'_, DbState>, preview_id: String) -> R
 }
 
 #[tauri::command]
-pub fn discard_mission_preview(state: State<'_, DbState>, preview_id: String) -> Result<(), String> {
+pub fn discard_mission_preview(
+    state: State<'_, DbState>,
+    preview_id: String,
+) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     conn.execute(
         "UPDATE mission_previews SET status = 'discarded' WHERE id = ?1",
         [&preview_id],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -777,39 +892,44 @@ pub fn save_mission_pack_from_preview(
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // Load preview meta
-    let (goal, type_slug): (String, String) = conn.query_row(
-        "SELECT mission_goal, mission_type FROM mission_previews WHERE id = ?1",
-        [&preview_id],
-        |row| Ok((row.get(0)?, row.get(1)?))
-    ).map_err(|e| e.to_string())?;
+    let (goal, type_slug): (String, String) = conn
+        .query_row(
+            "SELECT mission_goal, mission_type FROM mission_previews WHERE id = ?1",
+            [&preview_id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .map_err(|e| e.to_string())?;
 
     // Load agents list
     let mut stmt_agents = conn.prepare(
         "SELECT name, role, description, template_id, suggested_model, reasoning_level, allowed_tools, command_permissions, file_access_scope, kanban_permissions, safety_profile, escalation_rules FROM mission_preview_agents WHERE preview_id = ?1"
     ).map_err(|e| e.to_string())?;
 
-    let proposed_agents_iter = stmt_agents.query_map([&preview_id], |row| {
-        let allowed_tools_str: String = row.get(6)?;
-        let command_permissions_str: String = row.get(7)?;
-        let file_access_scope_str: String = row.get(8)?;
+    let proposed_agents_iter = stmt_agents
+        .query_map([&preview_id], |row| {
+            let allowed_tools_str: String = row.get(6)?;
+            let command_permissions_str: String = row.get(7)?;
+            let file_access_scope_str: String = row.get(8)?;
 
-        Ok(ProposedAgent {
-            name: row.get(0)?,
-            role: row.get(1)?,
-            description: row.get(2)?,
-            template_id: row.get(3)?,
-            suggested_model: row.get(4)?,
-            suggested_agent_id: None,
-            reasoning_level: row.get(5)?,
-            allowed_tools: serde_json::from_str(&allowed_tools_str).unwrap_or_default(),
-            command_permissions: serde_json::from_str(&command_permissions_str).unwrap_or_default(),
-            file_access_scope: serde_json::from_str(&file_access_scope_str).unwrap_or_default(),
-            kanban_permissions: row.get(9)?,
-            safety_profile: row.get(10)?,
-            escalation_rules: row.get(11)?,
-            rationale: None,
+            Ok(ProposedAgent {
+                name: row.get(0)?,
+                role: row.get(1)?,
+                description: row.get(2)?,
+                template_id: row.get(3)?,
+                suggested_model: row.get(4)?,
+                suggested_agent_id: None,
+                reasoning_level: row.get(5)?,
+                allowed_tools: serde_json::from_str(&allowed_tools_str).unwrap_or_default(),
+                command_permissions: serde_json::from_str(&command_permissions_str)
+                    .unwrap_or_default(),
+                file_access_scope: serde_json::from_str(&file_access_scope_str).unwrap_or_default(),
+                kanban_permissions: row.get(9)?,
+                safety_profile: row.get(10)?,
+                escalation_rules: row.get(11)?,
+                rationale: None,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut agents = Vec::new();
     for item in proposed_agents_iter {
@@ -821,30 +941,33 @@ pub fn save_mission_pack_from_preview(
         "SELECT id, title, description, suggested_agent_role, suggested_agent_id, priority, status, acceptance_criteria, required_files, related_files, dependencies, evidence_gate, review_required FROM mission_preview_cards WHERE preview_id = ?1"
     ).map_err(|e| e.to_string())?;
 
-    let proposed_cards_iter = stmt_cards.query_map([&preview_id], |row| {
-        let acceptance_criteria_str: String = row.get(7)?;
-        let required_files_str: String = row.get(8)?;
-        let related_files_str: String = row.get(9)?;
-        let dependencies_str: String = row.get(10)?;
-        let review_required_int: i32 = row.get(12)?;
+    let proposed_cards_iter = stmt_cards
+        .query_map([&preview_id], |row| {
+            let acceptance_criteria_str: String = row.get(7)?;
+            let required_files_str: String = row.get(8)?;
+            let related_files_str: String = row.get(9)?;
+            let dependencies_str: String = row.get(10)?;
+            let review_required_int: i32 = row.get(12)?;
 
-        Ok(ProposedCard {
-            id: row.get(0)?,
-            title: row.get(1)?,
-            description: row.get(2)?,
-            suggested_agent_role: row.get(3)?,
-            suggested_agent_id: row.get(4)?,
-            priority: row.get(5)?,
-            status: row.get(6)?,
-            acceptance_criteria: serde_json::from_str(&acceptance_criteria_str).unwrap_or_default(),
-            required_files: serde_json::from_str(&required_files_str).unwrap_or_default(),
-            related_files: serde_json::from_str(&related_files_str).unwrap_or_default(),
-            dependencies: serde_json::from_str(&dependencies_str).unwrap_or_default(),
-            evidence_gate: row.get(11)?,
-            review_required: review_required_int != 0,
-            rationale: None,
+            Ok(ProposedCard {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                description: row.get(2)?,
+                suggested_agent_role: row.get(3)?,
+                suggested_agent_id: row.get(4)?,
+                priority: row.get(5)?,
+                status: row.get(6)?,
+                acceptance_criteria: serde_json::from_str(&acceptance_criteria_str)
+                    .unwrap_or_default(),
+                required_files: serde_json::from_str(&required_files_str).unwrap_or_default(),
+                related_files: serde_json::from_str(&related_files_str).unwrap_or_default(),
+                dependencies: serde_json::from_str(&dependencies_str).unwrap_or_default(),
+                evidence_gate: row.get(11)?,
+                review_required: review_required_int != 0,
+                rationale: None,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut cards = Vec::new();
     for item in proposed_cards_iter {
@@ -868,9 +991,12 @@ pub fn save_mission_pack_from_preview(
 }
 
 #[tauri::command]
-pub fn get_autopilot_settings(state: State<'_, DbState>, workspace_id: String) -> Result<AutopilotSettings, String> {
+pub fn get_autopilot_settings(
+    state: State<'_, DbState>,
+    workspace_id: String,
+) -> Result<AutopilotSettings, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     let res: Result<AutopilotSettings> = conn.query_row(
         "SELECT workspace_id, autopilot_enabled, autopilot_scope, approval_requirements, command_permissions_override, file_permissions_override, network_permissions, done_approval_rules \
          FROM autopilot_settings WHERE workspace_id = ?1",
@@ -901,7 +1027,7 @@ pub fn get_autopilot_settings(state: State<'_, DbState>, workspace_id: String) -
                  VALUES (?1, 0, 'off', 'moderate', '[]', '[]', 'none', 'reviewer_or_user')",
                 [&workspace_id],
             ).map_err(|e| e.to_string())?;
-            
+
             Ok(AutopilotSettings {
                 workspace_id: workspace_id.clone(),
                 autopilot_enabled: false,
@@ -947,13 +1073,29 @@ pub fn get_mission_recommendations(
     workspace_id: String,
 ) -> Result<Vec<MissionRecommendation>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     // Clear and build dynamic non-invasive suggestions based on current board state!
-    let active_tasks: Vec<(String, String, Option<String>, Option<String>, Option<String>, Option<String>)> = {
+    let active_tasks: Vec<(
+        String,
+        String,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+    )> = {
         let mut stmt = conn.prepare("SELECT id, title, dependencies, acceptance_criteria, assigned_agent_id, status FROM kanban_cards WHERE workspace_id = ?1").map_err(|e| e.to_string())?;
-        let rows = stmt.query_map([&workspace_id], |row| {
-            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?))
-        }).map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map([&workspace_id], |row| {
+                Ok((
+                    row.get(0)?,
+                    row.get(1)?,
+                    row.get(2)?,
+                    row.get(3)?,
+                    row.get(4)?,
+                    row.get(5)?,
+                ))
+            })
+            .map_err(|e| e.to_string())?;
         let mut list = Vec::new();
         for r in rows {
             list.push(r.map_err(|e| e.to_string())?);
@@ -962,13 +1104,22 @@ pub fn get_mission_recommendations(
     };
 
     // Wipe old active suggestions to prevent duplicates
-    conn.execute("DELETE FROM mission_recommendations WHERE workspace_id = ?1 AND status = 'active'", [&workspace_id]).map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM mission_recommendations WHERE workspace_id = ?1 AND status = 'active'",
+        [&workspace_id],
+    )
+    .map_err(|e| e.to_string())?;
 
     for (tid, title, deps_str, criteria_str, agent_id, status) in &active_tasks {
-        if status.as_deref() == Some("done") { continue; }
+        if status.as_deref() == Some("done") {
+            continue;
+        }
 
         // Check 1: Missing acceptance criteria
-        let criteria: Vec<String> = criteria_str.as_ref().map(|s| serde_json::from_str(s).unwrap_or_default()).unwrap_or_default();
+        let criteria: Vec<String> = criteria_str
+            .as_ref()
+            .map(|s| serde_json::from_str(s).unwrap_or_default())
+            .unwrap_or_default();
         if criteria.is_empty() {
             conn.execute(
                 "INSERT INTO mission_recommendations (workspace_id, recommendation_type, content, action_target)
@@ -987,7 +1138,10 @@ pub fn get_mission_recommendations(
         }
 
         // Check 3: Card size too large (suggest decomposition)
-        if title.to_lowercase().contains("implement") || title.to_lowercase().contains("build") || title.to_lowercase().contains("develop") {
+        if title.to_lowercase().contains("implement")
+            || title.to_lowercase().contains("build")
+            || title.to_lowercase().contains("develop")
+        {
             let has_subtasks: bool = conn.query_row(
                 "SELECT EXISTS(SELECT 1 FROM task_blockers WHERE task_id = ?1 AND reason LIKE '%subtask%')",
                 [tid],
@@ -1007,18 +1161,20 @@ pub fn get_mission_recommendations(
     // Retrieve active suggestions
     let mut stmt = conn.prepare("SELECT id, workspace_id, recommendation_type, content, action_target, status, created_at FROM mission_recommendations WHERE workspace_id = ?1 AND status = 'active'")
         .map_err(|e| e.to_string())?;
-    
-    let iter = stmt.query_map([&workspace_id], |row| {
-        Ok(MissionRecommendation {
-            id: row.get(0)?,
-            workspace_id: row.get(1)?,
-            recommendation_type: row.get(2)?,
-            content: row.get(3)?,
-            action_target: row.get(4)?,
-            status: row.get(5)?,
-            created_at: row.get(6)?,
+
+    let iter = stmt
+        .query_map([&workspace_id], |row| {
+            Ok(MissionRecommendation {
+                id: row.get(0)?,
+                workspace_id: row.get(1)?,
+                recommendation_type: row.get(2)?,
+                content: row.get(3)?,
+                action_target: row.get(4)?,
+                status: row.get(5)?,
+                created_at: row.get(6)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut list = Vec::new();
     for rec in iter {
@@ -1033,12 +1189,16 @@ pub fn dismiss_recommendation(state: State<'_, DbState>, id: i64) -> Result<(), 
     conn.execute(
         "UPDATE mission_recommendations SET status = 'dismissed' WHERE id = ?1",
         [id],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub fn get_agent_contract(state: State<'_, DbState>, agent_id: String) -> Result<Option<AgentContract>, String> {
+pub fn get_agent_contract(
+    state: State<'_, DbState>,
+    agent_id: String,
+) -> Result<Option<AgentContract>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     let res: Result<AgentContract> = conn.query_row(
         "SELECT agent_id, role, responsibilities, allowed_actions, required_context_before_work, required_outputs, validation_rules, handoff_rules, escalation_rules, done_definition \
@@ -1071,26 +1231,31 @@ pub fn get_agent_contract(state: State<'_, DbState>, agent_id: String) -> Result
 
     match res {
         Ok(contract) => Ok(Some(contract)),
-        Err(_) => Ok(None)
+        Err(_) => Ok(None),
     }
 }
 
 #[tauri::command]
-pub fn get_mission_audit_events(state: State<'_, DbState>, workspace_id: String) -> Result<Vec<AuditEvent>, String> {
+pub fn get_mission_audit_events(
+    state: State<'_, DbState>,
+    workspace_id: String,
+) -> Result<Vec<AuditEvent>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     let mut stmt = conn
         .prepare("SELECT id, workspace_id, event_type, payload, timestamp FROM mission_audit_events WHERE workspace_id = ?1 ORDER BY id DESC")
         .map_err(|e| e.to_string())?;
 
-    let iter = stmt.query_map([&workspace_id], |row| {
-        Ok(AuditEvent {
-            id: row.get(0)?,
-            workspace_id: row.get(1)?,
-            event_type: row.get(2)?,
-            payload: row.get(3)?,
-            timestamp: row.get(4)?,
+    let iter = stmt
+        .query_map([&workspace_id], |row| {
+            Ok(AuditEvent {
+                id: row.get(0)?,
+                workspace_id: row.get(1)?,
+                event_type: row.get(2)?,
+                payload: row.get(3)?,
+                timestamp: row.get(4)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     let mut list = Vec::new();
     for ev in iter {
@@ -1100,7 +1265,10 @@ pub fn get_mission_audit_events(state: State<'_, DbState>, workspace_id: String)
 }
 
 #[tauri::command]
-pub fn get_work_receipt(state: State<'_, DbState>, card_id: String) -> Result<Option<WorkReceipt>, String> {
+pub fn get_work_receipt(
+    state: State<'_, DbState>,
+    card_id: String,
+) -> Result<Option<WorkReceipt>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     let res: Result<WorkReceipt> = conn.query_row(
         "SELECT card_id, agent_id, summary, files_created, files_modified, commands_run, tests_run, validation_status, evidence_links, known_limitations, follow_up_recommendations, completed_at \
@@ -1134,7 +1302,7 @@ pub fn get_work_receipt(state: State<'_, DbState>, card_id: String) -> Result<Op
 
     match res {
         Ok(receipt) => Ok(Some(receipt)),
-        Err(_) => Ok(None)
+        Err(_) => Ok(None),
     }
 }
 
@@ -1157,11 +1325,14 @@ pub fn generate_work_receipt(
     let val_status = val_status_opt.unwrap_or_else(|| "pending".to_string());
 
     // Fetch checkpoint touched files if any
-    let files_touched_str: Option<String> = conn.query_row(
-        "SELECT files_touched FROM checkpoints WHERE task_id = ?1 ORDER BY id DESC LIMIT 1",
-        [&card_id],
-        |row| row.get(0)
-    ).optional().unwrap_or(None);
+    let files_touched_str: Option<String> = conn
+        .query_row(
+            "SELECT files_touched FROM checkpoints WHERE task_id = ?1 ORDER BY id DESC LIMIT 1",
+            [&card_id],
+            |row| row.get(0),
+        )
+        .optional()
+        .unwrap_or(None);
 
     let files_modified: Vec<String> = if let Some(ref s) = files_touched_str {
         serde_json::from_str(s).unwrap_or_default()
@@ -1176,10 +1347,16 @@ pub fn generate_work_receipt(
     let known_limitations = vec!["Limited validation suite run on target metal CPU".to_string()];
     let follow_up_rec = vec!["Perform detailed system benchmark tests in next sprint".to_string()];
 
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
     let completed_at = now_secs.to_string();
 
-    let summary = format!("Work completed successfully for task '{}'. Evidence: {}", title, evidence);
+    let summary = format!(
+        "Work completed successfully for task '{}'. Evidence: {}",
+        title, evidence
+    );
 
     let receipt = WorkReceipt {
         card_id: card_id.clone(),

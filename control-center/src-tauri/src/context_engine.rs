@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
-use rusqlite::{params, Connection};
-use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{State, AppHandle};
-use crate::storage::DbState;
 use crate::event_bus::{emit_event, AppEvent};
+use crate::storage::DbState;
+use rusqlite::{params, Connection};
+use serde::{Deserialize, Serialize};
+use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, State};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Workspace {
@@ -49,20 +49,28 @@ pub fn get_scoped_agent_context_snapshot(
 ) -> Result<String, String> {
     // 1. Active Workspace Details
     let ws_query = match workspace_id {
-        Some(id) => ("SELECT id, name, path, active FROM workspaces WHERE id = ?1", vec![id]),
-        None => ("SELECT id, name, path, active FROM workspaces WHERE active = 1 LIMIT 1", vec![]),
+        Some(id) => (
+            "SELECT id, name, path, active FROM workspaces WHERE id = ?1",
+            vec![id],
+        ),
+        None => (
+            "SELECT id, name, path, active FROM workspaces WHERE active = 1 LIMIT 1",
+            vec![],
+        ),
     };
-    
+
     let mut active_ws: Option<Workspace> = None;
     let mut stmt_ws = conn.prepare(ws_query.0).map_err(|e| e.to_string())?;
-    let ws_iter = stmt_ws.query_map(rusqlite::params_from_iter(ws_query.1), |row| {
-        Ok(Workspace {
-            id: row.get(0)?,
-            name: row.get(1)?,
-            path: row.get(2)?,
-            active: row.get(3)?,
+    let ws_iter = stmt_ws
+        .query_map(rusqlite::params_from_iter(ws_query.1), |row| {
+            Ok(Workspace {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                path: row.get(2)?,
+                active: row.get(3)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
 
     for item in ws_iter {
         if let Ok(ws) = item {
@@ -77,25 +85,29 @@ pub fn get_scoped_agent_context_snapshot(
     };
 
     // 2. Shared Global Goal (from shared_state)
-    let shared_obj: String = conn.query_row(
-        "SELECT value FROM shared_state WHERE key = 'objective'",
-        [],
-        |row| row.get(0),
-    ).unwrap_or_else(|_| "None".to_string());
+    let shared_obj: String = conn
+        .query_row(
+            "SELECT value FROM shared_state WHERE key = 'objective'",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or_else(|_| "None".to_string());
 
     // 3. Active Crew & Statuses
-    let mut stmt_agents = conn.prepare(
-        "SELECT id, name, role, status, last_heartbeat FROM agents"
-    ).map_err(|e| e.to_string())?;
-    let agents_iter = stmt_agents.query_map([], |row| {
-        Ok((
-            row.get::<_, String>(0)?,
-            row.get::<_, String>(1)?,
-            row.get::<_, String>(2)?,
-            row.get::<_, String>(3)?,
-            row.get::<_, Option<String>>(4)?,
-        ))
-    }).map_err(|e| e.to_string())?;
+    let mut stmt_agents = conn
+        .prepare("SELECT id, name, role, status, last_heartbeat FROM agents")
+        .map_err(|e| e.to_string())?;
+    let agents_iter = stmt_agents
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, Option<String>>(4)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
 
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -114,8 +126,15 @@ pub fn get_scoped_agent_context_snapshot(
             } else {
                 "never".to_string()
             };
-            let self_marker = if Some(id.as_str()) == agent_id { " (YOU)" } else { "" };
-            agents_summary.push_str(&format!("- {}{} [{}]: status=[{}], last_active=[{}]\n", name, self_marker, role, status, hb_str));
+            let self_marker = if Some(id.as_str()) == agent_id {
+                " (YOU)"
+            } else {
+                ""
+            };
+            agents_summary.push_str(&format!(
+                "- {}{} [{}]: status=[{}], last_active=[{}]\n",
+                name, self_marker, role, status, hb_str
+            ));
         }
     }
 
@@ -136,26 +155,43 @@ pub fn get_scoped_agent_context_snapshot(
 
     let mut stmt_tasks = conn.prepare(&tasks_query).map_err(|e| e.to_string())?;
 
-    let tasks_iter = stmt_tasks.query_map(rusqlite::params_from_iter(tasks_params), |row| {
-        Ok((
-            row.get::<_, String>(0)?,
-            row.get::<_, String>(1)?,
-            row.get::<_, Option<String>>(2)?,
-            row.get::<_, Option<String>>(3)?,
-            row.get::<_, String>(4)?,
-            row.get::<_, String>(5)?,
-            row.get::<_, Option<String>>(6)?,
-            row.get::<_, Option<String>>(7)?,
-            row.get::<_, Option<String>>(8)?,
-            row.get::<_, Option<String>>(9)?,
-            row.get::<_, Option<String>>(10)?,
-        ))
-    }).map_err(|e| e.to_string())?;
+    let tasks_iter = stmt_tasks
+        .query_map(rusqlite::params_from_iter(tasks_params), |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, Option<String>>(2)?,
+                row.get::<_, Option<String>>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, String>(5)?,
+                row.get::<_, Option<String>>(6)?,
+                row.get::<_, Option<String>>(7)?,
+                row.get::<_, Option<String>>(8)?,
+                row.get::<_, Option<String>>(9)?,
+                row.get::<_, Option<String>>(10)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
 
     let mut tasks_summary = String::new();
     for task in tasks_iter {
-        if let Ok((id, title, owner, assignee, status, priority, criteria, req_files, rel_files, blockers, deps)) = task {
-            let assignee_id = assignee.or(owner).unwrap_or_else(|| "unassigned".to_string());
+        if let Ok((
+            id,
+            title,
+            owner,
+            assignee,
+            status,
+            priority,
+            criteria,
+            req_files,
+            rel_files,
+            blockers,
+            deps,
+        )) = task
+        {
+            let assignee_id = assignee
+                .or(owner)
+                .unwrap_or_else(|| "unassigned".to_string());
             let criteria_str = criteria.unwrap_or_else(|| "[]".to_string());
             let req_files_str = req_files.unwrap_or_else(|| "[]".to_string());
             let rel_files_str = rel_files.unwrap_or_else(|| "[]".to_string());
@@ -172,7 +208,16 @@ pub fn get_scoped_agent_context_snapshot(
                   * Related Files: {}\n\
                   * Blockers: {}\n\
                   * Dependencies: {}\n\n",
-                id, title, status, priority, assignee_id, criteria_str, req_files_str, rel_files_str, blockers_str, deps_str
+                id,
+                title,
+                status,
+                priority,
+                assignee_id,
+                criteria_str,
+                req_files_str,
+                rel_files_str,
+                blockers_str,
+                deps_str
             ));
         }
     }
@@ -181,7 +226,8 @@ pub fn get_scoped_agent_context_snapshot(
     }
 
     // 5. Workspace File Artifacts
-    let mut arts_query = "SELECT path, artifact_type, size_bytes FROM artifacts WHERE 1=1".to_string();
+    let mut arts_query =
+        "SELECT path, artifact_type, size_bytes FROM artifacts WHERE 1=1".to_string();
     let mut arts_params: Vec<String> = vec![];
     if let Some(pid) = project_id {
         arts_query.push_str(&format!(" AND project_id = '?{}'", arts_params.len() + 1));
@@ -194,28 +240,66 @@ pub fn get_scoped_agent_context_snapshot(
     arts_query.push_str(" ORDER BY id DESC LIMIT 10");
 
     let mut stmt_arts = conn.prepare(&arts_query).map_err(|e| e.to_string())?;
-    let arts_iter = stmt_arts.query_map(rusqlite::params_from_iter(arts_params), |row| {
-        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, Option<i32>>(2)?))
-    }).map_err(|e| e.to_string())?;
+    let arts_iter = stmt_arts
+        .query_map(rusqlite::params_from_iter(arts_params), |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, Option<i32>>(2)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
 
     let mut arts_summary = String::new();
+    let mut file_contents_summary = String::new();
+    let mut files_ingested = 0;
+
     for art in arts_iter {
         if let Ok((path, art_type, size)) = art {
             let size_str = size.map(|s| format!(" ({} bytes)", s)).unwrap_or_default();
             arts_summary.push_str(&format!("- [{}] {}{}\n", art_type, path, size_str));
+
+            // File Ingestion Logic
+            if files_ingested < 3 {
+                let p = std::path::PathBuf::from(&path);
+                if p.exists() && p.is_file() {
+                    // Soft token pruning: limit file size
+                    let meta = std::fs::metadata(&p).unwrap();
+                    if meta.len() < 50_000 {
+                        // 50KB limit
+                        if let Ok(content) = std::fs::read_to_string(&p) {
+                            file_contents_summary.push_str(&format!("--- FILE: {} ---\n", path));
+                            // Truncate to 200 lines
+                            let lines: Vec<&str> = content.lines().take(200).collect();
+                            file_contents_summary.push_str(&lines.join("\n"));
+                            file_contents_summary.push_str("\n\n");
+                            files_ingested += 1;
+                        }
+                    }
+                }
+            }
         }
     }
     if arts_summary.is_empty() {
         arts_summary = "- No artifacts created yet.".to_string();
     }
+    if file_contents_summary.is_empty() {
+        file_contents_summary = "- No text file contents loaded in this snapshot.\n".to_string();
+    }
 
     // 6. Engineering Decisions
-    let mut stmt_decs = conn.prepare(
-        "SELECT decision, decided_by, timestamp FROM decisions ORDER BY id DESC LIMIT 5"
-    ).map_err(|e| e.to_string())?;
-    let decs_iter = stmt_decs.query_map([], |row| {
-        Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?, row.get::<_, String>(2)?))
-    }).map_err(|e| e.to_string())?;
+    let mut stmt_decs = conn
+        .prepare("SELECT decision, decided_by, timestamp FROM decisions ORDER BY id DESC LIMIT 5")
+        .map_err(|e| e.to_string())?;
+    let decs_iter = stmt_decs
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, Option<String>>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
 
     let mut decs_summary = String::new();
     for dec in decs_iter {
@@ -232,21 +316,26 @@ pub fn get_scoped_agent_context_snapshot(
     let mut stmt_handoffs = conn.prepare(
         "SELECT id, source_agent_id, target_agent_id, reason, status, timestamp FROM handoffs WHERE status = 'pending'"
     ).map_err(|e| e.to_string())?;
-    let handoffs_iter = stmt_handoffs.query_map([], |row| {
-        Ok((
-            row.get::<_, i32>(0)?,
-            row.get::<_, String>(1)?,
-            row.get::<_, String>(2)?,
-            row.get::<_, String>(3)?,
-            row.get::<_, String>(4)?,
-            row.get::<_, String>(5)?,
-        ))
-    }).map_err(|e| e.to_string())?;
+    let handoffs_iter = stmt_handoffs
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, i32>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, String>(5)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
 
     let mut handoffs_summary = String::new();
     for ho in handoffs_iter {
         if let Ok((id, src, target, reason, status, ts)) = ho {
-            handoffs_summary.push_str(&format!("- [id: {}] Handoff from {} to {} | reason: \"{}\" | status={} ({})\n", id, src, target, reason, status, ts));
+            handoffs_summary.push_str(&format!(
+                "- [id: {}] Handoff from {} to {} | reason: \"{}\" | status={} ({})\n",
+                id, src, target, reason, status, ts
+            ));
         }
     }
     if handoffs_summary.is_empty() {
@@ -254,16 +343,18 @@ pub fn get_scoped_agent_context_snapshot(
     }
 
     // 8. Recent Events
-    let mut stmt_events = conn.prepare(
-        "SELECT event_type, agent_id, timestamp FROM events ORDER BY id DESC LIMIT 8"
-    ).map_err(|e| e.to_string())?;
-    let events_iter = stmt_events.query_map([], |row| {
-        Ok((
-            row.get::<_, String>(0)?,
-            row.get::<_, Option<String>>(1)?,
-            row.get::<_, String>(2)?,
-        ))
-    }).map_err(|e| e.to_string())?;
+    let mut stmt_events = conn
+        .prepare("SELECT event_type, agent_id, timestamp FROM events ORDER BY id DESC LIMIT 8")
+        .map_err(|e| e.to_string())?;
+    let events_iter = stmt_events
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, Option<String>>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
 
     let mut events_summary = String::new();
     for ev in events_iter {
@@ -275,10 +366,15 @@ pub fn get_scoped_agent_context_snapshot(
     if events_summary.is_empty() {
         events_summary = "- No events logged yet.".to_string();
     }
-    
+
     // 8b. Relevant Memories
     let mut mems_summary = String::new();
-    if let Ok(memories) = crate::memory_engine::get_recent_memories(conn, agent_id.map(|s| s.to_string()), workspace_id.map(|s| s.to_string()), 5) {
+    if let Ok(memories) = crate::memory_engine::get_recent_memories(
+        conn,
+        agent_id.map(|s| s.to_string()),
+        workspace_id.map(|s| s.to_string()),
+        5,
+    ) {
         for mem in memories {
             mems_summary.push_str(&format!("- [{}] {}\n", mem.created_at, mem.content));
         }
@@ -314,12 +410,23 @@ pub fn get_scoped_agent_context_snapshot(
          #### ACTIVE CREW & STATUSES:\n{}\n\
          #### RECENT WORKSPACE TASKS & BLOCKERS:\n{}\n\
          #### CREATED FILE ARTIFACTS:\n{}\n\
+         #### RECENT FILE CONTENTS:\n{}\n\
          #### RECORDED ENGINEERING DECISIONS:\n{}\n\
          #### PENDING WORKFLOW HANDOFFS:\n{}\n\
          #### RECENT FIREWALL EVENTS:\n{}\n\
          #### LONG-TERM MEMORY:\n{}\n\
          #### YOUR ROLE SUGGESTED NEXT ACTION:\n- {}\n",
-        ws_section, shared_obj, agents_summary, tasks_summary, arts_summary, decs_summary, handoffs_summary, events_summary, mems_summary, suggested_action
+        ws_section,
+        shared_obj,
+        agents_summary,
+        tasks_summary,
+        arts_summary,
+        file_contents_summary,
+        decs_summary,
+        handoffs_summary,
+        events_summary,
+        mems_summary,
+        suggested_action
     );
 
     Ok(snapshot)
@@ -340,7 +447,13 @@ pub fn get_workspace_context(
     team_id: Option<String>,
 ) -> Result<String, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    get_scoped_agent_context_snapshot(&conn, agent_id.as_deref(), workspace_id.as_deref(), project_id.as_deref(), team_id.as_deref())
+    get_scoped_agent_context_snapshot(
+        &conn,
+        agent_id.as_deref(),
+        workspace_id.as_deref(),
+        project_id.as_deref(),
+        team_id.as_deref(),
+    )
 }
 
 #[tauri::command]
@@ -352,7 +465,13 @@ pub fn get_scoped_agent_context(
     team_id: Option<String>,
 ) -> Result<String, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    get_scoped_agent_context_snapshot(&conn, agent_id.as_deref(), workspace_id.as_deref(), project_id.as_deref(), team_id.as_deref())
+    get_scoped_agent_context_snapshot(
+        &conn,
+        agent_id.as_deref(),
+        workspace_id.as_deref(),
+        project_id.as_deref(),
+        team_id.as_deref(),
+    )
 }
 
 #[tauri::command]
@@ -367,7 +486,8 @@ pub fn record_decision_cmd(
     conn.execute(
         "INSERT INTO decisions (workspace_id, decision, decided_by) VALUES (?1, ?2, ?3)",
         params![&workspace_id, &decision, &decided_by],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     emit_event(
         &app_handle,
@@ -396,7 +516,8 @@ pub fn request_handoff_cmd(
         "INSERT INTO handoffs (task_id, source_agent_id, target_agent_id, reason, status) 
          VALUES (?1, ?2, ?3, ?4, 'pending')",
         params![task_id, source_agent_id, target_agent_id, reason],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     emit_event(
         &app_handle,
@@ -427,7 +548,8 @@ pub fn resolve_handoff_cmd(
     conn.execute(
         "UPDATE handoffs SET status = ?2 WHERE id = ?1",
         params![id, status],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     emit_event(
         &app_handle,
@@ -445,18 +567,22 @@ pub fn resolve_handoff_cmd(
 #[tauri::command]
 pub fn get_coordination_details(state: State<'_, DbState>) -> Result<CoordinationDetails, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     // Fetch workspaces
-    let mut stmt_ws = conn.prepare("SELECT id, name, path, active FROM workspaces").map_err(|e| e.to_string())?;
-    let ws_iter = stmt_ws.query_map([], |row| {
-        Ok(Workspace {
-            id: row.get(0)?,
-            name: row.get(1)?,
-            path: row.get(2)?,
-            active: row.get(3)?,
+    let mut stmt_ws = conn
+        .prepare("SELECT id, name, path, active FROM workspaces")
+        .map_err(|e| e.to_string())?;
+    let ws_iter = stmt_ws
+        .query_map([], |row| {
+            Ok(Workspace {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                path: row.get(2)?,
+                active: row.get(3)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
-    
+        .map_err(|e| e.to_string())?;
+
     let mut workspaces = Vec::new();
     for ws in ws_iter {
         workspaces.push(ws.map_err(|e| e.to_string())?);
@@ -464,16 +590,18 @@ pub fn get_coordination_details(state: State<'_, DbState>) -> Result<Coordinatio
 
     // Fetch decisions
     let mut stmt_decs = conn.prepare("SELECT id, workspace_id, decision, decided_by, timestamp FROM decisions ORDER BY id DESC").map_err(|e| e.to_string())?;
-    let decs_iter = stmt_decs.query_map([], |row| {
-        Ok(Decision {
-            id: Some(row.get(0)?),
-            workspace_id: row.get(1)?,
-            decision: row.get(2)?,
-            decided_by: row.get(3)?,
-            timestamp: row.get(4)?,
+    let decs_iter = stmt_decs
+        .query_map([], |row| {
+            Ok(Decision {
+                id: Some(row.get(0)?),
+                workspace_id: row.get(1)?,
+                decision: row.get(2)?,
+                decided_by: row.get(3)?,
+                timestamp: row.get(4)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
-    
+        .map_err(|e| e.to_string())?;
+
     let mut decisions = Vec::new();
     for dec in decs_iter {
         decisions.push(dec.map_err(|e| e.to_string())?);
@@ -481,18 +609,20 @@ pub fn get_coordination_details(state: State<'_, DbState>) -> Result<Coordinatio
 
     // Fetch handoffs
     let mut stmt_ho = conn.prepare("SELECT id, task_id, source_agent_id, target_agent_id, reason, status, timestamp FROM handoffs ORDER BY id DESC").map_err(|e| e.to_string())?;
-    let ho_iter = stmt_ho.query_map([], |row| {
-        Ok(Handoff {
-            id: Some(row.get(0)?),
-            task_id: row.get(1)?,
-            source_agent_id: row.get(2)?,
-            target_agent_id: row.get(3)?,
-            reason: row.get(4)?,
-            status: row.get(5)?,
-            timestamp: row.get(6)?,
+    let ho_iter = stmt_ho
+        .query_map([], |row| {
+            Ok(Handoff {
+                id: Some(row.get(0)?),
+                task_id: row.get(1)?,
+                source_agent_id: row.get(2)?,
+                target_agent_id: row.get(3)?,
+                reason: row.get(4)?,
+                status: row.get(5)?,
+                timestamp: row.get(6)?,
+            })
         })
-    }).map_err(|e| e.to_string())?;
-    
+        .map_err(|e| e.to_string())?;
+
     let mut handoffs = Vec::new();
     for ho in ho_iter {
         handoffs.push(ho.map_err(|e| e.to_string())?);
@@ -517,6 +647,7 @@ pub fn update_shared_state(
          VALUES (?1, ?2, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = ?2, updated_at = CURRENT_TIMESTAMP",
         [key, value],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }

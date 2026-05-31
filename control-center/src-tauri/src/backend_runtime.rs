@@ -1,12 +1,12 @@
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Child, Stdio};
+use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, Manager, State, Emitter};
-use reqwest::Client;
+use tauri::{AppHandle, Emitter, Manager, State};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BackendStatus {
@@ -70,8 +70,11 @@ pub struct BackendRuntimeManager {
 impl BackendRuntimeManager {
     pub fn new() -> Self {
         let config = load_config_file();
-        let log_path = config.log_path.clone().unwrap_or_else(|| get_default_log_path().to_string_lossy().to_string());
-        
+        let log_path = config
+            .log_path
+            .clone()
+            .unwrap_or_else(|| get_default_log_path().to_string_lossy().to_string());
+
         let status = BackendStatus {
             state: "stopped".to_string(),
             pid: None,
@@ -124,8 +127,12 @@ fn log_supervisor_event(msg: &str) {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    
-    if let Ok(mut file) = fs::OpenOptions::new().create(true).append(true).open(log_path) {
+
+    if let Ok(mut file) = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_path)
+    {
         let _ = writeln!(file, "[{}] {}", now, msg);
     }
 }
@@ -194,7 +201,7 @@ pub fn start_heartbeat_loop(app_handle: AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(5)).await;
-            
+
             let manager = match app_handle.try_state::<BackendRuntimeManager>() {
                 Some(m) => m,
                 None => continue,
@@ -210,7 +217,8 @@ pub fn start_heartbeat_loop(app_handle: AppHandle) {
                 guard.state.clone()
             };
 
-            if current_state == "ready" || current_state == "running" || current_state == "degraded" {
+            if current_state == "ready" || current_state == "running" || current_state == "degraded"
+            {
                 // Perform heartbeat checks
                 let _ = check_health_and_update(&app_handle, &manager, &config).await;
             }
@@ -258,10 +266,16 @@ pub async fn check_health_and_update(
                 if let Ok(health_data) = resp.json::<CamelidHealth>().await {
                     status.model_loaded = health_data.loaded_now;
                     status.active_model = health_data.active_model_id;
-                    if let Some(v) = health_data.version { status.version = Some(v); }
-                    if let Some(u) = health_data.uptime { status.uptime_seconds = Some(u); }
-                    if let Some(p) = health_data.pid { status.pid = Some(p); }
-                    
+                    if let Some(v) = health_data.version {
+                        status.version = Some(v);
+                    }
+                    if let Some(u) = health_data.uptime {
+                        status.uptime_seconds = Some(u);
+                    }
+                    if let Some(p) = health_data.pid {
+                        status.pid = Some(p);
+                    }
+
                     if let Some(ref st) = health_data.state {
                         if st == "running" && status.model_loaded {
                             status.state = "ready".to_string();
@@ -283,7 +297,9 @@ pub async fn check_health_and_update(
                 if status.state == "ready" {
                     status.state = "degraded".to_string();
                     status.last_error = Some("Health check returned failure code".to_string());
-                    log_supervisor_event("Backend health check failed: status not success. Degraded state.");
+                    log_supervisor_event(
+                        "Backend health check failed: status not success. Degraded state.",
+                    );
                 } else {
                     handle_crash_or_failure(app_handle, manager, config, &mut status);
                 }
@@ -293,7 +309,10 @@ pub async fn check_health_and_update(
             if status.state == "ready" || status.state == "degraded" {
                 status.state = "crashed".to_string();
                 status.last_error = Some(format!("Network health request failed: {}", e));
-                log_supervisor_event(&format!("Backend health request failed: {}. Crashed state.", e));
+                log_supervisor_event(&format!(
+                    "Backend health request failed: {}. Crashed state.",
+                    e
+                ));
                 handle_crash_or_failure(app_handle, manager, config, &mut status);
             }
         }
@@ -312,7 +331,9 @@ fn handle_crash_or_failure(
 ) {
     if !config.auto_restart_on_crash {
         status.state = "failed".to_string();
-        log_supervisor_event("Backend crash detected. Auto-restart disabled. Transitioning to failed state.");
+        log_supervisor_event(
+            "Backend crash detected. Auto-restart disabled. Transitioning to failed state.",
+        );
         return;
     }
 
@@ -333,7 +354,9 @@ fn handle_crash_or_failure(
     if crashes.len() > config.max_restarts as usize {
         status.state = "failed".to_string();
         status.last_error = Some("Infinite crash loop blocked. Failed state.".to_string());
-        log_supervisor_event("Infinite crash loop blocked. Max restarts threshold reached. Stopped auto-restarts.");
+        log_supervisor_event(
+            "Infinite crash loop blocked. Max restarts threshold reached. Stopped auto-restarts.",
+        );
         let _ = app_handle.emit("backend_failed", &status);
         return;
     }
@@ -342,7 +365,10 @@ fn handle_crash_or_failure(
     status.state = "restarting".to_string();
     status.restart_count += 1;
     let restart_count = status.restart_count;
-    log_supervisor_event(&format!("Triggering auto-restart sequence. Restart count: {}", restart_count));
+    log_supervisor_event(&format!(
+        "Triggering auto-restart sequence. Restart count: {}",
+        restart_count
+    ));
 
     let handle_clone = app_handle.clone();
     let policy = config.restart_backoff_policy.clone();
@@ -352,7 +378,7 @@ fn handle_crash_or_failure(
             "exponential" => Duration::from_secs(2u64.pow(std::cmp::min(restart_count, 4))),
             _ => Duration::from_secs(2 * restart_count as u64),
         };
-        
+
         tokio::time::sleep(delay).await;
         let _ = perform_backend_start(&handle_clone, None).await;
     });
@@ -406,7 +432,9 @@ async fn perform_backend_start(
         // Port is occupied. Verify if it's our own Camelid daemon
         if let Ok(resp) = client.get(&check_url).send().await {
             if resp.status().is_success() {
-                log_supervisor_event("Healthy backend found on configured port. Attaching to existing process.");
+                log_supervisor_event(
+                    "Healthy backend found on configured port. Attaching to existing process.",
+                );
                 let mut status = manager.status.lock().unwrap();
                 status.state = "ready".to_string();
                 status.pid = None;
@@ -415,10 +443,12 @@ async fn perform_backend_start(
                 return Ok(status.clone());
             }
         }
-        
+
         let mut status = manager.status.lock().unwrap();
         status.state = "failed".to_string();
-        status.last_error = Some("Port conflict: Expected port already occupied by another application".to_string());
+        status.last_error = Some(
+            "Port conflict: Expected port already occupied by another application".to_string(),
+        );
         let _ = app_handle.emit("backend_status_changed", &*status);
         return Err("Port already occupied".to_string());
     }
@@ -446,11 +476,16 @@ async fn perform_backend_start(
     let model_path = models_dir.join(&model_name);
 
     // 4b. Pre-flight check: Is the daemon already running from a previous orphaned session?
-    let pre_client = Client::builder().timeout(Duration::from_millis(500)).build().unwrap_or_default();
+    let pre_client = Client::builder()
+        .timeout(Duration::from_millis(500))
+        .build()
+        .unwrap_or_default();
     let pre_url = format!("http://{}:{}/health", config.bind_address, config.port);
     if let Ok(resp) = pre_client.get(&pre_url).send().await {
         if resp.status().is_success() {
-            log_supervisor_event("Orphaned GGUF local daemon detected already running. Adopting existing process.");
+            log_supervisor_event(
+                "Orphaned GGUF local daemon detected already running. Adopting existing process.",
+            );
             let mut status = manager.status.lock().unwrap();
             status.state = "ready".to_string();
             status.pid = Some(0); // Adopted, PID unknown
@@ -466,7 +501,10 @@ async fn perform_backend_start(
         config.bind_address, config.port, exec_path
     ));
 
-    let log_file_path = config.log_path.clone().unwrap_or_else(|| get_default_log_path().to_string_lossy().to_string());
+    let log_file_path = config
+        .log_path
+        .clone()
+        .unwrap_or_else(|| get_default_log_path().to_string_lossy().to_string());
     let log_file = fs::OpenOptions::new()
         .create(true)
         .write(true)
@@ -535,11 +573,15 @@ async fn perform_backend_start(
                     let mut child_guard = manager.child.lock().unwrap();
                     if let Some(ref mut c) = *child_guard {
                         if let Ok(Some(exit_status)) = c.try_wait() {
-                            log_supervisor_event(&format!("Inference engine process exited early with status: {}", exit_status));
+                            log_supervisor_event(&format!(
+                                "Inference engine process exited early with status: {}",
+                                exit_status
+                            ));
                             *child_guard = None;
                             let mut status = manager.status.lock().unwrap();
                             status.state = "failed".to_string();
-                            status.last_error = Some(format!("Process exited early: {}", exit_status));
+                            status.last_error =
+                                Some(format!("Process exited early: {}", exit_status));
                             let _ = app_handle.emit("backend_status_changed", &*status);
                             return Err("Process exited early".to_string());
                         }
@@ -574,7 +616,9 @@ async fn perform_backend_start(
 // --- TAURI FRONTEND EXPOSED COMMANDS ---
 
 #[tauri::command]
-pub async fn get_backend_status(state: State<'_, BackendRuntimeManager>) -> Result<BackendStatus, String> {
+pub async fn get_backend_status(
+    state: State<'_, BackendRuntimeManager>,
+) -> Result<BackendStatus, String> {
     let guard = state.status.lock().map_err(|e| e.to_string())?;
     Ok(guard.clone())
 }
@@ -582,7 +626,7 @@ pub async fn get_backend_status(state: State<'_, BackendRuntimeManager>) -> Resu
 #[tauri::command]
 pub async fn ensure_backend_running(app_handle: AppHandle) -> Result<BackendStatus, String> {
     let manager = app_handle.state::<BackendRuntimeManager>();
-    
+
     let current_state = {
         let guard = manager.status.lock().unwrap();
         guard.state.clone()
@@ -607,7 +651,10 @@ pub async fn check_backend_health(app_handle: AppHandle) -> Result<BackendStatus
 }
 
 #[tauri::command]
-pub async fn restart_backend(app_handle: AppHandle, reason: Option<String>) -> Result<BackendStatus, String> {
+pub async fn restart_backend(
+    app_handle: AppHandle,
+    reason: Option<String>,
+) -> Result<BackendStatus, String> {
     let manager = app_handle.state::<BackendRuntimeManager>();
     log_supervisor_event(&format!(
         "User or system requested backend restart. Reason: {}",
@@ -662,16 +709,22 @@ pub async fn stop_backend(app_handle: AppHandle) -> Result<BackendStatus, String
     status.pid = None;
     status.model_loaded = false;
     status.active_model = None;
-    
+
     let _ = app_handle.emit("backend_status_changed", &*status);
     Ok(status.clone())
 }
 
 #[tauri::command]
-pub async fn get_backend_logs(state: State<'_, BackendRuntimeManager>, limit: Option<usize>) -> Result<String, String> {
+pub async fn get_backend_logs(
+    state: State<'_, BackendRuntimeManager>,
+    limit: Option<usize>,
+) -> Result<String, String> {
     let log_path_str = {
         let guard = state.status.lock().unwrap();
-        guard.log_path.clone().unwrap_or_else(|| get_default_log_path().to_string_lossy().to_string())
+        guard
+            .log_path
+            .clone()
+            .unwrap_or_else(|| get_default_log_path().to_string_lossy().to_string())
     };
 
     let p = Path::new(&log_path_str);
@@ -693,10 +746,7 @@ pub async fn get_backend_logs(state: State<'_, BackendRuntimeManager>, limit: Op
 #[tauri::command]
 pub async fn open_backend_logs() -> Result<(), String> {
     let log_path = get_default_log_path();
-    let _ = Command::new("open")
-        .arg("-e")
-        .arg(log_path)
-        .spawn();
+    let _ = Command::new("open").arg("-e").arg(log_path).spawn();
     Ok(())
 }
 
@@ -715,13 +765,9 @@ pub async fn reveal_backend_binary(app_handle: tauri::AppHandle) -> Result<(), S
     };
     if let Ok(bin_path) = resolve_binary_path(&config) {
         if let Some(parent) = bin_path.parent() {
-            let _ = Command::new("open")
-                .arg(parent)
-                .spawn();
+            let _ = Command::new("open").arg(parent).spawn();
         } else {
-            let _ = Command::new("open")
-                .arg(bin_path)
-                .spawn();
+            let _ = Command::new("open").arg(bin_path).spawn();
         }
     }
     Ok(())
@@ -744,8 +790,13 @@ pub async fn save_backend_config_cmd(
     let mut status = state.status.lock().unwrap();
     status.port = Some(new_config.port);
     status.bind_address = new_config.bind_address.clone();
-    status.log_path = Some(new_config.log_path.clone().unwrap_or_else(|| get_default_log_path().to_string_lossy().to_string()));
-    
+    status.log_path = Some(
+        new_config
+            .log_path
+            .clone()
+            .unwrap_or_else(|| get_default_log_path().to_string_lossy().to_string()),
+    );
+
     let _ = app_handle.emit("backend_status_changed", &*status);
     log_supervisor_event("Backend config updated by user. Restart recommended.");
     Ok(())
@@ -768,7 +819,7 @@ pub async fn reset_backend_runtime_state(app_handle: AppHandle) -> Result<Backen
     // Clear configs and logs
     let default_config = BackendRuntimeConfig::default();
     save_config_file(&default_config);
-    
+
     {
         let mut config_guard = manager.config.lock().unwrap();
         *config_guard = default_config.clone();
@@ -794,7 +845,9 @@ pub async fn reset_backend_runtime_state(app_handle: AppHandle) -> Result<Backen
 }
 
 #[tauri::command]
-pub async fn get_backend_config(state: State<'_, BackendRuntimeManager>) -> Result<BackendRuntimeConfig, String> {
+pub async fn get_backend_config(
+    state: State<'_, BackendRuntimeManager>,
+) -> Result<BackendRuntimeConfig, String> {
     let guard = state.config.lock().map_err(|e| e.to_string())?;
     Ok(guard.clone())
 }
@@ -846,7 +899,7 @@ mod tests {
     #[test]
     fn test_health_check_transitions_and_crash_frequency() {
         let manager = BackendRuntimeManager::new();
-        
+
         {
             let status = manager.status.lock().unwrap();
             assert_eq!(status.state, "stopped");
@@ -884,6 +937,9 @@ mod tests {
         }
 
         assert_eq!(status.state, "failed");
-        assert_eq!(status.last_error.as_deref(), Some("Infinite crash loop blocked."));
+        assert_eq!(
+            status.last_error.as_deref(),
+            Some("Infinite crash loop blocked.")
+        );
     }
 }

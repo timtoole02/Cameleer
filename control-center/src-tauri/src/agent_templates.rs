@@ -1,7 +1,7 @@
+use crate::agent_registry::Agent;
+use crate::storage::DbState;
 use rusqlite::{params, OptionalExtension};
 use serde::{Deserialize, Serialize};
-use crate::storage::DbState;
-use crate::agent_registry::Agent;
 use tauri::State;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -201,10 +201,14 @@ pub fn create_agent_from_template(
         .as_micros();
     let agent_id = format!("agent-{}-{}", template.key, now_micros);
 
-    let primary_skills_str = serde_json::to_string(&template.primary_skills).unwrap_or_else(|_| "[]".to_string());
-    let allowed_tools_str = serde_json::to_string(&template.allowed_tools).unwrap_or_else(|_| "[]".to_string());
-    let file_access_scope_str = serde_json::to_string(&template.file_access_scope).unwrap_or_else(|_| "[]".to_string());
-    let command_permissions_str = serde_json::to_string(&template.command_permissions).unwrap_or_else(|_| "[]".to_string());
+    let primary_skills_str =
+        serde_json::to_string(&template.primary_skills).unwrap_or_else(|_| "[]".to_string());
+    let allowed_tools_str =
+        serde_json::to_string(&template.allowed_tools).unwrap_or_else(|_| "[]".to_string());
+    let file_access_scope_str =
+        serde_json::to_string(&template.file_access_scope).unwrap_or_else(|_| "[]".to_string());
+    let command_permissions_str =
+        serde_json::to_string(&template.command_permissions).unwrap_or_else(|_| "[]".to_string());
 
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     conn.execute(
@@ -269,10 +273,7 @@ pub fn create_software_team(
 }
 
 #[tauri::command]
-pub fn create_coding_sprint(
-    state: State<'_, DbState>,
-    workspace_id: String,
-) -> Result<(), String> {
+pub fn create_coding_sprint(state: State<'_, DbState>, workspace_id: String) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // Seed 5 core sprint tasks for building Tetris
@@ -326,13 +327,14 @@ pub fn create_coding_sprint(
 
     for (id, title, desc, preferred_role, priority, acceptance_criteria, related_files) in tasks {
         // Find an agent that matches this preferred role if exists
-        let assigned_agent_id: Option<String> = conn.query_row(
-            "SELECT id FROM agents WHERE role LIKE ?1 LIMIT 1",
-            [format!("%{}%", preferred_role.replace("_", " "))],
-            |row| row.get(0),
-        )
-        .optional()
-        .unwrap_or(None);
+        let assigned_agent_id: Option<String> = conn
+            .query_row(
+                "SELECT id FROM agents WHERE role LIKE ?1 LIMIT 1",
+                [format!("%{}%", preferred_role.replace("_", " "))],
+                |row| row.get(0),
+            )
+            .optional()
+            .unwrap_or(None);
 
         let agent_id_val = assigned_agent_id.unwrap_or_else(|| "".to_string());
 

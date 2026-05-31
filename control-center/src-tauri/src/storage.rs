@@ -9,12 +9,12 @@ pub struct DbState {
 pub fn get_db_path() -> PathBuf {
     let mut path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string()));
     path.push(".cameleer");
-    
+
     // Create directory if not exists
     if !path.exists() {
         fs::create_dir_all(&path).expect("Failed to create ~/.cameleer directory");
     }
-    
+
     path.push("cameleer_workspace.db");
     path
 }
@@ -28,18 +28,32 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     )?;
 
     // Migration: Check if agents has safety_profile column. If not, add it via ALTER TABLE.
-    let has_safety_profile: bool = conn.query_row(
-        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('agents') WHERE name='safety_profile')",
-        [],
-        |row| row.get(0),
-    ).unwrap_or(false);
+    let has_safety_profile: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM pragma_table_info('agents') WHERE name='safety_profile')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
 
     if !has_safety_profile {
-        let _ = conn.execute("ALTER TABLE agents ADD COLUMN kanban_permissions TEXT DEFAULT 'full'", []);
-        let _ = conn.execute("ALTER TABLE agents ADD COLUMN review_requirements INTEGER DEFAULT 0", []);
-        let _ = conn.execute("ALTER TABLE agents ADD COLUMN safety_profile TEXT DEFAULT 'moderate'", []);
+        let _ = conn.execute(
+            "ALTER TABLE agents ADD COLUMN kanban_permissions TEXT DEFAULT 'full'",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE agents ADD COLUMN review_requirements INTEGER DEFAULT 0",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE agents ADD COLUMN safety_profile TEXT DEFAULT 'moderate'",
+            [],
+        );
         let _ = conn.execute("ALTER TABLE agents ADD COLUMN escalation_rules TEXT", []);
-        let _ = conn.execute("ALTER TABLE agents ADD COLUMN parent_agent_id TEXT REFERENCES agents(id)", []);
+        let _ = conn.execute(
+            "ALTER TABLE agents ADD COLUMN parent_agent_id TEXT REFERENCES agents(id)",
+            [],
+        );
     }
 
     // 1. Agents Registry
@@ -100,18 +114,20 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     )?;
 
     // Migration: Check if tasks has workspace_id column. If not, drop dependent tables and tasks to recreate.
-    let has_workspace_id: bool = conn.query_row(
-        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('tasks') WHERE name='workspace_id')",
-        [],
-        |row| row.get(0),
-    ).unwrap_or(false);
+    let has_workspace_id: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM pragma_table_info('tasks') WHERE name='workspace_id')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
 
     if !has_workspace_id {
         let _ = conn.execute("ALTER TABLE kanban_cards ADD COLUMN workspace_id TEXT", []);
     }
 
     // Epic 5 Kanban System Schema
-    
+
     // 4a. Boards
     conn.execute(
         "CREATE TABLE IF NOT EXISTS boards (
@@ -229,11 +245,13 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     )?;
 
     // 4f. Data Migration from `tasks` to `kanban_cards`
-    let tasks_exists: bool = conn.query_row(
-        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='tasks')",
-        [],
-        |row| row.get(0),
-    ).unwrap_or(false);
+    let tasks_exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='tasks')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
 
     if tasks_exists {
         // We do a soft migration of any existing tasks to kanban cards so nothing is lost
@@ -251,8 +269,9 @@ pub fn init_db(conn: &Connection) -> Result<()> {
                 dependencies, validation_status, completion_evidence, comments, activity_log
             FROM kanban_cards",
             [],
-        ).unwrap_or(0);
-        
+        )
+        .unwrap_or(0);
+
         // Let's keep `tasks` around temporarily if anything relies on it hardcoded, but we use kanban_cards
         // For Epic 5 we will slowly redirect references.
     }
@@ -626,19 +645,49 @@ pub fn init_db(conn: &Connection) -> Result<()> {
 
     if !has_project_id {
         // Add project_id and team_id to relevant tables
-        let _ = conn.execute("ALTER TABLE kanban_cards ADD COLUMN project_id TEXT REFERENCES projects(id)", []);
-        let _ = conn.execute("ALTER TABLE kanban_cards ADD COLUMN team_id TEXT REFERENCES teams(id)", []);
-        
-        let _ = conn.execute("ALTER TABLE backlog_items ADD COLUMN project_id TEXT REFERENCES projects(id)", []);
-        let _ = conn.execute("ALTER TABLE backlog_items ADD COLUMN team_id TEXT REFERENCES teams(id)", []);
+        let _ = conn.execute(
+            "ALTER TABLE kanban_cards ADD COLUMN project_id TEXT REFERENCES projects(id)",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE kanban_cards ADD COLUMN team_id TEXT REFERENCES teams(id)",
+            [],
+        );
 
-        let _ = conn.execute("ALTER TABLE messages ADD COLUMN project_id TEXT REFERENCES projects(id)", []);
-        let _ = conn.execute("ALTER TABLE messages ADD COLUMN team_id TEXT REFERENCES teams(id)", []);
-        let _ = conn.execute("ALTER TABLE messages ADD COLUMN agent_id TEXT REFERENCES agents(id)", []);
-        let _ = conn.execute("ALTER TABLE messages ADD COLUMN card_id TEXT REFERENCES kanban_cards(id)", []);
-        
-        let _ = conn.execute("ALTER TABLE artifacts ADD COLUMN project_id TEXT REFERENCES projects(id)", []);
-        let _ = conn.execute("ALTER TABLE artifacts ADD COLUMN team_id TEXT REFERENCES teams(id)", []);
+        let _ = conn.execute(
+            "ALTER TABLE backlog_items ADD COLUMN project_id TEXT REFERENCES projects(id)",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE backlog_items ADD COLUMN team_id TEXT REFERENCES teams(id)",
+            [],
+        );
+
+        let _ = conn.execute(
+            "ALTER TABLE messages ADD COLUMN project_id TEXT REFERENCES projects(id)",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE messages ADD COLUMN team_id TEXT REFERENCES teams(id)",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE messages ADD COLUMN agent_id TEXT REFERENCES agents(id)",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE messages ADD COLUMN card_id TEXT REFERENCES kanban_cards(id)",
+            [],
+        );
+
+        let _ = conn.execute(
+            "ALTER TABLE artifacts ADD COLUMN project_id TEXT REFERENCES projects(id)",
+            [],
+        );
+        let _ = conn.execute(
+            "ALTER TABLE artifacts ADD COLUMN team_id TEXT REFERENCES teams(id)",
+            [],
+        );
 
         // Migrate default organization
         // Ensure default workspace
@@ -661,12 +710,12 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             INSERT OR IGNORE INTO agent_project_memberships (id, agent_id, workspace_id, project_id, team_id, role_in_project)
             SELECT 'apm_' || id, id, 'default', 'proj_default', 'team_default', role FROM agents
         ", []).ok();
-        
+
         // Add existing workspace/project/team/agents as nodes in agent_org_nodes
         conn.execute("INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, node_type, display_name, sort_order) VALUES ('node_ws', 'default', 'workspace', 'Cameleer Workspace', 0)", []).ok();
         conn.execute("INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, project_id, parent_node_id, node_type, display_name, sort_order) VALUES ('node_proj', 'default', 'proj_default', 'node_ws', 'project', 'Default Project', 1)", []).ok();
         conn.execute("INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, project_id, team_id, parent_node_id, node_type, display_name, sort_order) VALUES ('node_team', 'default', 'proj_default', 'team_default', 'node_proj', 'team', 'Agents', 2)", []).ok();
-        
+
         conn.execute("
             INSERT OR IGNORE INTO agent_org_nodes (id, workspace_id, project_id, team_id, parent_node_id, node_type, display_name, agent_id, sort_order)
             SELECT 'node_agent_' || id, 'default', 'proj_default', 'team_default', 'node_team', 'agent', name, id, 3 FROM agents
@@ -674,14 +723,19 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     }
 
     // Epic 7 Migrations: Real Enterprise App
-    let has_parent_agent_id: bool = conn.query_row(
-        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('agents') WHERE name='parent_agent_id')",
-        [],
-        |row| row.get(0),
-    ).unwrap_or(false);
+    let has_parent_agent_id: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM pragma_table_info('agents') WHERE name='parent_agent_id')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
 
     if !has_parent_agent_id {
-        let _ = conn.execute("ALTER TABLE agents ADD COLUMN parent_agent_id TEXT REFERENCES agents(id)", []);
+        let _ = conn.execute(
+            "ALTER TABLE agents ADD COLUMN parent_agent_id TEXT REFERENCES agents(id)",
+            [],
+        );
     }
 
     // 19. Agent Contracts
@@ -975,7 +1029,9 @@ pub fn seed_default_agents(conn: &Connection) -> Result<()> {
 }
 
 fn seed_default_mission_packs(conn: &Connection) -> Result<()> {
-    let count: i64 = conn.query_row("SELECT COUNT(*) FROM custom_mission_packs", [], |row| row.get(0))?;
+    let count: i64 = conn.query_row("SELECT COUNT(*) FROM custom_mission_packs", [], |row| {
+        row.get(0)
+    })?;
     if count > 0 {
         return Ok(());
     }
@@ -1125,7 +1181,21 @@ fn seed_default_mission_packs(conn: &Connection) -> Result<()> {
     );
 
     let packs = vec![pack_1, pack_2, pack_3, pack_4, pack_5, pack_6];
-    for (id, name, desc, cat, agents, columns, cards, gates, review, permissions, editable, version) in packs {
+    for (
+        id,
+        name,
+        desc,
+        cat,
+        agents,
+        columns,
+        cards,
+        gates,
+        review,
+        permissions,
+        editable,
+        version,
+    ) in packs
+    {
         conn.execute(
             "INSERT OR REPLACE INTO custom_mission_packs (id, name, description, category, default_agents, default_columns, default_cards, default_evidence_gates, default_review_flow, default_permissions, user_editable, version)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
@@ -1137,7 +1207,11 @@ fn seed_default_mission_packs(conn: &Connection) -> Result<()> {
 }
 
 pub fn seed_default_models(conn: &Connection) -> Result<()> {
-    let count: i64 = conn.query_row("SELECT COUNT(*) FROM models WHERE provider = 'curated'", [], |row| row.get(0))?;
+    let count: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM models WHERE provider = 'curated'",
+        [],
+        |row| row.get(0),
+    )?;
     if count > 0 {
         return Ok(());
     }
@@ -1220,14 +1294,31 @@ pub fn seed_default_models(conn: &Connection) -> Result<()> {
         ),
     ];
 
-    for (id, name, prov, repo, file, arch, quant, params_cnt, size, comp, runnable, desc, filename) in default_models {
+    for (
+        id,
+        name,
+        prov,
+        repo,
+        file,
+        arch,
+        quant,
+        params_cnt,
+        size,
+        comp,
+        runnable,
+        desc,
+        filename,
+    ) in default_models
+    {
         conn.execute(
             "INSERT OR REPLACE INTO models (
                 model_id, display_name, provider, source_repo, source_file,
                 architecture, quantization, parameter_count, file_size_bytes,
                 install_status, compatibility_status, runnable_status, license
             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'not_installed', ?10, ?11, ?12)",
-            params![id, name, prov, repo, file, arch, quant, params_cnt, size, comp, runnable, desc],
+            params![
+                id, name, prov, repo, file, arch, quant, params_cnt, size, comp, runnable, desc
+            ],
         )?;
 
         // Seed model files

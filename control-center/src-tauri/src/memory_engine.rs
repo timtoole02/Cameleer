@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection, Result, OptionalExtension};
+use rusqlite::{params, Connection, OptionalExtension, Result};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
@@ -42,10 +42,13 @@ pub fn search_memories(
 ) -> Result<Vec<Memory>, String> {
     // Simple FTS or LIKE query. For now we use basic LIKE on content and context.
     let search_pattern = format!("%{}%", query);
-    
+
     // We update last_accessed_at when memories are retrieved
-    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
-    
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
     let mut stmt = conn
         .prepare(
             "SELECT id, agent_id, workspace_id, content, context, importance, created_at, last_accessed_at 
@@ -59,18 +62,21 @@ pub fn search_memories(
         .map_err(|e| e.to_string())?;
 
     let iter = stmt
-        .query_map(params![search_pattern, agent_id, workspace_id, limit as i32], |row| {
-            Ok(Memory {
-                id: row.get(0)?,
-                agent_id: row.get(1)?,
-                workspace_id: row.get(2)?,
-                content: row.get(3)?,
-                context: row.get(4)?,
-                importance: row.get(5)?,
-                created_at: row.get(6)?,
-                last_accessed_at: row.get(7)?,
-            })
-        })
+        .query_map(
+            params![search_pattern, agent_id, workspace_id, limit as i32],
+            |row| {
+                Ok(Memory {
+                    id: row.get(0)?,
+                    agent_id: row.get(1)?,
+                    workspace_id: row.get(2)?,
+                    content: row.get(3)?,
+                    context: row.get(4)?,
+                    importance: row.get(5)?,
+                    created_at: row.get(6)?,
+                    last_accessed_at: row.get(7)?,
+                })
+            },
+        )
         .map_err(|e| e.to_string())?;
 
     let mut results = Vec::new();
