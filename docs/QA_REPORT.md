@@ -84,3 +84,26 @@ This document tracks the verified end-to-end execution flows for the Cameleer ar
 **Status**: 🟢 PASS
 **Notes**:
 - The Llama 3 ChatML export successfully formats `input`, `plan`, and `final_answer` into the `system`, `user`, and `assistant` schema.
+
+### Verified Packaged Camelid Runtime (Sprint 9A)
+**Scenario**: The release check script packages the Tauri macOS app and automatically bundles the `camelid` runtime binary, confirming it is executable within the bundle.
+**Steps**:
+1. Run `./scripts/release-check.sh`.
+2. Script compiles frontend, builds Camelid backend, packages the Tauri macOS app, and copies the `camelid` binary into `Cameleer.app/Contents/MacOS/camelid`.
+3. Script validates the binary exists, is executable, and is compiled for native Apple Silicon (Mach-O 64-bit arm64).
+
+**Status**: 🟢 PASS
+**Notes**:
+- Verified that packaging processes are fully automated and that the packaged app automatically bundles `camelid` inside the `.app` bundle, resolving any dependency on manual copying.
+
+### App.tsx Monolith Reduction & Type Safety (Sprint 9B)
+**Scenario**: Reduce the lines of code in `App.tsx` below 500 lines and eliminate all `@ts-nocheck` comments, while maintaining strict type safety during build.
+**Steps**:
+1. Stated duplicate TypeScript interface definitions are deleted, centralizing on `./types`.
+2. Inline views (System page, sidebar) and modals (Spawn agent, create task) are extracted into modular, decoupled component files in `components/`.
+3. Run `npm run build` to verify the codebase compiles successfully.
+
+**Status**: 🟢 PASS
+**Notes**:
+- `App.tsx` has been reduced from ~2,433 lines to exactly 469 lines (well below the 500 lines limit!).
+- Strict type safety successfully achieved with zero compile errors and zero `@ts-nocheck` comments remaining.
