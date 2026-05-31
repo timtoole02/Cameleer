@@ -34,7 +34,7 @@ pub fn execute_tool(
                 match check_command(&state, agent_id, &task_id, cmd_str)? {
                     GuardResult::Suspended(reason) => {
                         let msg = format!("Execution Suspended pending human approval: {}", reason);
-                        save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                        save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                         return Ok(msg);
                     },
                     GuardResult::Allowed => {}
@@ -87,7 +87,7 @@ pub fn execute_tool(
                 }
                 
                 let msg = format!("Execution result:\n{}", result_text);
-                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                 
                 Ok(result_text)
             } else {
@@ -112,7 +112,7 @@ pub fn execute_tool(
 
                 if action.dry_run.unwrap_or(false) {
                     let msg = format!("Dry-run mode: Would write {} bytes to {:?}", content.len(), target_normalized);
-                    save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                    save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                     return Ok(msg);
                 }
 
@@ -121,7 +121,7 @@ pub fn execute_tool(
                 std::fs::write(&target_normalized, content).map_err(|e| format!("Failed to write file: {}", e))?;
                 
                 let msg = format!("Successfully wrote to {:?}", target_normalized);
-                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                 
                 Ok(msg)
             } else {
@@ -138,7 +138,7 @@ pub fn execute_tool(
                 ).map_err(|e| e.to_string())?;
                 
                 let msg = format!("You have claimed card {}", card_id);
-                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                 Ok(msg)
             } else {
                 Err("card_id required".to_string())
@@ -155,7 +155,7 @@ pub fn execute_tool(
                 ).map_err(|e| e.to_string())?;
                 
                 let msg = format!("Updated progress for card {}", card_id);
-                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                 Ok(msg)
             } else {
                 Err("card_id required".to_string())
@@ -176,7 +176,7 @@ pub fn execute_tool(
                 )?;
                 
                 let msg = format!("Task {} successfully handed off to {}", card_id, target_agent_id);
-                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                 Ok(msg)
             } else {
                 Err("card_id, target_agent_id, and notes required for handoff".to_string())
@@ -188,7 +188,7 @@ pub fn execute_tool(
         },
         "message.send" => {
             if let Some(content) = &action.content {
-                save_and_emit_message(app_handle, session_id, agent_id, content.clone());
+                save_and_emit_message(app_handle, session_id, agent_id, "assistant", content.clone());
                 Ok("Message sent.".to_string())
             } else {
                 Err("No content provided".to_string())
@@ -198,7 +198,7 @@ pub fn execute_tool(
             if let Some(notes) = &action.notes {
                 // Stub for task creation
                 let msg = format!("Created new task: {}", notes);
-                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                 Ok(msg)
             } else {
                 Err("No task details provided".to_string())
@@ -208,7 +208,7 @@ pub fn execute_tool(
             if let Some(cmd) = &action.command {
                 // Implement search logic here
                 let msg = format!("Searched repo for: {}", cmd);
-                save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                 Ok(msg)
             } else {
                 Err("No search query provided".to_string())
@@ -227,7 +227,7 @@ pub fn execute_tool(
                 match crate::memory_engine::save_memory(&conn, Some(agent_id.to_string()), None, content.clone(), ctx, imp) {
                     Ok(mem_id) => {
                         let msg = format!("Successfully saved memory with ID {}", mem_id);
-                        save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                        save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                         Ok(msg)
                     },
                     Err(e) => Err(format!("Failed to write memory: {}", e))
@@ -245,7 +245,7 @@ pub fn execute_tool(
                     Ok(memories) => {
                         if memories.is_empty() {
                             let msg = "No relevant memories found.".to_string();
-                            save_and_emit_message(app_handle, session_id, "system", msg.clone());
+                            save_and_emit_message(app_handle, session_id, "system", "system", msg.clone());
                             return Ok(msg);
                         }
                         
@@ -254,7 +254,7 @@ pub fn execute_tool(
                             result_text.push_str(&format!("- [{}] {}\n", mem.created_at, mem.content));
                         }
                         
-                        save_and_emit_message(app_handle, session_id, "system", result_text.clone());
+                        save_and_emit_message(app_handle, session_id, "system", "system", result_text.clone());
                         Ok(result_text)
                     },
                     Err(e) => Err(format!("Failed to search memory: {}", e))
@@ -269,14 +269,14 @@ pub fn execute_tool(
     }
 }
 
-fn save_and_emit_message(app_handle: &AppHandle, session_id: &str, sender_id: &str, content: String) {
+fn save_and_emit_message(app_handle: &AppHandle, session_id: &str, sender_id: &str, role: &str, content: String) {
     let state = app_handle.state::<DbState>();
     
     let db_msg_opt = {
         if let Ok(conn) = state.conn.lock() {
             let _ = conn.execute(
-                "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, 'system', ?2, ?3)",
-                params![session_id, sender_id, &content],
+                "INSERT INTO messages (session_id, role, sender_id, content) VALUES (?1, ?2, ?3, ?4)",
+                params![session_id, role, sender_id, &content],
             );
             let id = conn.last_insert_rowid() as i32;
             let ts: String = conn.query_row("SELECT timestamp FROM messages WHERE id = ?1", [id], |row| row.get(0)).unwrap_or_default();
@@ -284,7 +284,7 @@ fn save_and_emit_message(app_handle: &AppHandle, session_id: &str, sender_id: &s
             Some(DbMessage {
                 id: Some(id),
                 session_id: session_id.to_string(),
-                role: "system".to_string(),
+                role: role.to_string(),
                 sender_id: Some(sender_id.to_string()),
                 content: content.clone(),
                 timestamp: ts,

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import AgentChat from "./components/chat/AgentChat";
 import BacklogManager from "./components/backlog/BacklogManager";
 import KanbanBoard from "./components/board/KanbanBoard";
 import CardDrawer from "./components/board/CardDrawer";
@@ -2380,59 +2381,19 @@ function App() {
                 />
               </div>
             )}
-            {/* Messages Feed */}
-            <div className="messages-feed" style={{ flex: 1, overflowY: "auto" }}>
-              {messages.length === 0 && (
-                <div style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "40px" }}>
-                  No messages in this channel yet. Send a prompt to get started!
-                </div>
-              )}
-              {messages.map((msg, index) => (
-                <div key={index} className={`message-bubble ${msg.role}`}>
-                  <div className={`message-avatar ${msg.role}`}>
-                    {msg.role === "user" ? "U" : msg.sender_id?.charAt(0) || "A"}
-                  </div>
-                  <div className="message-content-wrapper">
-                    <div className="message-sender">
-                      {msg.role === "user" ? "You" : agents.find((a) => a.id === msg.sender_id)?.name || msg.sender_id}
-                    </div>
-                    <div className="message-content">
-                      <p style={{ whiteSpace: "pre-wrap" }}>{msg.content}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isThinking && (
-                <div className="thinking-indicator">
-                  <span>Agent is reasoning</span>
-                  <div className="dot-pulse">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                </div>
-              )}
-              <div ref={feedEndRef} />
-            </div>
-
-            {/* Chat Input */}
-            <form onSubmit={handleSendMessage} className="chat-input-area">
-              <div className="chat-input-wrapper">
-                <input
-                  className="chat-input"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder={
-                    activeTab === "global"
-                      ? "Broadcast message to the blackboard room..."
-                      : `Message @${agents.find((a) => a.id === selectedAgentId)?.name}...`
-                  }
-                />
-                <button type="submit" className="chat-send-btn">
-                  →
-                </button>
-              </div>
-            </form>
+            {/* Messages Feed and Chat Input */}
+            <AgentChat
+              activeTab={activeTab}
+              agents={agents}
+              selectedAgentId={selectedAgentId}
+              activeOrgNode={activeOrgNode}
+              messages={messages}
+              isThinking={isThinking}
+              inputText={inputText}
+              setInputText={setInputText}
+              handleSendMessage={handleSendMessage}
+              feedEndRef={feedEndRef}
+            />
           </div>
         ) : activeTab === "kanban" ? (
           /* Kanban System */

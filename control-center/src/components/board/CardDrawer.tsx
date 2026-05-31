@@ -125,24 +125,46 @@ export default function CardDrawer({ card, onClose, agents }: Props) {
         )}
 
         {activeTab === 'history' && (
-          <div>
-            <div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "var(--space-sm)", fontWeight: 600 }}>ACTIVITY LOG</div>
-            {card.activity_log ? (
-              <pre style={{ 
-                margin: 0, 
-                padding: "var(--space-md)", 
-                backgroundColor: "var(--bg-main)", 
-                borderRadius: "var(--radius-sm)", 
-                fontSize: "12px",
-                fontFamily: "var(--font-mono)",
-                whiteSpace: "pre-wrap",
-                color: "var(--text-secondary)"
-              }}>
-                {card.activity_log}
-              </pre>
-            ) : (
-              <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>No activity recorded yet.</div>
-            )}
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
+            <div>
+              <div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "var(--space-sm)", fontWeight: 600 }}>PROGRESS LOG (COMMENTS)</div>
+              {card.comments ? (
+                <div style={{ 
+                  margin: 0, 
+                  padding: "var(--space-md)", 
+                  backgroundColor: "var(--bg-main)", 
+                  borderRadius: "var(--radius-sm)", 
+                  fontSize: "13px",
+                  lineHeight: 1.5,
+                  whiteSpace: "pre-wrap",
+                  color: "var(--text-secondary)"
+                }}>
+                  {card.comments}
+                </div>
+              ) : (
+                <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>No comments recorded yet.</div>
+              )}
+            </div>
+            
+            <div>
+              <div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "var(--space-sm)", fontWeight: 600 }}>SYSTEM ACTIVITY LOG</div>
+              {card.activity_log ? (
+                <pre style={{ 
+                  margin: 0, 
+                  padding: "var(--space-md)", 
+                  backgroundColor: "var(--bg-main)", 
+                  borderRadius: "var(--radius-sm)", 
+                  fontSize: "12px",
+                  fontFamily: "var(--font-mono)",
+                  whiteSpace: "pre-wrap",
+                  color: "var(--text-secondary)"
+                }}>
+                  {card.activity_log}
+                </pre>
+              ) : (
+                <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>No system activity recorded yet.</div>
+              )}
+            </div>
           </div>
         )}
 
