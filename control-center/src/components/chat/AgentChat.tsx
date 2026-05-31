@@ -7,7 +7,7 @@ interface Agent {
 
 interface DbMessage {
   role: string;
-  sender_id?: string;
+  sender_id?: string | null;
   content: string;
 }
 
