@@ -8,6 +8,7 @@ This branch turns the Backlog to Kanban path into a validated product workflow. 
 
 - Source branch: `fix/kanban-backlog-end-to-end`
 - Accepted workflow head: `b9384db Connect backlog conversion workflow`
+- Current local handoff head: `34b9579 Document Kanban backlog PR handoff checklist`
 - Local handoff branch adds docs-only acceptance notes above `b9384db`
 - Remote source branch `fix/kanban-backlog-end-to-end`: `b9384db`
 - Remote integration branch `verify/p0-real-run`: `b1375ba`
@@ -29,6 +30,7 @@ Docs-only handoff commits above the accepted workflow head:
 
 - `1fab400` Document Kanban backlog acceptance handoff
 - `2fea45e` Clarify Kanban backlog handoff branch state
+- `34b9579` Document Kanban backlog PR handoff checklist
 
 ## Product Acceptance Covered
 
