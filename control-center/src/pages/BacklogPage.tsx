@@ -83,6 +83,19 @@ function readinessMissing(form: BacklogForm): string[] {
   return missing;
 }
 
+function readinessScore(form: BacklogForm): number {
+  const presentFields = [
+    form.title.trim(),
+    form.description.trim() || form.instructions.trim(),
+    form.type_name.trim(),
+    form.priority.trim(),
+    form.acceptance_criteria.trim(),
+    form.suggested_agent_role.trim(),
+  ].filter(Boolean).length;
+
+  return Math.round((presentFields / 6) * 100);
+}
+
 function readinessLabel(score: number): string {
   if (score >= 90) return 'Ready';
   if (score >= 70) return 'Refined';
@@ -157,6 +170,7 @@ export const BacklogPage: React.FC = () => {
 
   const selected = useMemo(() => items.find((item) => item.id === selectedId) || null, [items, selectedId]);
   const missing = readinessMissing(form);
+  const currentReadinessScore = readinessScore(form);
 
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -340,10 +354,10 @@ export const BacklogPage: React.FC = () => {
               <>
                 <div className="readiness-panel">
                   <div>
-                    <strong>{creating ? readinessLabel(0) : readinessLabel(selected?.readiness_score || 0)}</strong>
-                    <span>{creating ? '0' : selected?.readiness_score || 0}% ready</span>
+                    <strong>{readinessLabel(currentReadinessScore)}</strong>
+                    <span>{currentReadinessScore}% ready</span>
                   </div>
-                  <progress max={100} value={creating ? 0 : selected?.readiness_score || 0} />
+                  <progress max={100} value={currentReadinessScore} />
                   {missing.length > 0 ? (
                     <p>Missing: {missing.join(', ')}</p>
                   ) : (

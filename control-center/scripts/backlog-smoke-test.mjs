@@ -43,6 +43,8 @@ assertMatch('src/pages/BacklogPage.tsx', /className="backlog-drawer"/, 'Backlog 
 assertMatch('src/pages/BacklogPage.tsx', /className="readiness-panel"/, 'Backlog readiness panel must render.');
 assertMatch('src/pages/BacklogPage.tsx', /convertBacklogItemToCard/, 'Backlog conversion path must use the backend conversion API.');
 assertMatch('src/pages/BacklogPage.tsx', /readinessMissing/, 'Backlog must calculate and show missing ready fields.');
+assertMatch('src/pages/BacklogPage.tsx', /const currentReadinessScore = readinessScore\(form\)/, 'Backlog readiness score must update from unsaved form edits.');
+assertMatch('src/pages/BacklogPage.tsx', /<progress max=\{100\} value=\{currentReadinessScore\}/, 'Backlog readiness progress must use the live form score.');
 assertMatch('src/pages/BacklogPage.tsx', /acceptance_criteria/, 'Backlog must expose acceptance criteria editing.');
 assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| missing\.length > 0/, 'Ready/convert actions must be disabled when ready fields are missing.');
 
