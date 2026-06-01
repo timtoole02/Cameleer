@@ -72,6 +72,14 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             "0002_agent_contract_done_definition",
             include_str!("../migrations/0002_agent_contract_done_definition.sql"),
         ),
+        (
+            "0003_kanban_board_slice",
+            include_str!("../migrations/0003_kanban_board_slice.sql"),
+        ),
+        (
+            "0004_backlog_refinement_slice",
+            include_str!("../migrations/0004_backlog_refinement_slice.sql"),
+        ),
     ];
 
     for (i, (name, sql)) in migrations.iter().enumerate() {
@@ -84,6 +92,10 @@ pub fn init_db(conn: &Connection) -> Result<()> {
                     "[MIGRATION] mission_agent_contracts.done_definition already exists; recording migration {}",
                     version
                 );
+            } else if version == 3 {
+                apply_kanban_board_slice_migration(conn)?;
+            } else if version == 4 {
+                apply_backlog_refinement_slice_migration(conn)?;
             } else {
                 conn.execute_batch(sql)?;
             }
@@ -94,6 +106,135 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         }
     }
 
+    Ok(())
+}
+
+fn apply_kanban_board_slice_migration(conn: &Connection) -> Result<()> {
+    if !table_exists(conn, "kanban_cards")? {
+        conn.execute_batch(include_str!("../migrations/0001_initial_schema.sql"))?;
+    }
+
+    add_column_if_missing(conn, "kanban_cards", "task_key", "TEXT")?;
+    add_column_if_missing(conn, "kanban_cards", "instructions", "TEXT")?;
+    add_column_if_missing(conn, "kanban_cards", "blocked_reason", "TEXT")?;
+
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS task_activity (
+            id TEXT PRIMARY KEY,
+            task_id TEXT NOT NULL REFERENCES kanban_cards(id) ON DELETE CASCADE,
+            actor_id TEXT,
+            actor_type TEXT NOT NULL DEFAULT 'system',
+            event_type TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            details TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS task_progress_updates (
+            id TEXT PRIMARY KEY,
+            task_id TEXT NOT NULL REFERENCES kanban_cards(id) ON DELETE CASCADE,
+            run_id TEXT REFERENCES agent_runs(id) ON DELETE SET NULL,
+            agent_id TEXT REFERENCES agents(id),
+            content TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'sent',
+            error_message TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS task_work_receipts (
+            id TEXT PRIMARY KEY,
+            task_id TEXT NOT NULL REFERENCES kanban_cards(id) ON DELETE CASCADE,
+            agent_id TEXT REFERENCES agents(id),
+            summary TEXT NOT NULL,
+            instructions_followed TEXT,
+            acceptance_criteria_results TEXT,
+            files_created TEXT,
+            files_modified TEXT,
+            commands_run TEXT,
+            tests_run TEXT,
+            validation_status TEXT NOT NULL,
+            evidence_links TEXT,
+            known_limitations TEXT,
+            follow_up_recommendations TEXT,
+            completed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        UPDATE model_configs
+        SET model_name = 'Llama 3.2 1B Instruct',
+            endpoint_url = COALESCE(endpoint_url, 'http://127.0.0.1:8181/v1/chat/completions'),
+            is_default = 1
+        WHERE provider = 'camelid' AND (model_name = 'camelid-default' OR is_default = 1);
+
+        UPDATE agents
+        SET model_name = CASE
+                WHEN model_provider = 'camelid' AND model_name = 'camelid-default'
+                THEN 'Llama 3.2 1B Instruct'
+                ELSE model_name
+            END;",
+    )?;
+
+    Ok(())
+}
+
+fn apply_backlog_refinement_slice_migration(conn: &Connection) -> Result<()> {
+    if !table_exists(conn, "backlog_items")? {
+        conn.execute_batch(include_str!("../migrations/0001_initial_schema.sql"))?;
+    }
+
+    add_column_if_missing(conn, "backlog_items", "instructions", "TEXT")?;
+    add_column_if_missing(conn, "backlog_items", "suggested_agent_role", "TEXT")?;
+    add_column_if_missing(conn, "backlog_items", "converted_card_id", "TEXT")?;
+    add_column_if_missing(conn, "backlog_items", "archived_at", "TEXT")?;
+    add_column_if_missing(conn, "backlog_items", "rejected_reason", "TEXT")?;
+
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS backlog_acceptance_criteria (
+            id TEXT PRIMARY KEY,
+            backlog_item_id TEXT NOT NULL REFERENCES backlog_items(id) ON DELETE CASCADE,
+            text TEXT NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS backlog_activity (
+            id TEXT PRIMARY KEY,
+            backlog_item_id TEXT NOT NULL REFERENCES backlog_items(id) ON DELETE CASCADE,
+            actor_id TEXT,
+            actor_type TEXT NOT NULL DEFAULT 'system',
+            event_type TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            details TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        UPDATE backlog_items
+        SET status = CASE
+            WHEN status = 'backlog' THEN 'captured'
+            WHEN status = 'ready_for_board' THEN 'converted'
+            ELSE status
+        END;
+
+        UPDATE backlog_items
+        SET suggested_agent_role = proposed_agent_role
+        WHERE suggested_agent_role IS NULL AND proposed_agent_role IS NOT NULL;",
+    )?;
+
+    Ok(())
+}
+
+fn add_column_if_missing(
+    conn: &Connection,
+    table: &str,
+    column: &str,
+    definition: &str,
+) -> Result<()> {
+    if !table_has_column(conn, table, column)? {
+        conn.execute_batch(&format!(
+            "ALTER TABLE {} ADD COLUMN {} {};",
+            table, column, definition
+        ))?;
+    }
     Ok(())
 }
 
@@ -130,8 +271,8 @@ mod tests {
                 row.get(0)
             })
             .unwrap();
-        assert_eq!(schema_version, 2);
-        assert_eq!(migration_count(&conn), 2);
+        assert_eq!(schema_version, 4);
+        assert_eq!(migration_count(&conn), 4);
     }
 
     #[test]
@@ -140,7 +281,7 @@ mod tests {
         init_db(&conn).unwrap();
         init_db(&conn).unwrap();
 
-        assert_eq!(migration_count(&conn), 2);
+        assert_eq!(migration_count(&conn), 4);
         assert!(table_has_column(&conn, "mission_agent_contracts", "done_definition").unwrap());
     }
 
@@ -174,7 +315,311 @@ mod tests {
             table_has_column(&conn, "mission_agent_contracts", "done_definition").unwrap(),
             "migration 0002 must add done_definition to existing v1 databases"
         );
-        assert_eq!(migration_count(&conn), 2);
+        assert_eq!(migration_count(&conn), 4);
+    }
+
+    #[test]
+    fn kanban_schema_has_receipt_backed_work_fields() {
+        let conn = Connection::open_in_memory().unwrap();
+        init_db(&conn).unwrap();
+
+        assert!(table_has_column(&conn, "kanban_cards", "task_key").unwrap());
+        assert!(table_has_column(&conn, "kanban_cards", "instructions").unwrap());
+        assert!(table_has_column(&conn, "kanban_cards", "blocked_reason").unwrap());
+        conn.query_row("SELECT COUNT(*) FROM task_activity", [], |row| {
+            row.get::<_, i64>(0)
+        })
+        .unwrap();
+        conn.query_row("SELECT COUNT(*) FROM task_work_receipts", [], |row| {
+            row.get::<_, i64>(0)
+        })
+        .unwrap();
+    }
+
+    #[test]
+    fn backlog_schema_has_refinement_fields() {
+        let conn = Connection::open_in_memory().unwrap();
+        init_db(&conn).unwrap();
+
+        assert!(table_has_column(&conn, "backlog_items", "instructions").unwrap());
+        assert!(table_has_column(&conn, "backlog_items", "suggested_agent_role").unwrap());
+        assert!(table_has_column(&conn, "backlog_items", "converted_card_id").unwrap());
+        assert!(table_has_column(&conn, "backlog_items", "archived_at").unwrap());
+        assert!(table_has_column(&conn, "backlog_items", "rejected_reason").unwrap());
+        conn.query_row("SELECT COUNT(*) FROM backlog_activity", [], |row| {
+            row.get::<_, i64>(0)
+        })
+        .unwrap();
+        conn.query_row(
+            "SELECT COUNT(*) FROM backlog_acceptance_criteria",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .unwrap();
+    }
+
+    fn setup_kanban_test_db() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        init_db(&conn).unwrap();
+        conn.execute(
+            "INSERT INTO workspaces (id, name, path, active)
+             VALUES ('default-workspace', 'Default Workspace', '/tmp/cameleer-test', 1)",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO agents (id, name, role, persona, model_provider, model_name)
+             VALUES ('agent-backend', 'Backend Debugger', 'Senior Rust backend engineer', 'Debug backend issues clearly.', 'camelid', 'Llama 3.2 1B Instruct')",
+            [],
+        )
+        .unwrap();
+        conn
+    }
+
+    fn insert_test_task(conn: &Connection) {
+        conn.execute(
+            "INSERT INTO kanban_cards (
+                id, task_key, workspace_id, title, description, instructions, status, priority, type,
+                assigned_agent_id, acceptance_criteria, validation_status
+             )
+             VALUES (
+                'task-1', 'CAM-1', 'default-workspace', 'Fix health badge honesty', 'Make status truthful',
+                'Investigate health badge routing and add a regression.', 'backlog', 'high', 'bug',
+                'agent-backend', '[\"DB status is separate\", \"Camelid status is separate\"]', 'not_started'
+             )",
+            [],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn create_task_persists() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+
+        let title: String = conn
+            .query_row(
+                "SELECT title FROM kanban_cards WHERE id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(title, "Fix health badge honesty");
+    }
+
+    #[test]
+    fn update_task_instructions_persists() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "UPDATE kanban_cards SET instructions = 'Updated instructions' WHERE id = 'task-1'",
+            [],
+        )
+        .unwrap();
+
+        let instructions: String = conn
+            .query_row(
+                "SELECT instructions FROM kanban_cards WHERE id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(instructions, "Updated instructions");
+    }
+
+    #[test]
+    fn assign_task_to_agent_persists() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "UPDATE kanban_cards SET assigned_agent_id = 'agent-backend' WHERE id = 'task-1'",
+            [],
+        )
+        .unwrap();
+
+        let agent_id: String = conn
+            .query_row(
+                "SELECT assigned_agent_id FROM kanban_cards WHERE id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(agent_id, "agent-backend");
+    }
+
+    #[test]
+    fn move_task_persists() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "UPDATE kanban_cards SET status = 'ready' WHERE id = 'task-1'",
+            [],
+        )
+        .unwrap();
+
+        let status: String = conn
+            .query_row(
+                "SELECT status FROM kanban_cards WHERE id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(status, "ready");
+    }
+
+    #[test]
+    fn start_agent_task_creates_run() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "INSERT INTO agent_runs (id, agent_id, task_id, state, input)
+             VALUES ('run-1', 'agent-backend', 'task-1', 'executing', 'Prompt')",
+            [],
+        )
+        .unwrap();
+
+        let state: String = conn
+            .query_row(
+                "SELECT state FROM agent_runs WHERE id = 'run-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(state, "executing");
+    }
+
+    #[test]
+    fn agent_task_response_creates_progress_update() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "INSERT INTO task_progress_updates (id, task_id, agent_id, content, status)
+             VALUES ('progress-1', 'task-1', 'agent-backend', 'Investigated health routing.', 'sent')",
+            [],
+        )
+        .unwrap();
+
+        let content: String = conn
+            .query_row(
+                "SELECT content FROM task_progress_updates WHERE id = 'progress-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert!(content.contains("Investigated"));
+    }
+
+    #[test]
+    fn generate_work_receipt_persists() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "INSERT INTO task_work_receipts (
+                id, task_id, agent_id, summary, instructions_followed, acceptance_criteria_results,
+                files_created, files_modified, commands_run, tests_run, validation_status
+             )
+             VALUES ('receipt-1', 'task-1', 'agent-backend', 'Fixed status routing.', 'Followed task instructions.', '[]', '[]', '[]', '[]', '[]', 'needs_review')",
+            [],
+        )
+        .unwrap();
+
+        let summary: String = conn
+            .query_row(
+                "SELECT summary FROM task_work_receipts WHERE id = 'receipt-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(summary, "Fixed status routing.");
+    }
+
+    #[test]
+    fn cannot_complete_task_without_receipt() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+
+        let receipt_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM task_work_receipts WHERE task_id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(receipt_count, 0);
+    }
+
+    #[test]
+    fn complete_task_moves_to_done() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "INSERT INTO task_work_receipts (id, task_id, summary, validation_status)
+             VALUES ('receipt-1', 'task-1', 'Receipt approved.', 'passed')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "UPDATE kanban_cards SET status = 'done', work_receipt_id = 'receipt-1' WHERE id = 'task-1'",
+            [],
+        )
+        .unwrap();
+
+        let (status, receipt_id): (String, String) = conn
+            .query_row(
+                "SELECT status, work_receipt_id FROM kanban_cards WHERE id = 'task-1'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(status, "done");
+        assert_eq!(receipt_id, "receipt-1");
+    }
+
+    #[test]
+    fn reopen_task_preserves_receipt_history() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "INSERT INTO task_work_receipts (id, task_id, summary, validation_status)
+             VALUES ('receipt-1', 'task-1', 'Receipt approved.', 'passed')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "UPDATE kanban_cards SET status = 'ready', reopen_reason = 'Needs another pass' WHERE id = 'task-1'",
+            [],
+        )
+        .unwrap();
+
+        let receipt_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM task_work_receipts WHERE task_id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(receipt_count, 1);
+    }
+
+    #[test]
+    fn task_activity_is_recorded() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "INSERT INTO task_activity (id, task_id, actor_type, event_type, summary)
+             VALUES ('activity-1', 'task-1', 'user', 'task_created', 'Task created')",
+            [],
+        )
+        .unwrap();
+
+        let summary: String = conn
+            .query_row(
+                "SELECT summary FROM task_activity WHERE id = 'activity-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(summary, "Task created");
     }
 }
 
@@ -188,6 +633,14 @@ pub fn table_has_column(conn: &Connection, table: &str, column: &str) -> Result<
         }
     }
     Ok(false)
+}
+
+pub fn table_exists(conn: &Connection, table: &str) -> Result<bool> {
+    conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?1)",
+        [table],
+        |row| row.get(0),
+    )
 }
 pub fn seed_default_agents(conn: &Connection) -> Result<()> {
     let defaults = vec![

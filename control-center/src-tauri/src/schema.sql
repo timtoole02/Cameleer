@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS backlog_items (
     backlog_id TEXT REFERENCES backlogs(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     description TEXT,
+    instructions TEXT,
     type TEXT DEFAULT 'feature',
     priority TEXT DEFAULT 'medium',
     rank INTEGER DEFAULT 0,
@@ -112,6 +113,7 @@ CREATE TABLE IF NOT EXISTS backlog_items (
     owner_agent_id TEXT REFERENCES agents(id),
     owner_human_id TEXT,
     proposed_agent_role TEXT,
+    suggested_agent_role TEXT,
     acceptance_criteria TEXT,
     definition_of_done TEXT,
     required_files TEXT,
@@ -120,8 +122,31 @@ CREATE TABLE IF NOT EXISTS backlog_items (
     risk_level TEXT DEFAULT 'low',
     effort_estimate TEXT,
     readiness_score INTEGER DEFAULT 0,
+    converted_card_id TEXT,
+    archived_at TEXT,
+    rejected_reason TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS backlog_acceptance_criteria (
+    id TEXT PRIMARY KEY,
+    backlog_item_id TEXT NOT NULL REFERENCES backlog_items(id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS backlog_activity (
+    id TEXT PRIMARY KEY,
+    backlog_item_id TEXT NOT NULL REFERENCES backlog_items(id) ON DELETE CASCADE,
+    actor_id TEXT,
+    actor_type TEXT NOT NULL DEFAULT 'system',
+    event_type TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    details TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 5e. Kanban Cards
@@ -133,8 +158,10 @@ CREATE TABLE IF NOT EXISTS kanban_cards (
     board_id TEXT REFERENCES boards(id),
     backlog_id TEXT REFERENCES backlogs(id),
     parent_id TEXT REFERENCES kanban_cards(id),
+    task_key TEXT,
     title TEXT NOT NULL,
     description TEXT,
+    instructions TEXT,
     type TEXT DEFAULT 'feature',
     status TEXT DEFAULT 'ready',
     priority TEXT DEFAULT 'medium',
@@ -159,6 +186,7 @@ CREATE TABLE IF NOT EXISTS kanban_cards (
     related_artifacts TEXT,
     dependencies TEXT,
     blocked_by TEXT,
+    blocked_reason TEXT,
     blocking TEXT,
     comments TEXT,
     activity_log TEXT,
@@ -170,6 +198,28 @@ CREATE TABLE IF NOT EXISTS kanban_cards (
     review_required INTEGER DEFAULT 0,
     approval_required INTEGER DEFAULT 0,
     reopen_reason TEXT
+);
+
+CREATE TABLE IF NOT EXISTS task_activity (
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL REFERENCES kanban_cards(id) ON DELETE CASCADE,
+    actor_id TEXT,
+    actor_type TEXT NOT NULL DEFAULT 'system',
+    event_type TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    details TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS task_progress_updates (
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL REFERENCES kanban_cards(id) ON DELETE CASCADE,
+    run_id TEXT REFERENCES agent_runs(id) ON DELETE SET NULL,
+    agent_id TEXT REFERENCES agents(id),
+    content TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'sent',
+    error_message TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 5f. Task Blockers Mapping
@@ -508,6 +558,24 @@ CREATE TABLE IF NOT EXISTS mission_work_receipts (
     card_id TEXT PRIMARY KEY REFERENCES kanban_cards(id) ON DELETE CASCADE,
     agent_id TEXT REFERENCES agents(id),
     summary TEXT NOT NULL,
+    files_created TEXT,
+    files_modified TEXT,
+    commands_run TEXT,
+    tests_run TEXT,
+    validation_status TEXT NOT NULL,
+    evidence_links TEXT,
+    known_limitations TEXT,
+    follow_up_recommendations TEXT,
+    completed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS task_work_receipts (
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL REFERENCES kanban_cards(id) ON DELETE CASCADE,
+    agent_id TEXT REFERENCES agents(id),
+    summary TEXT NOT NULL,
+    instructions_followed TEXT,
+    acceptance_criteria_results TEXT,
     files_created TEXT,
     files_modified TEXT,
     commands_run TEXT,

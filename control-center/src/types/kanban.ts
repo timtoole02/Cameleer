@@ -6,6 +6,7 @@ export interface BacklogItem {
   backlog_id?: string | null;
   title: string;
   description?: string | null;
+  instructions?: string | null;
   type_name: string;
   priority: string;
   rank: number;
@@ -15,6 +16,7 @@ export interface BacklogItem {
   owner_agent_id?: string | null;
   owner_human_id?: string | null;
   proposed_agent_role?: string | null;
+  suggested_agent_role?: string | null;
   acceptance_criteria?: string | null;
   definition_of_done?: string | null;
   required_files?: string | null;
@@ -23,8 +25,47 @@ export interface BacklogItem {
   risk_level: string;
   effort_estimate?: string | null;
   readiness_score: number;
+  converted_card_id?: string | null;
+  archived_at?: string | null;
+  rejected_reason?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface CreateBacklogItemInput {
+  workspace_id?: string | null;
+  project_id?: string | null;
+  title: string;
+  description?: string | null;
+  instructions?: string | null;
+  type_name?: string | null;
+  priority?: string | null;
+  risk_level?: string | null;
+  labels?: string | null;
+  owner_agent_id?: string | null;
+  suggested_agent_role?: string | null;
+  acceptance_criteria?: string | null;
+  definition_of_done?: string | null;
+  dependencies?: string | null;
+  effort_estimate?: string | null;
+}
+
+export interface UpdateBacklogItemInput {
+  title?: string | null;
+  description?: string | null;
+  instructions?: string | null;
+  type_name?: string | null;
+  priority?: string | null;
+  status?: string | null;
+  labels?: string | null;
+  risk_level?: string | null;
+  effort_estimate?: string | null;
+  owner_agent_id?: string | null;
+  suggested_agent_role?: string | null;
+  acceptance_criteria?: string | null;
+  definition_of_done?: string | null;
+  dependencies?: string | null;
+  rejected_reason?: string | null;
 }
 
 export interface KanbanCard {

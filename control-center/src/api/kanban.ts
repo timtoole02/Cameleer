@@ -1,6 +1,20 @@
 import { apiCall } from "./client";
 import { KanbanCard } from "../types";
 
+export interface BoardColumn {
+  id: string;
+  board_id: string;
+  name: string;
+  status_mapping: string;
+  rank: number;
+  wip_limit?: number | null;
+  created_at: string;
+}
+
+export async function listBoardColumns(workspaceId: string): Promise<BoardColumn[]> {
+  return apiCall<BoardColumn[]>("list_board_columns", { workspaceId });
+}
+
 export async function getBoardSnapshot(workspaceId: string, projectId?: string, teamId?: string): Promise<KanbanCard[]> {
   return apiCall<KanbanCard[]>("get_board_snapshot", { workspaceId, projectId, teamId });
 }

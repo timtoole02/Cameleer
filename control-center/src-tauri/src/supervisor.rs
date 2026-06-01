@@ -32,8 +32,16 @@ pub fn spawn_camelid_daemon(
         .to_path_buf();
 
     let mut exec_path = exec_dir.join("camelid");
+    let resources_path = exec_dir
+        .parent()
+        .map(|contents_dir| contents_dir.join("Resources").join("camelid"));
 
     // Fallbacks for local development testing
+    if !exec_path.exists() {
+        if let Some(path) = resources_path.filter(|path| path.exists()) {
+            exec_path = path;
+        }
+    }
     if !exec_path.exists() {
         exec_path = PathBuf::from("./target/release/camelid");
     }

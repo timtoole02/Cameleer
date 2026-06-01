@@ -36,7 +36,7 @@ function App() {
         database_status: 'offline',
         camelid_status: 'unknown',
         schema_version: 0,
-        required_schema_version: 2,
+        required_schema_version: 3,
         database_path: '',
         active_workspace_id: null,
         active_workspace_name: null,

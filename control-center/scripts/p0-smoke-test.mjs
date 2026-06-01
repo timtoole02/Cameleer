@@ -94,6 +94,32 @@ assertMatch('src-tauri/migrations/0002_agent_contract_done_definition.sql', /ALT
 assertMatch('src-tauri/src/storage.rs', /migrations_are_idempotent/, 'Migration idempotency must be covered by Rust tests.');
 assertMatch('src-tauri/src/system_services.rs', /health_reports_schema_error_when_column_missing/, 'Schema error health regression must be covered by Rust tests.');
 
+// Kanban slice checks
+[
+  'src/components/kanban/KanbanBoard.tsx',
+  'src/components/kanban/KanbanColumn.tsx',
+  'src/components/kanban/TaskCard.tsx',
+  'src/components/kanban/TaskDetailDrawer.tsx',
+  'src/components/kanban/CreateTaskModal.tsx',
+  'src/components/kanban/AcceptanceCriteriaEditor.tsx',
+  'src/components/kanban/AgentAssignmentSelect.tsx',
+  'src/components/kanban/WorkReceiptPanel.tsx',
+  'src/api/tasks.ts',
+  'src/api/taskRuns.ts',
+  'src/types/workReceipt.ts'
+].forEach(assertExists);
+assertMatch('src/pages/KanbanPage.tsx', /startDisabledReason/, 'Kanban must render guarded Start Work disabled reasons.');
+assertMatch('src/pages/KanbanPage.tsx', /completeDisabledReason/, 'Kanban must block completion without receipt.');
+assertMatch('src/pages/KanbanPage.tsx', /CreateTaskModal/, 'Kanban must expose create task flow.');
+assertMatch('src/pages/KanbanPage.tsx', /startAgentTaskRun/, 'Kanban must start persisted agent task runs.');
+assertMatch('src/components/kanban/TaskCard.tsx', /task_key/, 'Task cards must render task keys.');
+assertMatch('src/components/kanban/TaskCard.tsx', /criteria/, 'Task cards must render acceptance criteria count.');
+assertMatch('src/components/kanban/WorkReceiptPanel.tsx', /Approve and Complete/, 'Receipt panel must expose explicit approval before Done.');
+assertMatch('src-tauri/src/task_manager.rs', /Cannot complete task without a work receipt/, 'Backend must block completion without receipt.');
+assertMatch('src-tauri/src/task_manager.rs', /start_agent_task_run/, 'Backend must expose start_agent_task_run.');
+assertMatch('src-tauri/src/task_manager.rs', /task_progress_updates/, 'Agent work must persist progress updates.');
+assertMatch('src-tauri/src/task_manager.rs', /task_work_receipts/, 'Work receipts must be persisted.');
+
 // Native-feeling sidebar checks
 assertMatch('src/components/layout/Sidebar.tsx', /borderLeft: isActive \? '4px solid var\(--sidebar-active-border/, 'Active nav must use a subtle left border.');
 assertMatch('src/components/layout/Sidebar.tsx', /background: isActive \? 'var\(--sidebar-active-bg, #1f2937\)'/, 'Active nav must use restrained dark surface.');

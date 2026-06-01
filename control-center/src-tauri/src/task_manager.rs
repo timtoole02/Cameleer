@@ -1,5 +1,7 @@
 use crate::event_bus::{emit_event, AppEvent};
+use crate::router::{call_model, ChatMessage, ModelSettings};
 use crate::storage::DbState;
+use crate::system_services::{inspect_database_health, probe_camelid};
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -8,9 +10,11 @@ use tauri::{AppHandle, State};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Task {
     pub id: String,
+    pub task_key: Option<String>,
     pub workspace_id: Option<String>,
     pub title: String,
     pub description: Option<String>,
+    pub instructions: Option<String>,
     pub owner_id: Option<String>, // Keep for backward compatibility
     pub assigned_agent_id: Option<String>,
     pub status: String,
@@ -29,6 +33,69 @@ pub struct Task {
     pub activity_log: Option<String>,
     pub validation_status: Option<String>,
     pub completion_evidence: Option<String>,
+    pub work_receipt_id: Option<String>,
+    pub labels: Option<String>,
+    pub type_name: Option<String>,
+    pub blocked_reason: Option<String>,
+    pub review_required: Option<i32>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CreateTaskInput {
+    pub workspace_id: Option<String>,
+    pub title: String,
+    pub description: Option<String>,
+    pub instructions: String,
+    pub acceptance_criteria: Option<String>,
+    pub priority: Option<String>,
+    pub type_name: Option<String>,
+    pub assigned_agent_id: Option<String>,
+    pub labels: Option<String>,
+    pub review_required: Option<bool>,
+    pub status: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TaskActivity {
+    pub id: String,
+    pub task_id: String,
+    pub actor_id: Option<String>,
+    pub actor_type: String,
+    pub event_type: String,
+    pub summary: String,
+    pub details: Option<String>,
+    pub created_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TaskProgressUpdate {
+    pub id: String,
+    pub task_id: String,
+    pub run_id: Option<String>,
+    pub agent_id: Option<String>,
+    pub content: String,
+    pub status: String,
+    pub error_message: Option<String>,
+    pub created_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WorkReceipt {
+    pub id: String,
+    pub task_id: String,
+    pub agent_id: Option<String>,
+    pub summary: String,
+    pub instructions_followed: Option<String>,
+    pub acceptance_criteria_results: Option<String>,
+    pub files_created: Option<String>,
+    pub files_modified: Option<String>,
+    pub commands_run: Option<String>,
+    pub tests_run: Option<String>,
+    pub validation_status: String,
+    pub evidence_links: Option<String>,
+    pub known_limitations: Option<String>,
+    pub follow_up_recommendations: Option<String>,
+    pub completed_at: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -64,16 +131,121 @@ fn resolve_path(path: &str) -> std::path::PathBuf {
     resolved
 }
 
+fn normalize_status(status: &str) -> String {
+    match status
+        .trim()
+        .to_lowercase()
+        .replace('-', "_")
+        .replace(' ', "_")
+        .as_str()
+    {
+        "backlog" => "backlog",
+        "ready" | "assigned" => "ready",
+        "in_progress" | "progress" => "in_progress",
+        "review" | "in_review" | "needs_review" => "review",
+        "blocked" => "blocked",
+        "done" | "complete" | "completed" => "done",
+        "cancelled" | "canceled" => "cancelled",
+        other => other,
+    }
+    .to_string()
+}
+
+fn insert_task_activity(
+    conn: &Connection,
+    task_id: &str,
+    actor_type: &str,
+    actor_id: Option<&str>,
+    event_type: &str,
+    summary: &str,
+    details: Option<serde_json::Value>,
+) -> Result<(), String> {
+    conn.execute(
+        "INSERT INTO task_activity (id, task_id, actor_id, actor_type, event_type, summary, details)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+        params![
+            uuid::Uuid::new_v4().to_string(),
+            task_id,
+            actor_id,
+            actor_type,
+            event_type,
+            summary,
+            details.map(|value| value.to_string())
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn next_task_key(conn: &Connection) -> Result<String, String> {
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM kanban_cards", [], |row| row.get(0))
+        .map_err(|e| e.to_string())?;
+    Ok(format!("CAM-{}", count + 101))
+}
+
+fn get_task_by_id(conn: &Connection, id: &str) -> Result<Task, String> {
+    conn.query_row(
+        "SELECT id, task_key, workspace_id, title, description, instructions, assigned_agent_id,
+                status, priority, created_by, created_at, updated_at, due_date,
+                acceptance_criteria, required_files, related_files, related_artifacts,
+                dependencies, blocked_by, comments, activity_log, validation_status,
+                completion_evidence, work_receipt_id, labels, type, blocked_reason, review_required
+         FROM kanban_cards WHERE id = ?1",
+        [id],
+        |row| {
+            Ok(Task {
+                id: row.get(0)?,
+                task_key: row.get(1)?,
+                workspace_id: row.get(2)?,
+                title: row.get(3)?,
+                description: row.get(4)?,
+                instructions: row.get(5)?,
+                owner_id: row.get(6)?,
+                assigned_agent_id: row.get(6)?,
+                status: row.get(7)?,
+                priority: row.get(8)?,
+                created_by: row.get(9)?,
+                created_at: row.get(10)?,
+                updated_at: row.get(11)?,
+                due_date: row.get(12)?,
+                acceptance_criteria: row.get(13)?,
+                required_files: row.get(14)?,
+                related_files: row.get(15)?,
+                related_artifacts: row.get(16)?,
+                dependencies: row.get(17)?,
+                blockers: row.get(18)?,
+                comments: row.get(19)?,
+                activity_log: row.get(20)?,
+                validation_status: row.get(21)?,
+                completion_evidence: row.get(22)?,
+                work_receipt_id: row.get(23)?,
+                labels: row.get(24)?,
+                type_name: row.get(25)?,
+                blocked_reason: row.get(26)?,
+                review_required: row.get(27)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_task(state: State<'_, DbState>, task_id: String) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    get_task_by_id(&conn, &task_id)
+}
+
 #[tauri::command]
 pub fn get_tasks(state: State<'_, DbState>) -> Result<Vec<Task>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     let mut stmt = conn
         .prepare(
-            "SELECT id, workspace_id, title, description, owner_id, assigned_agent_id, 
-                    status, priority, created_by, created_at, updated_at, due_date, 
-                    acceptance_criteria, required_files, related_files, related_artifacts, 
-                    dependencies, blockers, comments, activity_log, validation_status, 
-                    completion_evidence 
+            "SELECT id, task_key, workspace_id, title, description, instructions, assigned_agent_id,
+                    status, priority, created_by, created_at, updated_at, due_date,
+                    acceptance_criteria, required_files, related_files, related_artifacts,
+                    dependencies, blocked_by, comments, activity_log, validation_status,
+                    completion_evidence, work_receipt_id, labels, type, blocked_reason, review_required
              FROM kanban_cards",
         )
         .map_err(|e| e.to_string())?;
@@ -82,27 +254,34 @@ pub fn get_tasks(state: State<'_, DbState>) -> Result<Vec<Task>, String> {
         .query_map([], |row| {
             Ok(Task {
                 id: row.get(0)?,
-                workspace_id: row.get(1)?,
-                title: row.get(2)?,
-                description: row.get(3)?,
-                owner_id: row.get(4)?,
-                assigned_agent_id: row.get(5)?,
-                status: row.get(6)?,
-                priority: row.get(7)?,
-                created_by: row.get(8)?,
-                created_at: row.get(9)?,
-                updated_at: row.get(10)?,
-                due_date: row.get(11)?,
-                acceptance_criteria: row.get(12)?,
-                required_files: row.get(13)?,
-                related_files: row.get(14)?,
-                related_artifacts: row.get(15)?,
-                dependencies: row.get(16)?,
-                blockers: row.get(17)?,
-                comments: row.get(18)?,
-                activity_log: row.get(19)?,
-                validation_status: row.get(20)?,
-                completion_evidence: row.get(21)?,
+                task_key: row.get(1)?,
+                workspace_id: row.get(2)?,
+                title: row.get(3)?,
+                description: row.get(4)?,
+                instructions: row.get(5)?,
+                owner_id: row.get(6)?,
+                assigned_agent_id: row.get(6)?,
+                status: row.get(7)?,
+                priority: row.get(8)?,
+                created_by: row.get(9)?,
+                created_at: row.get(10)?,
+                updated_at: row.get(11)?,
+                due_date: row.get(12)?,
+                acceptance_criteria: row.get(13)?,
+                required_files: row.get(14)?,
+                related_files: row.get(15)?,
+                related_artifacts: row.get(16)?,
+                dependencies: row.get(17)?,
+                blockers: row.get(18)?,
+                comments: row.get(19)?,
+                activity_log: row.get(20)?,
+                validation_status: row.get(21)?,
+                completion_evidence: row.get(22)?,
+                work_receipt_id: row.get(23)?,
+                labels: row.get(24)?,
+                type_name: row.get(25)?,
+                blocked_reason: row.get(26)?,
+                review_required: row.get(27)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -537,6 +716,13 @@ pub fn _get_agent_work_queue_legacy(
                 activity_log: row.get(19)?,
                 validation_status: row.get(20)?,
                 completion_evidence: row.get(21)?,
+                task_key: None,
+                instructions: None,
+                work_receipt_id: None,
+                labels: None,
+                type_name: None,
+                blocked_reason: None,
+                review_required: None,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -549,7 +735,7 @@ pub fn _get_agent_work_queue_legacy(
 }
 
 #[tauri::command]
-pub fn create_task(
+pub fn create_task_legacy(
     state: State<'_, DbState>,
     app_handle: AppHandle,
     task: Task,
@@ -625,6 +811,913 @@ pub fn create_task(
     );
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn create_task(
+    state: State<'_, DbState>,
+    app_handle: AppHandle,
+    input: CreateTaskInput,
+) -> Result<Task, String> {
+    if input.title.trim().is_empty() {
+        return Err("Title is required.".to_string());
+    }
+    if input.instructions.trim().is_empty() {
+        return Err("Detailed instructions are required.".to_string());
+    }
+
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let id = uuid::Uuid::new_v4().to_string();
+    let workspace_id = input.workspace_id.unwrap_or_else(|| "default".to_string());
+    let task_key = next_task_key(&conn)?;
+    let status = normalize_status(input.status.as_deref().unwrap_or("backlog"));
+    let priority = input.priority.unwrap_or_else(|| "medium".to_string());
+    let type_name = input.type_name.unwrap_or_else(|| "task".to_string());
+    let review_required = if input.review_required.unwrap_or(true) {
+        1
+    } else {
+        0
+    };
+
+    conn.execute(
+        "INSERT INTO kanban_cards (
+            id, task_key, workspace_id, title, description, instructions, type, priority, status,
+            assigned_agent_id, acceptance_criteria, labels, review_required, created_by, validation_status
+         )
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 'human', 'not_started')",
+        params![
+            id,
+            task_key,
+            workspace_id,
+            input.title,
+            input.description,
+            input.instructions,
+            type_name,
+            priority,
+            status,
+            input.assigned_agent_id,
+            input.acceptance_criteria,
+            input.labels,
+            review_required,
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+
+    insert_task_activity(
+        &conn,
+        &id,
+        "user",
+        None,
+        "task_created",
+        "Task created",
+        None,
+    )?;
+
+    let task = get_task_by_id(&conn, &id)?;
+    emit_event(
+        &app_handle,
+        AppEvent {
+            event_type: "task_updated".to_string(),
+            agent_id: task.assigned_agent_id.clone(),
+            task_id: Some(id),
+            payload: serde_json::to_value(&task).unwrap_or(serde_json::Value::Null),
+        },
+    );
+    Ok(task)
+}
+
+#[tauri::command]
+pub fn update_task(
+    state: State<'_, DbState>,
+    task_id: String,
+    title: Option<String>,
+    description: Option<String>,
+    instructions: Option<String>,
+    acceptance_criteria: Option<String>,
+    priority: Option<String>,
+    type_name: Option<String>,
+    assigned_agent_id: Option<String>,
+    labels: Option<String>,
+    blocked_reason: Option<String>,
+    review_required: Option<bool>,
+) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+
+    if let Some(value) = title {
+        conn.execute(
+            "UPDATE kanban_cards SET title = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![value, task_id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = description {
+        conn.execute("UPDATE kanban_cards SET description = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![value, task_id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = instructions {
+        conn.execute("UPDATE kanban_cards SET instructions = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![value, task_id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = acceptance_criteria {
+        conn.execute("UPDATE kanban_cards SET acceptance_criteria = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![value, task_id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = priority {
+        conn.execute(
+            "UPDATE kanban_cards SET priority = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![value, task_id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = type_name {
+        conn.execute(
+            "UPDATE kanban_cards SET type = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![value, task_id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = assigned_agent_id {
+        conn.execute("UPDATE kanban_cards SET assigned_agent_id = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![value, task_id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = labels {
+        conn.execute(
+            "UPDATE kanban_cards SET labels = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![value, task_id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = blocked_reason {
+        conn.execute("UPDATE kanban_cards SET blocked_reason = ?1, blocked_by = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![value, task_id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(value) = review_required {
+        conn.execute("UPDATE kanban_cards SET review_required = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![if value { 1 } else { 0 }, task_id]).map_err(|e| e.to_string())?;
+    }
+
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "task_updated",
+        "Task details updated",
+        None,
+    )?;
+    get_task_by_id(&conn, &task_id)
+}
+
+#[tauri::command]
+pub fn move_task(
+    state: State<'_, DbState>,
+    task_id: String,
+    status: String,
+) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let status = normalize_status(&status);
+    if status == "done" {
+        let receipt_exists: bool = conn
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM task_work_receipts WHERE task_id = ?1)",
+                [&task_id],
+                |row| row.get(0),
+            )
+            .unwrap_or(false);
+        if !receipt_exists {
+            return Err("Cannot move task to Done without an approved work receipt.".to_string());
+        }
+    }
+    conn.execute(
+        "UPDATE kanban_cards SET status = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+        params![status, task_id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "task_moved",
+        "Task status changed",
+        None,
+    )?;
+    get_task_by_id(&conn, &task_id)
+}
+
+#[tauri::command]
+pub fn assign_task_to_agent(
+    state: State<'_, DbState>,
+    task_id: String,
+    agent_id: String,
+) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE kanban_cards SET assigned_agent_id = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+        params![agent_id, task_id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "task_assigned",
+        "Task assigned to agent",
+        None,
+    )?;
+    get_task_by_id(&conn, &task_id)
+}
+
+#[tauri::command]
+pub fn block_task(
+    state: State<'_, DbState>,
+    task_id: String,
+    reason: String,
+) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE kanban_cards SET status = 'blocked', blocked_by = ?1, blocked_reason = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+        params![reason, task_id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "task_blocked",
+        "Task blocked",
+        None,
+    )?;
+    get_task_by_id(&conn, &task_id)
+}
+
+#[tauri::command]
+pub fn unblock_task(state: State<'_, DbState>, task_id: String) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE kanban_cards SET status = 'ready', blocked_by = NULL, blocked_reason = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+        [&task_id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "task_unblocked",
+        "Task unblocked",
+        None,
+    )?;
+    get_task_by_id(&conn, &task_id)
+}
+
+#[tauri::command]
+pub fn reopen_task(
+    state: State<'_, DbState>,
+    task_id: String,
+    reason: Option<String>,
+) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE kanban_cards SET status = 'ready', reopen_reason = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+        params![reason, task_id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "task_reopened",
+        "Task reopened",
+        None,
+    )?;
+    get_task_by_id(&conn, &task_id)
+}
+
+#[tauri::command]
+pub fn cancel_task(state: State<'_, DbState>, task_id: String) -> Result<Task, String> {
+    move_task(state, task_id, "cancelled".to_string())
+}
+
+#[tauri::command]
+pub fn delete_task(state: State<'_, DbState>, task_id: String) -> Result<(), String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM kanban_cards WHERE id = ?1", [&task_id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn start_agent_task_run(
+    state: State<'_, DbState>,
+    task_id: String,
+) -> Result<AgentRun, String> {
+    let (
+        agent_id,
+        agent_name,
+        agent_persona,
+        model_provider,
+        model_name,
+        temperature,
+        max_tokens,
+        title,
+        description,
+        instructions,
+        acceptance_criteria,
+        camelid_endpoint,
+    ) = {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        let db_health = inspect_database_health(
+            &conn,
+            crate::storage::get_db_path().display().to_string(),
+            3,
+        );
+        if db_health.database_status != "ready" {
+            return Err(format!(
+                "Cannot start work: database is not ready ({})",
+                db_health.database_status
+            ));
+        }
+
+        let task: (String, Option<String>, Option<String>, String, Option<String>, Option<String>) = conn
+            .query_row(
+                "SELECT title, description, instructions, status, assigned_agent_id, acceptance_criteria
+                 FROM kanban_cards WHERE id = ?1",
+                [&task_id],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?)),
+            )
+            .map_err(|_| "Cannot start work: task not found.".to_string())?;
+
+        let assigned_agent_id = task
+            .4
+            .clone()
+            .filter(|value| !value.trim().is_empty())
+            .ok_or_else(|| "Cannot start work: task has no assigned agent.".to_string())?;
+
+        let task_instructions = task
+            .2
+            .clone()
+            .filter(|value| !value.trim().is_empty())
+            .ok_or_else(|| "Cannot start work: detailed instructions are required.".to_string())?;
+
+        let agent: (String, String, String, String, f64, i32) = conn
+            .query_row(
+                "SELECT name, persona, model_provider, model_name, temperature, max_tokens
+                 FROM agents WHERE id = ?1",
+                [&assigned_agent_id],
+                |row| {
+                    Ok((
+                        row.get(0)?,
+                        row.get(1)?,
+                        row.get(2)?,
+                        row.get(3)?,
+                        row.get(4)?,
+                        row.get(5)?,
+                    ))
+                },
+            )
+            .map_err(|_| "Cannot start work: assigned agent not found.".to_string())?;
+
+        if agent.3.trim().is_empty() || agent.3 == "camelid-default" {
+            return Err(format!(
+                "Cannot start work: {} has no concrete model profile assigned.",
+                agent.0
+            ));
+        }
+
+        (
+            assigned_agent_id,
+            agent.0,
+            agent.1,
+            agent.2,
+            agent.3,
+            agent.4,
+            agent.5,
+            task.0,
+            task.1,
+            task_instructions,
+            task.5,
+            db_health.camelid_endpoint,
+        )
+    };
+
+    if model_provider == "camelid" {
+        let camelid_health = probe_camelid(&camelid_endpoint).await;
+        if camelid_health.status != "connected" {
+            return Err(format!(
+                "Cannot start work: Camelid is offline at {}.",
+                camelid_endpoint
+            ));
+        }
+        if camelid_health.model_loaded.is_none() {
+            return Err("Cannot start work: no Camelid model is loaded.".to_string());
+        }
+    }
+
+    let run_id = uuid::Uuid::new_v4().to_string();
+    let prompt = format!(
+        "Task: {}\n\nDescription:\n{}\n\nDetailed instructions:\n{}\n\nAcceptance criteria:\n{}\n\nProduce a concise work plan, implementation notes, validation notes, and a receipt draft. Do not claim file changes or command execution unless actually performed.",
+        title,
+        description.clone().unwrap_or_else(|| "No description provided.".to_string()),
+        instructions,
+        acceptance_criteria.clone().unwrap_or_else(|| "No acceptance criteria provided.".to_string())
+    );
+
+    {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        conn.execute(
+            "INSERT INTO agent_runs (id, agent_id, conversation_id, task_id, state, input)
+             VALUES (?1, ?2, ?3, ?4, 'executing', ?5)",
+            params![
+                run_id,
+                agent_id,
+                format!("task:{}", task_id),
+                task_id,
+                prompt
+            ],
+        )
+        .map_err(|e| e.to_string())?;
+        conn.execute(
+            "UPDATE kanban_cards SET status = 'in_progress', validation_status = 'in_progress', start_date = COALESCE(start_date, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+            [&task_id],
+        )
+        .map_err(|e| e.to_string())?;
+        insert_task_activity(
+            &conn,
+            &task_id,
+            "agent",
+            Some(&agent_id),
+            "agent_run_started",
+            "Agent run started",
+            Some(serde_json::json!({ "run_id": run_id, "agent": agent_name })),
+        )?;
+    }
+
+    let endpoint = if model_provider == "camelid" {
+        Some(format!(
+            "{}/v1/chat/completions",
+            camelid_endpoint.trim_end_matches('/')
+        ))
+    } else {
+        None
+    };
+
+    let response = call_model(
+        &model_provider,
+        &model_name,
+        vec![
+            ChatMessage {
+                role: "system".to_string(),
+                content: agent_persona,
+            },
+            ChatMessage {
+                role: "user".to_string(),
+                content: prompt.clone(),
+            },
+        ],
+        ModelSettings {
+            temperature: Some(temperature),
+            max_tokens: Some(max_tokens.min(1024)),
+        },
+        None,
+        endpoint,
+    )
+    .await;
+
+    {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        match response {
+            Ok(answer) => {
+                conn.execute(
+                    "UPDATE agent_runs SET state = 'completed', final_answer = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+                    params![answer, run_id],
+                )
+                .map_err(|e| e.to_string())?;
+                conn.execute(
+                    "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, 'agent_response', ?3)",
+                    params![uuid::Uuid::new_v4().to_string(), run_id, answer],
+                )
+                .map_err(|e| e.to_string())?;
+                conn.execute(
+                    "INSERT INTO task_progress_updates (id, task_id, run_id, agent_id, content, status)
+                     VALUES (?1, ?2, ?3, ?4, ?5, 'sent')",
+                    params![uuid::Uuid::new_v4().to_string(), task_id, run_id, agent_id, answer],
+                )
+                .map_err(|e| e.to_string())?;
+                conn.execute(
+                    "UPDATE kanban_cards SET status = 'review', validation_status = 'needs_review', comments = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+                    params![answer, task_id],
+                )
+                .map_err(|e| e.to_string())?;
+                insert_task_activity(
+                    &conn,
+                    &task_id,
+                    "agent",
+                    Some(&agent_id),
+                    "agent_response_saved",
+                    "Agent response saved and task moved to Review",
+                    Some(serde_json::json!({ "run_id": run_id })),
+                )?;
+            }
+            Err(error) => {
+                conn.execute(
+                    "UPDATE agent_runs SET state = 'failed', error = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+                    params![error, run_id],
+                )
+                .map_err(|e| e.to_string())?;
+                conn.execute(
+                    "INSERT INTO task_progress_updates (id, task_id, run_id, agent_id, content, status, error_message)
+                     VALUES (?1, ?2, ?3, ?4, ?5, 'failed', ?5)",
+                    params![uuid::Uuid::new_v4().to_string(), task_id, run_id, agent_id, error],
+                )
+                .map_err(|e| e.to_string())?;
+                insert_task_activity(
+                    &conn,
+                    &task_id,
+                    "agent",
+                    Some(&agent_id),
+                    "agent_run_failed",
+                    "Agent run failed",
+                    Some(serde_json::json!({ "run_id": run_id, "error": error })),
+                )?;
+            }
+        }
+    }
+
+    get_task_run_status(state, run_id)
+}
+
+#[tauri::command]
+pub fn get_task_run_status(state: State<'_, DbState>, run_id: String) -> Result<AgentRun, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.query_row(
+        "SELECT id, agent_id, conversation_id, task_id, state, input, plan, final_answer, error, created_at, updated_at FROM agent_runs WHERE id = ?1",
+        [run_id],
+        |row| {
+            Ok(AgentRun {
+                id: row.get(0)?,
+                agent_id: row.get(1)?,
+                conversation_id: row.get(2)?,
+                task_id: row.get(3)?,
+                state: row.get(4)?,
+                input: row.get(5)?,
+                plan: row.get(6)?,
+                final_answer: row.get(7)?,
+                error: row.get(8)?,
+                created_at: row.get(9)?,
+                updated_at: row.get(10)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn list_task_runs(state: State<'_, DbState>, task_id: String) -> Result<Vec<AgentRun>, String> {
+    get_agent_runs(state, None, Some(task_id))
+}
+
+#[tauri::command]
+pub fn save_task_progress_update(
+    state: State<'_, DbState>,
+    task_id: String,
+    agent_id: Option<String>,
+    content: String,
+) -> Result<TaskProgressUpdate, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let id = uuid::Uuid::new_v4().to_string();
+    conn.execute(
+        "INSERT INTO task_progress_updates (id, task_id, agent_id, content, status)
+         VALUES (?1, ?2, ?3, ?4, 'sent')",
+        params![id, task_id, agent_id, content],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "agent",
+        agent_id.as_deref(),
+        "progress_update_saved",
+        "Progress update saved",
+        None,
+    )?;
+    get_progress_update_by_id(&conn, &id)
+}
+
+fn get_progress_update_by_id(conn: &Connection, id: &str) -> Result<TaskProgressUpdate, String> {
+    conn.query_row(
+        "SELECT id, task_id, run_id, agent_id, content, status, error_message, created_at
+         FROM task_progress_updates WHERE id = ?1",
+        [id],
+        |row| {
+            Ok(TaskProgressUpdate {
+                id: row.get(0)?,
+                task_id: row.get(1)?,
+                run_id: row.get(2)?,
+                agent_id: row.get(3)?,
+                content: row.get(4)?,
+                status: row.get(5)?,
+                error_message: row.get(6)?,
+                created_at: row.get(7)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn list_task_progress_updates(
+    state: State<'_, DbState>,
+    task_id: String,
+) -> Result<Vec<TaskProgressUpdate>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, task_id, run_id, agent_id, content, status, error_message, created_at
+             FROM task_progress_updates WHERE task_id = ?1 ORDER BY created_at ASC",
+        )
+        .map_err(|e| e.to_string())?;
+    let iter = stmt
+        .query_map([task_id], |row| {
+            Ok(TaskProgressUpdate {
+                id: row.get(0)?,
+                task_id: row.get(1)?,
+                run_id: row.get(2)?,
+                agent_id: row.get(3)?,
+                content: row.get(4)?,
+                status: row.get(5)?,
+                error_message: row.get(6)?,
+                created_at: row.get(7)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    let mut updates = Vec::new();
+    for update in iter {
+        updates.push(update.map_err(|e| e.to_string())?);
+    }
+    Ok(updates)
+}
+
+#[tauri::command]
+pub fn list_task_activity(
+    state: State<'_, DbState>,
+    task_id: String,
+) -> Result<Vec<TaskActivity>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, task_id, actor_id, actor_type, event_type, summary, details, created_at
+             FROM task_activity WHERE task_id = ?1 ORDER BY created_at ASC",
+        )
+        .map_err(|e| e.to_string())?;
+    let iter = stmt
+        .query_map([task_id], |row| {
+            Ok(TaskActivity {
+                id: row.get(0)?,
+                task_id: row.get(1)?,
+                actor_id: row.get(2)?,
+                actor_type: row.get(3)?,
+                event_type: row.get(4)?,
+                summary: row.get(5)?,
+                details: row.get(6)?,
+                created_at: row.get(7)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    let mut activity = Vec::new();
+    for item in iter {
+        activity.push(item.map_err(|e| e.to_string())?);
+    }
+    Ok(activity)
+}
+
+#[tauri::command]
+pub fn record_task_activity(
+    state: State<'_, DbState>,
+    task_id: String,
+    summary: String,
+    details: Option<String>,
+) -> Result<(), String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "manual_activity",
+        &summary,
+        details.map(|value| serde_json::json!({ "details": value })),
+    )
+}
+
+#[tauri::command]
+pub fn generate_task_work_receipt(
+    state: State<'_, DbState>,
+    task_id: String,
+) -> Result<WorkReceipt, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let task = get_task_by_id(&conn, &task_id)?;
+    let latest_run: Option<(String, Option<String>, Option<String>)> = conn
+        .query_row(
+            "SELECT agent_id, final_answer, error FROM agent_runs WHERE task_id = ?1 ORDER BY created_at DESC LIMIT 1",
+            [&task_id],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .optional()
+        .map_err(|e| e.to_string())?;
+
+    let (agent_id, answer, error) = latest_run.unwrap_or((
+        task.assigned_agent_id.clone().unwrap_or_default(),
+        None,
+        None,
+    ));
+    let summary = answer
+        .clone()
+        .or(error.clone())
+        .unwrap_or_else(|| "No agent output has been recorded yet.".to_string());
+    let receipt_id = uuid::Uuid::new_v4().to_string();
+    let criteria = task
+        .acceptance_criteria
+        .clone()
+        .unwrap_or_else(|| "[]".to_string());
+    let validation_status = if error.is_some() {
+        "failed"
+    } else {
+        "needs_review"
+    };
+
+    conn.execute(
+        "INSERT INTO task_work_receipts (
+            id, task_id, agent_id, summary, instructions_followed, acceptance_criteria_results,
+            files_created, files_modified, commands_run, tests_run, validation_status,
+            evidence_links, known_limitations, follow_up_recommendations
+         )
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, '[]', '[]', '[]', '[]', ?7, '[]', ?8, ?9)",
+        params![
+            receipt_id,
+            task_id,
+            if agent_id.is_empty() {
+                None
+            } else {
+                Some(agent_id)
+            },
+            summary,
+            task.instructions,
+            criteria,
+            validation_status,
+            error
+                .map(|value| serde_json::json!([value]).to_string())
+                .unwrap_or_else(|| "[]".to_string()),
+            serde_json::json!(["Review the generated receipt before approving Done."]).to_string(),
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE kanban_cards SET work_receipt_id = ?1, completion_evidence = ?2, updated_at = CURRENT_TIMESTAMP WHERE id = ?3",
+        params![receipt_id, summary, task_id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "system",
+        None,
+        "receipt_generated",
+        "Work receipt generated",
+        None,
+    )?;
+    get_work_receipt_by_id(&conn, &receipt_id)
+}
+
+fn get_work_receipt_by_id(conn: &Connection, receipt_id: &str) -> Result<WorkReceipt, String> {
+    conn.query_row(
+        "SELECT id, task_id, agent_id, summary, instructions_followed, acceptance_criteria_results,
+                files_created, files_modified, commands_run, tests_run, validation_status,
+                evidence_links, known_limitations, follow_up_recommendations, completed_at
+         FROM task_work_receipts WHERE id = ?1",
+        [receipt_id],
+        |row| {
+            Ok(WorkReceipt {
+                id: row.get(0)?,
+                task_id: row.get(1)?,
+                agent_id: row.get(2)?,
+                summary: row.get(3)?,
+                instructions_followed: row.get(4)?,
+                acceptance_criteria_results: row.get(5)?,
+                files_created: row.get(6)?,
+                files_modified: row.get(7)?,
+                commands_run: row.get(8)?,
+                tests_run: row.get(9)?,
+                validation_status: row.get(10)?,
+                evidence_links: row.get(11)?,
+                known_limitations: row.get(12)?,
+                follow_up_recommendations: row.get(13)?,
+                completed_at: row.get(14)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_task_work_receipt(
+    state: State<'_, DbState>,
+    task_id: String,
+) -> Result<Option<WorkReceipt>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let receipt_id: Option<String> = conn
+        .query_row(
+            "SELECT id FROM task_work_receipts WHERE task_id = ?1 ORDER BY completed_at DESC LIMIT 1",
+            [&task_id],
+            |row| row.get(0),
+        )
+        .optional()
+        .map_err(|e| e.to_string())?;
+    match receipt_id {
+        Some(id) => Ok(Some(get_work_receipt_by_id(&conn, &id)?)),
+        None => Ok(None),
+    }
+}
+
+#[tauri::command]
+pub fn approve_work_receipt(
+    state: State<'_, DbState>,
+    task_id: String,
+    receipt_id: String,
+) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let receipt = get_work_receipt_by_id(&conn, &receipt_id)?;
+    if receipt.task_id != task_id {
+        return Err("Receipt does not belong to this task.".to_string());
+    }
+    let task_status: String = conn
+        .query_row(
+            "SELECT status FROM kanban_cards WHERE id = ?1",
+            [&task_id],
+            |row| row.get(0),
+        )
+        .map_err(|_| "Task not found.".to_string())?;
+    if !["review", "in_progress"].contains(&task_status.as_str()) {
+        return Err("Cannot complete task unless it is in Review or In Progress.".to_string());
+    }
+    conn.execute(
+        "UPDATE task_work_receipts SET validation_status = 'passed' WHERE id = ?1",
+        [&receipt_id],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE kanban_cards SET status = 'done', validation_status = 'passed', work_receipt_id = ?1, completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+        params![receipt_id, task_id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "task_completed",
+        "Receipt approved and task completed",
+        None,
+    )?;
+    get_task_by_id(&conn, &task_id)
+}
+
+#[tauri::command]
+pub fn complete_task(state: State<'_, DbState>, task_id: String) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let receipt_id: Option<String> = conn
+        .query_row(
+            "SELECT id FROM task_work_receipts WHERE task_id = ?1 ORDER BY completed_at DESC LIMIT 1",
+            [&task_id],
+            |row| row.get(0),
+        )
+        .optional()
+        .map_err(|e| e.to_string())?;
+    let receipt_id =
+        receipt_id.ok_or_else(|| "Cannot complete task without a work receipt.".to_string())?;
+    drop(conn);
+    approve_work_receipt(state, task_id, receipt_id)
+}
+
+#[tauri::command]
+pub fn send_task_back_to_agent(
+    state: State<'_, DbState>,
+    task_id: String,
+    feedback: String,
+) -> Result<Task, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE kanban_cards SET status = 'in_progress', comments = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+        params![feedback, task_id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &task_id,
+        "user",
+        None,
+        "task_sent_back",
+        "Task sent back to agent",
+        Some(serde_json::json!({ "feedback": feedback })),
+    )?;
+    get_task_by_id(&conn, &task_id)
 }
 
 #[tauri::command]

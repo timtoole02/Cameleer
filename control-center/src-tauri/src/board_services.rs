@@ -1,5 +1,5 @@
 use crate::storage::DbState;
-use rusqlite::{params, Connection, OptionalExtension, Result};
+use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use uuid::Uuid;
@@ -13,6 +13,7 @@ pub struct BacklogItem {
     pub backlog_id: Option<String>,
     pub title: String,
     pub description: Option<String>,
+    pub instructions: Option<String>,
     pub type_name: String, // 'type' is a keyword, mapped from type
     pub priority: String,
     pub rank: i32,
@@ -22,6 +23,7 @@ pub struct BacklogItem {
     pub owner_agent_id: Option<String>,
     pub owner_human_id: Option<String>,
     pub proposed_agent_role: Option<String>,
+    pub suggested_agent_role: Option<String>,
     pub acceptance_criteria: Option<String>,
     pub definition_of_done: Option<String>,
     pub required_files: Option<String>,
@@ -30,8 +32,80 @@ pub struct BacklogItem {
     pub risk_level: String,
     pub effort_estimate: Option<String>,
     pub readiness_score: i32,
+    pub converted_card_id: Option<String>,
+    pub archived_at: Option<String>,
+    pub rejected_reason: Option<String>,
     pub created_at: String,
     pub updated_at: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BacklogAcceptanceCriterion {
+    pub id: String,
+    pub backlog_item_id: String,
+    pub text: String,
+    pub sort_order: i32,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BacklogActivity {
+    pub id: String,
+    pub backlog_item_id: String,
+    pub actor_id: Option<String>,
+    pub actor_type: String,
+    pub event_type: String,
+    pub summary: String,
+    pub details: Option<String>,
+    pub created_at: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CreateBacklogItemInput {
+    pub workspace_id: Option<String>,
+    pub project_id: Option<String>,
+    pub title: String,
+    pub description: Option<String>,
+    pub instructions: Option<String>,
+    pub type_name: Option<String>,
+    pub priority: Option<String>,
+    pub risk_level: Option<String>,
+    pub labels: Option<String>,
+    pub owner_agent_id: Option<String>,
+    pub suggested_agent_role: Option<String>,
+    pub acceptance_criteria: Option<String>,
+    pub definition_of_done: Option<String>,
+    pub dependencies: Option<String>,
+    pub effort_estimate: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateBacklogItemInput {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub instructions: Option<String>,
+    pub type_name: Option<String>,
+    pub priority: Option<String>,
+    pub status: Option<String>,
+    pub labels: Option<String>,
+    pub risk_level: Option<String>,
+    pub effort_estimate: Option<String>,
+    pub owner_agent_id: Option<String>,
+    pub suggested_agent_role: Option<String>,
+    pub acceptance_criteria: Option<String>,
+    pub definition_of_done: Option<String>,
+    pub dependencies: Option<String>,
+    pub rejected_reason: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AgentSuggestion {
+    pub suggested_agent_id: Option<String>,
+    pub suggested_agent_name: Option<String>,
+    pub suggested_agent_role: String,
+    pub reason: String,
+    pub source: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -103,31 +177,137 @@ pub struct BoardColumn {
     pub created_at: String,
 }
 
-#[tauri::command]
-pub fn get_backlog_snapshot(
-    workspace_id: String,
-    project_id: Option<String>,
-    team_id: Option<String>,
-    state: State<DbState>,
-) -> Result<Vec<BacklogItem>, String> {
-    let conn = state.conn.lock().unwrap();
-    let mut query = "SELECT id, workspace_id, project_id, team_id, backlog_id, title, description, type, priority, rank, labels, source, status, owner_agent_id, owner_human_id, proposed_agent_role, acceptance_criteria, definition_of_done, required_files, refinement_notes, dependencies, risk_level, effort_estimate, readiness_score, created_at, updated_at FROM backlog_items WHERE workspace_id = ?1".to_string();
-    let mut params: Vec<String> = vec![workspace_id.clone()];
+fn is_meaningful(value: Option<&str>) -> bool {
+    value.map(|v| !v.trim().is_empty()).unwrap_or(false)
+}
 
-    if let Some(pid) = project_id {
-        query.push_str(&format!(" AND project_id = '?{}'", params.len() + 1));
-        params.push(pid);
+fn normalize_backlog_status(status: &str) -> String {
+    match status.trim().to_lowercase().replace('-', "_").as_str() {
+        "backlog" => "captured".to_string(),
+        "ready_for_board" => "converted".to_string(),
+        "captured" | "triage" | "needs_refinement" | "refined" | "ready" | "converted"
+        | "rejected" | "archived" => status.trim().to_lowercase().replace('-', "_"),
+        _ => "captured".to_string(),
     }
-    if let Some(tid) = team_id {
-        query.push_str(&format!(" AND team_id = '?{}'", params.len() + 1));
-        params.push(tid);
+}
+
+fn calculate_backlog_readiness_score(
+    title: &str,
+    description: Option<&str>,
+    instructions: Option<&str>,
+    acceptance_criteria: Option<&str>,
+    priority: Option<&str>,
+    type_name: Option<&str>,
+    owner_agent_id: Option<&str>,
+    suggested_agent_role: Option<&str>,
+) -> i32 {
+    let mut score = 0;
+    if !title.trim().is_empty() {
+        score += 15;
     }
-    query.push_str(" ORDER BY rank ASC, created_at DESC");
+    if is_meaningful(description) {
+        score += 15;
+    }
+    if is_meaningful(instructions) {
+        score += 25;
+    }
+    if is_meaningful(acceptance_criteria) {
+        score += 25;
+    }
+    if is_meaningful(priority) {
+        score += 5;
+    }
+    if is_meaningful(type_name) {
+        score += 5;
+    }
+    if is_meaningful(owner_agent_id) || is_meaningful(suggested_agent_role) {
+        score += 10;
+    }
+    score
+}
 
-    let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
+fn required_ready_missing(item: &BacklogItem) -> Vec<&'static str> {
+    let mut missing = Vec::new();
+    if item.title.trim().is_empty() {
+        missing.push("title");
+    }
+    if !is_meaningful(item.description.as_deref()) && !is_meaningful(item.instructions.as_deref()) {
+        missing.push("description or instructions");
+    }
+    if !is_meaningful(Some(&item.type_name)) {
+        missing.push("type");
+    }
+    if !is_meaningful(Some(&item.priority)) {
+        missing.push("priority");
+    }
+    if !is_meaningful(item.acceptance_criteria.as_deref()) {
+        missing.push("acceptance criteria");
+    }
+    if !is_meaningful(item.owner_agent_id.as_deref())
+        && !is_meaningful(item.suggested_agent_role.as_deref())
+    {
+        missing.push("assigned or suggested agent");
+    }
+    missing
+}
 
-    let iter = stmt
-        .query_map(rusqlite::params_from_iter(params), |row| {
+fn insert_backlog_activity(
+    conn: &Connection,
+    backlog_item_id: &str,
+    event_type: &str,
+    summary: &str,
+    details: Option<serde_json::Value>,
+) -> Result<()> {
+    conn.execute(
+        "INSERT INTO backlog_activity (id, backlog_item_id, actor_type, event_type, summary, details)
+         VALUES (?1, ?2, 'user', ?3, ?4, ?5)",
+        params![
+            Uuid::new_v4().to_string(),
+            backlog_item_id,
+            event_type,
+            summary,
+            details.map(|v| v.to_string())
+        ],
+    )?;
+    Ok(())
+}
+
+fn insert_task_activity(
+    conn: &Connection,
+    task_id: &str,
+    event_type: &str,
+    summary: &str,
+    details: Option<serde_json::Value>,
+) -> Result<()> {
+    conn.execute(
+        "INSERT INTO task_activity (id, task_id, actor_type, event_type, summary, details)
+         VALUES (?1, ?2, 'user', ?3, ?4, ?5)",
+        params![
+            Uuid::new_v4().to_string(),
+            task_id,
+            event_type,
+            summary,
+            details.map(|v| v.to_string())
+        ],
+    )?;
+    Ok(())
+}
+
+fn next_task_key(conn: &Connection) -> Result<String> {
+    let count: i64 = conn.query_row("SELECT COUNT(*) FROM kanban_cards", [], |row| row.get(0))?;
+    Ok(format!("CAM-{}", count + 101))
+}
+
+fn get_backlog_item_by_id(conn: &Connection, id: &str) -> Result<BacklogItem> {
+    conn.query_row(
+        "SELECT id, workspace_id, project_id, team_id, backlog_id, title, description, instructions,
+                type, priority, rank, labels, source, status, owner_agent_id, owner_human_id,
+                proposed_agent_role, suggested_agent_role, acceptance_criteria, definition_of_done,
+                required_files, refinement_notes, dependencies, risk_level, effort_estimate,
+                readiness_score, converted_card_id, archived_at, rejected_reason, created_at, updated_at
+         FROM backlog_items WHERE id = ?1",
+        [id],
+        |row| {
             Ok(BacklogItem {
                 id: row.get(0)?,
                 workspace_id: row.get(1)?,
@@ -136,229 +316,48 @@ pub fn get_backlog_snapshot(
                 backlog_id: row.get(4)?,
                 title: row.get(5)?,
                 description: row.get(6)?,
-                type_name: row.get(7)?,
-                priority: row.get(8)?,
-                rank: row.get(9)?,
-                labels: row.get(10)?,
-                source: row.get(11)?,
-                status: row.get(12)?,
-                owner_agent_id: row.get(13)?,
-                owner_human_id: row.get(14)?,
-                proposed_agent_role: row.get(15)?,
-                acceptance_criteria: row.get(16)?,
-                definition_of_done: row.get(17)?,
-                required_files: row.get(18)?,
-                refinement_notes: row.get(19)?,
-                dependencies: row.get(20)?,
-                risk_level: row.get(21)?,
-                effort_estimate: row.get(22)?,
-                readiness_score: row.get(23)?,
-                created_at: row.get(24)?,
-                updated_at: row.get(25)?,
+                instructions: row.get(7)?,
+                type_name: row.get(8)?,
+                priority: row.get(9)?,
+                rank: row.get(10)?,
+                labels: row.get(11)?,
+                source: row.get(12)?,
+                status: row.get(13)?,
+                owner_agent_id: row.get(14)?,
+                owner_human_id: row.get(15)?,
+                proposed_agent_role: row.get(16)?,
+                suggested_agent_role: row.get(17)?,
+                acceptance_criteria: row.get(18)?,
+                definition_of_done: row.get(19)?,
+                required_files: row.get(20)?,
+                refinement_notes: row.get(21)?,
+                dependencies: row.get(22)?,
+                risk_level: row.get(23)?,
+                effort_estimate: row.get(24)?,
+                readiness_score: row.get(25)?,
+                converted_card_id: row.get(26)?,
+                archived_at: row.get(27)?,
+                rejected_reason: row.get(28)?,
+                created_at: row.get(29)?,
+                updated_at: row.get(30)?,
             })
-        })
-        .map_err(|e| e.to_string())?;
-
-    let mut items = Vec::new();
-    for i in iter {
-        if let Ok(item) = i {
-            items.push(item);
-        }
-    }
-    Ok(items)
-}
-
-#[tauri::command]
-pub fn create_backlog_item(
-    workspace_id: String,
-    title: String,
-    description: Option<String>,
-    type_name: Option<String>,
-    priority: Option<String>,
-    state: State<DbState>,
-) -> Result<BacklogItem, String> {
-    let conn = state.conn.lock().unwrap();
-    let id = Uuid::new_v4().to_string();
-    let t = type_name.unwrap_or_else(|| "feature".to_string());
-    let p = priority.unwrap_or_else(|| "medium".to_string());
-
-    conn.execute(
-        "INSERT INTO backlog_items (id, workspace_id, title, description, type, priority, status)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, 'captured')",
-        params![id, workspace_id, title, description, t, p],
+        },
     )
-    .map_err(|e| e.to_string())?;
-
-    // Drop the lock and read it back
-    drop(conn);
-
-    // Simplistic fetch back.
-    let items = get_backlog_snapshot(workspace_id, None, None, state)?;
-    items
-        .into_iter()
-        .find(|i| i.id == id)
-        .ok_or_else(|| "Failed to read back item".to_string())
 }
 
-#[tauri::command]
-pub fn update_backlog_item(
-    id: String,
-    title: Option<String>,
-    description: Option<String>,
-    type_name: Option<String>,
-    priority: Option<String>,
-    status: Option<String>,
-    acceptance_criteria: Option<String>,
-    definition_of_done: Option<String>,
-    required_files: Option<String>,
-    proposed_agent_role: Option<String>,
-    dependencies: Option<String>,
-    risk_level: Option<String>,
-    effort_estimate: Option<String>,
-    readiness_score: Option<i32>,
-    refinement_notes: Option<String>,
-    labels: Option<String>,
-    state: State<DbState>,
-) -> Result<(), String> {
-    let conn = state.conn.lock().unwrap();
-
-    if let Some(v) = title {
-        conn.execute(
-            "UPDATE backlog_items SET title = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-            params![v, id],
-        )
-        .map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = description {
-        conn.execute("UPDATE backlog_items SET description = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = type_name {
-        conn.execute(
-            "UPDATE backlog_items SET type = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-            params![v, id],
-        )
-        .map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = priority {
-        conn.execute(
-            "UPDATE backlog_items SET priority = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-            params![v, id],
-        )
-        .map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = status {
-        conn.execute(
-            "UPDATE backlog_items SET status = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-            params![v, id],
-        )
-        .map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = acceptance_criteria {
-        conn.execute("UPDATE backlog_items SET acceptance_criteria = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = definition_of_done {
-        conn.execute("UPDATE backlog_items SET definition_of_done = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = required_files {
-        conn.execute("UPDATE backlog_items SET required_files = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = proposed_agent_role {
-        conn.execute("UPDATE backlog_items SET proposed_agent_role = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = dependencies {
-        conn.execute("UPDATE backlog_items SET dependencies = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = risk_level {
-        conn.execute("UPDATE backlog_items SET risk_level = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = effort_estimate {
-        conn.execute("UPDATE backlog_items SET effort_estimate = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = readiness_score {
-        conn.execute("UPDATE backlog_items SET readiness_score = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = refinement_notes {
-        conn.execute("UPDATE backlog_items SET refinement_notes = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
-    }
-    if let Some(v) = labels {
-        conn.execute(
-            "UPDATE backlog_items SET labels = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-            params![v, id],
-        )
-        .map_err(|e| e.to_string())?;
-    }
-
-    Ok(())
-}
-
-#[tauri::command]
-pub fn convert_backlog_item_to_card(
-    id: String,
-    state: State<DbState>,
-) -> Result<KanbanCard, String> {
-    let conn = state.conn.lock().unwrap();
-
-    // Read the backlog item with all rich fields
-    let mut stmt = conn.prepare("SELECT workspace_id, title, description, type, priority, acceptance_criteria, definition_of_done, required_files, dependencies, risk_level, labels FROM backlog_items WHERE id = ?1").unwrap();
-    let row: (
-        String,
-        String,
-        Option<String>,
-        String,
-        String,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-        String,
-        Option<String>,
-    ) = stmt
-        .query_row([&id], |row| {
-            Ok((
-                row.get(0)?,
-                row.get(1)?,
-                row.get(2)?,
-                row.get(3)?,
-                row.get(4)?,
-                row.get(5)?,
-                row.get(6)?,
-                row.get(7)?,
-                row.get(8)?,
-                row.get(9)?,
-                row.get(10)?,
-            ))
-        })
-        .map_err(|e| e.to_string())?;
-
-    let (ws_id, title, desc, type_name, priority, acc, dod, req_files, deps, risk, labels) = row;
-
-    let card_id = Uuid::new_v4().to_string();
-
-    conn.execute(
-        "INSERT INTO kanban_cards (id, workspace_id, backlog_id, title, description, type, priority, acceptance_criteria, definition_of_done, required_files, dependencies, risk_level, labels, status, created_by)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 'ready', 'human')",
-        params![card_id, ws_id, id, title, desc, type_name, priority, acc, dod, req_files, deps, risk, labels],
-    ).map_err(|e| e.to_string())?;
-
-    // Mark backlog item as ready_for_board
-    conn.execute(
-        "UPDATE backlog_items SET status = 'ready_for_board', updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
-        params![id],
-    ).map_err(|e| e.to_string())?;
-
-    // Return the created KanbanCard
-    let mut card_stmt = conn.prepare("SELECT 
-        id, workspace_id, NULL as project_id, NULL as team_id, board_id, backlog_id, parent_id,
-        title, description, type as type_name, status, priority, rank, severity, labels,
-        assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at,
-        due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria,
-        definition_of_done, required_files, related_files, related_artifacts, dependencies,
-        blocked_by, blocking, comments, activity_log, checklist, validation_status,
-        completion_evidence, work_receipt_id, risk_level, review_required, approval_required, reopen_reason
-        FROM kanban_cards WHERE id = ?1").unwrap();
-
-    let card = card_stmt
-        .query_row([&card_id], |row| {
+fn get_kanban_card_by_id(conn: &Connection, id: &str) -> Result<KanbanCard> {
+    conn.query_row(
+        "SELECT id, workspace_id, project_id, team_id, board_id, backlog_id, parent_id,
+                title, description, type as type_name, status, priority, rank, severity, labels,
+                assigned_agent_id, assigned_human_id, reporter, created_by, created_at, updated_at,
+                due_date, start_date, completed_at, estimate, actual_time, acceptance_criteria,
+                definition_of_done, required_files, related_files, related_artifacts, dependencies,
+                blocked_by, blocking, comments, activity_log, checklist, validation_status,
+                completion_evidence, work_receipt_id, risk_level, review_required, approval_required,
+                reopen_reason
+         FROM kanban_cards WHERE id = ?1",
+        [id],
+        |row| {
             Ok(KanbanCard {
                 id: row.get(0)?,
                 workspace_id: row.get(1)?,
@@ -405,10 +404,378 @@ pub fn convert_backlog_item_to_card(
                 approval_required: row.get(42)?,
                 reopen_reason: row.get(43)?,
             })
+        },
+    )
+}
+
+fn sync_backlog_acceptance_criteria(conn: &Connection, backlog_item_id: &str) -> Result<()> {
+    let mut stmt = conn.prepare(
+        "SELECT text FROM backlog_acceptance_criteria
+         WHERE backlog_item_id = ?1 ORDER BY sort_order ASC, created_at ASC",
+    )?;
+    let criteria: Vec<String> = stmt
+        .query_map([backlog_item_id], |row| row.get::<_, String>(0))?
+        .filter_map(Result::ok)
+        .collect();
+    if !criteria.is_empty() {
+        conn.execute(
+            "UPDATE backlog_items SET acceptance_criteria = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![serde_json::to_string(&criteria).unwrap_or_else(|_| "[]".to_string()), backlog_item_id],
+        )?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn list_board_columns(_workspace_id: String) -> Result<Vec<BoardColumn>, String> {
+    let names = [
+        ("col-backlog", "Backlog", "backlog", 0, None),
+        ("col-ready", "Ready", "ready", 1, Some(5)),
+        ("col-in-progress", "In Progress", "in_progress", 2, Some(3)),
+        ("col-review", "Review", "review", 3, Some(5)),
+        ("col-blocked", "Blocked", "blocked", 4, None),
+        ("col-done", "Done", "done", 5, None),
+    ];
+    Ok(names
+        .into_iter()
+        .map(|(id, name, status, rank, wip)| BoardColumn {
+            id: id.to_string(),
+            board_id: "default-board".to_string(),
+            name: name.to_string(),
+            status_mapping: status.to_string(),
+            rank,
+            wip_limit: wip,
+            created_at: "system".to_string(),
         })
+        .collect())
+}
+
+#[tauri::command]
+pub fn create_board_column() -> Result<(), String> {
+    Err("Custom board columns are not editable in this Kanban slice yet.".to_string())
+}
+
+#[tauri::command]
+pub fn update_board_column() -> Result<(), String> {
+    Err("Custom board columns are not editable in this Kanban slice yet.".to_string())
+}
+
+#[tauri::command]
+pub fn move_board_column() -> Result<(), String> {
+    Err("Custom board columns are not editable in this Kanban slice yet.".to_string())
+}
+
+#[tauri::command]
+pub fn set_column_wip_limit() -> Result<(), String> {
+    Err("Column WIP limit editing is not enabled in this Kanban slice yet.".to_string())
+}
+
+#[tauri::command]
+pub fn get_backlog_snapshot(
+    workspace_id: String,
+    _project_id: Option<String>,
+    _team_id: Option<String>,
+    state: State<DbState>,
+) -> Result<Vec<BacklogItem>, String> {
+    list_backlog_items(workspace_id, state)
+}
+
+#[tauri::command]
+pub fn list_backlog_items(
+    workspace_id: String,
+    state: State<DbState>,
+) -> Result<Vec<BacklogItem>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT id FROM backlog_items
+             WHERE workspace_id = ?1
+             ORDER BY
+                CASE status
+                    WHEN 'captured' THEN 0
+                    WHEN 'triage' THEN 1
+                    WHEN 'needs_refinement' THEN 2
+                    WHEN 'refined' THEN 3
+                    WHEN 'ready' THEN 4
+                    WHEN 'converted' THEN 5
+                    WHEN 'rejected' THEN 6
+                    WHEN 'archived' THEN 7
+                    ELSE 8
+                END,
+                updated_at DESC",
+        )
+        .map_err(|e| e.to_string())?;
+    let ids: Vec<String> = stmt
+        .query_map([workspace_id], |row| row.get::<_, String>(0))
+        .map_err(|e| e.to_string())?
+        .filter_map(Result::ok)
+        .collect();
+
+    ids.into_iter()
+        .map(|id| get_backlog_item_by_id(&conn, &id).map_err(|e| e.to_string()))
+        .collect()
+}
+
+#[tauri::command]
+pub fn get_backlog_item(id: String, state: State<DbState>) -> Result<BacklogItem, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    get_backlog_item_by_id(&conn, &id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn create_backlog_item(
+    input: CreateBacklogItemInput,
+    state: State<DbState>,
+) -> Result<BacklogItem, String> {
+    if input.title.trim().is_empty() {
+        return Err("Backlog item title is required.".to_string());
+    }
+
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let id = Uuid::new_v4().to_string();
+    let workspace_id = input
+        .workspace_id
+        .unwrap_or_else(|| "default-workspace".to_string());
+    let type_name = input.type_name.unwrap_or_else(|| "idea".to_string());
+    let priority = input.priority.unwrap_or_else(|| "medium".to_string());
+    let risk_level = input.risk_level.unwrap_or_else(|| "unknown".to_string());
+    let score = calculate_backlog_readiness_score(
+        &input.title,
+        input.description.as_deref(),
+        input.instructions.as_deref(),
+        input.acceptance_criteria.as_deref(),
+        Some(&priority),
+        Some(&type_name),
+        input.owner_agent_id.as_deref(),
+        input.suggested_agent_role.as_deref(),
+    );
+    let status = match score {
+        90..=100 => "ready",
+        70..=89 => "refined",
+        40..=69 => "needs_refinement",
+        _ => "captured",
+    };
+
+    conn.execute(
+        "INSERT INTO backlog_items (
+            id, workspace_id, project_id, title, description, instructions, type, priority,
+            status, labels, risk_level, effort_estimate, owner_agent_id, proposed_agent_role,
+            suggested_agent_role, acceptance_criteria, definition_of_done, dependencies,
+            readiness_score
+         )
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?14, ?15, ?16, ?17, ?18)",
+        params![
+            id,
+            workspace_id,
+            input.project_id,
+            input.title,
+            input.description,
+            input.instructions,
+            type_name,
+            priority,
+            status,
+            input.labels,
+            risk_level,
+            input.effort_estimate,
+            input.owner_agent_id,
+            input.suggested_agent_role,
+            input.acceptance_criteria,
+            input.definition_of_done,
+            input.dependencies,
+            score
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_backlog_activity(&conn, &id, "created", "Backlog item created", None)
         .map_err(|e| e.to_string())?;
 
-    Ok(card)
+    get_backlog_item_by_id(&conn, &id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn update_backlog_item(
+    id: String,
+    input: UpdateBacklogItemInput,
+    state: State<DbState>,
+) -> Result<BacklogItem, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+
+    if let Some(v) = input.title {
+        conn.execute(
+            "UPDATE backlog_items SET title = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.description {
+        conn.execute("UPDATE backlog_items SET description = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.instructions {
+        conn.execute("UPDATE backlog_items SET instructions = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.type_name {
+        conn.execute(
+            "UPDATE backlog_items SET type = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.priority {
+        conn.execute(
+            "UPDATE backlog_items SET priority = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.status {
+        let status = normalize_backlog_status(&v);
+        conn.execute(
+            "UPDATE backlog_items SET status = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![status, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.labels {
+        conn.execute(
+            "UPDATE backlog_items SET labels = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+            params![v, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.risk_level {
+        conn.execute("UPDATE backlog_items SET risk_level = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.effort_estimate {
+        conn.execute("UPDATE backlog_items SET effort_estimate = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.owner_agent_id {
+        conn.execute("UPDATE backlog_items SET owner_agent_id = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.suggested_agent_role {
+        conn.execute("UPDATE backlog_items SET suggested_agent_role = ?1, proposed_agent_role = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.acceptance_criteria {
+        conn.execute("UPDATE backlog_items SET acceptance_criteria = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.definition_of_done {
+        conn.execute("UPDATE backlog_items SET definition_of_done = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.dependencies {
+        conn.execute("UPDATE backlog_items SET dependencies = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+    if let Some(v) = input.rejected_reason {
+        conn.execute("UPDATE backlog_items SET rejected_reason = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2", params![v, id]).map_err(|e| e.to_string())?;
+    }
+
+    let item = get_backlog_item_by_id(&conn, &id).map_err(|e| e.to_string())?;
+    let score = calculate_backlog_readiness_score(
+        &item.title,
+        item.description.as_deref(),
+        item.instructions.as_deref(),
+        item.acceptance_criteria.as_deref(),
+        Some(&item.priority),
+        Some(&item.type_name),
+        item.owner_agent_id.as_deref(),
+        item.suggested_agent_role.as_deref(),
+    );
+    conn.execute(
+        "UPDATE backlog_items SET readiness_score = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+        params![score, id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_backlog_activity(&conn, &id, "updated", "Backlog item updated", None)
+        .map_err(|e| e.to_string())?;
+    get_backlog_item_by_id(&conn, &id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn convert_backlog_item_to_card(
+    id: String,
+    state: State<DbState>,
+) -> Result<KanbanCard, String> {
+    convert_backlog_item_to_task(id, state)
+}
+
+#[tauri::command]
+pub fn convert_backlog_item_to_task(
+    id: String,
+    state: State<DbState>,
+) -> Result<KanbanCard, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    sync_backlog_acceptance_criteria(&conn, &id).map_err(|e| e.to_string())?;
+    let item = get_backlog_item_by_id(&conn, &id).map_err(|e| e.to_string())?;
+
+    if let Some(card_id) = item.converted_card_id.as_deref() {
+        if !card_id.trim().is_empty() {
+            return get_kanban_card_by_id(&conn, card_id).map_err(|e| e.to_string());
+        }
+    }
+
+    let missing = required_ready_missing(&item);
+    if !missing.is_empty() {
+        return Err(format!(
+            "Cannot convert backlog item yet. Missing: {}.",
+            missing.join(", ")
+        ));
+    }
+
+    let card_id = Uuid::new_v4().to_string();
+    let task_key = next_task_key(&conn).map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT INTO kanban_cards (
+            id, task_key, workspace_id, project_id, backlog_id, title, description, instructions,
+            type, priority, status, labels, assigned_agent_id, reporter, created_by,
+            acceptance_criteria, definition_of_done, dependencies, risk_level, review_required,
+            validation_status
+         )
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 'ready', ?11, ?12, 'human', 'human',
+                 ?13, ?14, ?15, ?16, 1, 'not_started')",
+        params![
+            card_id,
+            task_key,
+            item.workspace_id,
+            item.project_id,
+            id,
+            item.title,
+            item.description,
+            item.instructions,
+            item.type_name,
+            item.priority,
+            item.labels,
+            item.owner_agent_id,
+            item.acceptance_criteria,
+            item.definition_of_done,
+            item.dependencies,
+            item.risk_level
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+
+    conn.execute(
+        "UPDATE backlog_items
+         SET status = 'converted', converted_card_id = ?1, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?2",
+        params![card_id, id],
+    )
+    .map_err(|e| e.to_string())?;
+    insert_backlog_activity(
+        &conn,
+        &id,
+        "converted_to_task",
+        &format!("Converted to Kanban task {}", task_key),
+        Some(serde_json::json!({ "task_id": card_id, "task_key": task_key })),
+    )
+    .map_err(|e| e.to_string())?;
+    insert_task_activity(
+        &conn,
+        &card_id,
+        "created_from_backlog",
+        "Task created from backlog item",
+        Some(serde_json::json!({ "backlog_item_id": id })),
+    )
+    .map_err(|e| e.to_string())?;
+
+    get_kanban_card_by_id(&conn, &card_id).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
