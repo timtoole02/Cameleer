@@ -593,10 +593,10 @@ mod tests {
     #[test]
     fn health_reports_ready_when_schema_complete() {
         let conn = setup_complete_db();
-        let health = inspect_database_health(&conn, ":memory:".to_string(), 3);
+        let health = inspect_database_health(&conn, ":memory:".to_string(), 4);
 
         assert_eq!(health.database_status, "ready");
-        assert_eq!(health.schema_version, 3);
+        assert_eq!(health.schema_version, 4);
         assert!(health.errors.is_empty());
     }
 

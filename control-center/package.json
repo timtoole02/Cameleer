@@ -11,8 +11,10 @@
     "tauri": "tauri",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "node scripts/p0-smoke-test.mjs",
-    "smoke:p0": "node scripts/p0-smoke-test.mjs"
+    "test": "node scripts/p0-smoke-test.mjs && node scripts/backlog-smoke-test.mjs && node scripts/kanban-receipt-smoke-test.mjs",
+    "smoke:p0": "node scripts/p0-smoke-test.mjs && node scripts/backlog-smoke-test.mjs && node scripts/kanban-receipt-smoke-test.mjs",
+    "smoke:backlog": "node scripts/backlog-smoke-test.mjs",
+    "smoke:kanban": "node scripts/kanban-receipt-smoke-test.mjs"
   },
   "dependencies": {
     "@babel/core": "^7.29.7",
