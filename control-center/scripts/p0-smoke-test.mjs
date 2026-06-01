@@ -120,6 +120,25 @@ assertMatch('src-tauri/src/task_manager.rs', /start_agent_task_run/, 'Backend mu
 assertMatch('src-tauri/src/task_manager.rs', /task_progress_updates/, 'Agent work must persist progress updates.');
 assertMatch('src-tauri/src/task_manager.rs', /task_work_receipts/, 'Work receipts must be persisted.');
 
+// Backlog refinement checks
+[
+  'src/pages/BacklogPage.tsx',
+  'src/api/backlog.ts',
+  'src-tauri/migrations/0004_backlog_refinement_slice.sql'
+].forEach(assertExists);
+assertMatch('src/pages/BacklogPage.tsx', /function readinessMissing/, 'Backlog must calculate missing ready fields.');
+assertMatch('src/pages/BacklogPage.tsx', /Missing: \{missing\.join\(', '\)\}/, 'Backlog must show missing ready fields.');
+assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| missing\.length > 0\} onClick=\{\(\) => save\('ready'\)\}/, 'Backlog must block Mark ready until ready fields are present.');
+assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| missing\.length > 0 \|\| selected\?\.status === 'converted'\} onClick=\{convert\}/, 'Backlog must block conversion until ready fields are present.');
+assertMatch('src/pages/BacklogPage.tsx', /updateBacklogItem\(selected\.id, toUpdateInput\(form, 'ready'\)\)/, 'Backlog conversion must persist the latest ready-state edits before creating a card.');
+assertMatch('src/pages/BacklogPage.tsx', /convertBacklogItemToCard\(selected\.id\)/, 'Backlog must call the conversion API.');
+assertMatch('src/types/kanban.ts', /readiness_score: number/, 'Backlog item type must expose readiness score.');
+assertMatch('src/types/kanban.ts', /converted_card_id\?: string \| null/, 'Backlog item type must expose converted card links.');
+assertMatch('src-tauri/src/board_services.rs', /Cannot convert backlog item yet\. Missing:/, 'Backend must reject incomplete backlog conversion.');
+assertMatch('src-tauri/src/board_services.rs', /SET status = 'converted', converted_card_id = \?1/, 'Backend must link converted backlog items to Kanban cards.');
+assertMatch('src-tauri/migrations/0004_backlog_refinement_slice.sql', /CREATE TABLE IF NOT EXISTS backlog_activity/, 'Backlog migration must persist activity.');
+assertMatch('src-tauri/migrations/0004_backlog_refinement_slice.sql', /CREATE TABLE IF NOT EXISTS backlog_acceptance_criteria/, 'Backlog migration must persist acceptance criteria.');
+
 // Native-feeling sidebar checks
 assertMatch('src/components/layout/Sidebar.tsx', /borderLeft: isActive \? '4px solid var\(--sidebar-active-border/, 'Active nav must use a subtle left border.');
 assertMatch('src/components/layout/Sidebar.tsx', /background: isActive \? 'var\(--sidebar-active-bg, #1f2937\)'/, 'Active nav must use restrained dark surface.');
