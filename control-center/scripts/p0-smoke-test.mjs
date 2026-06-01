@@ -129,7 +129,8 @@ assertMatch('src-tauri/src/task_manager.rs', /task_work_receipts/, 'Work receipt
 assertMatch('src/pages/BacklogPage.tsx', /function readinessMissing/, 'Backlog must calculate missing ready fields.');
 assertMatch('src/pages/BacklogPage.tsx', /Missing: \{missing\.join\(', '\)\}/, 'Backlog must show missing ready fields.');
 assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| missing\.length > 0\} onClick=\{\(\) => save\('ready'\)\}/, 'Backlog must block Mark ready until ready fields are present.');
-assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| missing\.length > 0 \|\| selected\?\.status === 'converted'\} onClick=\{convert\}/, 'Backlog must block conversion until ready fields are present.');
+assertMatch('src/pages/BacklogPage.tsx', /const canConvertToKanban = Boolean\(selected\) && !creating && selected\?\.status !== 'converted' && missing\.length === 0/, 'Backlog must block conversion until a saved item is ready.');
+assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| !canConvertToKanban\} onClick=\{convert\}/, 'Backlog Convert button must use the conversion guard.');
 assertMatch('src/pages/BacklogPage.tsx', /updateBacklogItem\(selected\.id, toUpdateInput\(form, 'ready'\)\)/, 'Backlog conversion must persist the latest ready-state edits before creating a card.');
 assertMatch('src/pages/BacklogPage.tsx', /convertBacklogItemToCard\(selected\.id\)/, 'Backlog must call the conversion API.');
 assertMatch('src/types/kanban.ts', /readiness_score: number/, 'Backlog item type must expose readiness score.');
