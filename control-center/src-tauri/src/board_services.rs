@@ -181,6 +181,21 @@ fn is_meaningful(value: Option<&str>) -> bool {
     value.map(|v| !v.trim().is_empty()).unwrap_or(false)
 }
 
+fn has_acceptance_criteria(value: Option<&str>) -> bool {
+    let Some(raw) = value.map(str::trim).filter(|v| !v.is_empty()) else {
+        return false;
+    };
+
+    match serde_json::from_str::<serde_json::Value>(raw) {
+        Ok(serde_json::Value::Array(items)) => items.iter().any(|item| match item {
+            serde_json::Value::String(text) => !text.trim().is_empty(),
+            serde_json::Value::Null => false,
+            other => !other.to_string().trim().is_empty(),
+        }),
+        _ => true,
+    }
+}
+
 fn normalize_backlog_status(status: &str) -> String {
     match status.trim().to_lowercase().replace('-', "_").as_str() {
         "backlog" => "captured".to_string(),
@@ -211,7 +226,7 @@ fn calculate_backlog_readiness_score(
     if is_meaningful(instructions) {
         score += 25;
     }
-    if is_meaningful(acceptance_criteria) {
+    if has_acceptance_criteria(acceptance_criteria) {
         score += 25;
     }
     if is_meaningful(priority) {
@@ -240,7 +255,7 @@ fn required_ready_missing(item: &BacklogItem) -> Vec<&'static str> {
     if !is_meaningful(Some(&item.priority)) {
         missing.push("priority");
     }
-    if !is_meaningful(item.acceptance_criteria.as_deref()) {
+    if !has_acceptance_criteria(item.acceptance_criteria.as_deref()) {
         missing.push("acceptance criteria");
     }
     if !is_meaningful(item.owner_agent_id.as_deref())
@@ -702,12 +717,19 @@ pub fn convert_backlog_item_to_task(
     state: State<DbState>,
 ) -> Result<KanbanCard, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    sync_backlog_acceptance_criteria(&conn, &id).map_err(|e| e.to_string())?;
-    let item = get_backlog_item_by_id(&conn, &id).map_err(|e| e.to_string())?;
+    convert_backlog_item_to_task_with_conn(&conn, &id)
+}
+
+fn convert_backlog_item_to_task_with_conn(
+    conn: &Connection,
+    id: &str,
+) -> Result<KanbanCard, String> {
+    sync_backlog_acceptance_criteria(conn, id).map_err(|e| e.to_string())?;
+    let item = get_backlog_item_by_id(conn, id).map_err(|e| e.to_string())?;
 
     if let Some(card_id) = item.converted_card_id.as_deref() {
         if !card_id.trim().is_empty() {
-            return get_kanban_card_by_id(&conn, card_id).map_err(|e| e.to_string());
+            return get_kanban_card_by_id(conn, card_id).map_err(|e| e.to_string());
         }
     }
 
@@ -720,7 +742,7 @@ pub fn convert_backlog_item_to_task(
     }
 
     let card_id = Uuid::new_v4().to_string();
-    let task_key = next_task_key(&conn).map_err(|e| e.to_string())?;
+    let task_key = next_task_key(conn).map_err(|e| e.to_string())?;
     conn.execute(
         "INSERT INTO kanban_cards (
             id, task_key, workspace_id, project_id, backlog_id, title, description, instructions,
@@ -735,7 +757,7 @@ pub fn convert_backlog_item_to_task(
             task_key,
             item.workspace_id,
             item.project_id,
-            id,
+            item.backlog_id,
             item.title,
             item.description,
             item.instructions,
@@ -759,7 +781,7 @@ pub fn convert_backlog_item_to_task(
     )
     .map_err(|e| e.to_string())?;
     insert_backlog_activity(
-        &conn,
+        conn,
         &id,
         "converted_to_task",
         &format!("Converted to Kanban task {}", task_key),
@@ -767,7 +789,7 @@ pub fn convert_backlog_item_to_task(
     )
     .map_err(|e| e.to_string())?;
     insert_task_activity(
-        &conn,
+        conn,
         &card_id,
         "created_from_backlog",
         "Task created from backlog item",
@@ -775,7 +797,7 @@ pub fn convert_backlog_item_to_task(
     )
     .map_err(|e| e.to_string())?;
 
-    get_kanban_card_by_id(&conn, &card_id).map_err(|e| e.to_string())
+    get_kanban_card_by_id(conn, &card_id).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -860,6 +882,101 @@ pub fn get_board_snapshot(
         }
     }
     Ok(items)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::storage::init_db;
+
+    fn setup_backlog_db() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        init_db(&conn).unwrap();
+        conn.execute(
+            "INSERT INTO workspaces (id, name, path, active)
+             VALUES ('default-workspace', 'Default Workspace', '/tmp/cameleer-test', 1)",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO backlogs (id, workspace_id, name)
+             VALUES ('product-backlog', 'default-workspace', 'Product Backlog')",
+            [],
+        )
+        .unwrap();
+        conn
+    }
+
+    fn insert_convertible_backlog_item(conn: &Connection, id: &str) {
+        conn.execute(
+            "INSERT INTO backlog_items (
+                id, workspace_id, backlog_id, title, description, instructions, type, priority,
+                status, owner_agent_id, suggested_agent_role, acceptance_criteria, risk_level
+             )
+             VALUES (?1, 'default-workspace', 'product-backlog', 'Ship import queue', 'Build the queue',
+                     'Persist receipts for each imported record', 'feature', 'high',
+                     'ready', NULL, 'Backend Engineer', ?2, 'medium')",
+            params![id, r#"["Queue persists successful imports"]"#],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn empty_acceptance_criteria_json_is_not_ready() {
+        assert!(!has_acceptance_criteria(None));
+        assert!(!has_acceptance_criteria(Some("")));
+        assert!(!has_acceptance_criteria(Some("[]")));
+        assert!(!has_acceptance_criteria(Some(r#"["   "]"#)));
+        assert!(has_acceptance_criteria(Some(
+            r#"["User can retry failed imports"]"#
+        )));
+        assert!(has_acceptance_criteria(Some(
+            "Plain-language acceptance criteria"
+        )));
+    }
+
+    #[test]
+    fn conversion_rejects_empty_synced_acceptance_criteria() {
+        let conn = setup_backlog_db();
+        insert_convertible_backlog_item(&conn, "backlog-empty-criteria");
+        conn.execute(
+            "UPDATE backlog_items SET acceptance_criteria = NULL WHERE id = 'backlog-empty-criteria'",
+            [],
+        )
+        .unwrap();
+
+        let error = convert_backlog_item_to_task_with_conn(&conn, "backlog-empty-criteria")
+            .expect_err("empty synced criteria must block conversion");
+
+        assert!(error.contains("acceptance criteria"), "{error}");
+        let cards: i64 = conn
+            .query_row("SELECT COUNT(*) FROM kanban_cards", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(cards, 0);
+    }
+
+    #[test]
+    fn conversion_is_idempotent_for_converted_backlog_item() {
+        let conn = setup_backlog_db();
+        insert_convertible_backlog_item(&conn, "backlog-ready");
+        conn.execute(
+            "INSERT INTO backlog_acceptance_criteria (id, backlog_item_id, text, sort_order)
+             VALUES ('criterion-ready', 'backlog-ready', 'Queue persists successful imports', 0)",
+            [],
+        )
+        .unwrap();
+
+        let first = convert_backlog_item_to_task_with_conn(&conn, "backlog-ready").unwrap();
+        let second = convert_backlog_item_to_task_with_conn(&conn, "backlog-ready").unwrap();
+
+        assert_eq!(first.id, second.id);
+        assert_eq!(first.backlog_id.as_deref(), Some("product-backlog"));
+        assert_eq!(first.status, "ready");
+        let cards: i64 = conn
+            .query_row("SELECT COUNT(*) FROM kanban_cards", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(cards, 1);
+    }
 }
 
 #[tauri::command]
