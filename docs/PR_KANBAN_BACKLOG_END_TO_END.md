@@ -7,10 +7,13 @@ This branch turns the Backlog to Kanban path into a validated product workflow. 
 ## Branch State
 
 - Source branch: `fix/kanban-backlog-end-to-end`
-- Current head: `b9384db Connect backlog conversion workflow`
-- Remote source branch: `origin/fix/kanban-backlog-end-to-end` at `b9384db`
-- Integration branch baseline: `origin/verify/p0-real-run` at `b1375ba`
+- Accepted workflow head: `b9384db Connect backlog conversion workflow`
+- Local handoff branch adds docs-only acceptance notes above `b9384db`
+- Remote source branch `fix/kanban-backlog-end-to-end`: `b9384db`
+- Remote integration branch `verify/p0-real-run`: `b1375ba`
 - Main baseline: `origin/main` at `ce87188`
+
+Remote branch tips were confirmed with `git ls-remote` on 2026-06-01 because the local `origin` fetch refspec tracks `main` only.
 
 ## Commits Included Since `origin/main`
 
@@ -21,6 +24,10 @@ This branch turns the Backlog to Kanban path into a validated product workflow. 
 - `b1375ba` Document Cameleer integration gate proof
 - `9cc32ab` Harden backlog conversion readiness
 - `b9384db` Connect backlog conversion workflow
+
+Docs-only handoff commits above the accepted workflow head:
+
+- `1fab400` Document Kanban backlog acceptance handoff
 
 ## Product Acceptance Covered
 
