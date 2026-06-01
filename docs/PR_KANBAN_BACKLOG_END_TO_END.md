@@ -28,6 +28,7 @@ Remote branch tips were confirmed with `git ls-remote` on 2026-06-01 because the
 Docs-only handoff commits above the accepted workflow head:
 
 - `1fab400` Document Kanban backlog acceptance handoff
+- `2fea45e` Clarify Kanban backlog handoff branch state
 
 ## Product Acceptance Covered
 
@@ -71,3 +72,10 @@ Native `screencapture` was blocked by the session display context, so the accept
 - `origin/verify/p0-real-run` is still behind this branch and needs an intentional update or PR merge.
 - Internal disk remains tight compared with the requested release buffer, so keep build targets on SSK until more space is reclaimed.
 - Existing Rust warning noise is not addressed by this branch.
+
+## Handoff Checklist
+
+- Open the PR from `fix/kanban-backlog-end-to-end` into `main`, or intentionally fast-forward/update `verify/p0-real-run` from this branch first.
+- Keep the accepted workflow evidence anchored to `b9384db`; later docs-only commits only prepare the branch for review.
+- Before merge, rerun the focused gate from `control-center`: `npm run smoke:p0`, `npm run smoke:backlog`, and `npm run smoke:kanban`.
+- Use SSK-backed Cargo targets for any Rust revalidation while internal disk remains below the desired release buffer.
