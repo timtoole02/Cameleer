@@ -42,6 +42,7 @@ console.log('Running Kanban smoke test...');
   'src/components/kanban/CreateTaskModal.tsx',
   'src/components/kanban/AcceptanceCriteriaEditor.tsx',
   'src/components/kanban/AgentAssignmentSelect.tsx',
+  'src/components/kanban/PrioritySelector.tsx',
   'src/components/kanban/TaskActivityTimeline.tsx',
   'src/components/kanban/WorkReceiptPanel.tsx',
   'src/components/kanban/AgentRunPanel.tsx',
@@ -64,6 +65,10 @@ assertMatch('src/components/kanban/TaskCard.tsx', /task_key/, 'Task cards must s
 assertMatch('src/components/kanban/TaskCard.tsx', /criteria/, 'Task cards must show acceptance criteria counts.');
 assertMatch('src/components/kanban/TaskCard.tsx', /work_receipt_id/, 'Task cards must expose receipt state.');
 assertMatch('src/components/kanban/AgentAssignmentSelect.tsx', /model_name \|\| 'No model'/, 'Agent assignment must show no-model agents honestly.');
+assertMatch('src/components/kanban/CreateTaskModal.tsx', /PrioritySelector/, 'Create task modal must use the actionable priority control.');
+assertMatch('src/components/kanban/EditTaskForm.tsx', /PrioritySelector/, 'Task detail form must use the actionable priority control.');
+assertMatch('src/components/kanban/PrioritySelector.tsx', /aria-label=\{`Set priority \$\{priority\}`\}/, 'Priority choices must have unique accessible names.');
+assertMatch('src/components/kanban/PrioritySelector.tsx', /aria-pressed=\{value === priority\}/, 'Priority selector must expose selected state.');
 assertMatch('src/components/kanban/TaskDetailDrawer.tsx', /completeDisabledReason/, 'Task drawer must receive completion guard text.');
 assertMatch('src/components/kanban/TaskDetailDrawer.tsx', /Start disabled:/, 'Task drawer must show exact Start Work disabled reason.');
 assertMatch('src/components/kanban/TaskDetailDrawer.tsx', /Complete disabled:/, 'Task drawer must show exact completion disabled reason.');

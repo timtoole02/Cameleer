@@ -3,6 +3,7 @@ import { Agent } from '../../types/agent';
 import { CreateTaskInput, Task } from '../../types/task';
 import { AcceptanceCriteriaEditor, parseAcceptanceCriteria, serializeAcceptanceCriteria } from './AcceptanceCriteriaEditor';
 import { AgentAssignmentSelect } from './AgentAssignmentSelect';
+import { PrioritySelector } from './PrioritySelector';
 
 interface EditTaskFormProps {
   task: Task;
@@ -76,12 +77,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({ task, agents, onSave
       <div className="kanban-form-grid">
         <label className="kanban-field">
           <span>Priority</span>
-          <select value={priority} onChange={(event) => setPriority(event.target.value)}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
+          <PrioritySelector value={priority} onChange={setPriority} />
         </label>
         <label className="kanban-field">
           <span>Type</span>

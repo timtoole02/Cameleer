@@ -43,6 +43,7 @@ read('src/components/backlog/CreateBacklogItemModal.tsx');
 read('src/components/backlog/BacklogReadinessPanel.tsx');
 read('src/components/backlog/ConvertToTaskPanel.tsx');
 read('src/components/kanban/AcceptanceCriteriaEditor.tsx');
+read('src/components/kanban/PrioritySelector.tsx');
 
 assertMatch('src/pages/BacklogPage.tsx', /createBacklogItem/, 'Create backlog path must use the backlog API wrapper.');
 assertMatch('src/pages/BacklogPage.tsx', /BacklogDetailDrawer/, 'Backlog page must render the detail drawer component.');
@@ -56,9 +57,13 @@ assertMatch('src/pages/BacklogPage.tsx', /const currentReadinessScore = readines
 assertMatch('src/pages/BacklogPage.tsx', /const canConvertToKanban = Boolean\(selected\) && !creating && selected\?\.status !== 'converted' && missing\.length === 0/, 'Backlog conversion must require a saved non-converted item.');
 assertMatch('src/pages/BacklogPage.tsx', /setFocusedTaskId\(taskId\)/, 'Backlog converted task panel must open the Kanban task.');
 assertMatch('src/pages/BacklogPage.tsx', /acceptance_criteria/, 'Backlog must expose acceptance criteria editing.');
+assertMatch('src/pages/BacklogPage.tsx', /PrioritySelector/, 'Backlog must expose priority as an actionable segmented control.');
 assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| missing\.length > 0/, 'Ready/convert actions must be disabled when ready fields are missing.');
 assertMatch('src/components/backlog/BacklogReadinessPanel.tsx', /<progress max=\{100\} value=\{score\}/, 'Backlog readiness progress must use the live form score.');
 assertMatch('src/components/backlog/ConvertToTaskPanel.tsx', /disabled=\{busy \|\| !canConvert\}/, 'Backlog Convert button must use the saved-item conversion guard.');
+assertMatch('src/components/kanban/PrioritySelector.tsx', /aria-label="Priority"/, 'Priority selector must be accessible by label.');
+assertMatch('src/components/kanban/PrioritySelector.tsx', /aria-label=\{`Set priority \$\{priority\}`\}/, 'Priority selector choices must have unique accessible names.');
+assertMatch('src/components/kanban/PrioritySelector.tsx', /priorityOptions = \['low', 'medium', 'high', 'critical'\]/, 'Priority selector must expose all expected priority values.');
 
 assertMatch('src/api/backlog.ts', /apiCall<BacklogItem>\("create_backlog_item"/, 'Create API wrapper must call create_backlog_item.');
 assertMatch('src/api/backlog.ts', /apiCall<BacklogItem>\("update_backlog_item"/, 'Update API wrapper must call update_backlog_item.');

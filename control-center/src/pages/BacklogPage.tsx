@@ -13,6 +13,7 @@ import { BacklogList } from '../components/backlog/BacklogList';
 import { BacklogReadinessPanel } from '../components/backlog/BacklogReadinessPanel';
 import { ConvertToTaskPanel } from '../components/backlog/ConvertToTaskPanel';
 import { CreateBacklogItemModal } from '../components/backlog/CreateBacklogItemModal';
+import { PrioritySelector } from '../components/kanban/PrioritySelector';
 import { useAppStore } from '../state/appStore';
 
 const statuses = [
@@ -386,9 +387,10 @@ export const BacklogPage: React.FC = () => {
                     </label>
                     <label className="kanban-field">
                       <span>Priority</span>
-                      <select value={form.priority} onChange={(event) => setForm((value) => ({ ...value, priority: event.target.value }))}>
-                        {priorities.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
-                      </select>
+                      <PrioritySelector
+                        value={form.priority}
+                        onChange={(priority) => setForm((value) => ({ ...value, priority }))}
+                      />
                     </label>
                   </div>
                   <div className="kanban-form-grid">
