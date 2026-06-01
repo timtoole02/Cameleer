@@ -110,9 +110,11 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
         {completeDisabledReason && <div className="kanban-warning">Complete disabled: {completeDisabledReason}</div>}
         <div className="drawer-action-grid">
           <button type="button" onClick={onStartWork} disabled={busy || Boolean(startDisabledReason)}>Start Work</button>
+          <button type="button" className="secondary-button" onClick={() => onMove('in_progress')} disabled={busy}>Move to In Progress</button>
           <button type="button" className="secondary-button" onClick={() => onMove('review')} disabled={busy}>Move to Review</button>
           <button type="button" className="secondary-button" onClick={() => onMove('ready')} disabled={busy}>Move to Ready</button>
-          <button type="button" onClick={onApproveReceipt} disabled={busy || Boolean(completeDisabledReason)}>Complete</button>
+          <button type="button" onClick={onGenerateReceipt} disabled={busy}>Generate Receipt</button>
+          <button type="button" onClick={onApproveReceipt} disabled={busy || Boolean(completeDisabledReason)}>Approve and Complete</button>
           {task.status === 'blocked' ? (
             <button type="button" className="secondary-button" onClick={onUnblock} disabled={busy}>Unblock</button>
           ) : (

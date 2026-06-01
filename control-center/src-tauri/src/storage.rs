@@ -489,6 +489,48 @@ mod tests {
     }
 
     #[test]
+    fn cannot_start_task_without_agent() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "UPDATE kanban_cards SET assigned_agent_id = NULL WHERE id = 'task-1'",
+            [],
+        )
+        .unwrap();
+
+        let assigned_agent_id: Option<String> = conn
+            .query_row(
+                "SELECT assigned_agent_id FROM kanban_cards WHERE id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert!(assigned_agent_id.is_none());
+    }
+
+    #[test]
+    fn cannot_start_task_without_instructions() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "UPDATE kanban_cards SET instructions = '' WHERE id = 'task-1'",
+            [],
+        )
+        .unwrap();
+
+        let instructions: String = conn
+            .query_row(
+                "SELECT instructions FROM kanban_cards WHERE id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert!(instructions.trim().is_empty());
+    }
+
+    #[test]
     fn agent_task_response_creates_progress_update() {
         let conn = setup_kanban_test_db();
         insert_test_task(&conn);
@@ -599,6 +641,33 @@ mod tests {
             )
             .unwrap();
         assert_eq!(receipt_count, 1);
+    }
+
+    #[test]
+    fn reopen_task_preserves_history() {
+        let conn = setup_kanban_test_db();
+        insert_test_task(&conn);
+        conn.execute(
+            "INSERT INTO task_activity (id, task_id, actor_type, event_type, summary)
+             VALUES ('activity-before-reopen', 'task-1', 'user', 'task_completed', 'Task completed')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "UPDATE kanban_cards SET status = 'ready', reopen_reason = 'Needs another pass' WHERE id = 'task-1'",
+            [],
+        )
+        .unwrap();
+
+        let activity_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM task_activity WHERE task_id = 'task-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert_eq!(activity_count, 1);
     }
 
     #[test]

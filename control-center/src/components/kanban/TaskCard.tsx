@@ -58,6 +58,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, agent, selected, onSel
         <span>Assigned: {agent?.name || 'Unassigned'}</span>
         <span>{criteriaCount} criteria</span>
       </div>
+      {task.status === 'done' || task.work_receipt_id ? (
+        <span className="receipt-state">{task.work_receipt_id ? 'Receipt attached' : 'Receipt required'}</span>
+      ) : null}
       {labels.length > 0 && (
         <div className="task-labels">
           {labels.map((label) => <span key={label}>{label}</span>)}

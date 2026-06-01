@@ -1,9 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { getAgents } from '../api/agents';
 import { convertBacklogItemToCard, createBacklogItem, getBacklogSnapshot, updateBacklogItem } from '../api/backlog';
+import { getTask } from '../api/tasks';
 import { BacklogItem, CreateBacklogItemInput, UpdateBacklogItemInput } from '../types';
+import { Agent } from '../types/agent';
+import { Task } from '../types/task';
 import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { PageShell } from '../components/common/PageShell';
+import { BacklogDetailDrawer } from '../components/backlog/BacklogDetailDrawer';
+import { BacklogList } from '../components/backlog/BacklogList';
+import { BacklogReadinessPanel } from '../components/backlog/BacklogReadinessPanel';
+import { ConvertToTaskPanel } from '../components/backlog/ConvertToTaskPanel';
+import { CreateBacklogItemModal } from '../components/backlog/CreateBacklogItemModal';
 import { useAppStore } from '../state/appStore';
 
 const statuses = [
@@ -29,6 +38,7 @@ type BacklogForm = {
   priority: string;
   risk_level: string;
   labels: string;
+  owner_agent_id: string;
   suggested_agent_role: string;
   acceptance_criteria: string;
   definition_of_done: string;
@@ -45,6 +55,7 @@ const emptyForm: BacklogForm = {
   priority: 'medium',
   risk_level: 'unknown',
   labels: '',
+  owner_agent_id: '',
   suggested_agent_role: '',
   acceptance_criteria: '',
   definition_of_done: '',
@@ -63,6 +74,7 @@ function toForm(item: BacklogItem | null): BacklogForm {
     priority: item.priority || 'medium',
     risk_level: item.risk_level || 'unknown',
     labels: item.labels || '',
+    owner_agent_id: item.owner_agent_id || '',
     suggested_agent_role: item.suggested_agent_role || item.proposed_agent_role || '',
     acceptance_criteria: item.acceptance_criteria || '',
     definition_of_done: item.definition_of_done || '',
@@ -79,7 +91,7 @@ function readinessMissing(form: BacklogForm): string[] {
   if (!form.type_name.trim()) missing.push('type');
   if (!form.priority.trim()) missing.push('priority');
   if (!form.acceptance_criteria.trim()) missing.push('acceptance criteria');
-  if (!form.suggested_agent_role.trim()) missing.push('suggested agent');
+  if (!form.owner_agent_id.trim() && !form.suggested_agent_role.trim()) missing.push('assigned or suggested agent');
   return missing;
 }
 
@@ -90,7 +102,7 @@ function readinessScore(form: BacklogForm): number {
     form.type_name.trim(),
     form.priority.trim(),
     form.acceptance_criteria.trim(),
-    form.suggested_agent_role.trim(),
+    form.owner_agent_id.trim() || form.suggested_agent_role.trim(),
   ].filter(Boolean).length;
 
   return Math.round((presentFields / 6) * 100);
@@ -109,11 +121,6 @@ function displayDate(value?: string): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-function compactText(value?: string | null, fallback = 'None'): string {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : fallback;
-}
-
 function humanize(value: string): string {
   return value.replace(/_/g, ' ');
 }
@@ -128,6 +135,7 @@ function toCreateInput(workspaceId: string, form: BacklogForm): CreateBacklogIte
     priority: form.priority,
     risk_level: form.risk_level,
     labels: form.labels.trim() || null,
+    owner_agent_id: form.owner_agent_id || null,
     suggested_agent_role: form.suggested_agent_role.trim() || null,
     acceptance_criteria: form.acceptance_criteria.trim() || null,
     definition_of_done: form.definition_of_done.trim() || null,
@@ -147,6 +155,7 @@ function toUpdateInput(form: BacklogForm, status?: string): UpdateBacklogItemInp
     labels: form.labels.trim() || null,
     risk_level: form.risk_level,
     effort_estimate: form.effort_estimate.trim() || null,
+    owner_agent_id: form.owner_agent_id || null,
     suggested_agent_role: form.suggested_agent_role.trim() || null,
     acceptance_criteria: form.acceptance_criteria.trim() || null,
     definition_of_done: form.definition_of_done.trim() || null,
@@ -156,9 +165,11 @@ function toUpdateInput(form: BacklogForm, status?: string): UpdateBacklogItemInp
 }
 
 export const BacklogPage: React.FC = () => {
-  const { backendHealth, activeProjectId } = useAppStore();
+  const { backendHealth, activeProjectId, setActiveTab, setFocusedTaskId } = useAppStore();
   const workspaceId = backendHealth?.active_workspace_id || activeProjectId || 'default-workspace';
   const [items, setItems] = useState<BacklogItem[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [convertedTask, setConvertedTask] = useState<Task | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<BacklogForm>(emptyForm);
   const [creating, setCreating] = useState(false);
@@ -202,8 +213,9 @@ export const BacklogPage: React.FC = () => {
 
   const loadBacklog = async (preferredId?: string | null) => {
     setError(null);
-    const next = await getBacklogSnapshot(workspaceId);
+    const [next, nextAgents] = await Promise.all([getBacklogSnapshot(workspaceId), getAgents()]);
     setItems(next);
+    setAgents(nextAgents);
     const nextSelected = preferredId ? next.find((item) => item.id === preferredId) : selectedId ? next.find((item) => item.id === selectedId) : null;
     if (nextSelected) {
       setSelectedId(nextSelected.id);
@@ -221,6 +233,16 @@ export const BacklogPage: React.FC = () => {
       .catch((err: any) => setError(String(err)))
       .finally(() => setLoading(false));
   }, [workspaceId]);
+
+  useEffect(() => {
+    if (!selected?.converted_card_id) {
+      setConvertedTask(null);
+      return;
+    }
+    getTask(selected.converted_card_id)
+      .then(setConvertedTask)
+      .catch(() => setConvertedTask(null));
+  }, [selected?.converted_card_id]);
 
   const selectItem = (item: BacklogItem) => {
     setCreating(false);
@@ -266,9 +288,25 @@ export const BacklogPage: React.FC = () => {
     if (!selected) return;
     await run(async () => {
       await updateBacklogItem(selected.id, toUpdateInput(form, 'ready'));
-      await convertBacklogItemToCard(selected.id);
+      const card = await convertBacklogItemToCard(selected.id);
+      setConvertedTask(card as unknown as Task);
     }, selected.id);
   };
+
+  const openConvertedTask = () => {
+    const taskId = selected?.converted_card_id || convertedTask?.id;
+    if (!taskId) return;
+    setFocusedTaskId(taskId);
+    setActiveTab('Kanban');
+  };
+
+  const convertDisabledReason = creating
+    ? 'save the backlog item first'
+    : missing.length
+      ? `missing ${missing.join(', ')}`
+      : selected?.status === 'converted'
+        ? 'item is already converted'
+        : null;
 
   if (loading) return <PageShell title="Backlog"><LoadingState /></PageShell>;
 
@@ -285,7 +323,7 @@ export const BacklogPage: React.FC = () => {
             <button type="button" className="secondary-button" onClick={() => loadBacklog().catch((err: any) => setError(String(err)))}>
               Refresh
             </button>
-            <button type="button" onClick={startCreate}>New item</button>
+            <CreateBacklogItemModal onCreate={startCreate} />
           </div>
         </header>
 
@@ -308,42 +346,9 @@ export const BacklogPage: React.FC = () => {
         {error && <ErrorState message={error} />}
 
         <div className="backlog-workspace">
-          <section className="backlog-list" aria-label="Backlog items">
-            {groups.map((group) => (
-              <div key={group.id} className="backlog-group">
-                <div className="backlog-group-header">
-                  <h2>{group.label}</h2>
-                  <span>{group.items.length}</span>
-                </div>
-                <div className="backlog-card-stack">
-                  {group.items.length === 0 ? (
-                    <div className="backlog-empty">No items</div>
-                  ) : group.items.map((item) => (
-                    <button
-                      type="button"
-                      key={item.id}
-                      className={`backlog-card ${selectedId === item.id ? 'selected' : ''}`}
-                      onClick={() => selectItem(item)}
-                    >
-                      <div className="backlog-card-topline">
-                        <span className={`status-pill status-${item.status}`}>{humanize(item.status)}</span>
-                        <span className={`priority-pill priority-${item.priority}`}>{item.priority}</span>
-                      </div>
-                      <strong>{item.title}</strong>
-                      <p>{compactText(item.description || item.instructions, 'No detail yet')}</p>
-                      <div className="backlog-card-meta">
-                        <span>{item.type_name}</span>
-                        <span>{item.readiness_score}%</span>
-                        <span>{compactText(item.suggested_agent_role || item.proposed_agent_role, 'unassigned')}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </section>
+          <BacklogList groups={groups} selectedId={selectedId} onSelectItem={selectItem} />
 
-          <aside className="backlog-drawer">
+          <BacklogDetailDrawer>
             <div className="drawer-header">
               <div>
                 <span className="eyebrow">{creating ? 'New intake' : selected ? humanize(selected.status) : 'No item selected'}</span>
@@ -353,18 +358,7 @@ export const BacklogPage: React.FC = () => {
 
             {(creating || selected) ? (
               <>
-                <div className="readiness-panel">
-                  <div>
-                    <strong>{readinessLabel(currentReadinessScore)}</strong>
-                    <span>{currentReadinessScore}% ready</span>
-                  </div>
-                  <progress max={100} value={currentReadinessScore} />
-                  {missing.length > 0 ? (
-                    <p>Missing: {missing.join(', ')}</p>
-                  ) : (
-                    <p>Ready fields are present. Promote when the task belongs on the execution board.</p>
-                  )}
-                </div>
+                <BacklogReadinessPanel score={currentReadinessScore} label={readinessLabel(currentReadinessScore)} missing={missing} />
 
                 <div className="backlog-form">
                   <label className="kanban-field">
@@ -410,6 +404,17 @@ export const BacklogPage: React.FC = () => {
                     </label>
                   </div>
                   <label className="kanban-field">
+                    <span>Assigned agent</span>
+                    <select value={form.owner_agent_id} onChange={(event) => setForm((value) => ({ ...value, owner_agent_id: event.target.value }))}>
+                      <option value="">Unassigned</option>
+                      {agents.map((agent) => (
+                        <option key={agent.id} value={agent.id}>
+                          {agent.name} - {agent.role || 'Agent'} - {agent.model_name || 'No model'} - {agent.status || 'unknown'}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="kanban-field">
                     <span>Suggested agent role</span>
                     <input value={form.suggested_agent_role} onChange={(event) => setForm((value) => ({ ...value, suggested_agent_role: event.target.value }))} placeholder="Frontend Engineer, QA, Backend Engineer" />
                   </label>
@@ -440,9 +445,16 @@ export const BacklogPage: React.FC = () => {
                     <button type="button" className="secondary-button" disabled={busy} onClick={() => save('needs_refinement')}>Needs refinement</button>
                     <button type="button" className="secondary-button" disabled={busy} onClick={() => save('refined')}>Mark refined</button>
                     <button type="button" className="secondary-button" disabled={busy || missing.length > 0} onClick={() => save('ready')}>Mark ready</button>
-                    <button type="button" disabled={busy || !canConvertToKanban} onClick={convert}>Convert to Kanban</button>
                     <button type="button" className="secondary-button" disabled={busy} onClick={() => save('archived')}>Archive</button>
                   </div>
+                  <ConvertToTaskPanel
+                    convertedLabel={selected?.status === 'converted' || selected?.converted_card_id ? convertedTask?.task_key || selected?.converted_card_id || 'Kanban task' : null}
+                    canConvert={canConvertToKanban}
+                    disabledReason={convertDisabledReason}
+                    busy={busy}
+                    onConvert={convert}
+                    onOpenTask={openConvertedTask}
+                  />
                 </div>
 
                 {selected ? (
@@ -459,7 +471,7 @@ export const BacklogPage: React.FC = () => {
                 <span>Create or select an intake item to refine it.</span>
               </div>
             )}
-          </aside>
+          </BacklogDetailDrawer>
         </div>
       </div>
     </PageShell>

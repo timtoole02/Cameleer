@@ -1,4 +1,5 @@
 export * from './kanban';
+export * from './backlog';
 export * from './agent';
 export * from './project';
 export * from './runtime';

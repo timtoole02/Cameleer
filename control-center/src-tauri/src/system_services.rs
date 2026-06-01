@@ -432,7 +432,7 @@ pub fn inspect_database_health(
 #[tauri::command]
 pub async fn get_backend_health(state: State<'_, DbState>) -> Result<BackendHealth, String> {
     let mut warnings = Vec::new();
-    let required_schema_version = 3i64;
+    let required_schema_version = 4i64;
     let database_path = crate::storage::get_db_path().to_string_lossy().to_string();
 
     let db_info = {

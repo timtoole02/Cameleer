@@ -86,7 +86,7 @@ function matchesFilters(task: Task, filters: Filters): boolean {
 }
 
 export const KanbanPage: React.FC = () => {
-  const { backendHealth, activeProjectId } = useAppStore();
+  const { backendHealth, activeProjectId, focusedTaskId, setFocusedTaskId } = useAppStore();
   const workspaceId = backendHealth?.active_workspace_id || activeProjectId || 'default-workspace';
   const [columns, setColumns] = useState<BoardColumn[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -106,8 +106,9 @@ export const KanbanPage: React.FC = () => {
   const selectedAgent = selectedTask?.assigned_agent_id ? agentsById.get(selectedTask.assigned_agent_id) : undefined;
   const filteredTasks = useMemo(() => tasks.filter((task) => matchesFilters(task, filters)), [tasks, filters]);
 
-  const loadDetail = useCallback(async (task: Task | null) => {
-    if (!task) {
+  const loadDetailById = useCallback(async (taskId: string | null) => {
+    if (!taskId) {
+      setSelectedTask(null);
       setActivity([]);
       setProgress([]);
       setRuns([]);
@@ -115,11 +116,11 @@ export const KanbanPage: React.FC = () => {
       return;
     }
     const [nextTask, nextActivity, nextProgress, nextRuns, nextReceipt] = await Promise.all([
-      getTask(task.id),
-      listTaskActivity(task.id),
-      listTaskProgressUpdates(task.id),
-      listTaskRuns(task.id),
-      getTaskWorkReceipt(task.id),
+      getTask(taskId),
+      listTaskActivity(taskId),
+      listTaskProgressUpdates(taskId),
+      listTaskRuns(taskId),
+      getTaskWorkReceipt(taskId),
     ]);
     setSelectedTask(nextTask);
     setActivity(nextActivity);
@@ -138,12 +139,16 @@ export const KanbanPage: React.FC = () => {
     setColumns(nextColumns.sort((a, b) => a.rank - b.rank));
     setTasks(nextTasks);
     setAgents(nextAgents);
-    if (selectedTask) {
-      const refreshed = nextTasks.find((task) => task.id === selectedTask.id) || null;
-      setSelectedTask(refreshed);
-      if (refreshed) await loadDetail(refreshed);
+    const taskToFocus = focusedTaskId
+      ? nextTasks.find((task) => task.id === focusedTaskId) || null
+      : selectedTask
+        ? nextTasks.find((task) => task.id === selectedTask.id) || null
+        : null;
+    if (taskToFocus) {
+      if (focusedTaskId) setFocusedTaskId(null);
+      await loadDetailById(taskToFocus.id);
     }
-  }, [workspaceId, selectedTask?.id, loadDetail]);
+  }, [workspaceId, selectedTask?.id, focusedTaskId, setFocusedTaskId, loadDetailById]);
 
   useEffect(() => {
     setLoading(true);
@@ -153,12 +158,12 @@ export const KanbanPage: React.FC = () => {
   }, [loadBoard]);
 
   useEffect(() => {
-    loadDetail(selectedTask).catch((err: any) => setError(String(err)));
-  }, [selectedTask?.id, loadDetail]);
+    loadDetailById(selectedTask?.id || null).catch((err: any) => setError(String(err)));
+  }, [selectedTask?.id, loadDetailById]);
 
-  const refreshSelected = async (task?: Task | null) => {
+  const refreshSelected = async (taskId?: string | null) => {
     await loadBoard();
-    await loadDetail(task ?? selectedTask);
+    await loadDetailById(taskId ?? selectedTask?.id ?? null);
   };
 
   const runTaskAction = async (
@@ -168,9 +173,9 @@ export const KanbanPage: React.FC = () => {
     setBusy(true);
     setError(null);
     try {
-      const result = await action();
-      const nextTask = result && 'title' in result ? result as Task : taskForDetail;
-      await refreshSelected(nextTask || null);
+      const taskId = taskForDetail?.id || selectedTask?.id || null;
+      await action();
+      await refreshSelected(taskId);
     } catch (err: any) {
       setError(String(err));
     } finally {
@@ -298,8 +303,7 @@ export const KanbanPage: React.FC = () => {
             onCreate={async (input: CreateTaskInput) => {
               const task = await createTask({ ...input, workspace_id: workspaceId });
               setCreateStatus(null);
-              setSelectedTask(task);
-              await refreshSelected(task);
+              await refreshSelected(task.id);
             }}
           />
         )}

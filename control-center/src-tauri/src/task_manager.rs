@@ -1127,7 +1127,7 @@ pub async fn start_agent_task_run(
         let db_health = inspect_database_health(
             &conn,
             crate::storage::get_db_path().display().to_string(),
-            3,
+            4,
         );
         if db_health.database_status != "ready" {
             return Err(format!(
@@ -1306,14 +1306,41 @@ pub async fn start_agent_task_run(
                     params![answer, task_id],
                 )
                 .map_err(|e| e.to_string())?;
+                let receipt_id = uuid::Uuid::new_v4().to_string();
+                let follow_up =
+                    serde_json::json!(["Review the generated receipt before approving Done."])
+                        .to_string();
+                conn.execute(
+                    "INSERT INTO task_work_receipts (
+                        id, task_id, agent_id, summary, instructions_followed, acceptance_criteria_results,
+                        files_created, files_modified, commands_run, tests_run, validation_status,
+                        evidence_links, known_limitations, follow_up_recommendations
+                     )
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, '[]', '[]', '[]', '[]', 'needs_review', '[]', '[]', ?7)",
+                    params![
+                        receipt_id,
+                        task_id,
+                        agent_id,
+                        answer,
+                        instructions,
+                        acceptance_criteria.unwrap_or_else(|| "[]".to_string()),
+                        follow_up,
+                    ],
+                )
+                .map_err(|e| e.to_string())?;
+                conn.execute(
+                    "UPDATE kanban_cards SET work_receipt_id = ?1, completion_evidence = ?2, updated_at = CURRENT_TIMESTAMP WHERE id = ?3",
+                    params![receipt_id, answer, task_id],
+                )
+                .map_err(|e| e.to_string())?;
                 insert_task_activity(
                     &conn,
                     &task_id,
                     "agent",
                     Some(&agent_id),
                     "agent_response_saved",
-                    "Agent response saved and task moved to Review",
-                    Some(serde_json::json!({ "run_id": run_id })),
+                    "Agent response saved, task moved to Review, and draft receipt generated",
+                    Some(serde_json::json!({ "run_id": run_id, "receipt_id": receipt_id })),
                 )?;
             }
             Err(error) => {
@@ -2745,12 +2772,12 @@ pub fn get_agent_runs(
     let mut params: Vec<String> = vec![];
 
     if let Some(aid) = agent_id {
-        query.push_str(&format!(" AND agent_id = '?{}'", params.len() + 1));
+        query.push_str(&format!(" AND agent_id = ?{}", params.len() + 1));
         params.push(aid);
     }
 
     if let Some(tid) = task_id {
-        query.push_str(&format!(" AND task_id = '?{}'", params.len() + 1));
+        query.push_str(&format!(" AND task_id = ?{}", params.len() + 1));
         params.push(tid);
     }
 

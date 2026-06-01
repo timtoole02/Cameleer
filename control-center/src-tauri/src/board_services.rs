@@ -904,6 +904,12 @@ mod tests {
             [],
         )
         .unwrap();
+        conn.execute(
+            "INSERT INTO agents (id, name, role, persona, model_provider, model_name)
+             VALUES ('agent-backend', 'Backend Debugger', 'Senior Rust backend engineer', 'Debug backend issues clearly.', 'camelid', 'Llama 3.2 1B Instruct')",
+            [],
+        )
+        .unwrap();
         conn
     }
 
@@ -915,10 +921,47 @@ mod tests {
              )
              VALUES (?1, 'default-workspace', 'product-backlog', 'Ship import queue', 'Build the queue',
                      'Persist receipts for each imported record', 'feature', 'high',
-                     'ready', NULL, 'Backend Engineer', ?2, 'medium')",
-            params![id, r#"["Queue persists successful imports"]"#],
+                     'ready', 'agent-backend', 'Backend Engineer', ?2, 'medium')",
+            params![id, r#"["Queue persists successful imports","Failures are visible"]"#],
         )
         .unwrap();
+    }
+
+    #[test]
+    fn create_backlog_item_persists() {
+        let conn = setup_backlog_db();
+        insert_convertible_backlog_item(&conn, "backlog-create");
+
+        let title: String = conn
+            .query_row(
+                "SELECT title FROM backlog_items WHERE id = 'backlog-create'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert_eq!(title, "Ship import queue");
+    }
+
+    #[test]
+    fn update_backlog_item_persists() {
+        let conn = setup_backlog_db();
+        insert_convertible_backlog_item(&conn, "backlog-update");
+        conn.execute(
+            "UPDATE backlog_items SET instructions = 'Updated detailed instructions' WHERE id = 'backlog-update'",
+            [],
+        )
+        .unwrap();
+
+        let instructions: String = conn
+            .query_row(
+                "SELECT instructions FROM backlog_items WHERE id = 'backlog-update'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert_eq!(instructions, "Updated detailed instructions");
     }
 
     #[test]
@@ -976,6 +1019,61 @@ mod tests {
             .query_row("SELECT COUNT(*) FROM kanban_cards", [], |row| row.get(0))
             .unwrap();
         assert_eq!(cards, 1);
+    }
+
+    #[test]
+    fn convert_backlog_item_to_task_creates_task() {
+        let conn = setup_backlog_db();
+        insert_convertible_backlog_item(&conn, "backlog-create-task");
+
+        let task = convert_backlog_item_to_task_with_conn(&conn, "backlog-create-task").unwrap();
+
+        assert_eq!(task.title, "Ship import queue");
+        assert_eq!(task.status, "ready");
+        assert_eq!(task.assigned_agent_id.as_deref(), Some("agent-backend"));
+    }
+
+    #[test]
+    fn convert_backlog_item_to_task_copies_instructions() {
+        let conn = setup_backlog_db();
+        insert_convertible_backlog_item(&conn, "backlog-copy-instructions");
+
+        let task =
+            convert_backlog_item_to_task_with_conn(&conn, "backlog-copy-instructions").unwrap();
+        let instructions: String = conn
+            .query_row(
+                "SELECT instructions FROM kanban_cards WHERE id = ?1",
+                [&task.id],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert_eq!(instructions, "Persist receipts for each imported record");
+    }
+
+    #[test]
+    fn convert_backlog_item_to_task_copies_acceptance_criteria() {
+        let conn = setup_backlog_db();
+        insert_convertible_backlog_item(&conn, "backlog-copy-criteria");
+
+        let task = convert_backlog_item_to_task_with_conn(&conn, "backlog-copy-criteria").unwrap();
+
+        assert!(task
+            .acceptance_criteria
+            .as_deref()
+            .unwrap_or_default()
+            .contains("Queue persists successful imports"));
+    }
+
+    #[test]
+    fn convert_backlog_item_to_task_is_idempotent() {
+        let conn = setup_backlog_db();
+        insert_convertible_backlog_item(&conn, "backlog-idempotent");
+
+        let first = convert_backlog_item_to_task_with_conn(&conn, "backlog-idempotent").unwrap();
+        let second = convert_backlog_item_to_task_with_conn(&conn, "backlog-idempotent").unwrap();
+
+        assert_eq!(first.id, second.id);
     }
 }
 

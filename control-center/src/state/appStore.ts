@@ -12,6 +12,8 @@ interface AppState {
   activeProjectName: string | null;
   selectedAgentId: string | null;
   setSelectedAgentId: (id: string | null) => void;
+  focusedTaskId: string | null;
+  setFocusedTaskId: (id: string | null) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -29,5 +31,6 @@ export const useAppStore = create<AppState>((set) => ({
   activeProjectName: null,
   selectedAgentId: null,
   setSelectedAgentId: (id) => set({ selectedAgentId: id }),
+  focusedTaskId: null,
+  setFocusedTaskId: (id) => set({ focusedTaskId: id }),
 }));
-
