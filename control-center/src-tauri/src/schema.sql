@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS backlog_items (
     backlog_id TEXT REFERENCES backlogs(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     description TEXT,
+    instructions TEXT,
     type TEXT DEFAULT 'feature',
     priority TEXT DEFAULT 'medium',
     rank INTEGER DEFAULT 0,
@@ -112,6 +113,7 @@ CREATE TABLE IF NOT EXISTS backlog_items (
     owner_agent_id TEXT REFERENCES agents(id),
     owner_human_id TEXT,
     proposed_agent_role TEXT,
+    suggested_agent_role TEXT,
     acceptance_criteria TEXT,
     definition_of_done TEXT,
     required_files TEXT,
@@ -120,8 +122,31 @@ CREATE TABLE IF NOT EXISTS backlog_items (
     risk_level TEXT DEFAULT 'low',
     effort_estimate TEXT,
     readiness_score INTEGER DEFAULT 0,
+    converted_card_id TEXT,
+    archived_at TEXT,
+    rejected_reason TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS backlog_acceptance_criteria (
+    id TEXT PRIMARY KEY,
+    backlog_item_id TEXT NOT NULL REFERENCES backlog_items(id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS backlog_activity (
+    id TEXT PRIMARY KEY,
+    backlog_item_id TEXT NOT NULL REFERENCES backlog_items(id) ON DELETE CASCADE,
+    actor_id TEXT,
+    actor_type TEXT NOT NULL DEFAULT 'system',
+    event_type TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    details TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 5e. Kanban Cards

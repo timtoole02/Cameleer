@@ -76,6 +76,10 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             "0003_kanban_board_slice",
             include_str!("../migrations/0003_kanban_board_slice.sql"),
         ),
+        (
+            "0004_backlog_refinement_slice",
+            include_str!("../migrations/0004_backlog_refinement_slice.sql"),
+        ),
     ];
 
     for (i, (name, sql)) in migrations.iter().enumerate() {
@@ -90,6 +94,8 @@ pub fn init_db(conn: &Connection) -> Result<()> {
                 );
             } else if version == 3 {
                 apply_kanban_board_slice_migration(conn)?;
+            } else if version == 4 {
+                apply_backlog_refinement_slice_migration(conn)?;
             } else {
                 conn.execute_batch(sql)?;
             }
@@ -170,6 +176,53 @@ fn apply_kanban_board_slice_migration(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
+fn apply_backlog_refinement_slice_migration(conn: &Connection) -> Result<()> {
+    if !table_exists(conn, "backlog_items")? {
+        conn.execute_batch(include_str!("../migrations/0001_initial_schema.sql"))?;
+    }
+
+    add_column_if_missing(conn, "backlog_items", "instructions", "TEXT")?;
+    add_column_if_missing(conn, "backlog_items", "suggested_agent_role", "TEXT")?;
+    add_column_if_missing(conn, "backlog_items", "converted_card_id", "TEXT")?;
+    add_column_if_missing(conn, "backlog_items", "archived_at", "TEXT")?;
+    add_column_if_missing(conn, "backlog_items", "rejected_reason", "TEXT")?;
+
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS backlog_acceptance_criteria (
+            id TEXT PRIMARY KEY,
+            backlog_item_id TEXT NOT NULL REFERENCES backlog_items(id) ON DELETE CASCADE,
+            text TEXT NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS backlog_activity (
+            id TEXT PRIMARY KEY,
+            backlog_item_id TEXT NOT NULL REFERENCES backlog_items(id) ON DELETE CASCADE,
+            actor_id TEXT,
+            actor_type TEXT NOT NULL DEFAULT 'system',
+            event_type TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            details TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        UPDATE backlog_items
+        SET status = CASE
+            WHEN status = 'backlog' THEN 'captured'
+            WHEN status = 'ready_for_board' THEN 'converted'
+            ELSE status
+        END;
+
+        UPDATE backlog_items
+        SET suggested_agent_role = proposed_agent_role
+        WHERE suggested_agent_role IS NULL AND proposed_agent_role IS NOT NULL;",
+    )?;
+
+    Ok(())
+}
+
 fn add_column_if_missing(
     conn: &Connection,
     table: &str,
@@ -218,8 +271,8 @@ mod tests {
                 row.get(0)
             })
             .unwrap();
-        assert_eq!(schema_version, 3);
-        assert_eq!(migration_count(&conn), 3);
+        assert_eq!(schema_version, 4);
+        assert_eq!(migration_count(&conn), 4);
     }
 
     #[test]
@@ -228,7 +281,7 @@ mod tests {
         init_db(&conn).unwrap();
         init_db(&conn).unwrap();
 
-        assert_eq!(migration_count(&conn), 3);
+        assert_eq!(migration_count(&conn), 4);
         assert!(table_has_column(&conn, "mission_agent_contracts", "done_definition").unwrap());
     }
 
@@ -262,7 +315,7 @@ mod tests {
             table_has_column(&conn, "mission_agent_contracts", "done_definition").unwrap(),
             "migration 0002 must add done_definition to existing v1 databases"
         );
-        assert_eq!(migration_count(&conn), 3);
+        assert_eq!(migration_count(&conn), 4);
     }
 
     #[test]
@@ -280,6 +333,28 @@ mod tests {
         conn.query_row("SELECT COUNT(*) FROM task_work_receipts", [], |row| {
             row.get::<_, i64>(0)
         })
+        .unwrap();
+    }
+
+    #[test]
+    fn backlog_schema_has_refinement_fields() {
+        let conn = Connection::open_in_memory().unwrap();
+        init_db(&conn).unwrap();
+
+        assert!(table_has_column(&conn, "backlog_items", "instructions").unwrap());
+        assert!(table_has_column(&conn, "backlog_items", "suggested_agent_role").unwrap());
+        assert!(table_has_column(&conn, "backlog_items", "converted_card_id").unwrap());
+        assert!(table_has_column(&conn, "backlog_items", "archived_at").unwrap());
+        assert!(table_has_column(&conn, "backlog_items", "rejected_reason").unwrap());
+        conn.query_row("SELECT COUNT(*) FROM backlog_activity", [], |row| {
+            row.get::<_, i64>(0)
+        })
+        .unwrap();
+        conn.query_row(
+            "SELECT COUNT(*) FROM backlog_acceptance_criteria",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
         .unwrap();
     }
 
