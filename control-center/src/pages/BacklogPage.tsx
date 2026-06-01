@@ -171,6 +171,7 @@ export const BacklogPage: React.FC = () => {
   const selected = useMemo(() => items.find((item) => item.id === selectedId) || null, [items, selectedId]);
   const missing = readinessMissing(form);
   const currentReadinessScore = readinessScore(form);
+  const canConvertToKanban = Boolean(selected) && !creating && selected?.status !== 'converted' && missing.length === 0;
 
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -439,7 +440,7 @@ export const BacklogPage: React.FC = () => {
                     <button type="button" className="secondary-button" disabled={busy} onClick={() => save('needs_refinement')}>Needs refinement</button>
                     <button type="button" className="secondary-button" disabled={busy} onClick={() => save('refined')}>Mark refined</button>
                     <button type="button" className="secondary-button" disabled={busy || missing.length > 0} onClick={() => save('ready')}>Mark ready</button>
-                    <button type="button" disabled={busy || missing.length > 0 || selected?.status === 'converted'} onClick={convert}>Convert to Kanban</button>
+                    <button type="button" disabled={busy || !canConvertToKanban} onClick={convert}>Convert to Kanban</button>
                     <button type="button" className="secondary-button" disabled={busy} onClick={() => save('archived')}>Archive</button>
                   </div>
                 </div>

@@ -45,6 +45,8 @@ assertMatch('src/pages/BacklogPage.tsx', /convertBacklogItemToCard/, 'Backlog co
 assertMatch('src/pages/BacklogPage.tsx', /readinessMissing/, 'Backlog must calculate and show missing ready fields.');
 assertMatch('src/pages/BacklogPage.tsx', /const currentReadinessScore = readinessScore\(form\)/, 'Backlog readiness score must update from unsaved form edits.');
 assertMatch('src/pages/BacklogPage.tsx', /<progress max=\{100\} value=\{currentReadinessScore\}/, 'Backlog readiness progress must use the live form score.');
+assertMatch('src/pages/BacklogPage.tsx', /const canConvertToKanban = Boolean\(selected\) && !creating && selected\?\.status !== 'converted' && missing\.length === 0/, 'Backlog conversion must require a saved non-converted item.');
+assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| !canConvertToKanban\} onClick=\{convert\}/, 'Backlog Convert button must use the saved-item conversion guard.');
 assertMatch('src/pages/BacklogPage.tsx', /acceptance_criteria/, 'Backlog must expose acceptance criteria editing.');
 assertMatch('src/pages/BacklogPage.tsx', /disabled=\{busy \|\| missing\.length > 0/, 'Ready/convert actions must be disabled when ready fields are missing.');
 
