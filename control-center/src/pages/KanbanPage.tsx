@@ -1,88 +1,307 @@
-import React, { useEffect, useState } from 'react';
-import { getBoardSnapshot, moveCard } from '../api/kanban';
-import { KanbanCard } from '../types';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { getAgents } from '../api/agents';
+import { BackendHealth } from '../api/health';
+import { BoardColumn, listBoardColumns } from '../api/kanban';
+import {
+  blockTask,
+  createTask,
+  deleteTask,
+  getTask,
+  getTasks,
+  listTaskActivity,
+  listTaskProgressUpdates,
+  moveTask,
+  reopenTask,
+  unblockTask,
+  updateTask,
+} from '../api/tasks';
+import {
+  approveWorkReceipt,
+  generateWorkReceipt,
+  getTaskWorkReceipt,
+  listTaskRuns,
+  sendTaskBackToAgent,
+  startAgentTaskRun,
+} from '../api/taskRuns';
+import { Agent } from '../types/agent';
+import { CreateTaskInput, Task, TaskActivity, TaskProgressUpdate } from '../types/task';
+import { TaskRun } from '../types/taskRun';
+import { WorkReceipt } from '../types/workReceipt';
+import { CreateTaskModal } from '../components/kanban/CreateTaskModal';
+import { KanbanBoard } from '../components/kanban/KanbanBoard';
+import { TaskDetailDrawer } from '../components/kanban/TaskDetailDrawer';
 import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { PageShell } from '../components/common/PageShell';
+import { useAppStore } from '../state/appStore';
 
-const COLUMNS = ['Ready', 'In Progress', 'Done'];
+type Filters = {
+  search: string;
+  agentId: string;
+  priority: string;
+  status: string;
+  typeName: string;
+  blockedOnly: boolean;
+};
+
+const defaultFilters: Filters = {
+  search: '',
+  agentId: '',
+  priority: '',
+  status: '',
+  typeName: '',
+  blockedOnly: false,
+};
+
+function startDisabledReason(task: Task | null, agent: Agent | undefined, health: BackendHealth | null): string | null {
+  if (!task) return 'No task is selected.';
+  if (health?.database_status !== 'ready') return `Database is ${health?.database_status || 'unknown'}.`;
+  if (health?.camelid_status !== 'connected') {
+    return `Camelid is ${health?.camelid_status || 'unknown'} at ${health?.camelid_endpoint || 'unknown endpoint'}.`;
+  }
+  if (!task.instructions?.trim()) return 'Task has no detailed instructions.';
+  if (!task.assigned_agent_id) return 'No agent is assigned.';
+  if (!agent) return 'Assigned agent could not be loaded.';
+  if (!agent.model_name?.trim()) return `${agent.name} has no model assigned.`;
+  return null;
+}
+
+function completeDisabledReason(task: Task | null, receipt: WorkReceipt | null): string | null {
+  if (!task) return 'No task is selected.';
+  if (!['review', 'in_progress'].includes(task.status)) return 'Task must be in Review or In Progress.';
+  if (!receipt) return 'No work receipt exists yet.';
+  return null;
+}
+
+function matchesFilters(task: Task, filters: Filters): boolean {
+  const haystack = [task.title, task.description, task.instructions, task.labels].filter(Boolean).join(' ').toLowerCase();
+  const search = filters.search.trim().toLowerCase();
+  if (search && !haystack.includes(search)) return false;
+  if (filters.agentId && task.assigned_agent_id !== filters.agentId) return false;
+  if (filters.priority && task.priority !== filters.priority) return false;
+  if (filters.status && task.status !== filters.status) return false;
+  if (filters.typeName && task.type_name !== filters.typeName) return false;
+  if (filters.blockedOnly && task.status !== 'blocked' && !task.blocked_reason) return false;
+  return true;
+}
 
 export const KanbanPage: React.FC = () => {
-  const [cards, setCards] = useState<KanbanCard[]>([]);
+  const { backendHealth, activeProjectId } = useAppStore();
+  const workspaceId = backendHealth?.active_workspace_id || activeProjectId || 'default-workspace';
+  const [columns, setColumns] = useState<BoardColumn[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [activity, setActivity] = useState<TaskActivity[]>([]);
+  const [progress, setProgress] = useState<TaskProgressUpdate[]>([]);
+  const [runs, setRuns] = useState<TaskRun[]>([]);
+  const [receipt, setReceipt] = useState<WorkReceipt | null>(null);
+  const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [createStatus, setCreateStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadBoard = () => {
-    setLoading(true);
-    getBoardSnapshot("default-workspace")
-      .then(setCards)
-      .catch((e: any) => setError(e.toString()))
-      .finally(() => setLoading(false));
-  };
+  const agentsById = useMemo(() => new Map(agents.map((agent) => [agent.id, agent])), [agents]);
+  const selectedAgent = selectedTask?.assigned_agent_id ? agentsById.get(selectedTask.assigned_agent_id) : undefined;
+  const filteredTasks = useMemo(() => tasks.filter((task) => matchesFilters(task, filters)), [tasks, filters]);
 
-  useEffect(() => {
-    loadBoard();
+  const loadDetail = useCallback(async (task: Task | null) => {
+    if (!task) {
+      setActivity([]);
+      setProgress([]);
+      setRuns([]);
+      setReceipt(null);
+      return;
+    }
+    const [nextTask, nextActivity, nextProgress, nextRuns, nextReceipt] = await Promise.all([
+      getTask(task.id),
+      listTaskActivity(task.id),
+      listTaskProgressUpdates(task.id),
+      listTaskRuns(task.id),
+      getTaskWorkReceipt(task.id),
+    ]);
+    setSelectedTask(nextTask);
+    setActivity(nextActivity);
+    setProgress(nextProgress);
+    setRuns(nextRuns);
+    setReceipt(nextReceipt);
   }, []);
 
-  const handleMove = async (id: string, newStatus: string) => {
+  const loadBoard = useCallback(async () => {
+    setError(null);
+    const [nextColumns, nextTasks, nextAgents] = await Promise.all([
+      listBoardColumns(workspaceId),
+      getTasks(),
+      getAgents(),
+    ]);
+    setColumns(nextColumns.sort((a, b) => a.rank - b.rank));
+    setTasks(nextTasks);
+    setAgents(nextAgents);
+    if (selectedTask) {
+      const refreshed = nextTasks.find((task) => task.id === selectedTask.id) || null;
+      setSelectedTask(refreshed);
+      if (refreshed) await loadDetail(refreshed);
+    }
+  }, [workspaceId, selectedTask?.id, loadDetail]);
+
+  useEffect(() => {
+    setLoading(true);
+    loadBoard()
+      .catch((err: any) => setError(String(err)))
+      .finally(() => setLoading(false));
+  }, [loadBoard]);
+
+  useEffect(() => {
+    loadDetail(selectedTask).catch((err: any) => setError(String(err)));
+  }, [selectedTask?.id, loadDetail]);
+
+  const refreshSelected = async (task?: Task | null) => {
+    await loadBoard();
+    await loadDetail(task ?? selectedTask);
+  };
+
+  const runTaskAction = async (
+    action: () => Promise<Task | void | WorkReceipt | TaskRun>,
+    taskForDetail = selectedTask,
+  ) => {
+    setBusy(true);
+    setError(null);
     try {
-      setError(null); // clear prior errors
-      await moveCard(id, newStatus);
-      loadBoard();
+      const result = await action();
+      const nextTask = result && 'title' in result ? result as Task : taskForDetail;
+      await refreshSelected(nextTask || null);
     } catch (err: any) {
-      setError(err.toString());
+      setError(String(err));
+    } finally {
+      setBusy(false);
     }
   };
 
-  if (loading) return <PageShell title="Kanban"><LoadingState /></PageShell>;
+  if (loading) {
+    return <PageShell title="Kanban"><LoadingState /></PageShell>;
+  }
+
+  const startReason = startDisabledReason(selectedTask, selectedAgent, backendHealth);
+  const doneReason = completeDisabledReason(selectedTask, receipt);
 
   return (
     <PageShell title="Kanban">
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3>Kanban Board</h3>
-          <button onClick={loadBoard} style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}>Refresh</button>
+      <div className="kanban-page">
+        <header className="kanban-page-header">
+          <div>
+            <span className="eyebrow">Agent Work Board</span>
+            <h1>Kanban</h1>
+            <p>Create detailed work, assign agents, track progress, and close only with a receipt.</p>
+          </div>
+          <div className="kanban-header-actions">
+            <button type="button" className="secondary-button" onClick={() => loadBoard().catch((err: any) => setError(String(err)))}>
+              Refresh
+            </button>
+            <button type="button" onClick={() => setCreateStatus('backlog')}>Create Task</button>
+          </div>
+        </header>
+
+        <div className="kanban-filters" aria-label="Board filters">
+          <input
+            value={filters.search}
+            onChange={(event) => setFilters((value) => ({ ...value, search: event.target.value }))}
+            placeholder="Search title, description, instructions"
+          />
+          <select value={filters.agentId} onChange={(event) => setFilters((value) => ({ ...value, agentId: event.target.value }))}>
+            <option value="">All agents</option>
+            {agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
+          </select>
+          <select value={filters.priority} onChange={(event) => setFilters((value) => ({ ...value, priority: event.target.value }))}>
+            <option value="">All priorities</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+          <select value={filters.status} onChange={(event) => setFilters((value) => ({ ...value, status: event.target.value }))}>
+            <option value="">All statuses</option>
+            {columns.map((column) => <option key={column.id} value={column.status_mapping}>{column.name}</option>)}
+          </select>
+          <select value={filters.typeName} onChange={(event) => setFilters((value) => ({ ...value, typeName: event.target.value }))}>
+            <option value="">All types</option>
+            <option value="task">Task</option>
+            <option value="bug">Bug</option>
+            <option value="feature">Feature</option>
+            <option value="research">Research</option>
+            <option value="documentation">Documentation</option>
+            <option value="test">Test</option>
+          </select>
+          <label className="kanban-filter-check">
+            <input
+              type="checkbox"
+              checked={filters.blockedOnly}
+              onChange={(event) => setFilters((value) => ({ ...value, blockedOnly: event.target.checked }))}
+            />
+            Blocked only
+          </label>
         </div>
 
         {error && <ErrorState message={error} />}
 
-        {cards.length === 0 ? (
-          <p>No tasks are currently on the Kanban board. Promote them from the backlog.</p>
-        ) : (
-          <div style={{ display: 'flex', flex: 1, gap: '1rem', overflowX: 'auto' }}>
-            {COLUMNS.map(col => {
-              const colCards = cards.filter(c => c.status.toLowerCase() === col.toLowerCase());
-              return (
-                <div key={col} style={{ flex: 1, minWidth: '300px', backgroundColor: '#e9ecef', borderRadius: '4px', padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0', padding: '0.5rem', borderBottom: '2px solid #ccc' }}>{col} ({colCards.length})</h4>
-                  <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {colCards.map(card => (
-                      <div key={card.id} style={{ backgroundColor: 'white', padding: '0.8rem', borderRadius: '4px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                        <strong>{card.title}</strong>
-                        {card.description && <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.5rem 0' }}>{card.description}</p>}
-                        <div style={{ fontSize: '0.7rem', display: 'flex', justifyContent: 'space-between', color: '#999', marginBottom: '0.5rem' }}>
-                          <span>Priority: {card.priority}</span>
-                          <span>Assignee: {card.assigned_agent_id || 'Unassigned'}</span>
-                        </div>
-                        
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                          {COLUMNS.filter(c => c.toLowerCase() !== col.toLowerCase()).map(targetCol => (
-                            <button 
-                              key={targetCol}
-                              onClick={() => handleMove(card.id, targetCol)}
-                              style={{ flex: 1, padding: '0.2rem', fontSize: '0.7rem', cursor: 'pointer' }}
-                            >
-                              Move to {targetCol}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        <div className="kanban-workspace">
+          <KanbanBoard
+            columns={columns}
+            tasks={filteredTasks}
+            agents={agents}
+            selectedTaskId={selectedTask?.id}
+            onSelectTask={setSelectedTask}
+            onCreateTask={setCreateStatus}
+            onMoveTask={(taskId, status) => runTaskAction(async () => moveTask(taskId, status), tasks.find((task) => task.id === taskId) || null)}
+          />
+
+          <TaskDetailDrawer
+            task={selectedTask}
+            agents={agents}
+            activity={activity}
+            progress={progress}
+            runs={runs}
+            receipt={receipt}
+            backendHealth={backendHealth}
+            busy={busy}
+            error={error}
+            startDisabledReason={startReason}
+            completeDisabledReason={doneReason}
+            onClose={() => setSelectedTask(null)}
+            onSave={(fields) => runTaskAction(async () => selectedTask ? updateTask(selectedTask.id, fields) : undefined)}
+            onMove={(status) => runTaskAction(async () => selectedTask ? moveTask(selectedTask.id, status) : undefined)}
+            onStartWork={() => runTaskAction(async () => selectedTask ? startAgentTaskRun(selectedTask.id) : undefined)}
+            onGenerateReceipt={() => runTaskAction(async () => selectedTask ? generateWorkReceipt(selectedTask.id) : undefined)}
+            onApproveReceipt={() => runTaskAction(async () => selectedTask && receipt ? approveWorkReceipt(selectedTask.id, receipt.id) : undefined)}
+            onSendBack={(feedback) => runTaskAction(async () => selectedTask ? sendTaskBackToAgent(selectedTask.id, feedback) : undefined)}
+            onBlock={() => {
+              const reason = window.prompt('Why is this task blocked?');
+              return reason ? runTaskAction(async () => selectedTask ? blockTask(selectedTask.id, reason) : undefined) : Promise.resolve();
+            }}
+            onUnblock={() => runTaskAction(async () => selectedTask ? unblockTask(selectedTask.id) : undefined)}
+            onReopen={() => runTaskAction(async () => selectedTask ? reopenTask(selectedTask.id, 'Reopened from board') : undefined)}
+            onDelete={async () => {
+              if (!selectedTask || !window.confirm(`Delete ${selectedTask.task_key || selectedTask.title}?`)) return;
+              await runTaskAction(async () => {
+                await deleteTask(selectedTask.id);
+                setSelectedTask(null);
+              }, null);
+            }}
+          />
+        </div>
+
+        {createStatus && (
+          <CreateTaskModal
+            agents={agents}
+            initialStatus={createStatus}
+            onClose={() => setCreateStatus(null)}
+            onCreate={async (input: CreateTaskInput) => {
+              const task = await createTask({ ...input, workspace_id: workspaceId });
+              setCreateStatus(null);
+              setSelectedTask(task);
+              await refreshSelected(task);
+            }}
+          />
         )}
       </div>
     </PageShell>

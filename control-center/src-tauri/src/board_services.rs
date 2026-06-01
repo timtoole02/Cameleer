@@ -104,6 +104,50 @@ pub struct BoardColumn {
 }
 
 #[tauri::command]
+pub fn list_board_columns(_workspace_id: String) -> Result<Vec<BoardColumn>, String> {
+    let names = [
+        ("col-backlog", "Backlog", "backlog", 0, None),
+        ("col-ready", "Ready", "ready", 1, Some(5)),
+        ("col-in-progress", "In Progress", "in_progress", 2, Some(3)),
+        ("col-review", "Review", "review", 3, Some(5)),
+        ("col-blocked", "Blocked", "blocked", 4, None),
+        ("col-done", "Done", "done", 5, None),
+    ];
+    Ok(names
+        .into_iter()
+        .map(|(id, name, status, rank, wip)| BoardColumn {
+            id: id.to_string(),
+            board_id: "default-board".to_string(),
+            name: name.to_string(),
+            status_mapping: status.to_string(),
+            rank,
+            wip_limit: wip,
+            created_at: "system".to_string(),
+        })
+        .collect())
+}
+
+#[tauri::command]
+pub fn create_board_column() -> Result<(), String> {
+    Err("Custom board columns are not editable in this Kanban slice yet.".to_string())
+}
+
+#[tauri::command]
+pub fn update_board_column() -> Result<(), String> {
+    Err("Custom board columns are not editable in this Kanban slice yet.".to_string())
+}
+
+#[tauri::command]
+pub fn move_board_column() -> Result<(), String> {
+    Err("Custom board columns are not editable in this Kanban slice yet.".to_string())
+}
+
+#[tauri::command]
+pub fn set_column_wip_limit() -> Result<(), String> {
+    Err("Column WIP limit editing is not enabled in this Kanban slice yet.".to_string())
+}
+
+#[tauri::command]
 pub fn get_backlog_snapshot(
     workspace_id: String,
     project_id: Option<String>,
