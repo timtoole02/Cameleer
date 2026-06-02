@@ -596,7 +596,8 @@ mod tests {
         let health = inspect_database_health(&conn, ":memory:".to_string(), 3);
 
         assert_eq!(health.database_status, "ready");
-        assert_eq!(health.schema_version, 3);
+        // init_db applies migrations 0001..=0004, so the live schema version is 4.
+        assert_eq!(health.schema_version, 4);
         assert!(health.errors.is_empty());
     }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppStore } from '../../state/appStore';
 
-const TABS = ['Chat', 'Kanban', 'Backlog', 'Agents', 'Memory', 'Models', 'Runtime', 'Audit', 'Settings'];
+const TABS = ['Chat', 'Kanban', 'Backlog', 'Agents', 'Memory', 'Context', 'Models', 'Runtime', 'Audit', 'Settings'];
 
 export const Sidebar: React.FC = () => {
   const { activeTab, setActiveTab } = useAppStore();

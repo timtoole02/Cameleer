@@ -426,25 +426,51 @@ fn sync_backlog_acceptance_criteria(conn: &Connection, backlog_item_id: &str) ->
     Ok(())
 }
 
+/// The fixed Kanban columns and their default WIP limits.
+const COLUMNS: &[(&str, &str, &str, i32, Option<i64>)] = &[
+    ("col-backlog", "Backlog", "backlog", 0, None),
+    ("col-ready", "Ready", "ready", 1, Some(5)),
+    ("col-in-progress", "In Progress", "in_progress", 2, Some(3)),
+    ("col-review", "Review", "review", 3, Some(5)),
+    ("col-blocked", "Blocked", "blocked", 4, None),
+    ("col-done", "Done", "done", 5, None),
+];
+
+/// Returns the effective WIP limit for a column status: a per-status override
+/// stored in `settings` (key `wip_limit:<status>`) if present, otherwise the
+/// built-in default. A limit of 0 or below means "unlimited".
+fn effective_wip_limit(conn: &Connection, status: &str) -> Option<i64> {
+    let key = format!("wip_limit:{}", status);
+    if let Ok(v) = conn.query_row(
+        "SELECT value FROM settings WHERE key = ?1",
+        [&key],
+        |r| r.get::<_, String>(0),
+    ) {
+        if let Ok(n) = v.trim().parse::<i64>() {
+            return if n > 0 { Some(n) } else { None };
+        }
+    }
+    COLUMNS
+        .iter()
+        .find(|(_, _, s, _, _)| *s == status)
+        .and_then(|(_, _, _, _, wip)| *wip)
+}
+
 #[tauri::command]
-pub fn list_board_columns(_workspace_id: String) -> Result<Vec<BoardColumn>, String> {
-    let names = [
-        ("col-backlog", "Backlog", "backlog", 0, None),
-        ("col-ready", "Ready", "ready", 1, Some(5)),
-        ("col-in-progress", "In Progress", "in_progress", 2, Some(3)),
-        ("col-review", "Review", "review", 3, Some(5)),
-        ("col-blocked", "Blocked", "blocked", 4, None),
-        ("col-done", "Done", "done", 5, None),
-    ];
-    Ok(names
-        .into_iter()
-        .map(|(id, name, status, rank, wip)| BoardColumn {
+pub fn list_board_columns(
+    _workspace_id: String,
+    state: State<DbState>,
+) -> Result<Vec<BoardColumn>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    Ok(COLUMNS
+        .iter()
+        .map(|(id, name, status, rank, _)| BoardColumn {
             id: id.to_string(),
             board_id: "default-board".to_string(),
             name: name.to_string(),
             status_mapping: status.to_string(),
-            rank,
-            wip_limit: wip,
+            rank: *rank,
+            wip_limit: effective_wip_limit(&conn, status).map(|n| n as i32),
             created_at: "system".to_string(),
         })
         .collect())
@@ -465,9 +491,37 @@ pub fn move_board_column() -> Result<(), String> {
     Err("Custom board columns are not editable in this Kanban slice yet.".to_string())
 }
 
+/// Persists a per-column WIP limit override. `column_id` is one of the fixed
+/// column ids (e.g. "col-in-progress"); pass `None`/0 to clear the override.
 #[tauri::command]
-pub fn set_column_wip_limit() -> Result<(), String> {
-    Err("Column WIP limit editing is not enabled in this Kanban slice yet.".to_string())
+pub fn set_column_wip_limit(
+    column_id: String,
+    wip_limit: Option<i32>,
+    state: State<DbState>,
+) -> Result<(), String> {
+    let status = COLUMNS
+        .iter()
+        .find(|(id, _, _, _, _)| *id == column_id)
+        .map(|(_, _, s, _, _)| *s)
+        .ok_or_else(|| format!("Unknown column: {}", column_id))?;
+
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let key = format!("wip_limit:{}", status);
+    match wip_limit {
+        Some(n) if n > 0 => {
+            conn.execute(
+                "INSERT INTO settings (key, value) VALUES (?1, ?2)
+                 ON CONFLICT(key) DO UPDATE SET value = ?2",
+                params![key, n.to_string()],
+            )
+            .map_err(|e| e.to_string())?;
+        }
+        _ => {
+            conn.execute("DELETE FROM settings WHERE key = ?1", params![key])
+                .map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -947,6 +1001,25 @@ pub fn move_card(
 
     let new_status = new_status.to_lowercase();
 
+    // Enforce the column WIP limit when entering a new column.
+    if new_status != current_status {
+        if let Some(limit) = effective_wip_limit(&conn, &new_status) {
+            let count: i64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM kanban_cards WHERE LOWER(status) = ?1",
+                    [&new_status],
+                    |r| r.get(0),
+                )
+                .unwrap_or(0);
+            if count >= limit {
+                return Err(format!(
+                    "WIP limit reached for the {} column ({} max). Move or finish a card before adding another.",
+                    new_status, limit
+                ));
+            }
+        }
+    }
+
     if new_status == "in_progress" && current_status != "in_progress" {
         // Check dependencies before allowing execution
         let blocked_by: Option<String> = conn
@@ -1119,4 +1192,44 @@ pub fn get_agent_work_queue(
         }
     }
     Ok(items)
+}
+
+#[cfg(test)]
+mod wip_tests {
+    use super::effective_wip_limit;
+    use rusqlite::Connection;
+
+    fn setup() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        crate::storage::init_db(&conn).unwrap();
+        conn
+    }
+
+    #[test]
+    fn default_wip_limits_apply() {
+        let conn = setup();
+        assert_eq!(effective_wip_limit(&conn, "in_progress"), Some(3));
+        assert_eq!(effective_wip_limit(&conn, "ready"), Some(5));
+        assert_eq!(effective_wip_limit(&conn, "backlog"), None);
+        assert_eq!(effective_wip_limit(&conn, "done"), None);
+    }
+
+    #[test]
+    fn settings_override_replaces_default() {
+        let conn = setup();
+        conn.execute(
+            "INSERT INTO settings (key, value) VALUES ('wip_limit:in_progress', '1')",
+            [],
+        )
+        .unwrap();
+        assert_eq!(effective_wip_limit(&conn, "in_progress"), Some(1));
+
+        // 0 means unlimited.
+        conn.execute(
+            "INSERT INTO settings (key, value) VALUES ('wip_limit:ready', '0')",
+            [],
+        )
+        .unwrap();
+        assert_eq!(effective_wip_limit(&conn, "ready"), None);
+    }
 }

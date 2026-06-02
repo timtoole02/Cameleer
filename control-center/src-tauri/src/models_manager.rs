@@ -1312,36 +1312,110 @@ pub async fn run_model_smoke_test(
     daemon_state: State<'_, DaemonState>,
     model_id: String,
 ) -> Result<SmokeTestResult, String> {
-    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let (filename, endpoint) = {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        let filename: String = conn
+            .query_row(
+                "SELECT source_file FROM models WHERE model_id = ?1",
+                [&model_id],
+                |row| row.get(0),
+            )
+            .map_err(|e| e.to_string())?;
+        let endpoint: String = conn
+            .query_row(
+                "SELECT value FROM settings WHERE key = 'camelid_endpoint'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap_or_else(|_| "http://127.0.0.1:8181".to_string());
+        (filename, endpoint)
+    };
 
-    let filename: String = conn
-        .query_row(
-            "SELECT source_file FROM models WHERE model_id = ?1",
-            [&model_id],
-            |row| row.get(0),
-        )
-        .map_err(|e| e.to_string())?;
+    // Hotload the requested model into the daemon and measure real load latency.
+    let load_start = std::time::Instant::now();
+    crate::supervisor::spawn_camelid_daemon(&state, &daemon_state, Some(filename.clone()))?;
+    let load_latency = load_start.elapsed().as_millis() as u64;
 
-    drop(conn);
+    let prompt = "Why is the sky blue?";
+    let url = format!("{}/v1/chat/completions", endpoint.trim_end_matches('/'));
+    let client = Client::new();
 
-    let start = std::time::Instant::now();
+    let gen_start = std::time::Instant::now();
+    let response = client
+        .post(&url)
+        .json(&serde_json::json!({
+            "messages": [{ "role": "user", "content": prompt }],
+            "max_tokens": 64,
+            "temperature": 0.7
+        }))
+        .send()
+        .await;
 
-    // Simulate hotloading check in daemon
-    let _ = crate::supervisor::spawn_camelid_daemon(&state, &daemon_state, Some(filename.clone()))?;
-    let load_latency = start.elapsed().as_millis() as u64;
+    match response {
+        Err(e) => Ok(SmokeTestResult {
+            success: false,
+            prompt: prompt.to_string(),
+            tokens_generated: 0,
+            tokens_per_second: 0.0,
+            load_latency_ms: load_latency,
+            memory_allocated_mb: 0,
+            log_output: format!(
+                "[SMOKE TEST FAILED]\nModel: {}\nCould not reach inference endpoint {}: {}",
+                filename, url, e
+            ),
+        }),
+        Ok(resp) => {
+            if !resp.status().is_success() {
+                let status = resp.status();
+                let body = resp.text().await.unwrap_or_default();
+                return Ok(SmokeTestResult {
+                    success: false,
+                    prompt: prompt.to_string(),
+                    tokens_generated: 0,
+                    tokens_per_second: 0.0,
+                    load_latency_ms: load_latency,
+                    memory_allocated_mb: 0,
+                    log_output: format!(
+                        "[SMOKE TEST FAILED]\nModel: {}\nEndpoint {} returned {}: {}",
+                        filename, url, status, body
+                    ),
+                });
+            }
 
-    Ok(SmokeTestResult {
-        success: true,
-        prompt: "Why is the sky blue?".to_string(),
-        tokens_generated: 15,
-        tokens_per_second: 24.5,
-        load_latency_ms: load_latency,
-        memory_allocated_mb: 2800,
-        log_output: format!(
-            "[SMOKE TEST SUCCESS]\nSwapped model successfully to: {}\nWarm loaded in {} ms\nTokens Generated: 15\nThroughput: 24.5 TPS",
-            filename, load_latency
-        ),
-    })
+            let gen_secs = gen_start.elapsed().as_secs_f64();
+            let json: serde_json::Value = resp
+                .json()
+                .await
+                .map_err(|e| format!("Failed to parse inference response: {}", e))?;
+
+            let content = json["choices"][0]["message"]["content"]
+                .as_str()
+                .unwrap_or("")
+                .to_string();
+            let tokens = json["usage"]["completion_tokens"]
+                .as_i64()
+                .unwrap_or_else(|| content.split_whitespace().count() as i64)
+                as i32;
+            let tps = if gen_secs > 0.0 {
+                (tokens as f64 / gen_secs * 10.0).round() / 10.0
+            } else {
+                0.0
+            };
+
+            Ok(SmokeTestResult {
+                success: !content.trim().is_empty(),
+                prompt: prompt.to_string(),
+                tokens_generated: tokens,
+                tokens_per_second: tps,
+                load_latency_ms: load_latency,
+                memory_allocated_mb: 0,
+                log_output: format!(
+                    "[SMOKE TEST]\nModel: {}\nLoad latency: {} ms\nPrompt: {}\nResponse: {}\nMeasured: {} tokens in {:.2}s = {:.1} TPS",
+                    filename, load_latency, prompt, content.trim(), tokens, gen_secs, tps
+                ),
+            })
+        }
+    }
 }
 
 #[tauri::command]

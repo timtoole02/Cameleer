@@ -18,6 +18,8 @@ mod checkpoint_store;
 mod command_guard;
 mod context_engine;
 pub mod dataset_exporter;
+#[cfg(test)]
+mod e2e_persistence;
 mod event_bus;
 pub mod llm_adapter;
 pub mod memory_engine;
@@ -219,6 +221,10 @@ pub fn run() {
             system_services::get_backend_health,
             system_services::check_camelid_health,
             system_services::reset_dev_database,
+            memory_engine::list_memories,
+            memory_engine::search_memories_cmd,
+            memory_engine::create_memory_cmd,
+            memory_engine::delete_memory_cmd,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

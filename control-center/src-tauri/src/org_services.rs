@@ -2,7 +2,7 @@ use crate::event_bus::{emit_event, AppEvent};
 use crate::storage::DbState;
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{AppHandle, State};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -109,6 +109,8 @@ pub fn create_project(
     state: State<DbState>,
 ) -> Result<Project, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let workspace_id = resolve_workspace_id(&conn, &workspace_id);
+    ensure_workspace_root(&conn, &workspace_id)?;
     let id = format!("proj_{}", Uuid::new_v4().simple());
     let node_id = format!("node_{}", Uuid::new_v4().simple());
 
@@ -143,6 +145,8 @@ pub fn create_team(
     state: State<DbState>,
 ) -> Result<Team, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let workspace_id = resolve_workspace_id(&conn, &workspace_id);
+    ensure_workspace_root(&conn, &workspace_id)?;
     let id = format!("team_{}", Uuid::new_v4().simple());
     let node_id = format!("node_{}", Uuid::new_v4().simple());
 
@@ -180,16 +184,103 @@ pub fn create_team(
     })
 }
 
+/// Maps a requested workspace id to one that actually exists. The frontend
+/// historically passes "default-workspace" while the seeded workspace is
+/// "default"; this prevents foreign-key failures by falling back to the active
+/// (or first) real workspace.
+fn resolve_workspace_id(conn: &Connection, requested: &str) -> String {
+    let exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM workspaces WHERE id = ?1)",
+            [requested],
+            |r| r.get(0),
+        )
+        .unwrap_or(false);
+    if exists {
+        return requested.to_string();
+    }
+    conn.query_row(
+        "SELECT id FROM workspaces ORDER BY active DESC, id ASC LIMIT 1",
+        [],
+        |r| r.get::<_, String>(0),
+    )
+    .unwrap_or_else(|_| "default".to_string())
+}
+
+/// Ensures the workspace has a root org node (`node_ws`) that projects, teams,
+/// and agents hang from. Idempotent.
+pub(crate) fn ensure_workspace_root(conn: &Connection, workspace_id: &str) -> Result<(), String> {
+    let exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM agent_org_nodes WHERE id = 'node_ws')",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap_or(false);
+    if !exists {
+        let name: String = conn
+            .query_row(
+                "SELECT name FROM workspaces WHERE id = ?1",
+                [workspace_id],
+                |r| r.get(0),
+            )
+            .unwrap_or_else(|_| "Workspace".to_string());
+        conn.execute(
+            "INSERT INTO agent_org_nodes (id, workspace_id, node_type, display_name)
+             VALUES ('node_ws', ?1, 'workspace', ?2)",
+            params![workspace_id, name],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Ensures every agent is represented as a node in the org tree. New/unassigned
+/// agents are attached to the workspace root. Idempotent and self-healing, so the
+/// tree is never empty just because agents were created before they had nodes.
+pub(crate) fn sync_agent_org_nodes(conn: &Connection, workspace_id: &str) -> Result<(), String> {
+    let missing: Vec<(String, String)> = {
+        let mut stmt = conn
+            .prepare(
+                "SELECT id, name FROM agents
+                 WHERE id NOT IN (
+                     SELECT agent_id FROM agent_org_nodes
+                     WHERE node_type = 'agent' AND agent_id IS NOT NULL
+                 )",
+            )
+            .map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))
+            .map_err(|e| e.to_string())?;
+        rows.filter_map(|r| r.ok()).collect()
+    };
+
+    for (agent_id, name) in missing {
+        let node_id = format!("node_{}", Uuid::new_v4().simple());
+        conn.execute(
+            "INSERT INTO agent_org_nodes (id, workspace_id, parent_node_id, node_type, display_name, agent_id)
+             VALUES (?1, ?2, 'node_ws', 'agent', ?3, ?4)",
+            params![node_id, workspace_id, name, agent_id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub fn get_agent_org_tree(
     workspace_id: String,
     state: State<DbState>,
 ) -> Result<Vec<AgentOrgNode>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let workspace_id = resolve_workspace_id(&conn, &workspace_id);
+    // Self-heal the tree so it always reflects the current agent roster.
+    ensure_workspace_root(&conn, &workspace_id)?;
+    sync_agent_org_nodes(&conn, &workspace_id)?;
     let mut stmt = conn.prepare(
-        "SELECT id, workspace_id, project_id, parent_node_id, node_type, display_name, agent_id, team_id, sort_order, collapsed 
-         FROM agent_org_nodes 
-         WHERE workspace_id = ?1 
+        "SELECT id, workspace_id, project_id, parent_node_id, node_type, display_name, agent_id, team_id, sort_order, collapsed
+         FROM agent_org_nodes
+         WHERE workspace_id = ?1
          ORDER BY sort_order ASC, created_at ASC"
     ).map_err(|e| e.to_string())?;
 
@@ -219,6 +310,7 @@ pub fn get_agent_org_tree(
 
 #[tauri::command]
 pub fn move_agent_to_team(
+    app_handle: AppHandle,
     agent_id: String,
     project_id: String,
     team_id: String,
@@ -226,7 +318,20 @@ pub fn move_agent_to_team(
 ) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
-    // Find new parent node
+    // Resolve the workspace from the target team and make sure the agent has a node.
+    let workspace_id: String = conn
+        .query_row(
+            "SELECT workspace_id FROM teams WHERE id = ?1",
+            params![team_id],
+            |row| row.get(0),
+        )
+        .optional()
+        .unwrap_or(None)
+        .unwrap_or_else(|| "default".to_string());
+    ensure_workspace_root(&conn, &workspace_id)?;
+    sync_agent_org_nodes(&conn, &workspace_id)?;
+
+    // Find new parent node (the team's node).
     let parent_node_id: Option<String> = conn
         .query_row(
             "SELECT id FROM agent_org_nodes WHERE team_id = ?1 AND node_type = 'team'",
@@ -236,17 +341,96 @@ pub fn move_agent_to_team(
         .optional()
         .unwrap_or(None);
 
-    if let Some(parent) = parent_node_id {
-        conn.execute(
-            "UPDATE agent_org_nodes SET parent_node_id = ?1, project_id = ?2, team_id = ?3 WHERE agent_id = ?4 AND node_type = 'agent'",
-            params![parent, project_id, team_id, agent_id],
-        ).map_err(|e| e.to_string())?;
+    let parent = parent_node_id
+        .ok_or_else(|| "Target team has no org node; create the team first.".to_string())?;
 
-        conn.execute(
-            "UPDATE agent_project_memberships SET project_id = ?1, team_id = ?2 WHERE agent_id = ?3",
-            params![project_id, team_id, agent_id],
-        ).map_err(|e| e.to_string())?;
+    let moved = conn
+        .execute(
+            "UPDATE agent_org_nodes SET parent_node_id = ?1, project_id = ?2, team_id = ?3, updated_at = CURRENT_TIMESTAMP WHERE agent_id = ?4 AND node_type = 'agent'",
+            params![parent, project_id, team_id, agent_id],
+        )
+        .map_err(|e| e.to_string())?;
+    if moved == 0 {
+        return Err(format!("No org node found for agent {}.", agent_id));
     }
 
+    // Upsert the project/team membership (the row may not exist yet).
+    conn.execute(
+        "DELETE FROM agent_project_memberships WHERE agent_id = ?1",
+        params![agent_id],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT INTO agent_project_memberships (id, agent_id, workspace_id, project_id, team_id, active)
+         VALUES (?1, ?2, ?3, ?4, ?5, 1)",
+        params![
+            format!("mem_{}", Uuid::new_v4().simple()),
+            agent_id,
+            workspace_id,
+            project_id,
+            team_id
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+
+    emit_event(
+        &app_handle,
+        AppEvent {
+            event_type: "agent_moved_to_team".to_string(),
+            agent_id: Some(agent_id.clone()),
+            task_id: None,
+            payload: serde_json::json!({ "project_id": project_id, "team_id": team_id }),
+        },
+    );
+
     Ok(())
+}
+
+#[cfg(test)]
+mod org_tree_tests {
+    use super::{ensure_workspace_root, sync_agent_org_nodes};
+    use rusqlite::Connection;
+
+    fn setup() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        crate::storage::init_db(&conn).unwrap();
+        crate::storage::seed_default_agents(&conn).unwrap();
+        conn
+    }
+
+    fn agent_node_count(conn: &Connection) -> i64 {
+        conn.query_row(
+            "SELECT COUNT(*) FROM agent_org_nodes WHERE node_type = 'agent'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn sync_creates_one_org_node_per_agent_and_is_idempotent() {
+        let conn = setup();
+        let agents: i64 = conn
+            .query_row("SELECT COUNT(*) FROM agents", [], |r| r.get(0))
+            .unwrap();
+        assert!(agents > 0, "seed should create default agents");
+
+        ensure_workspace_root(&conn, "default").unwrap();
+        sync_agent_org_nodes(&conn, "default").unwrap();
+
+        // Root node exists and every agent now has a node.
+        let root_exists: bool = conn
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM agent_org_nodes WHERE id = 'node_ws')",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert!(root_exists, "workspace root node must exist");
+        assert_eq!(agent_node_count(&conn), agents, "one org node per agent");
+
+        // Running again must not duplicate nodes.
+        sync_agent_org_nodes(&conn, "default").unwrap();
+        assert_eq!(agent_node_count(&conn), agents, "sync must be idempotent");
+    }
 }
