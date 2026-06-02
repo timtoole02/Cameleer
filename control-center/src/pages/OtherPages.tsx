@@ -5,6 +5,8 @@ import { AgentRun, CommandApproval } from '../types';
 import { PageShell } from '../components/common/PageShell';
 import { useAppStore } from '../state/appStore';
 import { resetDevDatabase, getBackendHealth } from '../api/health';
+import { getMemories, searchMemories, createMemory, deleteMemory, Memory } from '../api/memory';
+import { getCoordinationDetails, recordDecision, resolveHandoff, Decision, Handoff } from '../api/context';
 
 
 export const RuntimePage: React.FC = () => {
@@ -225,5 +227,180 @@ export const SettingsPage: React.FC = () => {
 };
 
 export const MemoryPage: React.FC = () => {
-  return <PageShell title="Memory"><div><p>Memory search and contextual retrieval UI coming soon.</p></div></PageShell>;
+  const { backendHealth } = useAppStore();
+  const workspaceId = backendHealth?.active_workspace_id || 'default';
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [query, setQuery] = useState('');
+  const [content, setContent] = useState('');
+  const [context, setContext] = useState('');
+  const [importance, setImportance] = useState(1);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = async () => {
+    try {
+      const data = query.trim() ? await searchMemories(query.trim()) : await getMemories();
+      setMemories(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.toString());
+    }
+  };
+
+  useEffect(() => { refresh(); }, []);
+
+  const handleCreate = async () => {
+    if (!content.trim()) return;
+    try {
+      await createMemory({ content: content.trim(), context: context.trim() || undefined, importance, workspaceId });
+      setContent(''); setContext(''); setImportance(1);
+      await refresh();
+    } catch (err: any) {
+      setError(err.toString());
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteMemory(id);
+    await refresh();
+  };
+
+  return (
+    <PageShell title="Shared Memory">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%', overflowY: 'auto' }}>
+        {error && <div style={{ color: 'var(--danger-text, #991b1b)' }}>{error}</div>}
+
+        <div style={{ backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
+          <h4 style={{ marginTop: 0 }}>Write a memory</h4>
+          <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="What should be remembered?"
+            style={{ width: '100%', minHeight: '60px', marginBottom: '0.5rem', padding: '0.5rem', boxSizing: 'border-box' }} />
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <input value={context} onChange={e => setContext(e.target.value)} placeholder="Context (optional)"
+              style={{ flex: 1, padding: '0.5rem', minWidth: '160px' }} />
+            <label style={{ fontSize: '0.85rem' }}>Importance
+              <input type="number" min={1} max={10} value={importance} onChange={e => setImportance(Number(e.target.value))}
+                style={{ width: '60px', marginLeft: '0.5rem', padding: '0.4rem' }} />
+            </label>
+            <button onClick={handleCreate} style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}>Save Memory</button>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') refresh(); }}
+            placeholder="Search memories…" style={{ flex: 1, padding: '0.5rem' }} />
+          <button onClick={refresh} style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}>Search</button>
+        </div>
+
+        <div style={{ flex: 1, backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
+          <h4 style={{ marginTop: 0 }}>Memories ({memories.length})</h4>
+          {memories.length === 0 ? <p style={{ color: 'var(--text-muted, #6b7280)' }}>No memories yet.</p> : (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {memories.map(m => (
+                <li key={m.id} style={{ borderBottom: '1px solid var(--border, #eee)', padding: '0.6rem 0', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                  <div>
+                    <div>{m.content}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #6b7280)' }}>
+                      {m.context ? `${m.context} · ` : ''}importance {m.importance}{m.agent_id ? ` · by ${m.agent_id}` : ''} · {m.created_at}
+                    </div>
+                  </div>
+                  <button onClick={() => handleDelete(m.id)} style={{ alignSelf: 'flex-start', background: 'transparent', border: '1px solid var(--border, #ccc)', borderRadius: '4px', cursor: 'pointer', padding: '0.25rem 0.5rem' }}>Delete</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </PageShell>
+  );
+};
+
+export const ContextPage: React.FC = () => {
+  const { backendHealth } = useAppStore();
+  const workspaceId = backendHealth?.active_workspace_id || 'default';
+  const [decisions, setDecisions] = useState<Decision[]>([]);
+  const [handoffs, setHandoffs] = useState<Handoff[]>([]);
+  const [decisionText, setDecisionText] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = async () => {
+    try {
+      const details = await getCoordinationDetails();
+      setDecisions(details.decisions);
+      setHandoffs(details.handoffs);
+      setError(null);
+    } catch (err: any) {
+      setError(err.toString());
+    }
+  };
+
+  useEffect(() => { refresh(); }, []);
+
+  const handleRecord = async () => {
+    if (!decisionText.trim()) return;
+    try {
+      await recordDecision(workspaceId, decisionText.trim(), 'user');
+      setDecisionText('');
+      await refresh();
+    } catch (err: any) {
+      setError(err.toString());
+    }
+  };
+
+  const handleResolve = async (id: number | null, status: string) => {
+    if (id == null) return;
+    await resolveHandoff(id, status);
+    await refresh();
+  };
+
+  return (
+    <PageShell title="Project Context">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%', overflowY: 'auto' }}>
+        {error && <div style={{ color: 'var(--danger-text, #991b1b)' }}>{error}</div>}
+
+        <div style={{ backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
+          <h4 style={{ marginTop: 0 }}>Record a decision</h4>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input value={decisionText} onChange={e => setDecisionText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleRecord(); }}
+              placeholder="Decision the team should remember…" style={{ flex: 1, padding: '0.5rem' }} />
+            <button onClick={handleRecord} style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}>Record</button>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
+          <h4 style={{ marginTop: 0 }}>Decisions ({decisions.length})</h4>
+          {decisions.length === 0 ? <p style={{ color: 'var(--text-muted, #6b7280)' }}>No decisions recorded.</p> : (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {decisions.map(d => (
+                <li key={d.id ?? d.timestamp} style={{ borderBottom: '1px solid var(--border, #eee)', padding: '0.5rem 0' }}>
+                  <div>{d.decision}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #6b7280)' }}>by {d.decided_by} · {d.timestamp}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div style={{ backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
+          <h4 style={{ marginTop: 0 }}>Handoffs ({handoffs.length})</h4>
+          {handoffs.length === 0 ? <p style={{ color: 'var(--text-muted, #6b7280)' }}>No handoffs.</p> : (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {handoffs.map(h => (
+                <li key={h.id ?? h.timestamp} style={{ borderBottom: '1px solid var(--border, #eee)', padding: '0.5rem 0', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                  <div>
+                    <div>{h.source_agent_id} → {h.target_agent_id}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #6b7280)' }}>{h.reason} · status: {h.status} · {h.timestamp}</div>
+                  </div>
+                  {h.status === 'pending' && (
+                    <div style={{ display: 'flex', gap: '0.5rem', alignSelf: 'flex-start' }}>
+                      <button onClick={() => handleResolve(h.id, 'accepted')} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', padding: '0.25rem 0.6rem', cursor: 'pointer' }}>Accept</button>
+                      <button onClick={() => handleResolve(h.id, 'rejected')} style={{ background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', padding: '0.25rem 0.6rem', cursor: 'pointer' }}>Reject</button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </PageShell>
+  );
 };

@@ -1,6 +1,65 @@
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::State;
 use uuid::Uuid;
+
+use crate::storage::DbState;
+
+/// List recent memories, optionally scoped to a workspace. Exposed to the UI.
+#[tauri::command]
+pub fn list_memories(
+    state: State<'_, DbState>,
+    workspace_id: Option<String>,
+) -> Result<Vec<Memory>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let ws = workspace_id.filter(|w| !w.trim().is_empty());
+    get_recent_memories(&conn, None, ws, 200)
+}
+
+/// Search memories by content/context. Exposed to the UI.
+#[tauri::command]
+pub fn search_memories_cmd(
+    state: State<'_, DbState>,
+    query: String,
+    workspace_id: Option<String>,
+) -> Result<Vec<Memory>, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let ws = workspace_id.filter(|w| !w.trim().is_empty());
+    search_memories(&conn, None, ws, &query, 50)
+}
+
+/// Create a memory from the UI.
+#[tauri::command]
+pub fn create_memory_cmd(
+    state: State<'_, DbState>,
+    content: String,
+    context: Option<String>,
+    importance: Option<i32>,
+    agent_id: Option<String>,
+    workspace_id: Option<String>,
+) -> Result<String, String> {
+    if content.trim().is_empty() {
+        return Err("Memory content cannot be empty.".to_string());
+    }
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    save_memory(
+        &conn,
+        agent_id.filter(|a| !a.trim().is_empty()),
+        workspace_id.filter(|w| !w.trim().is_empty()),
+        content,
+        context.filter(|c| !c.trim().is_empty()),
+        importance.unwrap_or(1),
+    )
+}
+
+/// Delete a memory from the UI.
+#[tauri::command]
+pub fn delete_memory_cmd(state: State<'_, DbState>, id: String) -> Result<(), String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM memories WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Memory {

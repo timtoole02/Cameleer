@@ -41,10 +41,21 @@ npm run tauri build
 ```
 
 ## Status
-* This repository has completed the **P0 Stabilization Gate**. 
-* UI is verified readable and strictly adheres to CSS variables.
-* Legacy repair scripts are quarantined to `tools/legacy-repair/`.
-* The Rust backend commands are actively wired and healthy.
+
+**v0.1 production candidate — verified on macOS (Apple Silicon).**
+
+* `cargo test -p control-center` — 44/44 backend tests pass, including an
+  end-to-end persistence test that closes and reopens the database and asserts
+  all state survives (`src-tauri/src/e2e_persistence.rs`).
+* Frontend `tsc` clean, `vitest` green, P0 smoke test passes.
+* `npm run tauri build` produces a working `Cameleer.app` + `.dmg` with the
+  Camelid inference runtime bundled in `Contents/Resources/`.
+* Agent task runs drive a real bounded ReAct loop (plan → act → observe) with
+  persisted run steps, tool invocations, and a work-receipt approval gate.
+* Durable state lives in `~/.cameleer/cameleer_workspace.db` (same path every
+  launch); migrations are idempotent.
+
+See `docs/AUDIT_REAL_VS_FAKE.md` for the evidence-based real-vs-fake audit.
 
 ## License
 

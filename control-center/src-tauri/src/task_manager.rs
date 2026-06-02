@@ -1106,6 +1106,7 @@ pub fn delete_task(state: State<'_, DbState>, task_id: String) -> Result<(), Str
 
 #[tauri::command]
 pub async fn start_agent_task_run(
+    app_handle: AppHandle,
     state: State<'_, DbState>,
     task_id: String,
 ) -> Result<AgentRun, String> {
@@ -1113,6 +1114,7 @@ pub async fn start_agent_task_run(
         agent_id,
         agent_name,
         agent_persona,
+        agent_role,
         model_provider,
         model_name,
         temperature,
@@ -1157,9 +1159,9 @@ pub async fn start_agent_task_run(
             .filter(|value| !value.trim().is_empty())
             .ok_or_else(|| "Cannot start work: detailed instructions are required.".to_string())?;
 
-        let agent: (String, String, String, String, f64, i32) = conn
+        let agent: (String, String, String, String, String, f64, i32) = conn
             .query_row(
-                "SELECT name, persona, model_provider, model_name, temperature, max_tokens
+                "SELECT name, persona, role, model_provider, model_name, temperature, max_tokens
                  FROM agents WHERE id = ?1",
                 [&assigned_agent_id],
                 |row| {
@@ -1170,12 +1172,13 @@ pub async fn start_agent_task_run(
                         row.get(3)?,
                         row.get(4)?,
                         row.get(5)?,
+                        row.get(6)?,
                     ))
                 },
             )
             .map_err(|_| "Cannot start work: assigned agent not found.".to_string())?;
 
-        if agent.3.trim().is_empty() || agent.3 == "camelid-default" {
+        if agent.4.trim().is_empty() || agent.4 == "camelid-default" {
             return Err(format!(
                 "Cannot start work: {} has no concrete model profile assigned.",
                 agent.0
@@ -1190,6 +1193,7 @@ pub async fn start_agent_task_run(
             agent.3,
             agent.4,
             agent.5,
+            agent.6,
             task.0,
             task.1,
             task_instructions,
@@ -1212,26 +1216,27 @@ pub async fn start_agent_task_run(
     }
 
     let run_id = uuid::Uuid::new_v4().to_string();
-    let prompt = format!(
-        "Task: {}\n\nDescription:\n{}\n\nDetailed instructions:\n{}\n\nAcceptance criteria:\n{}\n\nProduce a concise work plan, implementation notes, validation notes, and a receipt draft. Do not claim file changes or command execution unless actually performed.",
+    let session_id = format!("task:{}", task_id);
+    let task_prompt = format!(
+        "Task: {}\n\nDescription:\n{}\n\nDetailed instructions:\n{}\n\nAcceptance criteria:\n{}\n\nWork the task one step at a time. Use real tools (command.run, file.write, memory.write, repo.search) to actually perform the work. Do not claim file changes or command execution unless you actually invoked the tool. When the acceptance criteria are met, emit a `task.complete` action with evidence.",
         title,
         description.clone().unwrap_or_else(|| "No description provided.".to_string()),
         instructions,
         acceptance_criteria.clone().unwrap_or_else(|| "No acceptance criteria provided.".to_string())
     );
 
+    // Load the agent's contract so the tool controller can enforce allowed actions.
+    let contract = {
+        let conn = state.conn.lock().map_err(|e| e.to_string())?;
+        crate::agent_contracts::load_contract(&agent_id, &agent_role, &conn)?
+    };
+
     {
         let conn = state.conn.lock().map_err(|e| e.to_string())?;
         conn.execute(
             "INSERT INTO agent_runs (id, agent_id, conversation_id, task_id, state, input)
              VALUES (?1, ?2, ?3, ?4, 'executing', ?5)",
-            params![
-                run_id,
-                agent_id,
-                format!("task:{}", task_id),
-                task_id,
-                prompt
-            ],
+            params![run_id, agent_id, session_id, task_id, task_prompt],
         )
         .map_err(|e| e.to_string())?;
         conn.execute(
@@ -1259,64 +1264,180 @@ pub async fn start_agent_task_run(
         None
     };
 
-    let response = call_model(
-        &model_provider,
-        &model_name,
-        vec![
-            ChatMessage {
-                role: "system".to_string(),
-                content: agent_persona,
-            },
-            ChatMessage {
-                role: "user".to_string(),
-                content: prompt.clone(),
-            },
-        ],
-        ModelSettings {
-            temperature: Some(temperature),
-            max_tokens: Some(max_tokens.min(1024)),
+    let system_prompt = build_task_react_prompt(
+        &agent_name,
+        &agent_role,
+        &agent_persona,
+        &contract,
+        &task_prompt,
+    );
+    let mut history = vec![
+        ChatMessage {
+            role: "system".to_string(),
+            content: system_prompt,
         },
-        None,
-        endpoint,
-    )
-    .await;
+        ChatMessage {
+            role: "user".to_string(),
+            content: task_prompt.clone(),
+        },
+    ];
+    let settings = ModelSettings {
+        temperature: Some(temperature),
+        max_tokens: Some(max_tokens.min(1024)),
+    };
 
+    const MAX_ITERATIONS: usize = 6;
+    // Outcome of the ReAct loop: completed | failed | waiting_approval
+    let mut outcome = "completed".to_string();
+    let mut final_answer = String::new();
+    let mut last_error: Option<String> = None;
+    let mut tools_executed = 0usize;
+
+    for iteration in 0..MAX_ITERATIONS {
+        let response = call_model(
+            &model_provider,
+            &model_name,
+            history.clone(),
+            settings.clone(),
+            None,
+            endpoint.clone(),
+        )
+        .await;
+
+        let text = match response {
+            Ok(t) => t,
+            Err(error) => {
+                last_error = Some(error);
+                outcome = "failed".to_string();
+                break;
+            }
+        };
+
+        // Persist the raw model output as a step in the run timeline.
+        {
+            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+            conn.execute(
+                "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, 'model_response', ?3)",
+                params![uuid::Uuid::new_v4().to_string(), run_id, text],
+            )
+            .map_err(|e| e.to_string())?;
+        }
+
+        let action = crate::chat_service::parse_agent_action(&text);
+
+        // The human-visible message for this step (the model's summary, or the raw text).
+        let visible = action
+            .as_ref()
+            .and_then(|a| a.raw_json.as_ref())
+            .map(|j| j.summary.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| text.trim().to_string());
+        final_answer = visible.clone();
+        {
+            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+            conn.execute(
+                "INSERT INTO task_progress_updates (id, task_id, run_id, agent_id, content, status)
+                 VALUES (?1, ?2, ?3, ?4, ?5, 'sent')",
+                params![uuid::Uuid::new_v4().to_string(), task_id, run_id, agent_id, visible],
+            )
+            .map_err(|e| e.to_string())?;
+        }
+
+        let mut action = match action {
+            // No structured action: treat the text as the agent's final answer.
+            None => {
+                outcome = "completed".to_string();
+                break;
+            }
+            Some(a) => a,
+        };
+
+        // The agent declared the task done: stop and route to human review.
+        if action.action_type == "task.complete" {
+            let conn = state.conn.lock().map_err(|e| e.to_string())?;
+            conn.execute(
+                "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, 'agent_declared_complete', ?3)",
+                params![uuid::Uuid::new_v4().to_string(), run_id, action.evidence.clone().unwrap_or_default()],
+            )
+            .map_err(|e| e.to_string())?;
+            outcome = "completed".to_string();
+            break;
+        }
+
+        // A plain message with no tool work: treat as the final answer.
+        if action.action_type == "message.send" || action.action_type == "respond" {
+            outcome = "completed".to_string();
+            break;
+        }
+
+        // Bind the action to this specific task before executing.
+        action.task_id = Some(task_id.clone());
+        if action.card_id.is_none() {
+            action.card_id = Some(task_id.clone());
+        }
+
+        // Execute the tool. This persists a tool_invocations record (and a
+        // tool_approvals row + suspension if the command guard intercepts it).
+        let tool_result = crate::agent_tool_controller::execute_tool(
+            &app_handle,
+            &agent_id,
+            &session_id,
+            &contract,
+            &action,
+            Some(&run_id),
+        );
+
+        match tool_result {
+            Ok(observation) => {
+                tools_executed += 1;
+                if observation.starts_with("Execution Suspended") {
+                    outcome = "waiting_approval".to_string();
+                    break;
+                }
+                history.push(ChatMessage {
+                    role: "assistant".to_string(),
+                    content: text,
+                });
+                history.push(ChatMessage {
+                    role: "user".to_string(),
+                    content: format!(
+                        "Observation from {} (step {}):\n{}\n\nContinue with the next step, or emit task.complete if the acceptance criteria are now satisfied.",
+                        action.action_type,
+                        iteration + 1,
+                        observation
+                    ),
+                });
+            }
+            Err(tool_err) => {
+                {
+                    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+                    conn.execute(
+                        "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, 'tool_error', ?3)",
+                        params![uuid::Uuid::new_v4().to_string(), run_id, tool_err],
+                    )
+                    .map_err(|e| e.to_string())?;
+                }
+                history.push(ChatMessage {
+                    role: "assistant".to_string(),
+                    content: text,
+                });
+                history.push(ChatMessage {
+                    role: "user".to_string(),
+                    content: format!(
+                        "Tool {} failed: {}. Adjust your approach and try a different step, or emit a final summary.",
+                        action.action_type, tool_err
+                    ),
+                });
+            }
+        }
+    }
+
+    // Finalize the run based on the loop outcome.
     {
         let conn = state.conn.lock().map_err(|e| e.to_string())?;
-        match response {
-            Ok(answer) => {
-                conn.execute(
-                    "UPDATE agent_runs SET state = 'completed', final_answer = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-                    params![answer, run_id],
-                )
-                .map_err(|e| e.to_string())?;
-                conn.execute(
-                    "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, 'agent_response', ?3)",
-                    params![uuid::Uuid::new_v4().to_string(), run_id, answer],
-                )
-                .map_err(|e| e.to_string())?;
-                conn.execute(
-                    "INSERT INTO task_progress_updates (id, task_id, run_id, agent_id, content, status)
-                     VALUES (?1, ?2, ?3, ?4, ?5, 'sent')",
-                    params![uuid::Uuid::new_v4().to_string(), task_id, run_id, agent_id, answer],
-                )
-                .map_err(|e| e.to_string())?;
-                conn.execute(
-                    "UPDATE kanban_cards SET status = 'review', validation_status = 'needs_review', comments = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-                    params![answer, task_id],
-                )
-                .map_err(|e| e.to_string())?;
-                insert_task_activity(
-                    &conn,
-                    &task_id,
-                    "agent",
-                    Some(&agent_id),
-                    "agent_response_saved",
-                    "Agent response saved and task moved to Review",
-                    Some(serde_json::json!({ "run_id": run_id })),
-                )?;
-            }
-            Err(error) => {
+        match outcome.as_str() {
+            "failed" => {
+                let error = last_error.unwrap_or_else(|| "Model inference failed".to_string());
                 conn.execute(
                     "UPDATE agent_runs SET state = 'failed', error = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
                     params![error, run_id],
@@ -1338,10 +1459,114 @@ pub async fn start_agent_task_run(
                     Some(serde_json::json!({ "run_id": run_id, "error": error })),
                 )?;
             }
+            "waiting_approval" => {
+                conn.execute(
+                    "UPDATE agent_runs SET state = 'waiting_approval', final_answer = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+                    params![final_answer, run_id],
+                )
+                .map_err(|e| e.to_string())?;
+                conn.execute(
+                    "UPDATE kanban_cards SET status = 'waiting_for_approval', validation_status = 'waiting_for_approval', updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+                    [&task_id],
+                )
+                .map_err(|e| e.to_string())?;
+                insert_task_activity(
+                    &conn,
+                    &task_id,
+                    "agent",
+                    Some(&agent_id),
+                    "agent_waiting_approval",
+                    "Agent paused: a tool needs human approval",
+                    Some(serde_json::json!({ "run_id": run_id, "tools_executed": tools_executed })),
+                )?;
+            }
+            _ => {
+                conn.execute(
+                    "UPDATE agent_runs SET state = 'completed', final_answer = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+                    params![final_answer, run_id],
+                )
+                .map_err(|e| e.to_string())?;
+                conn.execute(
+                    "INSERT INTO agent_run_steps (id, run_id, step_type, content) VALUES (?1, ?2, 'final_answer', ?3)",
+                    params![uuid::Uuid::new_v4().to_string(), run_id, final_answer],
+                )
+                .map_err(|e| e.to_string())?;
+                conn.execute(
+                    "UPDATE kanban_cards SET status = 'review', validation_status = 'needs_review', comments = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
+                    params![final_answer, task_id],
+                )
+                .map_err(|e| e.to_string())?;
+                insert_task_activity(
+                    &conn,
+                    &task_id,
+                    "agent",
+                    Some(&agent_id),
+                    "agent_response_saved",
+                    "Agent finished work and moved task to Review",
+                    Some(serde_json::json!({ "run_id": run_id, "tools_executed": tools_executed })),
+                )?;
+            }
         }
     }
 
     get_task_run_status(state, run_id)
+}
+
+/// Builds the system prompt for a task-scoped ReAct run: persona + contract +
+/// the strict JSON action schema the tool controller expects.
+fn build_task_react_prompt(
+    name: &str,
+    role: &str,
+    persona: &str,
+    contract: &crate::agent_contracts::AgentContract,
+    task_prompt: &str,
+) -> String {
+    let mut p = format!(
+        "You are {} (Role: {}).\nPersona: {}\n\n",
+        name, role, persona
+    );
+
+    p.push_str("### AGENT CONTRACT\nResponsibilities:\n");
+    for r in &contract.responsibilities {
+        p.push_str(&format!("- {}\n", r));
+    }
+    p.push_str("\nAllowed actions:\n");
+    for a in &contract.allowed_actions {
+        p.push_str(&format!("- {}\n", a));
+    }
+    p.push_str("\nForbidden actions:\n");
+    for f in &contract.forbidden_actions {
+        p.push_str(&format!("- {}\n", f));
+    }
+    p.push_str("\nDefinition of Done:\n");
+    for d in &contract.done_definition {
+        p.push_str(&format!("- {}\n", d));
+    }
+
+    p.push_str(&format!("\n### ACTIVE TASK\n{}\n", task_prompt));
+
+    p.push_str(
+        "\n### EXECUTION PROTOCOL\n\
+        You are running an agent loop. On each turn perform exactly ONE step, then STOP and wait for the observation.\n\
+        Respond ONLY with a single JSON object (no prose outside it) of this shape:\n\
+        ```json\n\
+        {\n  \
+          \"summary\": \"what you are doing this step\",\n  \
+          \"plan\": [\"step 1\", \"step 2\"],\n  \
+          \"next_action\": {\n    \
+            \"type\": \"command.run | file.write | repo.search | memory.write | memory.search | task.update | task.complete | message.send\",\n    \
+            \"target\": \"optional file path or id\",\n    \
+            \"input\": \"the command string, file content, query, or message\"\n  \
+          },\n  \
+          \"confidence\": 0.9,\n  \
+          \"blockers\": [],\n  \
+          \"done_criteria\": []\n\
+        }\n\
+        ```\n\
+        Use real tool actions to do the work. Only emit task.complete once the acceptance criteria are genuinely satisfied.\n",
+    );
+
+    p
 }
 
 #[tauri::command]
@@ -1507,6 +1732,66 @@ pub fn record_task_activity(
     )
 }
 
+/// Aggregates real evidence from the tool_invocations recorded for a task's runs.
+/// Returns JSON arrays: (files_created, commands_run, tests_run).
+fn collect_tool_evidence(conn: &Connection, task_id: &str) -> (String, String, String) {
+    let mut files: Vec<String> = Vec::new();
+    let mut commands: Vec<String> = Vec::new();
+    let mut tests: Vec<String> = Vec::new();
+
+    let rows: Vec<(String, String)> = {
+        let mut stmt = match conn.prepare(
+            "SELECT tool_name, arguments FROM tool_invocations
+             WHERE task_id = ?1 AND status = 'success' ORDER BY created_at ASC",
+        ) {
+            Ok(s) => s,
+            Err(_) => return ("[]".into(), "[]".into(), "[]".into()),
+        };
+        let mapped = stmt.query_map([task_id], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        });
+        match mapped {
+            Ok(iter) => iter.filter_map(|r| r.ok()).collect(),
+            Err(_) => return ("[]".into(), "[]".into(), "[]".into()),
+        }
+    };
+
+    for (tool_name, args) in rows {
+        let parsed: serde_json::Value = serde_json::from_str(&args).unwrap_or(serde_json::Value::Null);
+        match tool_name.as_str() {
+            "file.write" => {
+                if let Some(path) = parsed.get("path").and_then(|v| v.as_str()) {
+                    if !path.is_empty() {
+                        files.push(path.to_string());
+                    }
+                }
+            }
+            "command.run" | "repo.search" => {
+                if let Some(cmd) = parsed.get("command").and_then(|v| v.as_str()) {
+                    if !cmd.is_empty() {
+                        commands.push(cmd.to_string());
+                        let lc = cmd.to_ascii_lowercase();
+                        if lc.contains("test")
+                            || lc.contains("pytest")
+                            || lc.contains("vitest")
+                            || lc.contains("jest")
+                        {
+                            tests.push(cmd.to_string());
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    (
+        serde_json::to_string(&files).unwrap_or_else(|_| "[]".into()),
+        serde_json::to_string(&commands).unwrap_or_else(|_| "[]".into()),
+        serde_json::to_string(&tests).unwrap_or_else(|_| "[]".into()),
+    )
+}
+
 #[tauri::command]
 pub fn generate_task_work_receipt(
     state: State<'_, DbState>,
@@ -1543,13 +1828,16 @@ pub fn generate_task_work_receipt(
         "needs_review"
     };
 
+    // Pull real evidence from the tool invocations recorded during the run(s).
+    let (files_created, commands_run, tests_run) = collect_tool_evidence(&conn, &task_id);
+
     conn.execute(
         "INSERT INTO task_work_receipts (
             id, task_id, agent_id, summary, instructions_followed, acceptance_criteria_results,
             files_created, files_modified, commands_run, tests_run, validation_status,
             evidence_links, known_limitations, follow_up_recommendations
          )
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, '[]', '[]', '[]', '[]', ?7, '[]', ?8, ?9)",
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, '[]', ?8, ?9, ?10, '[]', ?11, ?12)",
         params![
             receipt_id,
             task_id,
@@ -1561,6 +1849,9 @@ pub fn generate_task_work_receipt(
             summary,
             task.instructions,
             criteria,
+            files_created,
+            commands_run,
+            tests_run,
             validation_status,
             error
                 .map(|value| serde_json::json!([value]).to_string())
@@ -2813,4 +3104,60 @@ pub fn get_run_steps(
         }
     }
     Ok(steps)
+}
+
+#[cfg(test)]
+mod react_evidence_tests {
+    use super::collect_tool_evidence;
+    use rusqlite::Connection;
+
+    fn setup() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        crate::storage::init_db(&conn).unwrap();
+        // This unit test exercises evidence aggregation, not referential integrity,
+        // so we relax FK enforcement to insert standalone tool_invocation rows.
+        conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
+        conn
+    }
+
+    fn insert_invocation(conn: &Connection, id: &str, task_id: &str, tool: &str, args: &str, status: &str) {
+        conn.execute(
+            "INSERT INTO tool_invocations (id, task_id, tool_name, arguments, status)
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+            rusqlite::params![id, task_id, tool, args, status],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn collects_files_commands_and_tests_from_successful_invocations() {
+        let conn = setup();
+        insert_invocation(&conn, "i1", "task-1", "file.write",
+            r#"{"path":"src/main.rs","content":"fn main(){}"}"#, "success");
+        insert_invocation(&conn, "i2", "task-1", "command.run",
+            r#"{"command":"cargo build"}"#, "success");
+        insert_invocation(&conn, "i3", "task-1", "command.run",
+            r#"{"command":"cargo test"}"#, "success");
+
+        let (files, commands, tests) = collect_tool_evidence(&conn, "task-1");
+        assert!(files.contains("src/main.rs"), "files_created should include written path: {files}");
+        assert!(commands.contains("cargo build") && commands.contains("cargo test"),
+            "commands_run should include both commands: {commands}");
+        assert!(tests.contains("cargo test") && !tests.contains("cargo build"),
+            "tests_run should include test commands only: {tests}");
+    }
+
+    #[test]
+    fn ignores_failed_invocations_and_other_tasks() {
+        let conn = setup();
+        insert_invocation(&conn, "i1", "task-1", "command.run",
+            r#"{"command":"rm -rf /"}"#, "error");
+        insert_invocation(&conn, "i2", "task-2", "command.run",
+            r#"{"command":"ls"}"#, "success");
+
+        let (files, commands, tests) = collect_tool_evidence(&conn, "task-1");
+        assert_eq!(files, "[]");
+        assert_eq!(commands, "[]", "failed invocations and other tasks must be excluded");
+        assert_eq!(tests, "[]");
+    }
 }

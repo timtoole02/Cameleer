@@ -11,7 +11,7 @@ import { KanbanPage } from './pages/KanbanPage';
 import { BacklogPage } from './pages/BacklogPage';
 import { AgentsPage } from './pages/AgentsPage';
 import { ModelsPage } from './pages/ModelsPage';
-import { MemoryPage, RuntimePage, AuditPage, SettingsPage } from './pages/OtherPages';
+import { MemoryPage, ContextPage, RuntimePage, AuditPage, SettingsPage } from './pages/OtherPages';
 import './App.css';
 
 function App() {
@@ -67,6 +67,7 @@ function App() {
       case 'Backlog': return <BacklogPage />;
       case 'Agents': return <AgentsPage />;
       case 'Memory': return <MemoryPage />;
+      case 'Context': return <ContextPage />;
       case 'Models': return <ModelsPage />;
       case 'Runtime': return <RuntimePage />;
       case 'Audit': return <AuditPage />;

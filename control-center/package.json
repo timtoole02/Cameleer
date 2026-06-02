@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prepare:camelid": "cargo build --manifest-path ../Cargo.toml -p camelid --release && node scripts/prepare-camelid-resource.mjs",
+    "prepare:camelid": "node scripts/prepare-camelid-resource.mjs",
     "build": "npm run prepare:camelid && tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
