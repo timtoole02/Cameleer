@@ -111,8 +111,12 @@ The 71 orphans + 11 unregistered are **Runnable, not Supported**, regardless of 
   ([receipt](control-center/receipts/backend-baseline.check-receipt.json)). README's
   "44/44" is **confirmed**; `AUDIT_REAL_VS_FAKE.md`'s "43" is wrong. But those 44 tests span
   only 12 of 36 modules — coverage breadth, not count, is the problem.
-- Frontend: 1 vitest file, 3 tests. `lint` is a **fake** — an alias for `tsc --noEmit`, no
-  ESLint (G2 fixes).
+- Frontend: 1 vitest file, 3 tests (`act()` warning fixed in G2). `lint` is now **real**
+  ESLint 9 (flat config) — 0 errors, 8 non-blocking warnings (6 `react-hooks/exhaustive-deps`,
+  2 `react-refresh`) tracked as lint-debt; `typecheck` stays separate.
+- Backend is `cargo fmt`-clean and `cargo clippy -p control-center -- -D warnings`-clean as of
+  G2 (a deny-by-default `clippy::never_loop` compile error in `context_engine.rs` was fixed;
+  15 dead-code items carry a `// unwired; reconciled in HARDPAN G5` marker).
 
 ---
 
@@ -165,7 +169,7 @@ Context / Runtime / Audit / Settings).
 |---|---|
 | **G0** Ground truth (STATUS + COMMAND_MAP) | ✅ this file + COMMAND_MAP.md |
 | **G1** Repo coherence / hard reset | ⏳ next |
-| **G2** Portable release gate + CI | ⏳ |
+| **G2** Portable release gate + CI | 🟡 code green locally (clippy/fmt/lint/tests + local package build); CI pushed, awaiting green GitHub run |
 | **G3** Safety-critical test backfill | ⏳ |
 | **G4** e2e receipt vs live inference | ⏳ |
 | **G5** Backend↔frontend reconciliation | ⏳ |

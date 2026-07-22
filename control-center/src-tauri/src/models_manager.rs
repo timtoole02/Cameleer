@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 use tauri::State;
 
 // Whitelisted supported quantization types
@@ -545,9 +544,9 @@ pub async fn search_remote_models(
     let query_lower = query.to_lowercase();
     let mut results = Vec::new();
     for (repo, file, size, quant) in all_files {
-        if (!query.is_empty()
+        if !query.is_empty()
             && !repo.to_lowercase().contains(&query_lower)
-            && !file.to_lowercase().contains(&query_lower))
+            && !file.to_lowercase().contains(&query_lower)
         {
             continue;
         }
@@ -569,9 +568,9 @@ pub async fn search_remote_models(
 
 #[tauri::command]
 pub async fn generate_model_preflight(
-    provider: String,
+    _provider: String,
     url: String,
-    repo: Option<String>,
+    _repo: Option<String>,
     file: Option<String>,
 ) -> Result<PreflightResponse, String> {
     if !url.to_lowercase().ends_with(".gguf")
@@ -630,7 +629,7 @@ pub async fn generate_model_preflight(
                 .clone()
                 .unwrap_or_else(|| "llama".to_string());
             let context = gguf.context_length.unwrap_or(2048);
-            let mut warnings = Vec::new();
+            let warnings = Vec::new();
             let mut blockers = Vec::new();
 
             // Check tokenizer and architecture
@@ -672,7 +671,7 @@ pub async fn generate_model_preflight(
                 "Inspectable Only".to_string()
             };
 
-            let mem_estimate = if bytes.len() > 0 {
+            let mem_estimate = if !bytes.is_empty() {
                 // Simple file size heuristics
                 "fits 8GB RAM devices".to_string()
             } else {
@@ -766,7 +765,7 @@ pub async fn queue_model_download(
         let client = Client::new();
         let update_dl_progress = |progress: i64, finished: bool, err_msg: Option<String>| {
             if let Ok(c) = rusqlite::Connection::open(&db_path) {
-                let status = if let Some(_) = err_msg {
+                let status = if err_msg.is_some() {
                     "failed"
                 } else if finished {
                     "completed"
@@ -960,7 +959,6 @@ fn inspect_and_verify_model(conn: &rusqlite::Connection, model_id: &str) -> Resu
                 let context = gguf.context_length.unwrap_or(2048);
 
                 // Check whitelisted tensor types
-                let mut all_supported = true;
                 let mut supported_list = Vec::new();
                 let mut unsupported_list = Vec::new();
 
@@ -968,7 +966,6 @@ fn inspect_and_verify_model(conn: &rusqlite::Connection, model_id: &str) -> Resu
                     if t.supported {
                         supported_list.push(t.tensor_type.clone());
                     } else {
-                        all_supported = false;
                         unsupported_list.push(t.tensor_type.clone());
                     }
                 }
@@ -1124,10 +1121,7 @@ pub async fn import_local_model(
     };
 
     let size = fs::metadata(src_path).map_err(|e| e.to_string())?.len();
-    let model_id = format!(
-        "local-{}",
-        filename.to_lowercase().replace(' ', "-").replace('.', "-")
-    );
+    let model_id = format!("local-{}", filename.to_lowercase().replace([' ', '.'], "-"));
 
     // Save imported manifest
     let conn = state.conn.lock().map_err(|e| e.to_string())?;

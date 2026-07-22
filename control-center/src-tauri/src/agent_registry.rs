@@ -1,5 +1,5 @@
 use crate::storage::DbState;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Result};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 

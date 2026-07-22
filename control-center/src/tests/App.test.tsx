@@ -69,7 +69,12 @@ describe('App component', () => {
   it('renders Sidebar and TopNav', async () => {
     mockHealthyInvoke();
     render(<App />);
+    // The mount cascade is async: App health-check -> isChecking flips ->
+    // ChatPage mounts -> ChatPage.loadData resolves. Awaiting a ChatPage
+    // element via findBy* (whose polling runs inside act()) forces the whole
+    // cascade to settle, so no "update not wrapped in act(...)" warning leaks.
     expect(await screen.findByText(/Workspace:/)).toBeDefined();
+    expect(await screen.findByPlaceholderText('Message #global')).toBeDefined();
     expect(screen.getAllByText('Chat').length).toBeGreaterThan(0);
   });
 

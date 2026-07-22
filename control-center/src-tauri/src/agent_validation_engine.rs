@@ -40,7 +40,7 @@ pub fn validate_task_completion(
         });
     }
 
-    let (status, assignee, criteria, review_required, val_status) = card_query.unwrap();
+    let (_status, assignee, criteria, review_required, val_status) = card_query.unwrap();
 
     // 2. Check assignment
     if assignee.as_deref() != Some(agent_id) {

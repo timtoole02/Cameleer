@@ -286,6 +286,7 @@ pub async fn check_health_and_update(
                 struct CamelidHealth {
                     loaded_now: bool,
                     active_model_id: Option<String>,
+                    #[allow(dead_code)] // unwired; reconciled in HARDPAN G5
                     alive: Option<bool>,
                     version: Option<String>,
                     uptime: Option<u64>,
@@ -1033,7 +1034,7 @@ pub async fn verify_packaged_runtime(app_handle: AppHandle) -> Result<RuntimeVer
             result.found = true;
             result.resolved_path = Some(p.to_string_lossy().to_string());
 
-            if let Ok(metadata) = std::fs::metadata(&p) {
+            if let Ok(_metadata) = std::fs::metadata(&p) {
                 if let Ok(output) = Command::new(&p).arg("--version").output() {
                     result.executable = true;
                     if output.status.success() {

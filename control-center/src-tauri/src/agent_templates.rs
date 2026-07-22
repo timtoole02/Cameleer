@@ -1,4 +1,3 @@
-use crate::agent_registry::Agent;
 use crate::storage::DbState;
 use rusqlite::{params, OptionalExtension};
 use serde::{Deserialize, Serialize};
@@ -260,7 +259,7 @@ pub fn create_software_team(
     ];
 
     for (key, name) in roles {
-        let _ = create_agent_from_template(
+        create_agent_from_template(
             state.clone(),
             key.to_string(),
             name.to_string(),
@@ -336,7 +335,7 @@ pub fn create_coding_sprint(state: State<'_, DbState>, workspace_id: String) -> 
             .optional()
             .unwrap_or(None);
 
-        let agent_id_val = assigned_agent_id.unwrap_or_else(|| "".to_string());
+        let agent_id_val = assigned_agent_id.unwrap_or_default();
 
         conn.execute(
             "INSERT OR REPLACE INTO kanban_cards (id, workspace_id, title, description, assigned_agent_id, status, priority, acceptance_criteria, related_files, created_by, validation_status)

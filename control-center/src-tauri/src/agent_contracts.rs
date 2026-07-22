@@ -22,6 +22,7 @@ pub fn load_contract(
     role: &str,
     conn: &Connection,
 ) -> Result<AgentContract, String> {
+    #[allow(clippy::type_complexity)] // 9-tuple maps 1:1 to the SELECTed contract columns
     let row: Option<(
         String, String, String, String, String, String, String, String, String
     )> = conn.query_row(

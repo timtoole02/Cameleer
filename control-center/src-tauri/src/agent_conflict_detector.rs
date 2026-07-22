@@ -1,6 +1,7 @@
 use rusqlite::{Connection, Result};
 use std::collections::HashSet;
 
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub fn detect_circular_dependencies(conn: &Connection, card_id: &str) -> Result<bool, String> {
     let mut visited = HashSet::new();
     let mut current_id = card_id.to_string();
@@ -31,6 +32,7 @@ pub fn detect_circular_dependencies(conn: &Connection, card_id: &str) -> Result<
     Ok(false)
 }
 
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub fn detect_file_collisions(conn: &Connection, file_path: &str) -> Result<Vec<String>, String> {
     // Check if multiple active tasks are working on the same file
     let mut conflicting_agents = Vec::new();

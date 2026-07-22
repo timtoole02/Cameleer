@@ -43,7 +43,7 @@ export const ModelsPage: React.FC = () => {
     try {
       const success = await runModelSmokeTest(modelId);
       setTestResult({ id: modelId, success });
-    } catch (err: any) {
+    } catch {
       setTestResult({ id: modelId, success: false });
     }
     setTestingModel(null);
@@ -61,6 +61,7 @@ export const ModelsPage: React.FC = () => {
   };
 
   if (loading) return <PageShell title="Model Catalog"><LoadingState /></PageShell>;
+  if (error) return <PageShell title="Model Catalog"><ErrorState message={error} onRetry={loadData} /></PageShell>;
 
   return (
     <PageShell title="Model Catalog">

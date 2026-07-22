@@ -72,11 +72,8 @@ pub fn get_scoped_agent_context_snapshot(
         })
         .map_err(|e| e.to_string())?;
 
-    for item in ws_iter {
-        if let Ok(ws) = item {
-            active_ws = Some(ws);
-            break;
-        }
+    if let Some(ws) = ws_iter.flatten().next() {
+        active_ws = Some(ws);
     }
 
     let ws_section = match active_ws {
@@ -115,27 +112,25 @@ pub fn get_scoped_agent_context_snapshot(
         .as_secs();
 
     let mut agents_summary = String::new();
-    for agent in agents_iter {
-        if let Ok((id, name, role, status, hb)) = agent {
-            let hb_str = if let Some(h_val) = hb {
-                if let Ok(secs) = h_val.parse::<u64>() {
-                    format!("{}s ago", now.saturating_sub(secs))
-                } else {
-                    "never".to_string()
-                }
+    for (id, name, role, status, hb) in agents_iter.flatten() {
+        let hb_str = if let Some(h_val) = hb {
+            if let Ok(secs) = h_val.parse::<u64>() {
+                format!("{}s ago", now.saturating_sub(secs))
             } else {
                 "never".to_string()
-            };
-            let self_marker = if Some(id.as_str()) == agent_id {
-                " (YOU)"
-            } else {
-                ""
-            };
-            agents_summary.push_str(&format!(
-                "- {}{} [{}]: status=[{}], last_active=[{}]\n",
-                name, self_marker, role, status, hb_str
-            ));
-        }
+            }
+        } else {
+            "never".to_string()
+        };
+        let self_marker = if Some(id.as_str()) == agent_id {
+            " (YOU)"
+        } else {
+            ""
+        };
+        agents_summary.push_str(&format!(
+            "- {}{} [{}]: status=[{}], last_active=[{}]\n",
+            name, self_marker, role, status, hb_str
+        ));
     }
 
     // 4. Tasks & Blockers (Upgraded Kanban Cards Orchestration)
@@ -174,52 +169,50 @@ pub fn get_scoped_agent_context_snapshot(
         .map_err(|e| e.to_string())?;
 
     let mut tasks_summary = String::new();
-    for task in tasks_iter {
-        if let Ok((
+    for (
+        id,
+        title,
+        owner,
+        assignee,
+        status,
+        priority,
+        criteria,
+        req_files,
+        rel_files,
+        blockers,
+        deps,
+    ) in tasks_iter.flatten()
+    {
+        let assignee_id = assignee
+            .or(owner)
+            .unwrap_or_else(|| "unassigned".to_string());
+        let criteria_str = criteria.unwrap_or_else(|| "[]".to_string());
+        let req_files_str = req_files.unwrap_or_else(|| "[]".to_string());
+        let rel_files_str = rel_files.unwrap_or_else(|| "[]".to_string());
+        let blockers_str = blockers.unwrap_or_else(|| "[]".to_string());
+        let deps_str = deps.unwrap_or_else(|| "[]".to_string());
+
+        tasks_summary.push_str(&format!(
+            "- Kanban Card [id: {}] \"{}\"\n\
+              * Status: {}\n\
+              * Priority: {}\n\
+              * Assigned Agent: {}\n\
+              * Acceptance Criteria: {}\n\
+              * Required Files: {}\n\
+              * Related Files: {}\n\
+              * Blockers: {}\n\
+              * Dependencies: {}\n\n",
             id,
             title,
-            owner,
-            assignee,
             status,
             priority,
-            criteria,
-            req_files,
-            rel_files,
-            blockers,
-            deps,
-        )) = task
-        {
-            let assignee_id = assignee
-                .or(owner)
-                .unwrap_or_else(|| "unassigned".to_string());
-            let criteria_str = criteria.unwrap_or_else(|| "[]".to_string());
-            let req_files_str = req_files.unwrap_or_else(|| "[]".to_string());
-            let rel_files_str = rel_files.unwrap_or_else(|| "[]".to_string());
-            let blockers_str = blockers.unwrap_or_else(|| "[]".to_string());
-            let deps_str = deps.unwrap_or_else(|| "[]".to_string());
-
-            tasks_summary.push_str(&format!(
-                "- Kanban Card [id: {}] \"{}\"\n\
-                  * Status: {}\n\
-                  * Priority: {}\n\
-                  * Assigned Agent: {}\n\
-                  * Acceptance Criteria: {}\n\
-                  * Required Files: {}\n\
-                  * Related Files: {}\n\
-                  * Blockers: {}\n\
-                  * Dependencies: {}\n\n",
-                id,
-                title,
-                status,
-                priority,
-                assignee_id,
-                criteria_str,
-                req_files_str,
-                rel_files_str,
-                blockers_str,
-                deps_str
-            ));
-        }
+            assignee_id,
+            criteria_str,
+            req_files_str,
+            rel_files_str,
+            blockers_str,
+            deps_str
+        ));
     }
     if tasks_summary.is_empty() {
         tasks_summary = "- No Kanban cards registered yet.".to_string();
@@ -254,27 +247,25 @@ pub fn get_scoped_agent_context_snapshot(
     let mut file_contents_summary = String::new();
     let mut files_ingested = 0;
 
-    for art in arts_iter {
-        if let Ok((path, art_type, size)) = art {
-            let size_str = size.map(|s| format!(" ({} bytes)", s)).unwrap_or_default();
-            arts_summary.push_str(&format!("- [{}] {}{}\n", art_type, path, size_str));
+    for (path, art_type, size) in arts_iter.flatten() {
+        let size_str = size.map(|s| format!(" ({} bytes)", s)).unwrap_or_default();
+        arts_summary.push_str(&format!("- [{}] {}{}\n", art_type, path, size_str));
 
-            // File Ingestion Logic
-            if files_ingested < 3 {
-                let p = std::path::PathBuf::from(&path);
-                if p.exists() && p.is_file() {
-                    // Soft token pruning: limit file size
-                    let meta = std::fs::metadata(&p).unwrap();
-                    if meta.len() < 50_000 {
-                        // 50KB limit
-                        if let Ok(content) = std::fs::read_to_string(&p) {
-                            file_contents_summary.push_str(&format!("--- FILE: {} ---\n", path));
-                            // Truncate to 200 lines
-                            let lines: Vec<&str> = content.lines().take(200).collect();
-                            file_contents_summary.push_str(&lines.join("\n"));
-                            file_contents_summary.push_str("\n\n");
-                            files_ingested += 1;
-                        }
+        // File Ingestion Logic
+        if files_ingested < 3 {
+            let p = std::path::PathBuf::from(&path);
+            if p.exists() && p.is_file() {
+                // Soft token pruning: limit file size
+                let meta = std::fs::metadata(&p).unwrap();
+                if meta.len() < 50_000 {
+                    // 50KB limit
+                    if let Ok(content) = std::fs::read_to_string(&p) {
+                        file_contents_summary.push_str(&format!("--- FILE: {} ---\n", path));
+                        // Truncate to 200 lines
+                        let lines: Vec<&str> = content.lines().take(200).collect();
+                        file_contents_summary.push_str(&lines.join("\n"));
+                        file_contents_summary.push_str("\n\n");
+                        files_ingested += 1;
                     }
                 }
             }
@@ -302,11 +293,9 @@ pub fn get_scoped_agent_context_snapshot(
         .map_err(|e| e.to_string())?;
 
     let mut decs_summary = String::new();
-    for dec in decs_iter {
-        if let Ok((decision, decided_by, ts)) = dec {
-            let user_str = decided_by.unwrap_or_else(|| "unknown".to_string());
-            decs_summary.push_str(&format!("- [{}] By {}: {}\n", ts, user_str, decision));
-        }
+    for (decision, decided_by, ts) in decs_iter.flatten() {
+        let user_str = decided_by.unwrap_or_else(|| "unknown".to_string());
+        decs_summary.push_str(&format!("- [{}] By {}: {}\n", ts, user_str, decision));
     }
     if decs_summary.is_empty() {
         decs_summary = "- No engineering decisions recorded yet.".to_string();
@@ -330,13 +319,11 @@ pub fn get_scoped_agent_context_snapshot(
         .map_err(|e| e.to_string())?;
 
     let mut handoffs_summary = String::new();
-    for ho in handoffs_iter {
-        if let Ok((id, src, target, reason, status, ts)) = ho {
-            handoffs_summary.push_str(&format!(
-                "- [id: {}] Handoff from {} to {} | reason: \"{}\" | status={} ({})\n",
-                id, src, target, reason, status, ts
-            ));
-        }
+    for (id, src, target, reason, status, ts) in handoffs_iter.flatten() {
+        handoffs_summary.push_str(&format!(
+            "- [id: {}] Handoff from {} to {} | reason: \"{}\" | status={} ({})\n",
+            id, src, target, reason, status, ts
+        ));
     }
     if handoffs_summary.is_empty() {
         handoffs_summary = "- No pending handoffs.".to_string();
@@ -357,11 +344,9 @@ pub fn get_scoped_agent_context_snapshot(
         .map_err(|e| e.to_string())?;
 
     let mut events_summary = String::new();
-    for ev in events_iter {
-        if let Ok((ev_type, agent, time)) = ev {
-            let agent_str = agent.unwrap_or_else(|| "system".to_string());
-            events_summary.push_str(&format!("- [{}] Agent {}: {}\n", time, agent_str, ev_type));
-        }
+    for (ev_type, agent, time) in events_iter.flatten() {
+        let agent_str = agent.unwrap_or_else(|| "system".to_string());
+        events_summary.push_str(&format!("- [{}] Agent {}: {}\n", time, agent_str, ev_type));
     }
     if events_summary.is_empty() {
         events_summary = "- No events logged yet.".to_string();
@@ -457,6 +442,7 @@ pub fn get_workspace_context(
 }
 
 #[tauri::command]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub fn get_scoped_agent_context(
     state: State<'_, DbState>,
     agent_id: Option<String>,

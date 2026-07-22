@@ -8,6 +8,12 @@ pub struct CamelidAdapter {
     client: Client,
 }
 
+impl Default for CamelidAdapter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CamelidAdapter {
     pub fn new() -> Self {
         Self {

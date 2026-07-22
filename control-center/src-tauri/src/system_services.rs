@@ -48,6 +48,7 @@ pub fn audit_log_sandbox(agent_id: &str, action_type: &str, status: &str, detail
 }
 
 #[tauri::command]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub fn get_sandbox_audit_logs() -> Result<Vec<String>, String> {
     let path = get_audit_log_path();
     if !path.exists() {
@@ -120,30 +121,24 @@ pub async fn probe_camelid(endpoint: &str) -> CamelidHealth {
     let mut status = "offline".to_string();
     let mut message = "Camelid is offline".to_string();
 
-    match client.get(&capabilities_url).send().await {
-        Ok(resp) => {
-            if resp.status().is_success() {
-                capabilities_available = true;
-                status = "connected".to_string();
-                message = "Camelid is connected and responding to capabilities API".to_string();
-                if let Ok(json) = resp.json::<serde_json::Value>().await {
-                    model_loaded = extract_camelid_model(&json);
-                }
+    if let Ok(resp) = client.get(&capabilities_url).send().await {
+        if resp.status().is_success() {
+            capabilities_available = true;
+            status = "connected".to_string();
+            message = "Camelid is connected and responding to capabilities API".to_string();
+            if let Ok(json) = resp.json::<serde_json::Value>().await {
+                model_loaded = extract_camelid_model(&json);
             }
         }
-        Err(_) => {}
     }
 
     if !capabilities_available {
         let health_url = format!("{}/health", endpoint.trim_end_matches('/'));
-        match client.get(&health_url).send().await {
-            Ok(resp) => {
-                if resp.status().is_success() {
-                    status = "connected".to_string();
-                    message = "Camelid is connected (responding to /health)".to_string();
-                }
+        if let Ok(resp) = client.get(&health_url).send().await {
+            if resp.status().is_success() {
+                status = "connected".to_string();
+                message = "Camelid is connected (responding to /health)".to_string();
             }
-            Err(_) => {}
         }
     }
 
@@ -162,16 +157,13 @@ pub async fn probe_camelid(endpoint: &str) -> CamelidHealth {
 
     if status == "connected" {
         let chat_url = format!("{}/v1/chat/completions", endpoint.trim_end_matches('/'));
-        match client
+        if let Ok(resp) = client
             .request(reqwest::Method::OPTIONS, &chat_url)
             .send()
             .await
         {
-            Ok(resp) => {
-                openai_chat_available = resp.status().is_success()
-                    || resp.status() == reqwest::StatusCode::METHOD_NOT_ALLOWED;
-            }
-            Err(_) => {}
+            openai_chat_available = resp.status().is_success()
+                || resp.status() == reqwest::StatusCode::METHOD_NOT_ALLOWED;
         }
 
         if model_loaded.is_none() {
@@ -218,6 +210,7 @@ pub async fn check_camelid_health(state: State<'_, DbState>) -> Result<CamelidHe
 }
 
 #[tauri::command]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub async fn run_model_benchmark(state: State<'_, DbState>) -> Result<BenchmarkResult, String> {
     let camelid_endpoint = {
         let conn = state.conn.lock().map_err(|e| e.to_string())?;

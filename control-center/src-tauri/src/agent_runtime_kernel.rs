@@ -1,6 +1,5 @@
-use rusqlite::{params, Connection};
-use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, Manager, State};
+use rusqlite::params;
+use tauri::{AppHandle, Manager};
 
 use crate::agent_contracts::{load_contract, AgentContract};
 use crate::agent_identity::{load_identity, AgentIdentity};
@@ -155,10 +154,8 @@ pub async fn run_agent_cycle(
                 })
             })
             .unwrap();
-        for msg in msg_iter {
-            if let Ok(m) = msg {
-                history.push(m);
-            }
+        for m in msg_iter.flatten() {
+            history.push(m);
         }
     }
 

@@ -1,46 +1,42 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# release-check.sh (HARDPAN G2) — the portable release gate.
+# Runs on any machine (no /Volumes/* assumptions, no missing package.sh).
+# Exits non-zero on the first broken step. macOS-only for the packaging step.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
-echo "🚀 Starting Release QA Check..."
-
-cd "$ROOT_DIR/control-center"
-echo "🌐 Checking Frontend..."
-npm run build
-
-export CARGO_TARGET_DIR="/Volumes/Untitled/Cameleer/target"
-
-cd "$ROOT_DIR/control-center/src-tauri"
-echo "🦀 Checking Tauri Backend Formatting & Compilation..."
-cargo fmt --check || echo "⚠️ cargo fmt warning"
-cargo check
-cargo test
-
 cd "$ROOT_DIR"
-echo "📦 Running Full Packaging Script..."
-./package.sh
 
-cd "$ROOT_DIR/control-center/src-tauri"
-TAURI_TARGET_DIR="$(cargo metadata --format-version 1 --no-deps | jq -r '.target_directory')"
-APP_MACOS_DIR="$TAURI_TARGET_DIR/release/bundle/macos/Cameleer.app/Contents/MacOS"
+echo "🚀 Cameleer release check"
+echo "   repo: $ROOT_DIR"
+echo "   host: $(uname -srm)"
+echo
 
-echo "🔍 Verifying Packaged Camelid Runtime..."
+echo "🧭 Workspace member guard…"
+"$ROOT_DIR/scripts/check-workspace-members.sh"
+echo
 
-if [ ! -f "$APP_MACOS_DIR/camelid" ]; then
-  echo "❌ ERROR: Packaged camelid binary missing at $APP_MACOS_DIR/camelid"
-  exit 1
+echo "🌐 Frontend: typecheck + lint + tests…"
+cd "$ROOT_DIR/control-center"
+npm run typecheck
+npm run lint
+npx vitest run
+npm run smoke:p0
+echo
+
+echo "🦀 Backend: format + clippy + tests…"
+cd "$ROOT_DIR"
+cargo fmt -p control-center -- --check
+cargo clippy -p control-center -- -D warnings
+cargo test -p control-center
+echo
+
+if [ "$(uname -s)" = "Darwin" ]; then
+  echo "📦 Packaging (macOS)…"
+  "$ROOT_DIR/scripts/package.sh"
+else
+  echo "⏭️  Skipping packaging: macOS bundle can only be built on macOS."
 fi
 
-if [ ! -x "$APP_MACOS_DIR/camelid" ]; then
-  echo "❌ ERROR: Packaged camelid binary is not executable."
-  exit 1
-fi
-
-echo "✅ Binary exists and is executable."
-
-echo "🔍 Running native binary verification..."
-file "$APP_MACOS_DIR/camelid"
-"$APP_MACOS_DIR/camelid" --version || true
-
-echo "🎉 RELEASE CHECK PASSED!"
+echo
+echo "🎉 RELEASE CHECK PASSED"

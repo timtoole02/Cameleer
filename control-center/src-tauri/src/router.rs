@@ -1,7 +1,6 @@
 use crate::storage::DbState;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use tauri::State;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

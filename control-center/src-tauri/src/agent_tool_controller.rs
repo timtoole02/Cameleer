@@ -1,6 +1,6 @@
-use rusqlite::{params, Connection};
+use rusqlite::params;
 use std::process::Command;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Manager};
 
 use crate::agent_contracts::AgentContract;
 use crate::chat_service::AgentAction;
@@ -8,8 +8,6 @@ use crate::chat_service::DbMessage;
 use crate::command_guard::{check_command, GuardResult};
 use crate::event_bus::{emit_event, AppEvent};
 use crate::storage::DbState;
-use std::io::Read;
-use std::os::unix::process::CommandExt;
 use std::path::Path;
 
 pub fn execute_tool(
@@ -209,26 +207,24 @@ fn execute_tool_inner(
 
                 let out_thread = std::thread::spawn(move || {
                     let reader = BufReader::new(stdout);
-                    for line in reader.lines() {
-                        if let Ok(l) = line {
-                            // Capping check inside lock
-                            let mut locked_out = out_clone.lock().unwrap();
-                            if locked_out.len() < 50000 {
-                                locked_out.push_str(&l);
-                                locked_out.push('\n');
-                            }
-
-                            // Emit live terminal event
-                            crate::event_bus::emit_event(
-                                &app_handle_out,
-                                AppEvent {
-                                    event_type: "terminal_output".to_string(),
-                                    agent_id: Some(agent_id_out.clone()),
-                                    task_id: Some(task_id_out.clone()),
-                                    payload: serde_json::json!({ "stream": "stdout", "line": l }),
-                                },
-                            );
+                    for l in reader.lines().map_while(Result::ok) {
+                        // Capping check inside lock
+                        let mut locked_out = out_clone.lock().unwrap();
+                        if locked_out.len() < 50000 {
+                            locked_out.push_str(&l);
+                            locked_out.push('\n');
                         }
+
+                        // Emit live terminal event
+                        crate::event_bus::emit_event(
+                            &app_handle_out,
+                            AppEvent {
+                                event_type: "terminal_output".to_string(),
+                                agent_id: Some(agent_id_out.clone()),
+                                task_id: Some(task_id_out.clone()),
+                                payload: serde_json::json!({ "stream": "stdout", "line": l }),
+                            },
+                        );
                     }
                 });
 
@@ -239,26 +235,24 @@ fn execute_tool_inner(
 
                 let err_thread = std::thread::spawn(move || {
                     let reader = BufReader::new(stderr);
-                    for line in reader.lines() {
-                        if let Ok(l) = line {
-                            // Capping check inside lock
-                            let mut locked_err = err_clone.lock().unwrap();
-                            if locked_err.len() < 50000 {
-                                locked_err.push_str(&l);
-                                locked_err.push('\n');
-                            }
-
-                            // Emit live terminal event
-                            crate::event_bus::emit_event(
-                                &app_handle_err,
-                                AppEvent {
-                                    event_type: "terminal_output".to_string(),
-                                    agent_id: Some(agent_id_err.clone()),
-                                    task_id: Some(task_id_err.clone()),
-                                    payload: serde_json::json!({ "stream": "stderr", "line": l }),
-                                },
-                            );
+                    for l in reader.lines().map_while(Result::ok) {
+                        // Capping check inside lock
+                        let mut locked_err = err_clone.lock().unwrap();
+                        if locked_err.len() < 50000 {
+                            locked_err.push_str(&l);
+                            locked_err.push('\n');
                         }
+
+                        // Emit live terminal event
+                        crate::event_bus::emit_event(
+                            &app_handle_err,
+                            AppEvent {
+                                event_type: "terminal_output".to_string(),
+                                agent_id: Some(agent_id_err.clone()),
+                                task_id: Some(task_id_err.clone()),
+                                payload: serde_json::json!({ "stream": "stderr", "line": l }),
+                            },
+                        );
                     }
                 });
 

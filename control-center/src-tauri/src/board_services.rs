@@ -40,6 +40,7 @@ pub struct BacklogItem {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub struct BacklogAcceptanceCriterion {
     pub id: String,
     pub backlog_item_id: String,
@@ -50,6 +51,7 @@ pub struct BacklogAcceptanceCriterion {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub struct BacklogActivity {
     pub id: String,
     pub backlog_item_id: String,
@@ -100,6 +102,7 @@ pub struct UpdateBacklogItemInput {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub struct AgentSuggestion {
     pub suggested_agent_id: Option<String>,
     pub suggested_agent_name: Option<String>,
@@ -157,6 +160,7 @@ pub struct KanbanCard {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub struct Board {
     pub id: String,
     pub workspace_id: String,
@@ -191,6 +195,7 @@ fn normalize_backlog_status(status: &str) -> String {
     }
 }
 
+#[allow(clippy::too_many_arguments)] // args map 1:1 to backlog scoring inputs
 fn calculate_backlog_readiness_score(
     title: &str,
     description: Option<&str>,
@@ -441,11 +446,9 @@ const COLUMNS: &[(&str, &str, &str, i32, Option<i64>)] = &[
 /// built-in default. A limit of 0 or below means "unlimited".
 fn effective_wip_limit(conn: &Connection, status: &str) -> Option<i64> {
     let key = format!("wip_limit:{}", status);
-    if let Ok(v) = conn.query_row(
-        "SELECT value FROM settings WHERE key = ?1",
-        [&key],
-        |r| r.get::<_, String>(0),
-    ) {
+    if let Ok(v) = conn.query_row("SELECT value FROM settings WHERE key = ?1", [&key], |r| {
+        r.get::<_, String>(0)
+    }) {
         if let Ok(n) = v.trim().parse::<i64>() {
             return if n > 0 { Some(n) } else { None };
         }
@@ -571,6 +574,7 @@ pub fn list_backlog_items(
 }
 
 #[tauri::command]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub fn get_backlog_item(id: String, state: State<DbState>) -> Result<BacklogItem, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     get_backlog_item_by_id(&conn, &id).map_err(|e| e.to_string())
@@ -908,15 +912,14 @@ pub fn get_board_snapshot(
         .map_err(|e| e.to_string())?;
 
     let mut items = Vec::new();
-    for i in iter {
-        if let Ok(item) = i {
-            items.push(item);
-        }
+    for item in iter.flatten() {
+        items.push(item);
     }
     Ok(items)
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)] // args map 1:1 to kanban_cards DB columns
 pub fn create_card(
     workspace_id: String,
     project_id: Option<String>,
@@ -1186,10 +1189,8 @@ pub fn get_agent_work_queue(
         .map_err(|e| e.to_string())?;
 
     let mut items = Vec::new();
-    for i in iter {
-        if let Ok(item) = i {
-            items.push(item);
-        }
+    for item in iter.flatten() {
+        items.push(item);
     }
     Ok(items)
 }

@@ -81,7 +81,7 @@ pub fn check_command(
 
     if safety_profile == "strict" {
         // Strict: only allow standard non-mutating search/read tools
-        let strictly_safe = vec!["ls", "cat", "grep", "pwd", "git"];
+        let strictly_safe = ["ls", "cat", "grep", "pwd", "git"];
         if !strictly_safe.contains(&first_token.as_str()) || is_risky {
             suspend_reason = Some(format!(
                 "Strict Safety Profile blocks execution of command binary '{}'.",
@@ -95,8 +95,7 @@ pub fn check_command(
                 "Moderate Safety Profile blocks risky shell execution for binary '{}'.",
                 first_token
             ));
-        } else if outside_whitelist
-            && !vec!["ls", "cat", "grep", "pwd"].contains(&first_token.as_str())
+        } else if outside_whitelist && !["ls", "cat", "grep", "pwd"].contains(&first_token.as_str())
         {
             suspend_reason = Some(format!(
                 "Command binary '{}' is outside the agent's whitelisted command permissions.",

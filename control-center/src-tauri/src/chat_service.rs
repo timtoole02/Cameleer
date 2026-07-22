@@ -341,6 +341,7 @@ pub async fn trigger_org_reply(
     }
 }
 
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> {
     // Shared objective
     let shared_obj: String = conn
@@ -363,10 +364,8 @@ fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> 
     })?;
 
     let mut agents = Vec::new();
-    for agent in agent_iter {
-        if let Ok(a) = agent {
-            agents.push(a);
-        }
+    for a in agent_iter.flatten() {
+        agents.push(a);
     }
 
     // Latest tasks
@@ -380,10 +379,8 @@ fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> 
     })?;
 
     let mut tasks = Vec::new();
-    for task in task_iter {
-        if let Ok(t) = task {
-            tasks.push(t);
-        }
+    for t in task_iter.flatten() {
+        tasks.push(t);
     }
 
     let blackboard = format!(
@@ -418,6 +415,7 @@ pub struct AgentNextAction {
     pub dry_run: Option<bool>,
 }
 
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub struct AgentAction {
     pub action_type: String,
     pub command: Option<String>,
@@ -445,15 +443,16 @@ pub struct AgentAction {
     pub dry_run: Option<bool>,
 }
 
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 fn resolve_path(path: &str) -> std::path::PathBuf {
     let clean_path = path.trim();
     let mut resolved = std::path::PathBuf::new();
 
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
 
-    if clean_path.starts_with("~/") {
+    if let Some(rest) = clean_path.strip_prefix("~/") {
         resolved.push(&home);
-        resolved.push(&clean_path[2..]);
+        resolved.push(rest);
     } else if clean_path == "~" {
         resolved.push(&home);
     } else if clean_path.starts_with("/") {
@@ -516,12 +515,11 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                 }
 
                 // Remove surrounding quotes if any
-                if (path_part.starts_with('"') && path_part.ends_with('"'))
-                    || (path_part.starts_with('\'') && path_part.ends_with('\''))
+                if ((path_part.starts_with('"') && path_part.ends_with('"'))
+                    || (path_part.starts_with('\'') && path_part.ends_with('\'')))
+                    && path_part.len() > 2
                 {
-                    if path_part.len() > 2 {
-                        path_part = &path_part[1..path_part.len() - 1];
-                    }
+                    path_part = &path_part[1..path_part.len() - 1];
                 }
 
                 if !path_part.is_empty() {
@@ -574,6 +572,7 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
         "<!-- run:",
     ];
 
+    #[allow(clippy::needless_range_loop)] // index-based loop mirrors panic-on-OOB semantics
     for i in 0..check_limit {
         let line = lines[i].trim();
         for prefix in run_prefixes {
@@ -587,12 +586,11 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                 }
 
                 // Remove surrounding quotes if any
-                if (cmd_part.starts_with('"') && cmd_part.ends_with('"'))
-                    || (cmd_part.starts_with('\'') && cmd_part.ends_with('\''))
+                if ((cmd_part.starts_with('"') && cmd_part.ends_with('"'))
+                    || (cmd_part.starts_with('\'') && cmd_part.ends_with('\'')))
+                    && cmd_part.len() > 2
                 {
-                    if cmd_part.len() > 2 {
-                        cmd_part = &cmd_part[1..cmd_part.len() - 1];
-                    }
+                    cmd_part = &cmd_part[1..cmd_part.len() - 1];
                 }
 
                 if !cmd_part.is_empty() {
@@ -628,6 +626,8 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
     None
 }
 
+// justification: 15-branch prefix parser; per-field strip_prefix rewrite is risky, kept as-is
+#[allow(clippy::manual_strip)]
 pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
     // 0. Try to parse JSON first (Epic 5 structured output)
     if let Some(json_str) = extract_json_from_text(text) {

@@ -53,10 +53,8 @@ pub fn execute_handoff(
             .unwrap();
 
         let mut steps = Vec::new();
-        for step in step_iter {
-            if let Ok((stype, scontent)) = step {
-                steps.push(format!("[{}] {}", stype, scontent));
-            }
+        for (stype, scontent) in step_iter.flatten() {
+            steps.push(format!("[{}] {}", stype, scontent));
         }
         steps.reverse(); // Chronological order
 
