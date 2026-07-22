@@ -1,0 +1,26 @@
+{
+  "schema": "cameleer.check-receipt/v1",
+  "kind": "g3-safety-tests",
+  "note": "Safety-critical backfill: 44 baseline -> 88 backend tests. The 6 previously-untested modules (command_guard, agent_tool_controller, agent_runtime_kernel loop, agent_validation_engine, camelid_adapter, models_manager) now have adversarial coverage.",
+  "git_sha": "1b7167afa97ad5220bdbbb96e8ac20e5414e6f3c",
+  "git_branch": "hardpan",
+  "host": "mac.lan",
+  "os": "macOS 26.3 (arm64)",
+  "timestamp": "2026-07-22T16:33:22Z",
+  "steps": [
+    { "command": "cargo test -p control-center", "exit_code": 0, "result": "88 passed; 0 failed", "test_count": 88, "delta": "+44 vs baseline" },
+    { "command": "cargo clippy -p control-center --all-targets -- -D warnings", "exit_code": 0, "result": "clean (lib + tests)" },
+    { "command": "cargo fmt -p control-center -- --check", "exit_code": 0, "result": "clean" }
+  ],
+  "highlights": [
+    "command_guard: pure classify_command extracted + fork-bomb & pipe-to-shell hardening (blocked under all profiles); 14 adversarial tests.",
+    "agent_tool_controller: resolve_workspace_path extracted; path-traversal/escape blocked.",
+    "runtime loop: card_state_for_run_outcome invariant (suspension never -> Done card); parse_agent_action coverage.",
+    "agent_validation_engine: receipt gate + 3-strike->blocked; FIXED work_receipt_id bug (was always NULL; now links card->receipt).",
+    "camelid_adapter + models_manager: honest errors / real 0.0 TPS on dead endpoint proven (the fake 24.5 can never regress)."
+  ],
+  "caveats": [
+    "Full async ReAct loop (MAX_ITERATIONS termination, live tool-error retry) is covered structurally here; end-to-end against live inference is the G4 e2e receipt.",
+    "Local run; CI reproduces once the workflow scope is granted."
+  ]
+}

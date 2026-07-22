@@ -102,11 +102,15 @@ The 71 orphans + 11 unregistered are **Runnable, not Supported**, regardless of 
 
 ## 4. Test coverage reality
 
-- **12 of 36 backend modules** contain a `#[cfg(test)]` block; **24 have none.**
-- The **safety-critical execution core is entirely untested**: `command_guard.rs` (the
-  sandbox), `agent_tool_controller.rs` (spawns processes / writes files),
-  `agent_runtime_kernel.rs`, `agent_validation_engine.rs`, `models_manager.rs`,
-  `camelid_adapter.rs`. This is the whole point of G3.
+- **Backend tests: 88 pass** (was 44) — [G3 receipt](control-center/receipts/g3-safety-tests.check-receipt.json).
+  Gate is `cargo clippy -p control-center --all-targets -- -D warnings` (lib **and** tests).
+- The **safety-critical execution core is now tested** (G3): `command_guard.rs` (14 adversarial
+  tests + fork-bomb/pipe-to-shell hardening), `agent_tool_controller.rs`
+  (`resolve_workspace_path` traversal bound), the `start_agent_task_run` loop
+  (`card_state_for_run_outcome` invariant + `parse_agent_action`),
+  `agent_validation_engine.rs` (receipt gate + 3-strike; **fixed a bug where
+  `work_receipt_id` was always NULL**), `camelid_adapter.rs` + `models_manager.rs`
+  (honest errors / real 0.0 TPS on a dead endpoint). Full-loop-vs-live-inference is G4.
 - **Measured: 44 backend tests pass, 0 fail** on this host
   ([receipt](control-center/receipts/backend-baseline.check-receipt.json)). README's
   "44/44" is **confirmed**; `AUDIT_REAL_VS_FAKE.md`'s "43" is wrong. But those 44 tests span
@@ -170,7 +174,7 @@ Context / Runtime / Audit / Settings).
 | **G0** Ground truth (STATUS + COMMAND_MAP) | ✅ this file + COMMAND_MAP.md |
 | **G1** Repo coherence / hard reset | ⏳ next |
 | **G2** Portable release gate + CI | 🟡 all gate steps green locally (workspace-guard, typecheck, eslint, vitest, p0, `cargo fmt --check`, `cargo clippy -D warnings`, 44 tests, `package.sh` builds `.app`+`.dmg`). **`.github/workflows/ci.yml` is written and ready but NOT yet pushed** — the `gh` token lacks the `workflow` OAuth scope. Unblock with `gh auth refresh -s workflow` (or add the file via GitHub web), then the green-CI sub-gate completes. |
-| **G3** Safety-critical test backfill | ⏳ |
+| **G3** Safety-critical test backfill | ✅ 44 → 88 tests; safety core covered; `work_receipt_id` bug fixed; gate now `clippy --all-targets` |
 | **G4** e2e receipt vs live inference | ⏳ |
 | **G5** Backend↔frontend reconciliation | ⏳ |
 | **G6** Doc truth pass + RC | ⏳ (tag needs explicit sign-off) |
