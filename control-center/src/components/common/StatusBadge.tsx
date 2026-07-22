@@ -11,17 +11,17 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   let bg = 'var(--color-bg)';
   
   if (status === 'connected') {
-    color = 'var(--color-success)';
-    bg = '#dcfce7'; // light green
+    color = 'var(--success-text)';
+    bg = 'var(--success-bg)';
   } else if (status === 'degraded') {
-    color = 'var(--color-warning)';
-    bg = '#fef3c7'; // light yellow
+    color = 'var(--warning-text)';
+    bg = 'var(--warning-bg)';
   } else if (status === 'offline') {
-    color = 'var(--color-danger)';
-    bg = '#fee2e2'; // light red
+    color = 'var(--danger-text)';
+    bg = 'var(--danger-bg)';
   } else if (status === 'checking') {
-    color = 'var(--color-primary)';
-    bg = '#dbeafe'; // light blue
+    color = 'var(--accent)';
+    bg = 'var(--accent-soft)';
   }
 
   return (

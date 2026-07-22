@@ -8,6 +8,13 @@ import { resetDevDatabase, getBackendHealth } from '../api/health';
 import { getMemories, searchMemories, createMemory, deleteMemory, Memory } from '../api/memory';
 import { getCoordinationDetails, recordDecision, resolveHandoff, Decision, Handoff } from '../api/context';
 
+const statePillClass = (state: string) => {
+  const s = state.toLowerCase();
+  if (s.includes('fail') || s.includes('error') || s.includes('cancel')) return 'pill pill-danger';
+  if (s.includes('run') || s.includes('pend') || s.includes('wait')) return 'pill pill-warning';
+  if (s.includes('done') || s.includes('complete') || s.includes('success')) return 'pill pill-success';
+  return 'pill pill-neutral';
+};
 
 export const RuntimePage: React.FC = () => {
   const [runs, setRuns] = useState<AgentRun[]>([]);
@@ -26,20 +33,20 @@ export const RuntimePage: React.FC = () => {
 
   return (
     <PageShell title="Runtime & Execution">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%', overflowY: 'auto' }}>
-        <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '4px' }}>
-          <h4>Pending Approvals ({approvals.length})</h4>
-          {approvals.length === 0 ? <p>No pending approvals.</p> : (
-            <ul style={{ listStyleType: 'none', padding: 0 }}>
+      <div className="page-stack">
+        <div className="panel">
+          <h4 className="panel-title">Pending Approvals ({approvals.length})</h4>
+          {approvals.length === 0 ? <p className="text-muted">No pending approvals.</p> : (
+            <ul className="list-plain">
               {approvals.map(a => (
-                <li key={a.id} style={{ borderBottom: '1px solid #ccc', padding: '0.5rem 0', display: 'flex', justifyContent: 'space-between' }}>
-                  <div>
+                <li key={a.id} className="list-row">
+                  <div className="min-w-0">
                     <strong>{a.tool_name}</strong>
-                    <pre style={{ fontSize: '0.8rem', background: '#f8f9fa', padding: '0.5rem' }}>{a.arguments}</pre>
+                    <pre className="mono-well">{a.arguments}</pre>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <button onClick={() => handleApprove(a.invocation_id, true)} style={{ backgroundColor: '#28a745', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '4px' }}>Approve</button>
-                    <button onClick={() => handleApprove(a.invocation_id, false)} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '4px' }}>Deny</button>
+                  <div className="row-actions">
+                    <button onClick={() => handleApprove(a.invocation_id, true)} className="success-button">Approve</button>
+                    <button onClick={() => handleApprove(a.invocation_id, false)} className="danger-button">Deny</button>
                   </div>
                 </li>
               ))}
@@ -47,23 +54,23 @@ export const RuntimePage: React.FC = () => {
           )}
         </div>
 
-        <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '4px' }}>
-          <h4>Agent Runs</h4>
-          {runs.length === 0 ? <p>No agents are currently running.</p> : (
-            <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+        <div className="panel">
+          <h4 className="panel-title">Agent Runs</h4>
+          {runs.length === 0 ? <p className="text-muted">No agents are currently running.</p> : (
+            <table className="data-table">
               <thead>
-                <tr style={{ borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '0.5rem' }}>Agent ID</th>
-                  <th style={{ padding: '0.5rem' }}>State</th>
-                  <th style={{ padding: '0.5rem' }}>Started</th>
+                <tr>
+                  <th>Agent ID</th>
+                  <th>State</th>
+                  <th>Started</th>
                 </tr>
               </thead>
               <tbody>
                 {runs.map(r => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '0.5rem' }}>{r.agent_id}</td>
-                    <td style={{ padding: '0.5rem' }}>{r.state}</td>
-                    <td style={{ padding: '0.5rem' }}>{r.created_at}</td>
+                  <tr key={r.id}>
+                    <td>{r.agent_id}</td>
+                    <td><span className={statePillClass(r.state)}>{r.state}</span></td>
+                    <td className="cell-muted">{r.created_at}</td>
                   </tr>
                 ))}
               </tbody>
@@ -84,24 +91,24 @@ export const AuditPage: React.FC = () => {
 
   return (
     <PageShell title="Audit Log">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
-        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: 'white', padding: '1rem', borderRadius: '4px' }}>
-          {events.length === 0 ? <p>No events logged.</p> : (
-            <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+      <div className="page-stack">
+        <div className="panel panel-scroll">
+          {events.length === 0 ? <p className="text-muted">No events logged.</p> : (
+            <table className="data-table">
               <thead>
-                <tr style={{ borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '0.5rem' }}>Time</th>
-                  <th style={{ padding: '0.5rem' }}>Type</th>
-                  <th style={{ padding: '0.5rem' }}>Payload</th>
+                <tr>
+                  <th>Time</th>
+                  <th>Type</th>
+                  <th>Payload</th>
                 </tr>
               </thead>
               <tbody>
                 {events.map(e => (
-                  <tr key={e.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '0.5rem' }}>{e.timestamp}</td>
-                    <td style={{ padding: '0.5rem' }}>{e.event_type}</td>
-                    <td style={{ padding: '0.5rem' }}>
-                      <pre style={{ margin: 0, fontSize: '0.8rem', maxWidth: '300px', overflowX: 'auto' }}>{e.payload}</pre>
+                  <tr key={e.id}>
+                    <td className="cell-muted">{e.timestamp}</td>
+                    <td><span className="pill pill-neutral">{e.event_type}</span></td>
+                    <td>
+                      <pre className="cell-pre">{e.payload}</pre>
                     </td>
                   </tr>
                 ))}
@@ -143,78 +150,56 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <PageShell title="Settings">
-      <div style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <div style={{ backgroundColor: 'var(--surface)', padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
-          <h3 style={{ margin: '0 0 1rem 0', color: 'var(--text)' }}>System Diagnostics</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+      <div className="settings-stack">
+        <div className="panel">
+          <h3 className="panel-title">System Diagnostics</h3>
+          <table className="kv-table">
             <tbody>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '8px 0', color: 'var(--text-muted)', fontWeight: 600 }}>Database Path</td>
-                <td style={{ padding: '8px 0', color: 'var(--text)', textAlign: 'right', wordBreak: 'break-all' }}>{backendHealth?.database_path || 'unknown'}</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '8px 0', color: 'var(--text-muted)', fontWeight: 600 }}>Schema Version</td>
-                <td style={{ padding: '8px 0', color: 'var(--text)', textAlign: 'right' }}>{backendHealth?.schema_version} / {backendHealth?.required_schema_version}</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '8px 0', color: 'var(--text-muted)', fontWeight: 600 }}>Camelid Endpoint</td>
-                <td style={{ padding: '8px 0', color: 'var(--text)', textAlign: 'right' }}>{backendHealth?.camelid_endpoint || 'none'}</td>
+              <tr>
+                <td>Database Path</td>
+                <td>{backendHealth?.database_path || 'unknown'}</td>
               </tr>
               <tr>
-                <td style={{ padding: '8px 0', color: 'var(--text-muted)', fontWeight: 600 }}>Camelid Model</td>
-                <td style={{ padding: '8px 0', color: 'var(--text)', textAlign: 'right' }}>{backendHealth?.camelid_model || 'none'}</td>
+                <td>Schema Version</td>
+                <td>{backendHealth?.schema_version} / {backendHealth?.required_schema_version}</td>
+              </tr>
+              <tr>
+                <td>Camelid Endpoint</td>
+                <td>{backendHealth?.camelid_endpoint || 'none'}</td>
+              </tr>
+              <tr>
+                <td>Camelid Model</td>
+                <td>{backendHealth?.camelid_model || 'none'}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div style={{ backgroundColor: 'var(--surface)', padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)' }}>Developer Recovery</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '0 0 1.25rem 0', lineHeight: 1.4 }}>
+        <div className="panel">
+          <h3 className="panel-title">Developer Recovery</h3>
+          <p className="panel-desc">
             If you are running into SQLite schema errors or need to clear the developer database, click below. This will safely delete the local SQLite file, recreate the initial schema, run all outstanding migrations, and reseed initial agent contracts.
           </p>
 
           {message && (
-            <div style={{
-              padding: '0.75rem 1rem',
-              borderRadius: '6px',
-              marginBottom: '1rem',
-              fontSize: '0.85rem',
-              backgroundColor: message.startsWith('Error') ? 'var(--danger-bg)' : 'var(--success-bg)',
-              color: message.startsWith('Error') ? 'var(--danger-text)' : 'var(--success-text)',
-              border: `1px solid ${message.startsWith('Error') ? 'rgba(153,27,27,0.15)' : 'rgba(22,101,52,0.15)'}`
-            }}>
+            <div className={`alert ${message.startsWith('Error') ? 'alert-danger' : 'alert-success'} mb-md`}>
               {message}
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <button 
-              onClick={handleReset} 
+          <div className="row-actions">
+            <button
+              onClick={handleReset}
               disabled={loading}
-              style={{
-                backgroundColor: confirming ? 'var(--danger-text)' : 'var(--surface-2)',
-                color: confirming ? '#fff' : 'var(--text)',
-                border: '1px solid var(--border)',
-                borderRadius: '6px',
-                padding: '8px 16px',
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
+              className={confirming ? 'danger-button' : 'secondary-button'}
             >
               {loading ? 'Resetting...' : confirming ? 'Confirm Reset (Deletes Dev DB)' : 'Reset Dev Database'}
             </button>
             {confirming && (
-              <button 
-                onClick={() => setConfirming(false)} 
+              <button
+                onClick={() => setConfirming(false)}
                 disabled={loading}
-                style={{
-                  backgroundColor: 'transparent',
-                  color: 'var(--text-muted)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem'
-                }}
+                className="text-button"
               >
                 Cancel
               </button>
@@ -266,43 +251,42 @@ export const MemoryPage: React.FC = () => {
 
   return (
     <PageShell title="Shared Memory">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%', overflowY: 'auto' }}>
-        {error && <div style={{ color: 'var(--danger-text, #991b1b)' }}>{error}</div>}
+      <div className="page-stack">
+        {error && <div className="error-text">{error}</div>}
 
-        <div style={{ backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
-          <h4 style={{ marginTop: 0 }}>Write a memory</h4>
+        <div className="panel form-dark">
+          <h4 className="panel-title">Write a memory</h4>
           <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="What should be remembered?"
-            style={{ width: '100%', minHeight: '60px', marginBottom: '0.5rem', padding: '0.5rem', boxSizing: 'border-box' }} />
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            className="mb-sm" />
+          <div className="form-row">
             <input value={context} onChange={e => setContext(e.target.value)} placeholder="Context (optional)"
-              style={{ flex: 1, padding: '0.5rem', minWidth: '160px' }} />
-            <label style={{ fontSize: '0.85rem' }}>Importance
-              <input type="number" min={1} max={10} value={importance} onChange={e => setImportance(Number(e.target.value))}
-                style={{ width: '60px', marginLeft: '0.5rem', padding: '0.4rem' }} />
+              className="grow" />
+            <label className="form-field inline">Importance
+              <input type="number" min={1} max={10} value={importance} onChange={e => setImportance(Number(e.target.value))} />
             </label>
-            <button onClick={handleCreate} style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}>Save Memory</button>
+            <button onClick={handleCreate}>Save Memory</button>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="form-row form-dark">
           <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') refresh(); }}
-            placeholder="Search memories…" style={{ flex: 1, padding: '0.5rem' }} />
-          <button onClick={refresh} style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}>Search</button>
+            placeholder="Search memories…" className="grow" />
+          <button onClick={refresh}>Search</button>
         </div>
 
-        <div style={{ flex: 1, backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
-          <h4 style={{ marginTop: 0 }}>Memories ({memories.length})</h4>
-          {memories.length === 0 ? <p style={{ color: 'var(--text-muted, #6b7280)' }}>No memories yet.</p> : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        <div className="panel panel-scroll">
+          <h4 className="panel-title">Memories ({memories.length})</h4>
+          {memories.length === 0 ? <p className="text-muted">No memories yet.</p> : (
+            <ul className="list-plain">
               {memories.map(m => (
-                <li key={m.id} style={{ borderBottom: '1px solid var(--border, #eee)', padding: '0.6rem 0', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                  <div>
+                <li key={m.id} className="list-row">
+                  <div className="min-w-0">
                     <div>{m.content}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #6b7280)' }}>
+                    <div className="row-meta">
                       {m.context ? `${m.context} · ` : ''}importance {m.importance}{m.agent_id ? ` · by ${m.agent_id}` : ''} · {m.created_at}
                     </div>
                   </div>
-                  <button onClick={() => handleDelete(m.id)} style={{ alignSelf: 'flex-start', background: 'transparent', border: '1px solid var(--border, #ccc)', borderRadius: '4px', cursor: 'pointer', padding: '0.25rem 0.5rem' }}>Delete</button>
+                  <button onClick={() => handleDelete(m.id)} className="danger-button btn-sm self-start">Delete</button>
                 </li>
               ))}
             </ul>
@@ -353,46 +337,46 @@ export const ContextPage: React.FC = () => {
 
   return (
     <PageShell title="Project Context">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%', overflowY: 'auto' }}>
-        {error && <div style={{ color: 'var(--danger-text, #991b1b)' }}>{error}</div>}
+      <div className="page-stack">
+        {error && <div className="error-text">{error}</div>}
 
-        <div style={{ backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
-          <h4 style={{ marginTop: 0 }}>Record a decision</h4>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="panel form-dark">
+          <h4 className="panel-title">Record a decision</h4>
+          <div className="form-row">
             <input value={decisionText} onChange={e => setDecisionText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleRecord(); }}
-              placeholder="Decision the team should remember…" style={{ flex: 1, padding: '0.5rem' }} />
-            <button onClick={handleRecord} style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer' }}>Record</button>
+              placeholder="Decision the team should remember…" className="grow" />
+            <button onClick={handleRecord}>Record</button>
           </div>
         </div>
 
-        <div style={{ backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
-          <h4 style={{ marginTop: 0 }}>Decisions ({decisions.length})</h4>
-          {decisions.length === 0 ? <p style={{ color: 'var(--text-muted, #6b7280)' }}>No decisions recorded.</p> : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        <div className="panel">
+          <h4 className="panel-title">Decisions ({decisions.length})</h4>
+          {decisions.length === 0 ? <p className="text-muted">No decisions recorded.</p> : (
+            <ul className="list-plain">
               {decisions.map(d => (
-                <li key={d.id ?? d.timestamp} style={{ borderBottom: '1px solid var(--border, #eee)', padding: '0.5rem 0' }}>
+                <li key={d.id ?? d.timestamp} className="list-row stack">
                   <div>{d.decision}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #6b7280)' }}>by {d.decided_by} · {d.timestamp}</div>
+                  <div className="row-meta">by {d.decided_by} · {d.timestamp}</div>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <div style={{ backgroundColor: 'var(--surface, #fff)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border, #e5e7eb)' }}>
-          <h4 style={{ marginTop: 0 }}>Handoffs ({handoffs.length})</h4>
-          {handoffs.length === 0 ? <p style={{ color: 'var(--text-muted, #6b7280)' }}>No handoffs.</p> : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        <div className="panel">
+          <h4 className="panel-title">Handoffs ({handoffs.length})</h4>
+          {handoffs.length === 0 ? <p className="text-muted">No handoffs.</p> : (
+            <ul className="list-plain">
               {handoffs.map(h => (
-                <li key={h.id ?? h.timestamp} style={{ borderBottom: '1px solid var(--border, #eee)', padding: '0.5rem 0', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                  <div>
+                <li key={h.id ?? h.timestamp} className="list-row">
+                  <div className="min-w-0">
                     <div>{h.source_agent_id} → {h.target_agent_id}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #6b7280)' }}>{h.reason} · status: {h.status} · {h.timestamp}</div>
+                    <div className="row-meta">{h.reason} · status: {h.status} · {h.timestamp}</div>
                   </div>
                   {h.status === 'pending' && (
-                    <div style={{ display: 'flex', gap: '0.5rem', alignSelf: 'flex-start' }}>
-                      <button onClick={() => handleResolve(h.id, 'accepted')} style={{ background: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', padding: '0.25rem 0.6rem', cursor: 'pointer' }}>Accept</button>
-                      <button onClick={() => handleResolve(h.id, 'rejected')} style={{ background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', padding: '0.25rem 0.6rem', cursor: 'pointer' }}>Reject</button>
+                    <div className="row-actions">
+                      <button onClick={() => handleResolve(h.id, 'accepted')} className="success-button btn-sm">Accept</button>
+                      <button onClick={() => handleResolve(h.id, 'rejected')} className="danger-button btn-sm">Reject</button>
                     </div>
                   )}
                 </li>

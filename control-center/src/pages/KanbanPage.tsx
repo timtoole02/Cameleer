@@ -244,7 +244,9 @@ export const KanbanPage: React.FC = () => {
 
         {error && <ErrorState message={error} />}
 
-        <div className="kanban-workspace">
+        {/* Collapse the detail drawer entirely when no task is selected so the
+            lanes get the full width (the empty hint panel wasted 390px). */}
+        <div className={`kanban-workspace ${selectedTask ? '' : 'no-drawer'}`}>
           <KanbanBoard
             columns={columns}
             tasks={filteredTasks}
@@ -252,10 +254,24 @@ export const KanbanPage: React.FC = () => {
             selectedTaskId={selectedTask?.id}
             onSelectTask={setSelectedTask}
             onCreateTask={setCreateStatus}
-            onMoveTask={(taskId, status) => runTaskAction(async () => moveTask(taskId, status), tasks.find((task) => task.id === taskId) || null)}
+            onMoveTask={async (taskId, status) => {
+              // Optimistic: land the card in its lane immediately, then persist
+              // via the real move_task command; revert + surface on rejection
+              // (e.g. moving to Done without an approved work receipt).
+              const previous = tasks;
+              setTasks((current) => current.map((task) => (task.id === taskId ? { ...task, status } : task)));
+              setError(null);
+              try {
+                await moveTask(taskId, status);
+                await refreshSelected(tasks.find((task) => task.id === taskId) || null);
+              } catch (err: any) {
+                setTasks(previous);
+                setError(String(err));
+              }
+            }}
           />
 
-          <TaskDetailDrawer
+          {selectedTask && <TaskDetailDrawer
             task={selectedTask}
             agents={agents}
             activity={activity}
@@ -287,7 +303,7 @@ export const KanbanPage: React.FC = () => {
                 setSelectedTask(null);
               }, null);
             }}
-          />
+          />}
         </div>
 
         {createStatus && (

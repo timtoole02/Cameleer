@@ -1,30 +1,50 @@
+/* Cameleer semantic theme layer (UI overhaul).
+ *
+ * This file maps SEMANTIC variables (what components consume: --surface,
+ * --border, --accent, …) onto the canonical raw palette in tokens.css — the
+ * dark, SF-native "Apple dev tool" system documented in docs/DESIGN_SYSTEM.md.
+ * Before the overhaul this file defined a light palette while tokens.css sat
+ * unimported, which is why the app rendered as a light/dark patchwork.
+ *
+ * Rule: components/pages use ONLY these semantic vars (or App.css classes
+ * built on them). Raw hex values live in tokens.css alone; the few derived
+ * neutrals below exist only to give elevation steps between token values.
+ */
+@import "./tokens.css";
+
 :root {
-  --app-bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface-2: #f2f2f7;
-  --sidebar-bg: #111827;
-  --sidebar-text: #f9fafb;
-  --sidebar-muted: #cbd5e1;
-  --sidebar-active-bg: #1f2937;
-  --sidebar-active-border: #60a5fa;
+  /* Elevation: page < well < panel < hover */
+  --app-bg: var(--bg-main);            /* #1c1c1e — page background       */
+  --surface: var(--bg-sidebar);        /* #2c2c2e — panels, cards, modals */
+  --surface-2: #232326;                /* wells: columns, inputs, code    */
+  --surface-hover: var(--bg-surface);  /* #3a3a3c — hover/elevated        */
 
-  --text: #111827;
-  --text-muted: #4b5563;
-  --border: #d1d5db;
+  --sidebar-bg: #161618;               /* nav chrome sits below the page  */
+  --sidebar-text: var(--text-primary);
+  --sidebar-muted: var(--text-secondary);
+  --sidebar-active-bg: var(--bg-sidebar);
+  --sidebar-active-border: var(--accent-blue);
 
-  --accent: #2563eb;
-  --accent-soft: #dbeafe;
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --border: var(--border-default);
+  /* --border-strong comes straight from tokens.css */
 
-  --success-bg: #dcfce7;
-  --success-text: #166534;
-  --warning-bg: #fef3c7;
-  --warning-text: #92400e;
-  --danger-bg: #fee2e2;
-  --danger-text: #991b1b;
+  --accent: var(--accent-blue);
+  --accent-hover: var(--accent-blue-hover);
+  --accent-soft: rgba(10, 132, 255, 0.16);
 
-  --radius: 10px;
+  /* Status pairs: translucent fills + full-strength text, dark-legible */
+  --success-bg: rgba(48, 209, 88, 0.16);
+  --success-text: var(--success-green);
+  --warning-bg: rgba(255, 214, 10, 0.16);
+  --warning-text: var(--warning-yellow);
+  --danger-bg: rgba(255, 69, 58, 0.16);
+  --danger-text: var(--danger-red);
 
-  /* Old variable mappings to keep existing layout styles functional but modern */
+  --radius: var(--radius-md);
+
+  /* Legacy aliases still referenced by older components */
   --color-bg: var(--app-bg);
   --color-bg-dark: var(--surface-2);
   --color-sidebar: var(--sidebar-bg);
@@ -35,16 +55,12 @@
 
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
-  --color-text-on-dark: var(--sidebar-text);
-  --color-text-muted-on-dark: var(--sidebar-muted);
+  --color-text-on-dark: var(--text);
+  --color-text-muted-on-dark: var(--text-muted);
 
   --color-primary: var(--accent);
-  --color-primary-hover: #1d4ed8;
-  --color-danger: var(--danger-text);
-  --color-warning: var(--warning-text);
-  --color-success: var(--success-text);
-
-  --radius-sm: 6px;
-  --radius-md: var(--radius);
-  --radius-lg: 14px;
+  --color-primary-hover: var(--accent-hover);
+  --color-danger: var(--danger-red);
+  --color-warning: var(--warning-yellow);
+  --color-success: var(--success-green);
 }

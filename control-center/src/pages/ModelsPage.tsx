@@ -53,7 +53,7 @@ export const ModelsPage: React.FC = () => {
     e.preventDefault();
     try {
       await saveProviderConfig(provider, endpoint, apiKey);
-      setApiKey(''); // clear for security
+      setApiKey('');
       loadData();
     } catch (err: any) {
       setError(err.toString());
@@ -65,62 +65,65 @@ export const ModelsPage: React.FC = () => {
 
   return (
     <PageShell title="Model Catalog">
-      <div style={{ display: 'flex', gap: '1rem' }}>
+      <div className="split-layout">
         {/* Providers Config Form */}
-        <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '4px' }}>
-          <h4>Provider Configuration</h4>
-          <form onSubmit={handleSaveConfig} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label>Provider Name</label>
-            <input type="text" value={provider} onChange={e => setProvider(e.target.value)} style={{ padding: '0.5rem' }} />
-            
-            <label>Endpoint URL (OpenAI Compatible)</label>
-            <input type="text" value={endpoint} onChange={e => setEndpoint(e.target.value)} style={{ padding: '0.5rem' }} />
-            
-            <label>API Key</label>
-            <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="sk-..." style={{ padding: '0.5rem' }} />
-            
-            <button type="submit" style={{ marginTop: '0.5rem', padding: '0.5rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save Config</button>
+        <div className="panel form-dark">
+          <h4 className="panel-title">Provider Configuration</h4>
+          <form onSubmit={handleSaveConfig}>
+            <div className="form-field">
+              <label>Provider Name</label>
+              <input type="text" value={provider} onChange={e => setProvider(e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Endpoint URL (OpenAI Compatible)</label>
+              <input type="text" value={endpoint} onChange={e => setEndpoint(e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>API Key</label>
+              <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="sk-..." />
+            </div>
+            <button type="submit">Save Config</button>
           </form>
 
-          <h5 style={{ marginTop: '1rem' }}>Saved Providers</h5>
-          <ul style={{ listStyleType: 'none', padding: 0 }}>
+          <h5 className="panel-title" style={{ marginTop: 'var(--space-md)' }}>Saved Providers</h5>
+          <ul className="plain-list">
             {configs.map(c => (
-              <li key={c.provider} style={{ padding: '0.5rem', borderBottom: '1px solid #eee' }}>
-                <strong>{c.provider}</strong> - {c.endpoint_url}
+              <li key={c.provider}>
+                <strong>{c.provider}</strong> <span className="muted">{c.endpoint_url}</span>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Local Model Catalog */}
-        <div style={{ flex: 2, backgroundColor: 'white', padding: '1rem', borderRadius: '4px' }}>
-          <h4>Model Catalog</h4>
-          {models.length === 0 ? <p>No models imported or configured.</p> : (
-            <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+        <div className="panel">
+          <h4 className="panel-title">Model Catalog</h4>
+          {models.length === 0 ? <p className="muted">No models imported or configured.</p> : (
+            <table className="data-table">
               <thead>
-                <tr style={{ borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '0.5rem' }}>Name</th>
-                  <th style={{ padding: '0.5rem' }}>Provider</th>
-                  <th style={{ padding: '0.5rem' }}>Status</th>
-                  <th style={{ padding: '0.5rem' }}>Connection Test</th>
+                <tr>
+                  <th>Name</th>
+                  <th>Provider</th>
+                  <th>Status</th>
+                  <th>Connection Test</th>
                 </tr>
               </thead>
               <tbody>
                 {models.map(m => (
-                  <tr key={m.model_id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '0.5rem' }}><strong>{m.display_name}</strong></td>
-                    <td style={{ padding: '0.5rem' }}>{m.provider}</td>
-                    <td style={{ padding: '0.5rem' }}>{m.install_status}</td>
-                    <td style={{ padding: '0.5rem' }}>
-                      <button 
+                  <tr key={m.model_id}>
+                    <td><strong>{m.display_name}</strong></td>
+                    <td>{m.provider}</td>
+                    <td>{m.install_status}</td>
+                    <td>
+                      <button
+                        className="secondary-button"
                         onClick={() => handleTest(m.model_id)}
                         disabled={testingModel === m.model_id}
-                        style={{ padding: '0.2rem 0.5rem', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc' }}
                       >
                         {testingModel === m.model_id ? 'Testing...' : 'Smoke Test'}
                       </button>
                       {testResult?.id === m.model_id && (
-                        <span style={{ marginLeft: '0.5rem', color: testResult.success ? 'green' : 'red' }}>
+                        <span className={testResult.success ? 'test-result-pass' : 'test-result-fail'} style={{ marginLeft: 'var(--space-sm)' }}>
                           {testResult.success ? '✓ OK' : '✗ Failed'}
                         </span>
                       )}
