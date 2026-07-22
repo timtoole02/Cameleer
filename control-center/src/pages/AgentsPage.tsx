@@ -7,6 +7,7 @@ import { Agent, AgentOrgNode } from '../types';
 import { LoadingState } from '../components/common/LoadingState';
 import { EmptyState } from '../components/common/EmptyState';
 import { PageShell } from '../components/common/PageShell';
+import { useAppStore } from '../state/appStore';
 
 const WORKSPACE = 'default-workspace';
 
@@ -30,6 +31,7 @@ function formatList(value: string | null | undefined): string {
 }
 
 export const AgentsPage: React.FC = () => {
+  const { backendHealth } = useAppStore();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [orgTree, setOrgTree] = useState<AgentOrgNode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +74,10 @@ export const AgentsPage: React.FC = () => {
       id: crypto.randomUUID(),
       name, role, persona,
       model_provider: 'camelid',
-      model_name: 'camelid-default',
+      // Inherit the concrete model the backend is actually serving.
+      // (Hardcoding 'camelid-default' made every UI-created agent un-runnable:
+      // start_agent_task_run rejects that placeholder as "no concrete model".)
+      model_name: backendHealth?.camelid_model || 'camelid-default',
       temperature: 0.7,
       max_tokens: 2048,
       can_spawn_subtasks: true,
@@ -118,9 +123,10 @@ export const AgentsPage: React.FC = () => {
     if (children.length === 0) return null;
     return children.map(node => (
       <React.Fragment key={node.id}>
-        <li style={{ paddingLeft: `${depth * 20}px`, padding: '0.4rem 0.5rem', borderBottom: '1px solid #eee' }}>
-          {NODE_ICON[node.node_type] || '•'} <strong>{node.display_name}</strong>
-          <span style={{ color: '#888', fontSize: '0.75rem', marginLeft: '0.5rem' }}>{node.node_type}</span>
+        <li className="org-tree-node" style={{ paddingLeft: `${10 + depth * 20}px` }}>
+          <span>{NODE_ICON[node.node_type] || '•'}</span>
+          <strong>{node.display_name}</strong>
+          <span className="muted">{node.node_type}</span>
         </li>
         {renderNodes(node.id, depth + 1)}
       </React.Fragment>
@@ -131,90 +137,95 @@ export const AgentsPage: React.FC = () => {
 
   return (
     <PageShell title="Agent Roster">
-      {error && <div style={{ color: '#991b1b', padding: '0.5rem' }}>{error}</div>}
+      {error && <div className="error-text">{error}</div>}
 
-      <div style={{ marginBottom: '0.75rem' }}>
-        <button onClick={() => setShowForm(s => !s)} style={{ padding: '0.5rem 1rem', cursor: 'pointer', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '4px' }}>
+      <div style={{ marginBottom: 'var(--space-sm)' }}>
+        <button onClick={() => setShowForm(s => !s)}>
           {showForm ? 'Cancel' : '+ New Agent'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '0.75rem' }}>
-          <input type="text" placeholder="Agent Name (e.g. Alice)" value={name} onChange={e => setName(e.target.value)} style={{ padding: '0.5rem' }} autoFocus />
-          <input type="text" placeholder="Role (e.g. Frontend Developer)" value={role} onChange={e => setRole(e.target.value)} style={{ padding: '0.5rem' }} />
-          <textarea placeholder="Persona Description..." value={persona} onChange={e => setPersona(e.target.value)} style={{ padding: '0.5rem', minHeight: '60px' }} />
-          <button type="submit" style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px' }}>
-            Initialize Agent
-          </button>
+        <form onSubmit={handleCreate} className="panel form-dark agent-create-form">
+          <div className="form-field">
+            <label>Agent Name</label>
+            <input type="text" placeholder="e.g. Alice" value={name} onChange={e => setName(e.target.value)} autoFocus />
+          </div>
+          <div className="form-field">
+            <label>Role</label>
+            <input type="text" placeholder="e.g. Frontend Developer" value={role} onChange={e => setRole(e.target.value)} />
+          </div>
+          <div className="form-field">
+            <label>Persona</label>
+            <textarea placeholder="Persona description…" value={persona} onChange={e => setPersona(e.target.value)} />
+          </div>
+          <button type="submit">Initialize Agent</button>
         </form>
       )}
 
-      <div style={{ display: 'flex', gap: '1rem', flex: 1, overflow: 'hidden' }}>
+      <div className="split-layout">
         {/* Org Tree + management */}
-        <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '4px', overflowY: 'auto' }}>
-          <h4 style={{ marginTop: 0 }}>Organization Structure</h4>
-          <ul style={{ listStyleType: 'none', paddingLeft: 0, margin: '0 0 1rem 0' }}>
+        <div className="panel form-dark">
+          <h4 className="panel-title">Organization Structure</h4>
+          <ul className="org-tree">
             {renderNodes(null, 0)}
           </ul>
 
-          <div style={{ borderTop: '1px solid #eee', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
-              <input placeholder="New project name" value={projectName} onChange={e => setProjectName(e.target.value)} style={{ flex: 1, padding: '0.4rem' }} />
-              <button onClick={handleCreateProject} style={{ padding: '0.4rem 0.8rem', cursor: 'pointer' }}>Add Project</button>
+          <div className="org-actions">
+            <div className="inline-row">
+              <input placeholder="New project name" value={projectName} onChange={e => setProjectName(e.target.value)} />
+              <button className="secondary-button" onClick={handleCreateProject}>Add Project</button>
             </div>
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
-              <input placeholder="New team name" value={teamName} onChange={e => setTeamName(e.target.value)} style={{ flex: 1, padding: '0.4rem' }} />
-              <select value={teamProjectId} onChange={e => setTeamProjectId(e.target.value)} style={{ padding: '0.4rem' }}>
+            <div className="inline-row">
+              <input placeholder="New team name" value={teamName} onChange={e => setTeamName(e.target.value)} />
+              <select value={teamProjectId} onChange={e => setTeamProjectId(e.target.value)}>
                 <option value="">(no project)</option>
                 {projects.map(p => <option key={p.id} value={p.project_id || ''}>{p.display_name}</option>)}
               </select>
-              <button onClick={handleCreateTeam} style={{ padding: '0.4rem 0.8rem', cursor: 'pointer' }}>Add Team</button>
+              <button className="secondary-button" onClick={handleCreateTeam}>Add Team</button>
             </div>
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
-              <select value={assignAgentId} onChange={e => setAssignAgentId(e.target.value)} style={{ flex: 1, padding: '0.4rem' }}>
+            <div className="inline-row">
+              <select value={assignAgentId} onChange={e => setAssignAgentId(e.target.value)}>
                 <option value="">Select agent…</option>
                 {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
-              <select value={assignTeamId} onChange={e => setAssignTeamId(e.target.value)} style={{ flex: 1, padding: '0.4rem' }}>
+              <select value={assignTeamId} onChange={e => setAssignTeamId(e.target.value)}>
                 <option value="">Select team…</option>
                 {teams.map(t => <option key={t.id} value={t.team_id || ''}>{t.display_name}</option>)}
               </select>
-              <button onClick={handleAssign} style={{ padding: '0.4rem 0.8rem', cursor: 'pointer' }}>Assign</button>
+              <button className="secondary-button" onClick={handleAssign}>Assign</button>
             </div>
           </div>
         </div>
 
         {/* Registry */}
-        <div style={{ flex: 2, backgroundColor: 'white', padding: '1rem', borderRadius: '4px', overflowY: 'auto' }}>
-          <h4 style={{ marginTop: 0 }}>All Agents ({agents.length})</h4>
+        <div className="panel">
+          <h4 className="panel-title">All Agents ({agents.length})</h4>
           {agents.length === 0 ? <EmptyState title="No Agents" description="Hire an agent to begin." /> : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="data-table">
               <thead>
-                <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
-                  <th style={{ padding: '0.5rem' }}>Name</th>
-                  <th style={{ padding: '0.5rem' }}>Role</th>
-                  <th style={{ padding: '0.5rem' }}>Status</th>
-                  <th style={{ padding: '0.5rem' }}>Model</th>
-                  <th style={{ padding: '0.5rem' }}>Reasoning</th>
-                  <th style={{ padding: '0.5rem' }}>Tools</th>
-                  <th style={{ padding: '0.5rem' }}>Safety</th>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Model</th>
+                  <th>Reasoning</th>
+                  <th>Tools</th>
+                  <th>Safety</th>
                 </tr>
               </thead>
               <tbody>
                 {agents.map(a => (
-                  <tr key={a.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '0.5rem' }}><strong>{a.name}</strong></td>
-                    <td style={{ padding: '0.5rem' }}>{a.role}</td>
-                    <td style={{ padding: '0.5rem' }}>
-                      <span style={{ padding: '0.2rem 0.5rem', borderRadius: '12px', backgroundColor: a.status === 'idle' ? '#e2e3e5' : '#cce5ff', fontSize: '0.8rem' }}>
-                        {a.status}
-                      </span>
+                  <tr key={a.id}>
+                    <td><strong>{a.name}</strong></td>
+                    <td>{a.role}</td>
+                    <td>
+                      <span className={`status-dot ${a.status}`} />{a.status}
                     </td>
-                    <td style={{ padding: '0.5rem', fontSize: '0.9rem', color: '#666' }}>{a.model_provider}</td>
-                    <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#666' }}>{a.reasoning_level || '—'}</td>
-                    <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#666' }} title={a.allowed_tools || ''}>{formatList(a.allowed_tools)}</td>
-                    <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#666' }} title={a.command_permissions || ''}>{a.safety_profile || '—'}</td>
+                    <td className="muted">{a.model_provider}</td>
+                    <td className="muted">{a.reasoning_level || '—'}</td>
+                    <td className="muted" title={a.allowed_tools || ''}>{formatList(a.allowed_tools)}</td>
+                    <td className="muted" title={a.command_permissions || ''}>{a.safety_profile || '—'}</td>
                   </tr>
                 ))}
               </tbody>

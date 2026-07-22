@@ -159,20 +159,13 @@ export const ChatPage: React.FC = () => {
 
   const renderEmptyState = () => (
     <EmptyState title={`No messages in ${channelTitle}`} description="">
-      <div style={{
-        textAlign: 'left',
-        marginBottom: '1rem',
-        backgroundColor: 'var(--surface-2)',
-        padding: '1rem',
-        borderRadius: '8px',
-        border: '1px solid var(--border)'
-      }}>
-        <p style={{ margin: '0 0 0.5rem 0', color: 'var(--text)' }}><strong>Workspace:</strong> {activeProjectName || 'None'}</p>
-        <p style={{ margin: '0 0 0.5rem 0', color: 'var(--text)' }}><strong>Channel:</strong> {channelTitle}</p>
-        <p style={{ margin: '0 0 0.5rem 0', color: 'var(--text)' }}><strong>DB Status:</strong> {backendHealth?.database_status || 'offline'}</p>
-        <p style={{ margin: '0', color: 'var(--text)' }}><strong>Model Loaded:</strong> {backendHealth?.camelid_model || 'none'}</p>
+      <div className="chat-empty-details">
+        <p><strong>Workspace:</strong> {activeProjectName || 'None'}</p>
+        <p><strong>Channel:</strong> {channelTitle}</p>
+        <p><strong>DB Status:</strong> {backendHealth?.database_status || 'offline'}</p>
+        <p><strong>Model Loaded:</strong> {backendHealth?.camelid_model || 'none'}</p>
       </div>
-      <p style={{ color: 'var(--text-muted)' }}>Send a message below to start this channel.</p>
+      <p className="text-muted">Send a message below to start this channel.</p>
     </EmptyState>
   );
 
@@ -182,60 +175,34 @@ export const ChatPage: React.FC = () => {
 
   return (
     <PageShell title="Workspace Chat">
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '260px minmax(0, 1fr)',
-        height: '100%',
-        minHeight: 0,
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)',
-        overflow: 'hidden',
-        backgroundColor: 'var(--surface)'
-      }}>
-        <aside style={{
-          borderRight: '1px solid var(--border)',
-          backgroundColor: '#f8fafc',
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: 0
-        }}>
-          <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0 }}>
+      <div className="chat-layout">
+        <aside className="chat-rail">
+          <div className="chat-rail-header">
+            <div className="eyebrow">
               Channels
             </div>
           </div>
 
-          <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border)' }}>
+          <div className="chat-rail-section">
             <button
               type="button"
               onClick={selectGlobalChannel}
-              style={{
-                width: '100%',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem',
-                borderRadius: '8px',
-                border: selectedChannelId === GLOBAL_CHANNEL_ID ? '1px solid var(--accent)' : '1px solid transparent',
-                backgroundColor: selectedChannelId === GLOBAL_CHANNEL_ID ? 'var(--accent-soft)' : 'transparent',
-                color: 'var(--text)'
-              }}
+              className={selectedChannelId === GLOBAL_CHANNEL_ID ? 'chat-channel active' : 'chat-channel'}
             >
-              <span style={{ fontWeight: 800, color: 'var(--accent)', fontSize: '1rem' }}>#</span>
-              <span>
-                <span style={{ display: 'block', fontWeight: 700 }}>Global</span>
-                <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+              <span className="chat-channel-glyph">#</span>
+              <span className="min-w-0">
+                <span className="chat-channel-name">Global</span>
+                <span className="chat-channel-sub">
                   Talk to everyone
                 </span>
               </span>
             </button>
           </div>
 
-          <div style={{ padding: '0.75rem 1rem 0.25rem', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
+          <div className="chat-rail-label eyebrow">
             Direct Messages
           </div>
-          <div style={{ overflowY: 'auto', padding: '0 0.75rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <div className="chat-channel-list">
             {agents.map(agent => {
               const active = selectedChannelId === agent.id;
               return (
@@ -243,40 +210,16 @@ export const ChatPage: React.FC = () => {
                   key={agent.id}
                   type="button"
                   onClick={() => selectAgentChannel(agent)}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.65rem 0.75rem',
-                    borderRadius: '8px',
-                    border: active ? '1px solid var(--accent)' : '1px solid transparent',
-                    backgroundColor: active ? 'var(--accent-soft)' : 'transparent',
-                    color: 'var(--text)'
-                  }}
+                  className={active ? 'chat-channel active' : 'chat-channel'}
                 >
-                  <span style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flex: '0 0 auto',
-                    backgroundColor: active ? 'var(--accent)' : 'var(--surface-2)',
-                    color: active ? '#fff' : 'var(--text)',
-                    border: '1px solid var(--border)',
-                    fontWeight: 800,
-                    fontSize: '0.75rem'
-                  }}>
+                  <span className="chat-avatar">
                     {initialsFor(agent.name)}
                   </span>
-                  <span style={{ minWidth: 0 }}>
-                    <span style={{ display: 'block', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span className="min-w-0">
+                    <span className="chat-channel-name">
                       {agent.name}
                     </span>
-                    <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.72rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span className="chat-channel-sub">
                       {agent.role}
                     </span>
                   </span>
@@ -286,53 +229,29 @@ export const ChatPage: React.FC = () => {
           </div>
         </aside>
 
-        <section style={{ display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1rem 1.25rem',
-            borderBottom: '1px solid var(--border)',
-            backgroundColor: 'var(--surface)'
-          }}>
-            <div style={{ minWidth: 0 }}>
-              <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.05rem' }}>{channelTitle}</h3>
-              <p style={{ color: 'var(--text-muted)', margin: '0.25rem 0 0', fontSize: '0.82rem' }}>{channelSubtitle}</p>
+        <section className="chat-thread-pane">
+          <div className="chat-thread-header">
+            <div className="min-w-0">
+              <h3>{channelTitle}</h3>
+              <p>{channelSubtitle}</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              <span><strong style={{ color: backendHealth?.database_status === 'ready' ? 'var(--success-text)' : 'var(--danger-text)' }}>DB</strong> {backendHealth?.database_status || 'offline'}</span>
-              <span><strong style={{ color: backendHealth?.camelid_status === 'connected' ? 'var(--success-text)' : 'var(--danger-text)' }}>Camelid</strong> {backendHealth?.camelid_status || 'offline'}</span>
-              <span><strong>Model</strong> {backendHealth?.camelid_model || 'none'}</span>
+            <div className="stat-row">
+              <span className="stat-tile"><strong className={backendHealth?.database_status === 'ready' ? 'stat-ok' : 'stat-err'}>DB</strong> {backendHealth?.database_status || 'offline'}</span>
+              <span className="stat-tile"><strong className={backendHealth?.camelid_status === 'connected' ? 'stat-ok' : 'stat-err'}>Camelid</strong> {backendHealth?.camelid_status || 'offline'}</span>
+              <span className="stat-tile"><strong>Model</strong> {backendHealth?.camelid_model || 'none'}</span>
             </div>
           </div>
 
-          {error && <div style={{ margin: '1rem 1rem 0' }}><ErrorState message={error} onRetry={loadData} /></div>}
+          {error && <div className="chat-inline"><ErrorState message={error} onRetry={loadData} /></div>}
 
           {!canSend && (
-            <div style={{
-              backgroundColor: 'var(--danger-bg)',
-              color: 'var(--danger-text)',
-              padding: '0.9rem 1rem',
-              borderRadius: '8px',
-              border: '1px solid rgba(153, 27, 27, 0.15)',
-              margin: '1rem 1rem 0',
-              fontSize: '0.9rem'
-            }}>
+            <div className="alert alert-danger chat-inline">
               <strong>Chat unavailable</strong>
-              <p style={{ margin: '0.35rem 0 0' }}>{disableReason}</p>
+              <p>{disableReason}</p>
             </div>
           )}
 
-          <div style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: 'auto',
-            padding: messages.length === 0 ? 0 : '1rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.65rem',
-            backgroundColor: 'var(--surface)'
-          }}>
+          <div className={messages.length === 0 ? 'chat-thread empty' : 'chat-thread'}>
             {messages.length === 0 ? renderEmptyState() : messages.map(message => {
               const isUser = message.role === 'user';
               const senderAgent = agents.find(agent => agent.id === message.sender_id);
@@ -340,73 +259,40 @@ export const ChatPage: React.FC = () => {
               return (
                 <div
                   key={message.id}
-                  style={{
-                    display: 'flex',
-                    alignSelf: isUser ? 'flex-end' : 'flex-start',
-                    gap: '0.65rem',
-                    maxWidth: '78%',
-                    flexDirection: isUser ? 'row-reverse' : 'row'
-                  }}
+                  className={isUser ? 'chat-message own' : 'chat-message'}
                 >
-                  <div style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flex: '0 0 auto',
-                    backgroundColor: isUser ? 'var(--accent)' : 'var(--surface-2)',
-                    color: isUser ? '#fff' : 'var(--text)',
-                    border: '1px solid var(--border)',
-                    fontWeight: 800,
-                    fontSize: '0.75rem'
-                  }}>
+                  <div className="chat-avatar">
                     {isUser ? 'ME' : initialsFor(senderLabel)}
                   </div>
-                  <div style={{
-                    backgroundColor: isUser ? 'var(--accent)' : 'var(--surface-2)',
-                    color: isUser ? '#fff' : 'var(--text)',
-                    padding: '0.7rem 0.85rem',
-                    borderRadius: '8px',
-                    border: isUser ? 'none' : '1px solid var(--border)'
-                  }}>
-                    <div style={{ fontSize: '0.72rem', opacity: 0.78, marginBottom: '0.25rem', fontWeight: 700 }}>
+                  <div className="chat-bubble">
+                    <div className="chat-author">
                       {senderLabel}
                     </div>
-                    <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.45 }}>{message.content}</div>
+                    <div className="chat-body">{message.content}</div>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <form onSubmit={handleSend} style={{ padding: '1rem', borderTop: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}>
+          <form onSubmit={handleSend} className="chat-composer form-dark">
             {!canSend && (
-              <div style={{ fontSize: '0.8rem', color: 'var(--danger-text)', fontWeight: 600, marginBottom: '0.5rem' }}>
+              <div className="composer-note">
                 Chat disabled: {disableReason}
               </div>
             )}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div className="chat-composer-row">
               <input
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 placeholder={canSend ? `Message ${isGlobalChannel ? '#global' : selectedAgent?.name || 'agent'}` : 'Chat is disabled'}
                 disabled={!canSend}
-                style={{
-                  flex: 1,
-                  padding: '0.85rem 0.95rem',
-                  borderRadius: 'var(--radius)',
-                  border: '1px solid var(--border)',
-                  backgroundColor: 'var(--surface)',
-                  color: 'var(--text)'
-                }}
               />
               <button
                 type="submit"
                 disabled={!canSend || !input.trim()}
-                style={{ borderRadius: 'var(--radius)', padding: '0 1.35rem', fontWeight: 'bold', minWidth: 88 }}
+                className="chat-send"
               >
                 {sending ? 'Sending' : 'Send'}
               </button>

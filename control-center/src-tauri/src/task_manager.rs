@@ -3039,6 +3039,29 @@ pub struct AgentRunStep {
     pub created_at: Option<String>,
 }
 
+/// Build the dynamic agent_runs query + its params. Extracted for testability
+/// after a systemic bug: placeholders were emitted QUOTED (`'?1'`), which
+/// SQLite parses as string literals — so every FILTERED call (e.g.
+/// `list_task_runs` after a board refresh) failed with
+/// "Wrong number of parameters passed to query. Got 1, needed 0".
+fn build_agent_runs_query(agent_id: Option<&str>, task_id: Option<&str>) -> (String, Vec<String>) {
+    let mut query = "SELECT id, agent_id, conversation_id, task_id, state, input, plan, final_answer, error, created_at, updated_at FROM agent_runs WHERE 1=1".to_string();
+    let mut params: Vec<String> = vec![];
+
+    if let Some(aid) = agent_id {
+        query.push_str(&format!(" AND agent_id = ?{}", params.len() + 1));
+        params.push(aid.to_string());
+    }
+
+    if let Some(tid) = task_id {
+        query.push_str(&format!(" AND task_id = ?{}", params.len() + 1));
+        params.push(tid.to_string());
+    }
+
+    query.push_str(" ORDER BY created_at DESC");
+    (query, params)
+}
+
 #[tauri::command]
 pub fn get_agent_runs(
     state: State<'_, DbState>,
@@ -3047,20 +3070,7 @@ pub fn get_agent_runs(
 ) -> Result<Vec<AgentRun>, String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
-    let mut query = "SELECT id, agent_id, conversation_id, task_id, state, input, plan, final_answer, error, created_at, updated_at FROM agent_runs WHERE 1=1".to_string();
-    let mut params: Vec<String> = vec![];
-
-    if let Some(aid) = agent_id {
-        query.push_str(&format!(" AND agent_id = '?{}'", params.len() + 1));
-        params.push(aid);
-    }
-
-    if let Some(tid) = task_id {
-        query.push_str(&format!(" AND task_id = '?{}'", params.len() + 1));
-        params.push(tid);
-    }
-
-    query.push_str(" ORDER BY created_at DESC");
+    let (query, params) = build_agent_runs_query(agent_id.as_deref(), task_id.as_deref());
 
     let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
 
@@ -3259,6 +3269,53 @@ mod run_outcome_tests {
         assert_eq!(
             card_state_for_run_outcome("something_unexpected"),
             Some(("review", "needs_review"))
+        );
+    }
+}
+
+#[cfg(test)]
+mod agent_runs_query_tests {
+    //! Regression guard for the quoted-placeholder bug: the dynamic filters
+    //! used to emit `AND task_id = '?1'` (a string LITERAL, not a placeholder),
+    //! so SQLite expected 0 params while Rust passed 1+ — every filtered
+    //! get_agent_runs/list_task_runs call failed at runtime. The same pattern
+    //! existed in board_services and context_engine and was fixed everywhere.
+    use super::build_agent_runs_query;
+    use rusqlite::Connection;
+
+    #[test]
+    fn placeholders_are_not_quoted_and_count_matches() {
+        let (q, p) = build_agent_runs_query(Some("agent-a"), Some("task-b"));
+        assert!(
+            !q.contains("'?"),
+            "placeholders must not be quoted string literals: {q}"
+        );
+        assert_eq!(q.matches('?').count(), p.len(), "placeholder/param count");
+    }
+
+    #[test]
+    fn filtered_query_executes_and_filters() {
+        let conn = Connection::open_in_memory().unwrap();
+        crate::storage::init_db(&conn).unwrap();
+        conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
+        conn.execute_batch(
+            "INSERT INTO agent_runs (id, agent_id, task_id, state) VALUES
+                ('run-1', 'agent-a', 'task-b', 'completed'),
+                ('run-2', 'agent-a', 'task-OTHER', 'completed');",
+        )
+        .unwrap();
+
+        let (q, p) = build_agent_runs_query(None, Some("task-b"));
+        let mut stmt = conn.prepare(&q).expect("filtered query must prepare");
+        let ids: Vec<String> = stmt
+            .query_map(rusqlite::params_from_iter(p), |row| row.get(0))
+            .expect("filtered query must execute with its params")
+            .filter_map(Result::ok)
+            .collect();
+        assert_eq!(
+            ids,
+            vec!["run-1".to_string()],
+            "must return only task-b's run"
         );
     }
 }

@@ -37,7 +37,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           onSelectTask={onSelectTask}
           onCreateTask={onCreateTask}
           onMoveTask={onMoveTask}
-          onDragStart={(taskId, event) => {
+          onDragStart={(taskId, event: React.DragEvent<HTMLDivElement>) => {
             event.dataTransfer.setData('text/task-id', taskId);
             event.dataTransfer.effectAllowed = 'move';
           }}
