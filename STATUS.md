@@ -71,15 +71,23 @@ bodies (not from `AUDIT_REAL_VS_FAKE.md`). **Supported = 9, Runnable = 6.**
 | 15 | macOS Tauri build | **Runnable** | `tauri.conf.json` (productName "Cameleer", id `com.cameleer.desktop`) | whole app | shipped `Cameleer_0.1.0_aarch64.dmg` proves it built once; **no automated build/smoke gate** |
 
 ### Definition of Done — walkthrough (mandate.txt:107)
-The chain is mechanically reachable end-to-end, with **two soft links**:
-- **"see runtime status"** depends on a live model backend — with no model, RuntimePage stays empty.
-- **"inspect audit logs" is effectively broken** — AuditPage reads `mission_audit_events`,
-  written only on mission-preview-apply (`mission_builder.rs:865`). Creating projects, moving
-  cards, and storing memory write to `events`/`task_activity` and the sandbox log — **none
-  surfaced on the Audit page.** A normal DoD walkthrough yields an empty Audit page.
+The chain is now demonstrated end-to-end against **live inference** (G4
+[e2e receipt](control-center/receipts/g4-live-e2e.e2e-receipt.json)): the real ReAct loop
+runs on Llama-3.2-1B and produces real `agent_run_steps`, the card routes to Review, a real
+`command.run` tool-invocation is recorded, and **all state survives a DB close/reopen** (the
+literal DoD sentence — also unit-tested by
+`e2e_persistence::workspace_state_survives_close_and_reopen`).
 
-The literal DoD sentence ("close app, reopen, same state") **is** tested:
-`e2e_persistence::workspace_state_survives_close_and_reopen`.
+Getting there required fixing **three real DoD-blocking bugs** (all correctness fixes, not
+features): `work_receipt_id` was always NULL; `tool_invocations` inserts were silently
+swallowed by an FK violation; and the default agent tool grant used stale action names so
+**no default agent could execute any tool**. See the e2e receipt for details.
+
+**One remaining soft link (G5):** **"inspect audit logs"** — AuditPage reads
+`mission_audit_events`, written only on mission-preview-apply (`mission_builder.rs:865`).
+Creating projects, moving cards, and storing memory write to `events`/`task_activity` and the
+sandbox log — **none surfaced on the Audit page.** A normal DoD walkthrough yields an empty
+Audit page.
 
 ---
 
@@ -163,7 +171,7 @@ Context / Runtime / Audit / Settings).
 |---|---|---|
 | `frontend-baseline.check-receipt.json` | `cameleer.check-receipt/v1` | Frontend typecheck/vitest/p0 pass on the macOS target |
 | _(G2)_ CI check-receipts | `check-receipt/v1` | Green frontend + backend jobs on GitHub Actions |
-| _(G4)_ e2e receipt | `e2e-receipt/v1` | Full agent loop vs live camelid + persistence across restart |
+| `g4-live-e2e.e2e-receipt.json` | `cameleer.e2e-receipt/v1` | Real ReAct loop vs live camelid (Llama-3.2-1B) → real `agent_run_steps`, card→Review, **persistence across DB close/reopen**; plus a deterministic real `command.run` tool-invocation record (status=success). 90 tests pass (88 + 2 e2e). |
 
 ---
 
@@ -175,7 +183,7 @@ Context / Runtime / Audit / Settings).
 | **G1** Repo coherence / hard reset | ⏳ next |
 | **G2** Portable release gate + CI | 🟡 all gate steps green locally (workspace-guard, typecheck, eslint, vitest, p0, `cargo fmt --check`, `cargo clippy -D warnings`, 44 tests, `package.sh` builds `.app`+`.dmg`). **`.github/workflows/ci.yml` is written and ready but NOT yet pushed** — the `gh` token lacks the `workflow` OAuth scope. Unblock with `gh auth refresh -s workflow` (or add the file via GitHub web), then the green-CI sub-gate completes. |
 | **G3** Safety-critical test backfill | ✅ 44 → 88 tests; safety core covered; `work_receipt_id` bug fixed; gate now `clippy --all-targets` |
-| **G4** e2e receipt vs live inference | ⏳ |
+| **G4** e2e receipt vs live inference | ✅ real ReAct loop vs live camelid (Llama-3.2-1B) + deterministic tool-record + persistence-across-reopen; [e2e receipt](control-center/receipts/g4-live-e2e.e2e-receipt.json). Fixed 2 more DoD-blocking bugs. |
 | **G5** Backend↔frontend reconciliation | ⏳ |
 | **G6** Doc truth pass + RC | ⏳ (tag needs explicit sign-off) |
 

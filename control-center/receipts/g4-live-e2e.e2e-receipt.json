@@ -1,0 +1,51 @@
+{
+  "schema": "cameleer.e2e-receipt/v1",
+  "kind": "g4-live-inference-e2e",
+  "note": "Definition-of-Done proof: the real ReAct loop driven against live camelid inference, plus a deterministic real tool-execution record, with persistence surviving a DB close/reopen.",
+  "git_sha": "d7f05c97dd4f2de7c1713f14cb549ec86f74a434",
+  "git_branch": "hardpan",
+  "host": "mac.lan",
+  "os": "macOS 26.3 (arm64)",
+  "timestamp": "2026-07-22T17:36:09Z",
+  "model": {
+    "name": "Llama 3.2 1B Instruct",
+    "file": "Llama-3.2-1B-Instruct-Q8_0.gguf",
+    "sha256": "3f87a880027e7b9ea8e0da9e4009584336f352af444a0e6e5c20721ac4c7ffd1"
+  },
+  "endpoint": "http://127.0.0.1:8181/v1/chat/completions",
+  "run_command": "cargo test -p control-center --features e2e-live -- --include-ignored --nocapture",
+  "result": "90 passed; 0 failed (88 unit + 2 e2e)",
+  "proofs": {
+    "live_loop": {
+      "test": "e2e_full_loop_against_live_camelid",
+      "passed": true,
+      "run_id": "547b7d87-13f6-42fd-8ba8-14372fba5613",
+      "agent_run_steps": 2,
+      "step_types": {"model_response": 1, "final_answer": 1},
+      "steps_are_real_model_output": true,
+      "card_routed_to": "review / needs_review",
+      "persisted_after_close_reopen": true,
+      "note": "The 1B model's tool-emission is nondeterministic; tool_invocations in this run = 0. The tool-record assertion is carried deterministically below."
+    },
+    "tool_execution_record": {
+      "test": "e2e_tool_execution_records_a_real_command",
+      "passed": true,
+      "tool_invocations": 1,
+      "tool_name": "command.run",
+      "command": "echo hello",
+      "status": "success",
+      "captured_output_contains": "hello",
+      "note": "Real process spawn through command_guard + agent_tool_controller; a real tool_invocations row persisted with status=success."
+    }
+  },
+  "bugs_fixed_to_make_dod_real": [
+    "work_receipt_id always NULL (SELECT id on a table whose PK is card_id) -> card now links to its receipt (G3).",
+    "tool_invocations insert silently swallowed by an FK violation when the model put a non-card value in the action target -> bind card_id to the run's card (G4).",
+    "default agent tool grant used stale action names -> agents without an explicit contract could not execute ANY tool; normalized to command.run/file.write/etc (G4)."
+  ],
+  "caveats": [
+    "The live loop is #[ignore]'d and needs a running camelid server; it is a MANUAL CI job (documented in STATUS.md), not run on every push (it needs a GGUF model).",
+    "The deterministic tool-record test needs only the tauri mock runtime (e2e-live feature), no server.",
+    "work_receipt_id on the card is only populated on a VALIDATED completion (validate_task_completion); the live 1B run routes to Review, so no receipt yet in that specific run — the receipt/link path itself is unit-tested in agent_validation_engine (G3)."
+  ]
+}
