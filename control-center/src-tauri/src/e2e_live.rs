@@ -30,7 +30,7 @@ use tauri::Manager;
 
 /// Truncate a string to at most `n` chars for a compact single-line snippet.
 fn snippet(s: &str, n: usize) -> String {
-    let one_line = s.replace('\n', " ").replace('\r', " ");
+    let one_line = s.replace(['\n', '\r'], " ");
     let trimmed = one_line.trim();
     if trimmed.chars().count() <= n {
         trimmed.to_string()
@@ -172,7 +172,9 @@ async fn e2e_full_loop_against_live_camelid() {
                     .prepare("SELECT step_type, COUNT(*) FROM agent_run_steps WHERE run_id = ?1 GROUP BY step_type ORDER BY step_type")
                     .expect("prepare step_type breakdown");
                 step_types = stmt
-                    .query_map([&run_id], |r| Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?)))
+                    .query_map([&run_id], |r| {
+                        Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?))
+                    })
                     .expect("query step_type breakdown")
                     .filter_map(Result::ok)
                     .collect();
@@ -264,7 +266,10 @@ async fn e2e_full_loop_against_live_camelid() {
                 |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
             )
             .expect("query agent_runs after reopen");
-        assert_eq!(reopened_runs, 1, "agent_runs row must persist across restart");
+        assert_eq!(
+            reopened_runs, 1,
+            "agent_runs row must persist across restart"
+        );
         assert_eq!(
             reopened_state, run_state,
             "agent_runs state must be unchanged after restart"
@@ -306,7 +311,10 @@ async fn e2e_full_loop_against_live_camelid() {
 
         true
     };
-    assert!(persisted_after_reopen, "DoD: state must survive close+reopen");
+    assert!(
+        persisted_after_reopen,
+        "DoD: state must survive close+reopen"
+    );
 
     // Clean up the temp DB + sqlite side files.
     let _ = std::fs::remove_file(&db_file);
@@ -330,7 +338,10 @@ async fn e2e_full_loop_against_live_camelid() {
         "work_receipt_id": work_receipt_id,
         "persisted_after_reopen": persisted_after_reopen,
     });
-    println!("HARDPAN_G4_SUMMARY {}", serde_json::to_string(&summary).unwrap());
+    println!(
+        "HARDPAN_G4_SUMMARY {}",
+        serde_json::to_string(&summary).unwrap()
+    );
 }
 
 /// Deterministic proof (NO model) that the tool-execution RECORD path works end
