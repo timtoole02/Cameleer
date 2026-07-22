@@ -8,7 +8,35 @@ use crate::chat_service::DbMessage;
 use crate::command_guard::{check_command, GuardResult};
 use crate::event_bus::{emit_event, AppEvent};
 use crate::storage::DbState;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+/// Resolve a caller-supplied `path` against the agent's `workspace_root` and
+/// reject any target that escapes that root. Extracted verbatim (behavior-
+/// preserving) from the `file.write` branch of `execute_tool_inner` so the
+/// path-traversal defense can be adversarially unit-tested without a Tauri
+/// `AppHandle`.
+///
+/// Semantics preserved exactly: the *parent* directory is canonicalized (so
+/// symlinks/`..` in the parent are resolved), falling back to `workspace_root`
+/// when the parent cannot be canonicalized (e.g. it does not exist yet); the
+/// original file name is re-appended; and the result must `starts_with`
+/// `workspace_root` or the write is blocked.
+fn resolve_workspace_path(workspace_root: &Path, path: &str) -> Result<PathBuf, String> {
+    let target_path = workspace_root.join(path);
+
+    // Canonicalization strictly checks against traversal out of the root
+    let target_normalized = std::fs::canonicalize(target_path.parent().unwrap_or(workspace_root))
+        .unwrap_or_else(|_| workspace_root.to_path_buf())
+        .join(target_path.file_name().unwrap_or_default());
+
+    if !target_normalized.starts_with(workspace_root) {
+        return Err(
+            "Security Violation: Path traversal outside workspace root blocked.".to_string(),
+        );
+    }
+
+    Ok(target_normalized)
+}
 
 pub fn execute_tool(
     app_handle: &AppHandle,
@@ -293,22 +321,10 @@ fn execute_tool_inner(
                 let default_workspace = std::env::var("HOME")
                     .unwrap_or_else(|_| "/tmp".to_string())
                     + "/Documents/Cameleer Workspace";
-                let workspace_root = default_workspace.as_str(); // TODO: Dynamic from DB
-                let target_path = Path::new(workspace_root).join(path);
+                let workspace_root = Path::new(default_workspace.as_str()); // TODO: Dynamic from DB
 
-                // Canonicalization strictly checks against traversal out of the root
-                let target_normalized = std::fs::canonicalize(
-                    target_path.parent().unwrap_or(Path::new(workspace_root)),
-                )
-                .unwrap_or_else(|_| Path::new(workspace_root).to_path_buf())
-                .join(target_path.file_name().unwrap_or_default());
-
-                if !target_normalized.starts_with(workspace_root) {
-                    return Err(
-                        "Security Violation: Path traversal outside workspace root blocked."
-                            .to_string(),
-                    );
-                }
+                // Canonicalize + bound-check the target against the workspace root.
+                let target_normalized = resolve_workspace_path(workspace_root, path)?;
 
                 if action.dry_run.unwrap_or(false) {
                     let msg = format!(
@@ -567,5 +583,87 @@ fn save_and_emit_message(
                 payload: serde_json::to_value(&msg).unwrap_or(serde_json::Value::Null),
             },
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! Adversarial tests for the workspace path-traversal defense
+    //! (`resolve_workspace_path`), extracted from the `file.write` tool branch.
+    //! Each case runs against a real temp workspace whose surrounding
+    //! directories genuinely exist, so the canonicalize + `starts_with` bound is
+    //! exercised for real (no mocking of the filesystem).
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    /// Build a real, uniquely-named nested workspace under the system temp dir.
+    /// Layout: `<base>/nested/ws` is the workspace root; `<base>/etc` and
+    /// `<base>/nested` also exist so `..`-traversal targets resolve against real
+    /// directories. Returns `(base_to_cleanup, canonical_workspace_root)`.
+    fn unique_workspace() -> (PathBuf, PathBuf) {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let base =
+            std::env::temp_dir().join(format!("cameleer_ws_test_{}_{}", std::process::id(), nanos));
+        std::fs::create_dir_all(base.join("nested/ws")).unwrap();
+        std::fs::create_dir_all(base.join("etc")).unwrap();
+        let root = std::fs::canonicalize(base.join("nested/ws")).unwrap();
+        (base, root)
+    }
+
+    #[test]
+    fn plain_filename_stays_in_workspace() {
+        let (base, root) = unique_workspace();
+        let resolved = resolve_workspace_path(&root, "notes.txt")
+            .expect("a plain filename must resolve inside the workspace");
+        assert!(
+            resolved.starts_with(&root),
+            "resolved {resolved:?} must be under {root:?}"
+        );
+        assert!(resolved.ends_with("notes.txt"));
+        let _ = std::fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn deep_parent_traversal_is_blocked() {
+        let (base, root) = unique_workspace();
+        // `<root>/../../etc` resolves to the real `<base>/etc` we created, which is
+        // outside the workspace root -> blocked.
+        let err = resolve_workspace_path(&root, "../../etc/passwd")
+            .expect_err("traversal out of the workspace must be blocked");
+        assert!(
+            err.contains("Security Violation"),
+            "unexpected error: {err}"
+        );
+        let _ = std::fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn single_parent_traversal_is_blocked() {
+        let (base, root) = unique_workspace();
+        // `<root>/..` is `<base>/nested`, which exists and is outside the root.
+        let err = resolve_workspace_path(&root, "../escape.txt")
+            .expect_err("parent-directory escape must be blocked");
+        assert!(
+            err.contains("Security Violation"),
+            "unexpected error: {err}"
+        );
+        let _ = std::fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn absolute_path_outside_workspace_is_blocked() {
+        let (base, root) = unique_workspace();
+        // An absolute path replaces the joined base; its parent (`/etc`) exists and
+        // is outside the workspace root -> blocked.
+        let err = resolve_workspace_path(&root, "/etc/passwd")
+            .expect_err("absolute path outside the workspace must be blocked");
+        assert!(
+            err.contains("Security Violation"),
+            "unexpected error: {err}"
+        );
+        let _ = std::fs::remove_dir_all(&base);
     }
 }

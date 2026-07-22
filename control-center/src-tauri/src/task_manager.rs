@@ -1089,6 +1089,23 @@ pub fn delete_task(state: State<'_, DbState>, task_id: String) -> Result<(), Str
     Ok(())
 }
 
+/// Pure mapping from a ReAct-run outcome to the resulting kanban-card state,
+/// as `(status, validation_status)`. Returns `None` for outcomes that must NOT
+/// touch the card (e.g. `"failed"`, where only the agent_run is marked failed).
+///
+/// This encodes a safety-critical routing invariant and is the single source of
+/// truth used by `start_agent_task_run`'s finalizer, so it can be unit-tested:
+/// a guard suspension (`"waiting_approval"`) must yield `waiting_for_approval`
+/// and NEVER a done/completed card, while a normal finish goes to Review
+/// (`needs_review`) — Done is reached only later, through the validation gate.
+pub fn card_state_for_run_outcome(outcome: &str) -> Option<(&'static str, &'static str)> {
+    match outcome {
+        "waiting_approval" => Some(("waiting_for_approval", "waiting_for_approval")),
+        "failed" => None,
+        _ => Some(("review", "needs_review")),
+    }
+}
+
 #[tauri::command]
 pub async fn start_agent_task_run(
     app_handle: AppHandle,
@@ -1456,9 +1473,11 @@ pub async fn start_agent_task_run(
                     params![final_answer, run_id],
                 )
                 .map_err(|e| e.to_string())?;
+                let (cs, vs) = card_state_for_run_outcome("waiting_approval")
+                    .expect("waiting_approval maps to a card state");
                 conn.execute(
-                    "UPDATE kanban_cards SET status = 'waiting_for_approval', validation_status = 'waiting_for_approval', updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
-                    [&task_id],
+                    "UPDATE kanban_cards SET status = ?2, validation_status = ?3, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+                    params![task_id, cs, vs],
                 )
                 .map_err(|e| e.to_string())?;
                 insert_task_activity(
@@ -1482,9 +1501,11 @@ pub async fn start_agent_task_run(
                     params![uuid::Uuid::new_v4().to_string(), run_id, final_answer],
                 )
                 .map_err(|e| e.to_string())?;
+                let (cs, vs) = card_state_for_run_outcome(&outcome)
+                    .expect("a completed outcome maps to a card state");
                 conn.execute(
-                    "UPDATE kanban_cards SET status = 'review', validation_status = 'needs_review', comments = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-                    params![final_answer, task_id],
+                    "UPDATE kanban_cards SET status = ?2, validation_status = ?3, comments = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?4",
+                    params![final_answer, cs, vs, task_id],
                 )
                 .map_err(|e| e.to_string())?;
                 insert_task_activity(
@@ -3193,5 +3214,48 @@ mod react_evidence_tests {
             "failed invocations and other tasks must be excluded"
         );
         assert_eq!(tests, "[]");
+    }
+}
+
+#[cfg(test)]
+mod run_outcome_tests {
+    //! Routing invariants for the ReAct-run finalizer. These pin the
+    //! safety-critical rule that a suspended run never yields a Done card and a
+    //! normal finish goes to Review (Done is only reached via the validation
+    //! gate). The full async loop (MAX_ITERATIONS termination, live tool-error
+    //! retry) is exercised end-to-end by the G4 live-inference e2e receipt,
+    //! since driving `start_agent_task_run` needs a running app + model.
+    use super::card_state_for_run_outcome;
+
+    #[test]
+    fn suspension_routes_to_waiting_for_approval_never_done() {
+        let (status, validation) =
+            card_state_for_run_outcome("waiting_approval").expect("has a card state");
+        assert_eq!(status, "waiting_for_approval");
+        assert_eq!(validation, "waiting_for_approval");
+        assert_ne!(status, "done");
+        assert_ne!(status, "completed");
+    }
+
+    #[test]
+    fn completed_routes_to_review_not_done() {
+        let (status, validation) =
+            card_state_for_run_outcome("completed").expect("has a card state");
+        assert_eq!(status, "review");
+        assert_eq!(validation, "needs_review");
+        assert_ne!(status, "done");
+    }
+
+    #[test]
+    fn failed_leaves_card_untouched() {
+        assert!(card_state_for_run_outcome("failed").is_none());
+    }
+
+    #[test]
+    fn unknown_outcome_defaults_to_review() {
+        assert_eq!(
+            card_state_for_run_outcome("something_unexpected"),
+            Some(("review", "needs_review"))
+        );
     }
 }

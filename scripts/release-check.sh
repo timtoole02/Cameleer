@@ -27,7 +27,7 @@ echo
 echo "🦀 Backend: format + clippy + tests…"
 cd "$ROOT_DIR"
 cargo fmt -p control-center -- --check
-cargo clippy -p control-center -- -D warnings
+cargo clippy -p control-center --all-targets -- -D warnings
 cargo test -p control-center
 echo
 

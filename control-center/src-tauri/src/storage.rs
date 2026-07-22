@@ -238,7 +238,10 @@ fn add_column_if_missing(
     Ok(())
 }
 
+// This test module sits mid-file (several `pub fn` seed/util helpers follow it);
+// moving it would be a large, churny reshuffle for a purely stylistic lint.
 #[cfg(test)]
+#[allow(clippy::items_after_test_module)]
 mod tests {
     use super::*;
     use rusqlite::Connection;

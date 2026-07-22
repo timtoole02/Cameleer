@@ -908,3 +908,76 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
 
     None
 }
+
+#[cfg(test)]
+mod parse_action_tests {
+    //! Coverage for the ReAct loop's pure action-decision brain. The loop's
+    //! exit/continue decisions are driven entirely by what this returns:
+    //! task.complete / message.send -> exit, a tool action -> continue, and
+    //! `None` (no parseable action) -> the loop finishes.
+    use super::parse_agent_action;
+
+    fn wrap(action_type: &str, target: &str, input: &str) -> String {
+        let target_json = if target.is_empty() {
+            "null".to_string()
+        } else {
+            format!("\"{target}\"")
+        };
+        format!(
+            r#"{{"summary":"s","plan":[],"next_action":{{"type":"{action_type}","target":{target_json},"input":"{input}","dry_run":false}},"confidence":0.9,"blockers":[],"done_criteria":[]}}"#
+        )
+    }
+
+    #[test]
+    fn parses_task_complete_and_normalizes_alias() {
+        let a = parse_agent_action(&wrap("task.complete", "", "all done")).expect("some");
+        assert_eq!(a.action_type, "task.complete");
+        assert_eq!(a.evidence.as_deref(), Some("all done"));
+        let b = parse_agent_action(&wrap("complete", "", "done")).expect("some");
+        assert_eq!(b.action_type, "task.complete");
+    }
+
+    #[test]
+    fn normalizes_command_run_aliases() {
+        for alias in ["command.run", "tool_call", "execute_command"] {
+            let a = parse_agent_action(&wrap(alias, "", "ls -la")).expect("some");
+            assert_eq!(a.action_type, "command.run", "alias {alias}");
+            assert_eq!(a.command.as_deref(), Some("ls -la"));
+        }
+    }
+
+    #[test]
+    fn normalizes_file_write_and_sets_path() {
+        let a = parse_agent_action(&wrap("write_file", "notes.txt", "hello")).expect("some");
+        assert_eq!(a.action_type, "file.write");
+        assert_eq!(a.path.as_deref(), Some("notes.txt"));
+        assert_eq!(a.content.as_deref(), Some("hello"));
+    }
+
+    #[test]
+    fn keeps_message_send_as_is() {
+        let a = parse_agent_action(&wrap("message.send", "", "hi team")).expect("some");
+        assert_eq!(a.action_type, "message.send");
+    }
+
+    #[test]
+    fn extracts_json_embedded_in_prose() {
+        let text = format!(
+            "Sure! Here is my action:\n{}\nThanks.",
+            wrap("task.complete", "", "ok")
+        );
+        let a = parse_agent_action(&text).expect("json extracted from prose");
+        assert_eq!(a.action_type, "task.complete");
+    }
+
+    #[test]
+    fn plain_text_without_json_returns_none() {
+        assert!(parse_agent_action("I am still thinking about the problem.").is_none());
+    }
+
+    #[test]
+    fn malformed_json_returns_none() {
+        // Missing required AgentJsonOutput fields -> deserialize fails -> None.
+        assert!(parse_agent_action("{\"next_action\": {\"type\": \"task.complete\"}}").is_none());
+    }
+}

@@ -183,7 +183,6 @@ mod tests {
     #[test]
     fn test_get_backend_health_detects_missing_columns() {
         let conn = setup_test_db();
-        let mut errors: Vec<String> = Vec::new();
 
         let _ = conn.execute(
             "INSERT INTO settings (key, value) VALUES ('camelid_endpoint', 'http://127.0.0.1:8181')",
