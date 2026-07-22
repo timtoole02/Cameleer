@@ -140,11 +140,11 @@ pub fn get_scoped_agent_context_snapshot(
     let mut tasks_params: Vec<String> = vec![];
 
     if let Some(pid) = project_id {
-        tasks_query.push_str(&format!(" AND project_id = '?{}'", tasks_params.len() + 1));
+        tasks_query.push_str(&format!(" AND project_id = ?{}", tasks_params.len() + 1));
         tasks_params.push(pid.to_string());
     }
     if let Some(tid) = team_id {
-        tasks_query.push_str(&format!(" AND team_id = '?{}'", tasks_params.len() + 1));
+        tasks_query.push_str(&format!(" AND team_id = ?{}", tasks_params.len() + 1));
         tasks_params.push(tid.to_string());
     }
 
@@ -223,11 +223,11 @@ pub fn get_scoped_agent_context_snapshot(
         "SELECT path, artifact_type, size_bytes FROM artifacts WHERE 1=1".to_string();
     let mut arts_params: Vec<String> = vec![];
     if let Some(pid) = project_id {
-        arts_query.push_str(&format!(" AND project_id = '?{}'", arts_params.len() + 1));
+        arts_query.push_str(&format!(" AND project_id = ?{}", arts_params.len() + 1));
         arts_params.push(pid.to_string());
     }
     if let Some(tid) = team_id {
-        arts_query.push_str(&format!(" AND team_id = '?{}'", arts_params.len() + 1));
+        arts_query.push_str(&format!(" AND team_id = ?{}", arts_params.len() + 1));
         arts_params.push(tid.to_string());
     }
     arts_query.push_str(" ORDER BY id DESC LIMIT 10");

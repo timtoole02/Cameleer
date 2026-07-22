@@ -849,11 +849,11 @@ pub fn get_board_snapshot(
     let mut params: Vec<String> = vec![workspace_id.clone()];
 
     if let Some(pid) = project_id {
-        query.push_str(&format!(" AND project_id = '?{}'", params.len() + 1));
+        query.push_str(&format!(" AND project_id = ?{}", params.len() + 1));
         params.push(pid);
     }
     if let Some(tid) = team_id {
-        query.push_str(&format!(" AND team_id = '?{}'", params.len() + 1));
+        query.push_str(&format!(" AND team_id = ?{}", params.len() + 1));
         params.push(tid);
     }
     query.push_str(" ORDER BY rank ASC, created_at DESC");
@@ -1125,11 +1125,11 @@ pub fn get_agent_work_queue(
 
     let mut params: Vec<String> = vec![workspace_id.clone(), agent_id.clone()];
     if let Some(pid) = project_id {
-        query.push_str(&format!(" AND project_id = '?{}'", params.len() + 1));
+        query.push_str(&format!(" AND project_id = ?{}", params.len() + 1));
         params.push(pid);
     }
     if let Some(tid) = team_id {
-        query.push_str(&format!(" AND team_id = '?{}'", params.len() + 1));
+        query.push_str(&format!(" AND team_id = ?{}", params.len() + 1));
         params.push(tid);
     }
     query.push_str(" ORDER BY status DESC, priority ASC, rank ASC");
