@@ -22,6 +22,7 @@ pub fn load_contract(
     role: &str,
     conn: &Connection,
 ) -> Result<AgentContract, String> {
+    #[allow(clippy::type_complexity)] // 9-tuple maps 1:1 to the SELECTed contract columns
     let row: Option<(
         String, String, String, String, String, String, String, String, String
     )> = conn.query_row(
@@ -40,7 +41,15 @@ pub fn load_contract(
                 row.get::<_, Option<String>>(5)?.unwrap_or_else(|| "[]".into()),
                 row.get::<_, Option<String>>(6)?.unwrap_or_else(|| "[]".into()),
                 row.get::<_, Option<String>>(7)?.unwrap_or_else(|| "[]".into()),
-                row.get::<_, Option<String>>(8)?.unwrap_or_else(|| "task.create,task.update,memory.write".into()),
+                // Default tool grant for an agent with no explicit `allowed_tools`
+                // and no contract row. Uses the NORMALIZED action names the tool
+                // controller gates on; previously omitted command.run/file.write,
+                // so default agents could never run a command or write a file
+                // (all tool actions were contract-rejected). Command safety is
+                // still enforced by command_guard; writes are workspace-bounded.
+                row.get::<_, Option<String>>(8)?.unwrap_or_else(|| {
+                    "command.run,file.write,repo.search,memory.write,memory.search,task.create,task.update".into()
+                }),
             ))
         },
     ).optional().map_err(|e| e.to_string())?;
@@ -80,10 +89,20 @@ pub fn load_contract(
             contract_id: format!("default_contract_{}", role),
             role: role.to_string(),
             responsibilities: vec![format!("Execute assigned tasks for role: {}", role)],
+            // Use the NORMALIZED action names the tool controller actually gates
+            // on (parse_agent_action maps write_file->file.write,
+            // execute_command->command.run, etc.). The old names
+            // ("view_file"/"write_file"/"execute_command") never matched, so the
+            // default contract silently blocked ALL tool execution — no agent
+            // without an explicit contract could run a command or write a file.
+            // Command safety is still enforced downstream by command_guard, and
+            // file writes are workspace-bounded by resolve_workspace_path.
             allowed_actions: vec![
-                "view_file".into(),
-                "write_file".into(),
-                "execute_command".into(),
+                "command.run".into(),
+                "file.write".into(),
+                "repo.search".into(),
+                "memory.write".into(),
+                "memory.search".into(),
             ],
             forbidden_actions: vec![
                 "do not work on unassigned cards".into(),
@@ -182,7 +201,6 @@ mod tests {
     #[test]
     fn test_get_backend_health_detects_missing_columns() {
         let conn = setup_test_db();
-        let mut errors: Vec<String> = Vec::new();
 
         let _ = conn.execute(
             "INSERT INTO settings (key, value) VALUES ('camelid_endpoint', 'http://127.0.0.1:8181')",

@@ -1,5 +1,4 @@
 use crate::storage::DbState;
-use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;

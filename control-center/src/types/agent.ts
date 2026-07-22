@@ -14,6 +14,10 @@ export interface Agent {
     last_heartbeat: string | null;
     parent_agent_id?: string | null;
     allowed_tools?: string | null;
+    // Returned by get_agents (agent_registry.rs) but previously not surfaced in the UI.
+    reasoning_level?: string | null;
+    safety_profile?: string | null;
+    command_permissions?: string | null;
 }
 
 export interface TemplateInfo {

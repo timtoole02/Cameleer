@@ -1,0 +1,23 @@
+{
+  "schema": "cameleer.check-receipt/v1",
+  "kind": "backend-baseline",
+  "note": "First independent backend run on the macOS Apple-Silicon target. The commissioning session was on Linux and could not run any Rust. Resolves the README '44/44' vs AUDIT '43' discrepancy.",
+  "git_sha": "883401576a949cc7fb04f514f3994bf72e32dc47",
+  "git_branch": "hardpan",
+  "host": "mac.lan",
+  "os": "macOS 26.3 (arm64)",
+  "rustc": "rustc 1.96.1 (31fca3adb 2026-06-26)",
+  "cargo": "cargo 1.96.1 (356927216 2026-06-26)",
+  "timestamp": "2026-07-22T15:44:31Z",
+  "prerequisite": "src-tauri/camelid staged via 'npm run prepare:camelid' (in-tree camelid --release build); without it 'cargo check' fails: resource path 'camelid' doesn't exist",
+  "steps": [
+    { "command": "cargo check -p control-center", "exit_code": 0, "result": "compiles (after camelid resource staged)" },
+    { "command": "cargo test -p control-center", "exit_code": 0, "result": "44 passed; 0 failed; 0 ignored", "test_count": 44 }
+  ],
+  "caveats": [
+    "README '44/44 backend tests' CONFIRMED on this host; AUDIT_REAL_VS_FAKE.md '43' is wrong.",
+    "1 compiler warning: unused_parens (repo.search filter) -- will fail G2 'cargo clippy -- -D warnings' until fixed.",
+    "44 tests span only 12 of 36 modules; the safety-critical core (command_guard, agent_tool_controller, agent_runtime_kernel, agent_validation_engine, models_manager, camelid_adapter) has ZERO tests. G3 addresses this.",
+    "No CI yet -- this is a local run, not a gated one."
+  ]
+}

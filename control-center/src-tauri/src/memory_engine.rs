@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection, OptionalExtension, Result};
+use rusqlite::{params, Connection, Result};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::State;
 use uuid::Uuid;
@@ -103,7 +103,7 @@ pub fn search_memories(
     let search_pattern = format!("%{}%", query);
 
     // We update last_accessed_at when memories are retrieved
-    let now_secs = SystemTime::now()
+    let _now_secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
@@ -140,11 +140,9 @@ pub fn search_memories(
 
     let mut results = Vec::new();
     let mut ids_to_update = Vec::new();
-    for row in iter {
-        if let Ok(mem) = row {
-            ids_to_update.push(mem.id.clone());
-            results.push(mem);
-        }
+    for mem in iter.flatten() {
+        ids_to_update.push(mem.id.clone());
+        results.push(mem);
     }
 
     // Update last_accessed_at for retrieved memories
@@ -191,10 +189,8 @@ pub fn get_recent_memories(
         .map_err(|e| e.to_string())?;
 
     let mut results = Vec::new();
-    for row in iter {
-        if let Ok(mem) = row {
-            results.push(mem);
-        }
+    for mem in iter.flatten() {
+        results.push(mem);
     }
 
     Ok(results)

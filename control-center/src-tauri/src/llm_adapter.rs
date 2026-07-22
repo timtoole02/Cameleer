@@ -1,5 +1,4 @@
 use crate::router::{ChatMessage, ModelSettings};
-use serde::{Deserialize, Serialize};
 use std::future::Future;
 use std::pin::Pin;
 

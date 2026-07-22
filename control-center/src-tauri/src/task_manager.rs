@@ -5,7 +5,7 @@ use crate::system_services::{inspect_database_health, probe_camelid};
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Runtime, State};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Task {
@@ -114,9 +114,9 @@ fn resolve_path(path: &str) -> std::path::PathBuf {
 
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
 
-    if clean_path.starts_with("~/") {
+    if let Some(rest) = clean_path.strip_prefix("~/") {
         resolved.push(&home);
-        resolved.push(&clean_path[2..]);
+        resolved.push(rest);
     } else if clean_path == "~" {
         resolved.push(&home);
     } else if clean_path.starts_with("/") {
@@ -135,8 +135,7 @@ fn normalize_status(status: &str) -> String {
     match status
         .trim()
         .to_lowercase()
-        .replace('-', "_")
-        .replace(' ', "_")
+        .replace(['-', ' '], "_")
         .as_str()
     {
         "backlog" => "backlog",
@@ -340,7 +339,7 @@ pub fn get_agent_run_timeline(
             let agent_id: String = row.get(0)?;
             let step_type: String = row.get(1)?;
             let content: String = row.get(2)?;
-            let created_at: String = row.get(3)?;
+            let _created_at: String = row.get(3)?;
 
             // Try to parse created_at into a timestamp, fallback to 0
             // Assuming created_at is standard SQLite DATETIME like '2023-10-10 10:10:10'
@@ -360,10 +359,8 @@ pub fn get_agent_run_timeline(
         })
         .map_err(|e| e.to_string())?;
 
-    for entry in iter {
-        if let Ok(e) = entry {
-            timeline.push(e);
-        }
+    for e in iter.flatten() {
+        timeline.push(e);
     }
 
     Ok(timeline)
@@ -411,10 +408,8 @@ pub fn get_card_timeline(
                 details: payload,
             })
         }) {
-            for entry in event_iter {
-                if let Ok(e) = entry {
-                    timeline.push(e);
-                }
+            for e in event_iter.flatten() {
+                timeline.push(e);
             }
         }
     }
@@ -443,10 +438,8 @@ pub fn get_card_timeline(
                 }),
             })
         }) {
-            for entry in step_iter {
-                if let Ok(e) = entry {
-                    timeline.push(e);
-                }
+            for e in step_iter.flatten() {
+                timeline.push(e);
             }
         }
     }
@@ -477,10 +470,8 @@ pub fn get_card_timeline(
                 }),
             })
         }) {
-            for entry in tool_iter {
-                if let Ok(e) = entry {
-                    timeline.push(e);
-                }
+            for e in tool_iter.flatten() {
+                timeline.push(e);
             }
         }
     }
@@ -515,10 +506,8 @@ pub fn get_card_timeline(
                 }),
             })
         }) {
-            for entry in approval_iter {
-                if let Ok(e) = entry {
-                    timeline.push(e);
-                }
+            for e in approval_iter.flatten() {
+                timeline.push(e);
             }
         }
     }
@@ -543,10 +532,8 @@ pub fn get_card_timeline(
                 }),
             })
         }) {
-            for entry in artifact_iter {
-                if let Ok(e) = entry {
-                    timeline.push(e);
-                }
+            for e in artifact_iter.flatten() {
+                timeline.push(e);
             }
         }
     }
@@ -574,10 +561,8 @@ pub fn get_card_timeline(
                 }),
             })
         }) {
-            for entry in receipt_iter {
-                if let Ok(e) = entry {
-                    timeline.push(e);
-                }
+            for e in receipt_iter.flatten() {
+                timeline.push(e);
             }
         }
     }
@@ -603,10 +588,8 @@ pub fn get_card_timeline(
                 }),
             })
         }) {
-            for entry in verdict_iter {
-                if let Ok(e) = entry {
-                    timeline.push(e);
-                }
+            for e in verdict_iter.flatten() {
+                timeline.push(e);
             }
         }
     }
@@ -735,6 +718,7 @@ pub fn _get_agent_work_queue_legacy(
 }
 
 #[tauri::command]
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub fn create_task_legacy(
     state: State<'_, DbState>,
     app_handle: AppHandle,
@@ -887,6 +871,7 @@ pub fn create_task(
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)] // args map 1:1 to updatable task columns
 pub fn update_task(
     state: State<'_, DbState>,
     task_id: String,
@@ -1104,9 +1089,26 @@ pub fn delete_task(state: State<'_, DbState>, task_id: String) -> Result<(), Str
     Ok(())
 }
 
+/// Pure mapping from a ReAct-run outcome to the resulting kanban-card state,
+/// as `(status, validation_status)`. Returns `None` for outcomes that must NOT
+/// touch the card (e.g. `"failed"`, where only the agent_run is marked failed).
+///
+/// This encodes a safety-critical routing invariant and is the single source of
+/// truth used by `start_agent_task_run`'s finalizer, so it can be unit-tested:
+/// a guard suspension (`"waiting_approval"`) must yield `waiting_for_approval`
+/// and NEVER a done/completed card, while a normal finish goes to Review
+/// (`needs_review`) — Done is reached only later, through the validation gate.
+pub fn card_state_for_run_outcome(outcome: &str) -> Option<(&'static str, &'static str)> {
+    match outcome {
+        "waiting_approval" => Some(("waiting_for_approval", "waiting_for_approval")),
+        "failed" => None,
+        _ => Some(("review", "needs_review")),
+    }
+}
+
 #[tauri::command]
-pub async fn start_agent_task_run(
-    app_handle: AppHandle,
+pub async fn start_agent_task_run<R: Runtime>(
+    app_handle: AppHandle<R>,
     state: State<'_, DbState>,
     task_id: String,
 ) -> Result<AgentRun, String> {
@@ -1338,7 +1340,13 @@ pub async fn start_agent_task_run(
             conn.execute(
                 "INSERT INTO task_progress_updates (id, task_id, run_id, agent_id, content, status)
                  VALUES (?1, ?2, ?3, ?4, ?5, 'sent')",
-                params![uuid::Uuid::new_v4().to_string(), task_id, run_id, agent_id, visible],
+                params![
+                    uuid::Uuid::new_v4().to_string(),
+                    task_id,
+                    run_id,
+                    agent_id,
+                    visible
+                ],
             )
             .map_err(|e| e.to_string())?;
         }
@@ -1370,11 +1378,14 @@ pub async fn start_agent_task_run(
             break;
         }
 
-        // Bind the action to this specific task before executing.
+        // Bind the action to THIS task's card before executing. In a task run the
+        // tool always operates on the assigned card, so both ids must be the run's
+        // card_id — otherwise a model that puts e.g. a file path in the action's
+        // `target` (which parse_agent_action copies into card_id) makes the
+        // tool_invocations insert violate the FK on task_id and be silently lost.
+        // (file.write targets action.path, not card_id, so semantics are unchanged.)
         action.task_id = Some(task_id.clone());
-        if action.card_id.is_none() {
-            action.card_id = Some(task_id.clone());
-        }
+        action.card_id = Some(task_id.clone());
 
         // Execute the tool. This persists a tool_invocations record (and a
         // tool_approvals row + suspension if the command guard intercepts it).
@@ -1465,9 +1476,11 @@ pub async fn start_agent_task_run(
                     params![final_answer, run_id],
                 )
                 .map_err(|e| e.to_string())?;
+                let (cs, vs) = card_state_for_run_outcome("waiting_approval")
+                    .expect("waiting_approval maps to a card state");
                 conn.execute(
-                    "UPDATE kanban_cards SET status = 'waiting_for_approval', validation_status = 'waiting_for_approval', updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
-                    [&task_id],
+                    "UPDATE kanban_cards SET status = ?2, validation_status = ?3, updated_at = CURRENT_TIMESTAMP WHERE id = ?1",
+                    params![task_id, cs, vs],
                 )
                 .map_err(|e| e.to_string())?;
                 insert_task_activity(
@@ -1491,9 +1504,11 @@ pub async fn start_agent_task_run(
                     params![uuid::Uuid::new_v4().to_string(), run_id, final_answer],
                 )
                 .map_err(|e| e.to_string())?;
+                let (cs, vs) = card_state_for_run_outcome(&outcome)
+                    .expect("a completed outcome maps to a card state");
                 conn.execute(
-                    "UPDATE kanban_cards SET status = 'review', validation_status = 'needs_review', comments = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?2",
-                    params![final_answer, task_id],
+                    "UPDATE kanban_cards SET status = ?2, validation_status = ?3, comments = ?1, updated_at = CURRENT_TIMESTAMP WHERE id = ?4",
+                    params![final_answer, cs, vs, task_id],
                 )
                 .map_err(|e| e.to_string())?;
                 insert_task_activity(
@@ -1757,7 +1772,8 @@ fn collect_tool_evidence(conn: &Connection, task_id: &str) -> (String, String, S
     };
 
     for (tool_name, args) in rows {
-        let parsed: serde_json::Value = serde_json::from_str(&args).unwrap_or(serde_json::Value::Null);
+        let parsed: serde_json::Value =
+            serde_json::from_str(&args).unwrap_or(serde_json::Value::Null);
         match tool_name.as_str() {
             "file.write" => {
                 if let Some(path) = parsed.get("path").and_then(|v| v.as_str()) {
@@ -2203,6 +2219,7 @@ pub fn claim_card(
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)] // args map 1:1 to card-progress update fields
 pub fn update_card_progress(
     state: State<'_, DbState>,
     app_handle: AppHandle,
@@ -2548,10 +2565,8 @@ pub fn submit_review(
             .unwrap();
 
         let mut unblocked_candidates = Vec::new();
-        for t_id in blocked_tasks_iter {
-            if let Ok(tid) = t_id {
-                unblocked_candidates.push(tid);
-            }
+        for tid in blocked_tasks_iter.flatten() {
+            unblocked_candidates.push(tid);
         }
 
         if !unblocked_candidates.is_empty() {
@@ -2612,7 +2627,7 @@ pub fn submit_review(
         }
     } else {
         // If rejected, inject a message to the original assignee
-        if let Some(target_agent) = assigned_agent {
+        if let Some(_target_agent) = assigned_agent {
             let session_id = format!("task_{}", card_id);
             let sys_msg = format!("System Notification: Your task '{}' was REJECTED in review by {}. Notes: {}. It has been moved back to 'ready'.", card_id, reviewer_id, notes);
 
@@ -2891,7 +2906,7 @@ pub fn approve_subtasks(
         let initial_log_str =
             serde_json::to_string(&initial_log).unwrap_or_else(|_| "[]".to_string());
 
-        let agent_id_val = assigned_agent_id.unwrap_or_else(|| "".to_string());
+        let agent_id_val = assigned_agent_id.unwrap_or_default();
 
         let smart_criteria = match sub.preferred_role.to_lowercase().as_str() {
             "software engineer" | "coder" | "developer" => {
@@ -3068,10 +3083,8 @@ pub fn get_agent_runs(
         .map_err(|e| e.to_string())?;
 
     let mut runs = Vec::new();
-    for run in iter {
-        if let Ok(r) = run {
-            runs.push(r);
-        }
+    for r in iter.flatten() {
+        runs.push(r);
     }
     Ok(runs)
 }
@@ -3098,10 +3111,8 @@ pub fn get_run_steps(
         .map_err(|e| e.to_string())?;
 
     let mut steps = Vec::new();
-    for step in iter {
-        if let Ok(s) = step {
-            steps.push(s);
-        }
+    for s in iter.flatten() {
+        steps.push(s);
     }
     Ok(steps)
 }
@@ -3120,7 +3131,14 @@ mod react_evidence_tests {
         conn
     }
 
-    fn insert_invocation(conn: &Connection, id: &str, task_id: &str, tool: &str, args: &str, status: &str) {
+    fn insert_invocation(
+        conn: &Connection,
+        id: &str,
+        task_id: &str,
+        tool: &str,
+        args: &str,
+        status: &str,
+    ) {
         conn.execute(
             "INSERT INTO tool_invocations (id, task_id, tool_name, arguments, status)
              VALUES (?1, ?2, ?3, ?4, ?5)",
@@ -3132,32 +3150,115 @@ mod react_evidence_tests {
     #[test]
     fn collects_files_commands_and_tests_from_successful_invocations() {
         let conn = setup();
-        insert_invocation(&conn, "i1", "task-1", "file.write",
-            r#"{"path":"src/main.rs","content":"fn main(){}"}"#, "success");
-        insert_invocation(&conn, "i2", "task-1", "command.run",
-            r#"{"command":"cargo build"}"#, "success");
-        insert_invocation(&conn, "i3", "task-1", "command.run",
-            r#"{"command":"cargo test"}"#, "success");
+        insert_invocation(
+            &conn,
+            "i1",
+            "task-1",
+            "file.write",
+            r#"{"path":"src/main.rs","content":"fn main(){}"}"#,
+            "success",
+        );
+        insert_invocation(
+            &conn,
+            "i2",
+            "task-1",
+            "command.run",
+            r#"{"command":"cargo build"}"#,
+            "success",
+        );
+        insert_invocation(
+            &conn,
+            "i3",
+            "task-1",
+            "command.run",
+            r#"{"command":"cargo test"}"#,
+            "success",
+        );
 
         let (files, commands, tests) = collect_tool_evidence(&conn, "task-1");
-        assert!(files.contains("src/main.rs"), "files_created should include written path: {files}");
-        assert!(commands.contains("cargo build") && commands.contains("cargo test"),
-            "commands_run should include both commands: {commands}");
-        assert!(tests.contains("cargo test") && !tests.contains("cargo build"),
-            "tests_run should include test commands only: {tests}");
+        assert!(
+            files.contains("src/main.rs"),
+            "files_created should include written path: {files}"
+        );
+        assert!(
+            commands.contains("cargo build") && commands.contains("cargo test"),
+            "commands_run should include both commands: {commands}"
+        );
+        assert!(
+            tests.contains("cargo test") && !tests.contains("cargo build"),
+            "tests_run should include test commands only: {tests}"
+        );
     }
 
     #[test]
     fn ignores_failed_invocations_and_other_tasks() {
         let conn = setup();
-        insert_invocation(&conn, "i1", "task-1", "command.run",
-            r#"{"command":"rm -rf /"}"#, "error");
-        insert_invocation(&conn, "i2", "task-2", "command.run",
-            r#"{"command":"ls"}"#, "success");
+        insert_invocation(
+            &conn,
+            "i1",
+            "task-1",
+            "command.run",
+            r#"{"command":"rm -rf /"}"#,
+            "error",
+        );
+        insert_invocation(
+            &conn,
+            "i2",
+            "task-2",
+            "command.run",
+            r#"{"command":"ls"}"#,
+            "success",
+        );
 
         let (files, commands, tests) = collect_tool_evidence(&conn, "task-1");
         assert_eq!(files, "[]");
-        assert_eq!(commands, "[]", "failed invocations and other tasks must be excluded");
+        assert_eq!(
+            commands, "[]",
+            "failed invocations and other tasks must be excluded"
+        );
         assert_eq!(tests, "[]");
+    }
+}
+
+#[cfg(test)]
+mod run_outcome_tests {
+    //! Routing invariants for the ReAct-run finalizer. These pin the
+    //! safety-critical rule that a suspended run never yields a Done card and a
+    //! normal finish goes to Review (Done is only reached via the validation
+    //! gate). The full async loop (MAX_ITERATIONS termination, live tool-error
+    //! retry) is exercised end-to-end by the G4 live-inference e2e receipt,
+    //! since driving `start_agent_task_run` needs a running app + model.
+    use super::card_state_for_run_outcome;
+
+    #[test]
+    fn suspension_routes_to_waiting_for_approval_never_done() {
+        let (status, validation) =
+            card_state_for_run_outcome("waiting_approval").expect("has a card state");
+        assert_eq!(status, "waiting_for_approval");
+        assert_eq!(validation, "waiting_for_approval");
+        assert_ne!(status, "done");
+        assert_ne!(status, "completed");
+    }
+
+    #[test]
+    fn completed_routes_to_review_not_done() {
+        let (status, validation) =
+            card_state_for_run_outcome("completed").expect("has a card state");
+        assert_eq!(status, "review");
+        assert_eq!(validation, "needs_review");
+        assert_ne!(status, "done");
+    }
+
+    #[test]
+    fn failed_leaves_card_untouched() {
+        assert!(card_state_for_run_outcome("failed").is_none());
+    }
+
+    #[test]
+    fn unknown_outcome_defaults_to_review() {
+        assert_eq!(
+            card_state_for_run_outcome("something_unexpected"),
+            Some(("review", "needs_review"))
+        );
     }
 }

@@ -194,14 +194,12 @@ pub fn start_watchdog(app_handle: AppHandle) {
                     Err(_) => continue,
                 };
 
-                for agent in iter {
-                    if let Ok((id, name, role, hb)) = agent {
-                        let hb_sec = hb.and_then(|h| h.parse::<u64>().ok()).unwrap_or(0);
+                for (id, name, role, hb) in iter.flatten() {
+                    let hb_sec = hb.and_then(|h| h.parse::<u64>().ok()).unwrap_or(0);
 
-                        // Heartbeat timed out (> 20 seconds ago)
-                        if hb_sec > 0 && now.saturating_sub(hb_sec) > 20 {
-                            crashed_agents.push((id, name, role));
-                        }
+                    // Heartbeat timed out (> 20 seconds ago)
+                    if hb_sec > 0 && now.saturating_sub(hb_sec) > 20 {
+                        crashed_agents.push((id, name, role));
                     }
                 }
             } // conn and stmt drop here

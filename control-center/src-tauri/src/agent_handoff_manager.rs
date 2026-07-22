@@ -1,9 +1,9 @@
 use crate::event_bus::{emit_event, AppEvent};
 use rusqlite::{params, Connection, OptionalExtension, Result};
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
-pub fn execute_handoff(
-    app_handle: &AppHandle,
+pub fn execute_handoff<R: Runtime>(
+    app_handle: &AppHandle<R>,
     conn: &Connection,
     card_id: &str,
     current_agent_id: &str,
@@ -53,10 +53,8 @@ pub fn execute_handoff(
             .unwrap();
 
         let mut steps = Vec::new();
-        for step in step_iter {
-            if let Ok((stype, scontent)) = step {
-                steps.push(format!("[{}] {}", stype, scontent));
-            }
+        for (stype, scontent) in step_iter.flatten() {
+            steps.push(format!("[{}] {}", stype, scontent));
         }
         steps.reverse(); // Chronological order
 

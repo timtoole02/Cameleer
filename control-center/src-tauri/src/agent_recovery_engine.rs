@@ -33,7 +33,7 @@ pub async fn attempt_recovery(app_handle: AppHandle, agent_id: String) -> Result
     let checkpoint =
         get_latest_checkpoint(state.clone(), agent_id.clone(), task_id.clone()).unwrap_or(None);
 
-    let mut recovery_msg = String::new();
+    let recovery_msg;
 
     if let Some(cp) = checkpoint {
         println!(

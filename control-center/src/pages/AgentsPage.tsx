@@ -14,6 +14,21 @@ const NODE_ICON: Record<string, string> = {
   workspace: '🗂️', project: '📁', team: '🏢', agent: '🤖',
 };
 
+// allowed_tools / permissions come back as a string that may be a JSON array or
+// a comma-separated list. Render a compact summary; full value is in the title.
+function formatList(value: string | null | undefined): string {
+  if (!value) return '—';
+  let items: string[];
+  try {
+    const parsed = JSON.parse(value);
+    items = Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
+  } catch {
+    items = value.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  if (items.length === 0) return '—';
+  return items.length <= 2 ? items.join(', ') : `${items.slice(0, 2).join(', ')} +${items.length - 2}`;
+}
+
 export const AgentsPage: React.FC = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [orgTree, setOrgTree] = useState<AgentOrgNode[]>([]);
@@ -181,6 +196,9 @@ export const AgentsPage: React.FC = () => {
                   <th style={{ padding: '0.5rem' }}>Role</th>
                   <th style={{ padding: '0.5rem' }}>Status</th>
                   <th style={{ padding: '0.5rem' }}>Model</th>
+                  <th style={{ padding: '0.5rem' }}>Reasoning</th>
+                  <th style={{ padding: '0.5rem' }}>Tools</th>
+                  <th style={{ padding: '0.5rem' }}>Safety</th>
                 </tr>
               </thead>
               <tbody>
@@ -194,6 +212,9 @@ export const AgentsPage: React.FC = () => {
                       </span>
                     </td>
                     <td style={{ padding: '0.5rem', fontSize: '0.9rem', color: '#666' }}>{a.model_provider}</td>
+                    <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#666' }}>{a.reasoning_level || '—'}</td>
+                    <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#666' }} title={a.allowed_tools || ''}>{formatList(a.allowed_tools)}</td>
+                    <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#666' }} title={a.command_permissions || ''}>{a.safety_profile || '—'}</td>
                   </tr>
                 ))}
               </tbody>

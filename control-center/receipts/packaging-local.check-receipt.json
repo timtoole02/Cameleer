@@ -1,0 +1,25 @@
+{
+  "schema": "cameleer.check-receipt/v1",
+  "kind": "packaging-local",
+  "note": "First independent macOS package build. Validates scripts/package.sh's bundle+camelid verification logic. Requirement #15 (working macOS Tauri build) demonstrated locally; CI reproduces it.",
+  "git_sha": "c18f33414ec0ef3882ab2ff52789c84e0eb9d750",
+  "git_branch": "hardpan",
+  "host": "mac.lan",
+  "os": "macOS 26.3 (arm64)",
+  "timestamp": "2026-07-22T15:57:32Z",
+  "steps": [
+    { "command": "npm run tauri build", "exit_code": 0, "result": "built Cameleer.app + Cameleer_0.1.0_aarch64.dmg" },
+    { "command": "verify bundled camelid", "exit_code": 0, "result": "found at Cameleer.app/Contents/Resources/camelid; executable; Mach-O arm64; 'camelid --help' exit 0" }
+  ],
+  "artifacts": {
+    "app": "target/release/bundle/macos/Cameleer.app",
+    "dmg": "target/release/bundle/dmg/Cameleer_0.1.0_aarch64.dmg",
+    "dmg_sha256": "80f3b1563fb0db0dd7ea08f003b87e9b0cef3109d236cbf8e4e7f801697b469a",
+    "dmg_bytes": 5906548
+  },
+  "caveats": [
+    "Unsigned bundle (no code-signing identity in this environment).",
+    "camelid CLI has no --version; verification uses 'camelid --help' (exit 0).",
+    "The OLD release-check.sh looked in Contents/MacOS/camelid -- wrong dir; Tauri puts declared resources in Contents/Resources/. package.sh searches the whole bundle."
+  ]
+}

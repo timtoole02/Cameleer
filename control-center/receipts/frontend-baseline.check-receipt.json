@@ -1,0 +1,22 @@
+{
+  "schema": "cameleer.check-receipt/v1",
+  "kind": "frontend-baseline",
+  "note": "Local baseline on the HARDPAN work machine (pre-CI). Establishes that the commissioning session's Linux frontend numbers also hold on the macOS target.",
+  "git_sha": "883401576a949cc7fb04f514f3994bf72e32dc47",
+  "git_branch": "hardpan",
+  "host": "mac.lan",
+  "os": "macOS 26.3 (arm64)",
+  "node": "v26.5.0",
+  "npm": "11.17.0",
+  "timestamp": "2026-07-22T15:36:04Z",
+  "steps": [
+    { "command": "npm run typecheck  (tsc --noEmit)", "exit_code": 0, "result": "clean, no TS errors" },
+    { "command": "npx vitest run", "exit_code": 0, "result": "1 file, 3 tests passed" },
+    { "command": "npm run smoke:p0 (node scripts/p0-smoke-test.mjs)", "exit_code": 0, "result": "P0 Smoke Test Passed (static/architectural grep, not runtime)" }
+  ],
+  "caveats": [
+    "p0-smoke is a static file-grep, not a runtime test.",
+    "lint is currently an alias for typecheck (tsc --noEmit) -- no real ESLint yet (G2).",
+    "No backend numbers here; see backend receipt."
+  ]
+}

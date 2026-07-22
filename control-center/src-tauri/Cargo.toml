@@ -1,8 +1,8 @@
 [package]
 name = "control-center"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Cameleer Control Center — the local-first agent workspace backend (Tauri + SQLite)"
+authors = ["timtoole02"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,6 +13,13 @@ edition = "2021"
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "control_center_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+# Opt-in live end-to-end test (HARDPAN G4). Enables tauri's mock runtime so the
+# real ReAct loop can be driven against a running camelid server. Off by default
+# (normal builds/CI never compile it). Run:
+#   cargo test -p control-center --features e2e-live -- --ignored e2e
+e2e-live = ["tauri/test"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

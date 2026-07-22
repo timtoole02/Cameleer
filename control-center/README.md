@@ -3,7 +3,24 @@
 **Cameleer Control Center** is the frontend UI for the Cameleer workspace. It is built using React, TypeScript, and Vite, packaged natively with Tauri.
 
 ## What this app is
-This app serves as the command UI for local agentic workflows. It communicates with the Rust backend via Tauri `invoke` commands wrapped securely in the `src/api/` folder. It displays chats, kanban boards, active agents, and backend logs.
+This app serves as the command UI for local agentic workflows. It communicates with the Rust backend via Tauri `invoke` commands wrapped in the `src/api/` folder. It displays chats, kanban boards, active agents, and backend logs.
+
+> For the honest, evidence-linked state of every capability (Supported vs Runnable),
+> see the repo-root **[STATUS.md](../STATUS.md)** and **[COMMAND_MAP.md](../COMMAND_MAP.md)**.
+
+## Checks
+```bash
+npm run typecheck   # tsc --noEmit
+npm run lint        # ESLint 9 (real linter; formerly an alias for tsc)
+npm run format      # Prettier
+npx vitest run      # component tests
+npm run smoke:p0    # static P0 smoke
+```
+Backend (from the repo root): `cargo test -p control-center`,
+`cargo clippy -p control-center --all-targets -- -D warnings`. The full gate is
+`scripts/release-check.sh`. The opt-in live-inference e2e is
+`cargo test -p control-center --features e2e-live -- --include-ignored` (needs a camelid
+server for the `--ignored` leg).
 
 ## How to run in dev
 ```bash

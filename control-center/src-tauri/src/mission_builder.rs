@@ -1,5 +1,5 @@
 use crate::storage::DbState;
-use rusqlite::{params, Connection, OptionalExtension, Result};
+use rusqlite::{params, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::State;
@@ -179,47 +179,45 @@ pub fn get_active_missions_progress(
         .map_err(|e| e.to_string())?;
 
     let mut progress_list = Vec::new();
-    for item in iter {
-        if let Ok((id, title, goal, status)) = item {
-            // How to count total cards vs completed cards?
-            // The kanban_cards have id generated like format!("{}-{}", preview_id, card.title...)
-            // But we can check kanban cards that start with this preview_id,
-            // OR even better, kanban cards created from this mission.
-            // Since we generated the card.id as `{preview_id}-...` we can just match it.
-            let pattern = format!("{}-%", id);
+    for (id, title, goal, status) in iter.flatten() {
+        // How to count total cards vs completed cards?
+        // The kanban_cards have id generated like format!("{}-{}", preview_id, card.title...)
+        // But we can check kanban cards that start with this preview_id,
+        // OR even better, kanban cards created from this mission.
+        // Since we generated the card.id as `{preview_id}-...` we can just match it.
+        let pattern = format!("{}-%", id);
 
-            let total_cards: i64 = conn
-                .query_row(
-                    "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1",
-                    [&pattern],
-                    |row| row.get(0),
-                )
-                .unwrap_or(0);
+        let total_cards: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1",
+                [&pattern],
+                |row| row.get(0),
+            )
+            .unwrap_or(0);
 
-            let completed_cards: i64 = conn
-                .query_row(
-                    "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1 AND status = 'Done'",
-                    [&pattern],
-                    |row| row.get(0),
-                )
-                .unwrap_or(0);
+        let completed_cards: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM kanban_cards WHERE id LIKE ?1 AND status = 'Done'",
+                [&pattern],
+                |row| row.get(0),
+            )
+            .unwrap_or(0);
 
-            let progress_percent = if total_cards > 0 {
-                (completed_cards as f64 / total_cards as f64) * 100.0
-            } else {
-                0.0
-            };
+        let progress_percent = if total_cards > 0 {
+            (completed_cards as f64 / total_cards as f64) * 100.0
+        } else {
+            0.0
+        };
 
-            progress_list.push(MissionProgress {
-                preview_id: id,
-                title,
-                goal,
-                total_cards,
-                completed_cards,
-                progress_percent,
-                status,
-            });
-        }
+        progress_list.push(MissionProgress {
+            preview_id: id,
+            title,
+            goal,
+            total_cards,
+            completed_cards,
+            progress_percent,
+            status,
+        });
     }
 
     Ok(progress_list)
@@ -1075,6 +1073,7 @@ pub fn get_mission_recommendations(
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // Clear and build dynamic non-invasive suggestions based on current board state!
+    #[allow(clippy::type_complexity)] // 6-tuple maps 1:1 to the SELECTed kanban_cards columns
     let active_tasks: Vec<(
         String,
         String,
@@ -1110,7 +1109,7 @@ pub fn get_mission_recommendations(
     )
     .map_err(|e| e.to_string())?;
 
-    for (tid, title, deps_str, criteria_str, agent_id, status) in &active_tasks {
+    for (tid, title, _deps_str, criteria_str, agent_id, status) in &active_tasks {
         if status.as_deref() == Some("done") {
             continue;
         }
@@ -1315,7 +1314,7 @@ pub fn generate_work_receipt(
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
 
     // Fetch details of task
-    let (title, desc_opt, evidence_opt, val_status_opt): (String, Option<String>, Option<String>, Option<String>) = conn.query_row(
+    let (title, _desc_opt, evidence_opt, val_status_opt): (String, Option<String>, Option<String>, Option<String>) = conn.query_row(
         "SELECT title, description, completion_evidence, validation_status FROM kanban_cards WHERE id = ?1",
         [&card_id],
         |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))

@@ -120,14 +120,16 @@ Evidence: `task_manager.rs:1108–1345` (one-shot run) vs. `agent_runtime_kernel
 4. **Build the org-chart glue (#2).** Insert agent org nodes + memberships on agent creation; add create-project/team UI.
 5. **Replace the fake model smoke test with a real one (#8).**
 6. **Backfill tests** for the PARTIAL items so they meet the mandate's "covered by a test" bar.
-</content>
-</invoke>
+
+> **Note (HARDPAN):** several of these recommendations were carried out — see
+> [`../STATUS.md`](../STATUS.md) for the current state. The safety core is now
+> tested and the model smoke test is proven honest against a dead endpoint.
 
 ---
 
 ## Fixes Applied (2026-06-02)
 
-All changes are on branch `fix/finish-it-all`, compile clean, and pass the backend test suite (43 tests) and `tsc --noEmit`.
+All changes are on branch `fix/finish-it-all`, compile clean, and pass the backend test suite and `tsc --noEmit`. (The count cited here as "43" is superseded: the measured backend count is **44** — see STATUS.md and the backend receipt.)
 
 ### #9 Runtime execution + #10 Tool records — STUBBED/disconnected → REAL
 - `task_manager::start_agent_task_run` now runs a **real bounded ReAct loop** (up to 6 iterations): contract-aware system prompt → `call_model` → `parse_agent_action` → `agent_tool_controller::execute_tool`.

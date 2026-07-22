@@ -341,6 +341,7 @@ pub async fn trigger_org_reply(
     }
 }
 
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> {
     // Shared objective
     let shared_obj: String = conn
@@ -363,10 +364,8 @@ fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> 
     })?;
 
     let mut agents = Vec::new();
-    for agent in agent_iter {
-        if let Ok(a) = agent {
-            agents.push(a);
-        }
+    for a in agent_iter.flatten() {
+        agents.push(a);
     }
 
     // Latest tasks
@@ -380,10 +379,8 @@ fn get_blackboard_context(conn: &Connection) -> Result<String, rusqlite::Error> 
     })?;
 
     let mut tasks = Vec::new();
-    for task in task_iter {
-        if let Ok(t) = task {
-            tasks.push(t);
-        }
+    for t in task_iter.flatten() {
+        tasks.push(t);
     }
 
     let blackboard = format!(
@@ -418,6 +415,7 @@ pub struct AgentNextAction {
     pub dry_run: Option<bool>,
 }
 
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 pub struct AgentAction {
     pub action_type: String,
     pub command: Option<String>,
@@ -445,15 +443,16 @@ pub struct AgentAction {
     pub dry_run: Option<bool>,
 }
 
+#[allow(dead_code)] // unwired; reconciled in HARDPAN G5
 fn resolve_path(path: &str) -> std::path::PathBuf {
     let clean_path = path.trim();
     let mut resolved = std::path::PathBuf::new();
 
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
 
-    if clean_path.starts_with("~/") {
+    if let Some(rest) = clean_path.strip_prefix("~/") {
         resolved.push(&home);
-        resolved.push(&clean_path[2..]);
+        resolved.push(rest);
     } else if clean_path == "~" {
         resolved.push(&home);
     } else if clean_path.starts_with("/") {
@@ -516,12 +515,11 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                 }
 
                 // Remove surrounding quotes if any
-                if (path_part.starts_with('"') && path_part.ends_with('"'))
-                    || (path_part.starts_with('\'') && path_part.ends_with('\''))
+                if ((path_part.starts_with('"') && path_part.ends_with('"'))
+                    || (path_part.starts_with('\'') && path_part.ends_with('\'')))
+                    && path_part.len() > 2
                 {
-                    if path_part.len() > 2 {
-                        path_part = &path_part[1..path_part.len() - 1];
-                    }
+                    path_part = &path_part[1..path_part.len() - 1];
                 }
 
                 if !path_part.is_empty() {
@@ -574,6 +572,7 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
         "<!-- run:",
     ];
 
+    #[allow(clippy::needless_range_loop)] // index-based loop mirrors panic-on-OOB semantics
     for i in 0..check_limit {
         let line = lines[i].trim();
         for prefix in run_prefixes {
@@ -587,12 +586,11 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
                 }
 
                 // Remove surrounding quotes if any
-                if (cmd_part.starts_with('"') && cmd_part.ends_with('"'))
-                    || (cmd_part.starts_with('\'') && cmd_part.ends_with('\''))
+                if ((cmd_part.starts_with('"') && cmd_part.ends_with('"'))
+                    || (cmd_part.starts_with('\'') && cmd_part.ends_with('\'')))
+                    && cmd_part.len() > 2
                 {
-                    if cmd_part.len() > 2 {
-                        cmd_part = &cmd_part[1..cmd_part.len() - 1];
-                    }
+                    cmd_part = &cmd_part[1..cmd_part.len() - 1];
                 }
 
                 if !cmd_part.is_empty() {
@@ -628,6 +626,8 @@ fn parse_code_block_for_action(lines: &[String]) -> Option<AgentAction> {
     None
 }
 
+// justification: 15-branch prefix parser; per-field strip_prefix rewrite is risky, kept as-is
+#[allow(clippy::manual_strip)]
 pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
     // 0. Try to parse JSON first (Epic 5 structured output)
     if let Some(json_str) = extract_json_from_text(text) {
@@ -907,4 +907,77 @@ pub fn parse_agent_action(text: &str) -> Option<AgentAction> {
     }
 
     None
+}
+
+#[cfg(test)]
+mod parse_action_tests {
+    //! Coverage for the ReAct loop's pure action-decision brain. The loop's
+    //! exit/continue decisions are driven entirely by what this returns:
+    //! task.complete / message.send -> exit, a tool action -> continue, and
+    //! `None` (no parseable action) -> the loop finishes.
+    use super::parse_agent_action;
+
+    fn wrap(action_type: &str, target: &str, input: &str) -> String {
+        let target_json = if target.is_empty() {
+            "null".to_string()
+        } else {
+            format!("\"{target}\"")
+        };
+        format!(
+            r#"{{"summary":"s","plan":[],"next_action":{{"type":"{action_type}","target":{target_json},"input":"{input}","dry_run":false}},"confidence":0.9,"blockers":[],"done_criteria":[]}}"#
+        )
+    }
+
+    #[test]
+    fn parses_task_complete_and_normalizes_alias() {
+        let a = parse_agent_action(&wrap("task.complete", "", "all done")).expect("some");
+        assert_eq!(a.action_type, "task.complete");
+        assert_eq!(a.evidence.as_deref(), Some("all done"));
+        let b = parse_agent_action(&wrap("complete", "", "done")).expect("some");
+        assert_eq!(b.action_type, "task.complete");
+    }
+
+    #[test]
+    fn normalizes_command_run_aliases() {
+        for alias in ["command.run", "tool_call", "execute_command"] {
+            let a = parse_agent_action(&wrap(alias, "", "ls -la")).expect("some");
+            assert_eq!(a.action_type, "command.run", "alias {alias}");
+            assert_eq!(a.command.as_deref(), Some("ls -la"));
+        }
+    }
+
+    #[test]
+    fn normalizes_file_write_and_sets_path() {
+        let a = parse_agent_action(&wrap("write_file", "notes.txt", "hello")).expect("some");
+        assert_eq!(a.action_type, "file.write");
+        assert_eq!(a.path.as_deref(), Some("notes.txt"));
+        assert_eq!(a.content.as_deref(), Some("hello"));
+    }
+
+    #[test]
+    fn keeps_message_send_as_is() {
+        let a = parse_agent_action(&wrap("message.send", "", "hi team")).expect("some");
+        assert_eq!(a.action_type, "message.send");
+    }
+
+    #[test]
+    fn extracts_json_embedded_in_prose() {
+        let text = format!(
+            "Sure! Here is my action:\n{}\nThanks.",
+            wrap("task.complete", "", "ok")
+        );
+        let a = parse_agent_action(&text).expect("json extracted from prose");
+        assert_eq!(a.action_type, "task.complete");
+    }
+
+    #[test]
+    fn plain_text_without_json_returns_none() {
+        assert!(parse_agent_action("I am still thinking about the problem.").is_none());
+    }
+
+    #[test]
+    fn malformed_json_returns_none() {
+        // Missing required AgentJsonOutput fields -> deserialize fails -> None.
+        assert!(parse_agent_action("{\"next_action\": {\"type\": \"task.complete\"}}").is_none());
+    }
 }

@@ -1,26 +1,16 @@
-[package]
-name = "cameleer"
-version = "0.1.0"
-edition = "2024"
-
+# Virtual workspace for Cameleer v0.1. The canonical product is the Tauri app in
+# control-center/ plus the vendored camelid inference engine. The pre-pivot
+# gateway crate lives under tools/legacy-gateway/ and is intentionally NOT a
+# member (and is excluded) so it can never silently rejoin the build.
 [workspace]
+resolver = "2"
 members = [
-    ".",
     "camelid",
     "control-center/src-tauri",
 ]
-
-[dependencies]
-tokio = { version = "1.36", features = ["full"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-toml = "0.8"
-reqwest = { version = "0.12", features = ["json", "stream"] }
-rusqlite = { version = "0.31", features = ["bundled"] }
-crossterm = "0.27"
-tokio-tungstenite = { version = "0.21", features = ["rustls-tls-webpki-roots"] }
-futures-util = "0.3"
-ratatui = "0.26"
+exclude = [
+    "tools/legacy-gateway",
+]
 
 [profile.release]
 opt-level = 3

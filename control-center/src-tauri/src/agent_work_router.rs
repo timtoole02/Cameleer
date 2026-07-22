@@ -1,4 +1,4 @@
-use rusqlite::{Connection, OptionalExtension, Result};
+use rusqlite::{Connection, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,10 +43,8 @@ pub fn get_agent_work_queue(agent_id: &str, conn: &Connection) -> Result<Vec<Kan
         .map_err(|e| e.to_string())?;
 
     let mut queue = Vec::new();
-    for card in iter {
-        if let Ok(c) = card {
-            queue.push(c);
-        }
+    for c in iter.flatten() {
+        queue.push(c);
     }
 
     // Also grab handoff requests
@@ -78,12 +76,10 @@ pub fn get_agent_work_queue(agent_id: &str, conn: &Connection) -> Result<Vec<Kan
         })
         .map_err(|e| e.to_string())?;
 
-    for card in h_iter {
-        if let Ok(c) = card {
-            // Avoid duplicates
-            if !queue.iter().any(|existing| existing.id == c.id) {
-                queue.push(c);
-            }
+    for c in h_iter.flatten() {
+        // Avoid duplicates
+        if !queue.iter().any(|existing| existing.id == c.id) {
+            queue.push(c);
         }
     }
 

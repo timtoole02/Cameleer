@@ -1,4 +1,4 @@
-use rusqlite::{Connection, OptionalExtension, Result};
+use rusqlite::{Connection, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,18 +57,16 @@ pub fn load_identity(agent_id: &str, conn: &Connection) -> Result<AgentIdentity,
     let mut project_ids = Vec::new();
     let mut team_ids = Vec::new();
 
-    for item in iter {
-        if let Ok((ws, p_opt, t_opt)) = item {
-            workspace_id = ws;
-            if let Some(p) = p_opt {
-                if !project_ids.contains(&p) {
-                    project_ids.push(p);
-                }
+    for (ws, p_opt, t_opt) in iter.flatten() {
+        workspace_id = ws;
+        if let Some(p) = p_opt {
+            if !project_ids.contains(&p) {
+                project_ids.push(p);
             }
-            if let Some(t) = t_opt {
-                if !team_ids.contains(&t) {
-                    team_ids.push(t);
-                }
+        }
+        if let Some(t) = t_opt {
+            if !team_ids.contains(&t) {
+                team_ids.push(t);
             }
         }
     }
