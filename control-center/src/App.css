@@ -285,8 +285,11 @@ button:disabled {
   display: grid;
   gap: 8px;
   cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
+  /* WebKit: -webkit-user-select:none PREVENTS dragstart on draggable elements
+     (long-standing Safari/WKWebView bug), so it must NOT be set here.
+     -webkit-user-drag:element explicitly marks the whole card as the drag
+     source, which is what makes HTML5 DnD work inside Tauri's WKWebView. */
+  -webkit-user-drag: element;
   transition: opacity 120ms ease, transform 120ms ease, border-color 120ms ease;
 }
 
