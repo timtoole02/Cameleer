@@ -1,0 +1,131 @@
+/* Shell + page chrome (UI overhaul). Imported from main.tsx.
+ * Semantic vars only — raw values live in tokens.css / theme.css. */
+
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.page-shell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.page-shell-header h2 {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.page-shell-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  background: var(--app-bg);
+}
+
+.layout-workspace-area {
+  flex: 1;
+  overflow: auto;
+  background: var(--app-bg);
+}
+
+/* NOTE: .panel/.panel-title/.data-table/.form-dark/.form-field/.error-text and
+ * the .pill variants are defined ONCE in App.css (under the "UI overhaul:
+ * shared page primitives" banner). shell.css holds only shell chrome and
+ * page-specific classes to avoid duplicate definitions. */
+
+/* Two-column page split (list + side panel) used by Agents/Models */
+.split-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) 2fr;
+  gap: var(--space-md);
+  align-items: start;
+}
+
+/* Agent status dots */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: var(--text-tertiary);
+}
+.status-dot.working { background: var(--success-green); }
+.status-dot.idle { background: var(--text-tertiary); }
+.status-dot.waiting_for_tool, .status-dot.waiting { background: var(--warning-yellow); }
+.status-dot.failed, .status-dot.blocked { background: var(--danger-red); }
+
+/* Org tree (AgentsPage) */
+.org-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.org-tree-node {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+.org-tree-node:hover { background: var(--surface-hover); }
+.org-tree-node .muted { color: var(--text-muted); font-size: 0.8rem; }
+
+/* Small helpers */
+.muted { color: var(--text-muted); }
+
+.inline-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.inline-row input, .inline-row select { flex: 1; }
+.inline-row button { flex-shrink: 0; }
+
+.org-actions {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.agent-create-form {
+  margin-bottom: var(--space-md);
+  max-width: 560px;
+}
+.agent-create-form textarea { min-height: 64px; resize: vertical; }
+.agent-create-form button[type="submit"] { align-self: flex-start; }
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.plain-list li {
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.plain-list li:last-child { border-bottom: none; }
+
+/* Smoke-test result inline pill on ModelsPage rows */
+.test-result-pass { color: var(--success-text); font-weight: 600; }
+.test-result-fail { color: var(--danger-text); font-weight: 600; }
+
+/* Kanban: board takes full width when no task is selected */
+.kanban-workspace.no-drawer {
+  grid-template-columns: 1fr;
+}

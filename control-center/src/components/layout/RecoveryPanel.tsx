@@ -15,7 +15,7 @@ export const RecoveryPanel: React.FC<RecoveryPanelProps> = ({ health, errorMsg, 
         <h3 style={{ color: 'var(--color-danger)', marginBottom: '1rem' }}>Backend offline</h3>
         <p style={{ marginBottom: '1rem' }}>The Cameleer frontend loaded, but Tauri backend commands are failing or degraded.</p>
         
-        <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.9rem', color: '#111827' }}>
+        <div style={{ backgroundColor: 'var(--surface-2)', padding: '1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--text)' }}>
           <p><strong>App status:</strong> {health?.app_status || 'offline'}</p>
           <p><strong>Database status:</strong> {health?.database_status || 'offline'}</p>
           <p><strong>Camelid status:</strong> {health?.camelid_status || 'unknown'}</p>

@@ -10,7 +10,7 @@ interface TaskCardProps {
   agent?: Agent;
   selected?: boolean;
   onSelect: (task: Task) => void;
-  onDragStart: (taskId: string, event: React.DragEvent<HTMLButtonElement>) => void;
+  onDragStart: (taskId: string, event: React.DragEvent<HTMLDivElement>) => void;
 }
 
 function formatUpdated(value?: string | null): string {
@@ -36,13 +36,29 @@ function labelsFor(task: Task): string[] {
 export const TaskCard: React.FC<TaskCardProps> = ({ task, agent, selected, onSelect, onDragStart }) => {
   const criteriaCount = parseAcceptanceCriteria(task.acceptance_criteria).length;
   const labels = labelsFor(task);
+  const [dragging, setDragging] = React.useState(false);
 
+  // NOTE: this must stay a <div role="button">, NOT a <button>. WebKit (the
+  // Tauri WKWebView engine) never fires dragstart on form controls, so a
+  // draggable <button> silently kills the board's drag-and-drop on macOS.
   return (
-    <button
-      className={`kanban-task-card ${selected ? 'selected' : ''}`}
+    <div
+      role="button"
+      tabIndex={0}
+      className={`kanban-task-card ${selected ? 'selected' : ''} ${dragging ? 'dragging' : ''}`}
       onClick={() => onSelect(task)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect(task);
+        }
+      }}
       draggable
-      onDragStart={(event) => onDragStart(task.id, event)}
+      onDragStart={(event) => {
+        setDragging(true);
+        onDragStart(task.id, event);
+      }}
+      onDragEnd={() => setDragging(false)}
     >
       <div className="task-card-topline">
         <span className="task-key">{task.task_key || task.id.slice(0, 8)}</span>
@@ -64,6 +80,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, agent, selected, onSel
         </div>
       )}
       <span className="task-updated">{formatUpdated(task.updated_at)}</span>
-    </button>
+    </div>
   );
 };
