@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Runtime};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppEvent {
@@ -9,6 +9,6 @@ pub struct AppEvent {
     pub payload: serde_json::Value,
 }
 
-pub fn emit_event(app_handle: &AppHandle, event: AppEvent) {
+pub fn emit_event<R: Runtime>(app_handle: &AppHandle<R>, event: AppEvent) {
     let _ = app_handle.emit("cameleer-event", event);
 }

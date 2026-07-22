@@ -5,7 +5,7 @@ use crate::system_services::{inspect_database_health, probe_camelid};
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Runtime, State};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Task {
@@ -1107,8 +1107,8 @@ pub fn card_state_for_run_outcome(outcome: &str) -> Option<(&'static str, &'stat
 }
 
 #[tauri::command]
-pub async fn start_agent_task_run(
-    app_handle: AppHandle,
+pub async fn start_agent_task_run<R: Runtime>(
+    app_handle: AppHandle<R>,
     state: State<'_, DbState>,
     task_id: String,
 ) -> Result<AgentRun, String> {
@@ -1378,11 +1378,14 @@ pub async fn start_agent_task_run(
             break;
         }
 
-        // Bind the action to this specific task before executing.
+        // Bind the action to THIS task's card before executing. In a task run the
+        // tool always operates on the assigned card, so both ids must be the run's
+        // card_id — otherwise a model that puts e.g. a file path in the action's
+        // `target` (which parse_agent_action copies into card_id) makes the
+        // tool_invocations insert violate the FK on task_id and be silently lost.
+        // (file.write targets action.path, not card_id, so semantics are unchanged.)
         action.task_id = Some(task_id.clone());
-        if action.card_id.is_none() {
-            action.card_id = Some(task_id.clone());
-        }
+        action.card_id = Some(task_id.clone());
 
         // Execute the tool. This persists a tool_invocations record (and a
         // tool_approvals row + suspension if the command guard intercepts it).

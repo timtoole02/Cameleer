@@ -1,6 +1,6 @@
 use rusqlite::params;
 use std::process::Command;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Runtime};
 
 use crate::agent_contracts::AgentContract;
 use crate::chat_service::AgentAction;
@@ -38,8 +38,8 @@ fn resolve_workspace_path(workspace_root: &Path, path: &str) -> Result<PathBuf, 
     Ok(target_normalized)
 }
 
-pub fn execute_tool(
-    app_handle: &AppHandle,
+pub fn execute_tool<R: Runtime>(
+    app_handle: &AppHandle<R>,
     agent_id: &str,
     session_id: &str,
     contract: &AgentContract,
@@ -154,8 +154,8 @@ pub fn execute_tool(
     result
 }
 
-fn execute_tool_inner(
-    app_handle: &AppHandle,
+fn execute_tool_inner<R: Runtime>(
+    app_handle: &AppHandle<R>,
     agent_id: &str,
     session_id: &str,
     contract: &AgentContract,
@@ -536,8 +536,8 @@ fn execute_tool_inner(
     }
 }
 
-fn save_and_emit_message(
-    app_handle: &AppHandle,
+fn save_and_emit_message<R: Runtime>(
+    app_handle: &AppHandle<R>,
     session_id: &str,
     sender_id: &str,
     role: &str,

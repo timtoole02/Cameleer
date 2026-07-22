@@ -20,6 +20,8 @@ mod context_engine;
 pub mod dataset_exporter;
 #[cfg(test)]
 mod e2e_persistence;
+#[cfg(all(test, feature = "e2e-live"))]
+mod e2e_live;
 mod event_bus;
 pub mod llm_adapter;
 pub mod memory_engine;

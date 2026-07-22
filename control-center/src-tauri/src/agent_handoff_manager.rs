@@ -1,9 +1,9 @@
 use crate::event_bus::{emit_event, AppEvent};
 use rusqlite::{params, Connection, OptionalExtension, Result};
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
-pub fn execute_handoff(
-    app_handle: &AppHandle,
+pub fn execute_handoff<R: Runtime>(
+    app_handle: &AppHandle<R>,
     conn: &Connection,
     card_id: &str,
     current_agent_id: &str,
