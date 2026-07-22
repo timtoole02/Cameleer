@@ -2,6 +2,22 @@
 
 **Cameleer** is a local-first enterprise agent workspace powered by Camelid and compatible model backends.
 
+## What Cameleer is / is not
+
+**Cameleer is** the macOS (Apple-Silicon) Tauri desktop app in
+[`control-center/`](control-center/) — a React frontend over a Rust/SQLite backend that
+vendors the [`camelid`](camelid/) GGUF inference engine as a bundled runtime. That app is
+the one and only Cameleer v0.1 artifact.
+
+**Cameleer is not** the pre-pivot multi-agent chat gateway it grew out of — that code is
+quarantined under [`tools/legacy-gateway/`](tools/legacy-gateway/), excluded from the
+workspace, and neither built nor shipped.
+
+For the honest, evidence-linked state of every capability (what is **Supported** vs merely
+**Runnable**, with `file:line`/test/receipt citations), see **[STATUS.md](STATUS.md)** — the
+single source of truth. Claims in this README that lack a linked artifact are being
+reconciled against STATUS.md during the HARDPAN pass.
+
 ## Features (v0.1 P0)
 
 - **Agent Directory:** Create, manage, and assign AI agents with specific roles and personas.

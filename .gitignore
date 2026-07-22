@@ -1,18 +1,28 @@
+# Rust build output
 /target
+target/
+target-tauri/
+control-center/src-tauri/target/
+
+# Node / Vite build output
+node_modules/
+control-center/node_modules/
+dist/
+control-center/dist/
+
+# Staged camelid runtime binary (produced by `npm run prepare:camelid`;
+# a build artifact, never committed — the source is the `camelid/` crate)
+control-center/src-tauri/camelid
+
+# Packaged app bundles / installers (build artifacts, never committed)
+*.dmg
+*.app
+*.zip
 /IronClaw.app
 /Cameleer.app
 /Cameleer OS.app
 /Cameleer Engine.app
-.DS_Store
-node_modules/
-dist/
+
+# Misc
 *.log
-target/
-target-tauri/
-control-center/src-tauri/target/
-control-center/dist/
-control-center/node_modules/
-*.dmg
-*.app
-*.zip
 .DS_Store
