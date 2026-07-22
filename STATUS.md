@@ -169,7 +169,7 @@ Context / Runtime / Audit / Settings).
 |---|---|
 | **G0** Ground truth (STATUS + COMMAND_MAP) | ✅ this file + COMMAND_MAP.md |
 | **G1** Repo coherence / hard reset | ⏳ next |
-| **G2** Portable release gate + CI | 🟡 code green locally (clippy/fmt/lint/tests + local package build); CI pushed, awaiting green GitHub run |
+| **G2** Portable release gate + CI | 🟡 all gate steps green locally (workspace-guard, typecheck, eslint, vitest, p0, `cargo fmt --check`, `cargo clippy -D warnings`, 44 tests, `package.sh` builds `.app`+`.dmg`). **`.github/workflows/ci.yml` is written and ready but NOT yet pushed** — the `gh` token lacks the `workflow` OAuth scope. Unblock with `gh auth refresh -s workflow` (or add the file via GitHub web), then the green-CI sub-gate completes. |
 | **G3** Safety-critical test backfill | ⏳ |
 | **G4** e2e receipt vs live inference | ⏳ |
 | **G5** Backend↔frontend reconciliation | ⏳ |
