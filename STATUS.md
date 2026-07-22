@@ -175,7 +175,36 @@ Context / Runtime / Audit / Settings).
 
 ---
 
-## 7. HARDPAN phase status
+## 7. G5 — reconciliation ledger (wire it or label it)
+
+No registered command masquerades as a shipped feature. Per HARDPAN scope
+discipline, unsurfaced subsystems are **labeled Runnable**, not built out.
+
+**Closed the audit PARTIAL:** `AgentsPage` now surfaces `reasoning_level`, `tools`
+(`allowed_tools`), and safety/`command_permissions` (all already returned by
+`get_agents`), not just name/role/status/model. **`parent_agent_id`**: retained
+(returned by `get_agents`) but the nested org hierarchy is actually driven by
+`agent_org_nodes` (`org_services`), not this column — kept, not dropped, since a
+column drop is invasive and out of scope.
+
+**Registered-but-unsurfaced → Runnable, not Supported** (callable from JS, no UI):
+
+| Subsystem | Commands | Lane | Notes |
+|---|---|---|---|
+| `mission_builder` (missions/autopilot) | ~14 (previews, packs, recommendations) | Runnable | Large surface, no UI page. Do not build for v0.1. |
+| `dataset_exporter` | `export_finetuning_dataset` | Runnable | LoRA/ChatML export; no UI. |
+| `work_engine` / `submit_review` | `get_work_engine_suggestions`, `submit_review`, `submit_review_verdict` | Runnable | Review "tribunal" is backend-only; the fiction docs claimed a UI (none exists). |
+| `supervisor` | `update_heartbeat` | Runnable | Watchdog internals. |
+| `agent_conflict_detector` | (no command; internal) | Runnable | Detection fns exist, unwired. |
+| `checkpoint_store` | `save_agent_checkpoint`, `get_latest_checkpoint` | Runnable | No UI. |
+| `agent_recovery_engine` | (internal) | Runnable | Recovery internals; RecoveryPanel is a separate health UI. |
+
+No frontend copy references the fiction components (`MissionControl` /
+`VisualOrgChart` / `TerminalDrawer` / `ProjectDashboard` / "QA Tribunal") — grep
+of `control-center/src` is empty; they exist only in the docs (handled in G6) and
+as un-wired staging copies under `tools/legacy-repair/`.
+
+## 8. HARDPAN phase status
 
 | Phase | State |
 |---|---|
@@ -184,7 +213,7 @@ Context / Runtime / Audit / Settings).
 | **G2** Portable release gate + CI | 🟡 all gate steps green locally (workspace-guard, typecheck, eslint, vitest, p0, `cargo fmt --check`, `cargo clippy -D warnings`, 44 tests, `package.sh` builds `.app`+`.dmg`). **`.github/workflows/ci.yml` is written and ready but NOT yet pushed** — the `gh` token lacks the `workflow` OAuth scope. Unblock with `gh auth refresh -s workflow` (or add the file via GitHub web), then the green-CI sub-gate completes. |
 | **G3** Safety-critical test backfill | ✅ 44 → 88 tests; safety core covered; `work_receipt_id` bug fixed; gate now `clippy --all-targets` |
 | **G4** e2e receipt vs live inference | ✅ real ReAct loop vs live camelid (Llama-3.2-1B) + deterministic tool-record + persistence-across-reopen; [e2e receipt](control-center/receipts/g4-live-e2e.e2e-receipt.json). Fixed 2 more DoD-blocking bugs. |
-| **G5** Backend↔frontend reconciliation | ⏳ |
+| **G5** Backend↔frontend reconciliation | ✅ AgentsPage PARTIAL closed (reasoning/tools/safety surfaced); orphan subsystems labeled Runnable (§7); no fiction copy in frontend |
 | **G6** Doc truth pass + RC | ⏳ (tag needs explicit sign-off) |
 
 _Last updated: HARDPAN G0._
