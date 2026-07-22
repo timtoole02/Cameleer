@@ -214,6 +214,6 @@ as un-wired staging copies under `tools/legacy-repair/`.
 | **G3** Safety-critical test backfill | ✅ 44 → 88 tests; safety core covered; `work_receipt_id` bug fixed; gate now `clippy --all-targets` |
 | **G4** e2e receipt vs live inference | ✅ real ReAct loop vs live camelid (Llama-3.2-1B) + deterministic tool-record + persistence-across-reopen; [e2e receipt](control-center/receipts/g4-live-e2e.e2e-receipt.json). Fixed 2 more DoD-blocking bugs. |
 | **G5** Backend↔frontend reconciliation | ✅ AgentsPage PARTIAL closed (reasoning/tools/safety surfaced); orphan subsystems labeled Runnable (§7); no fiction copy in frontend |
-| **G6** Doc truth pass + RC | ⏳ (tag needs explicit sign-off) |
+| **G6** Doc truth pass + RC | 🟡 docs reconciled (READMEs link receipts; fiction deleted; stale archived; leaked tag removed). **`v0.1.0-rc` tag pending your explicit sign-off.** |
 
 _Last updated: HARDPAN G0._

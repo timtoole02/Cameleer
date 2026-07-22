@@ -1,5 +1,9 @@
 # Tauri Command Matrix
 
+> **Superseded by [`../COMMAND_MAP.md`](../COMMAND_MAP.md)** (HARDPAN G0), which maps all
+> 149 source commands (registered? → api wrapper? → UI surface? → tested?). This older
+> matrix is a partial, hand-maintained view kept for reference.
+
 | Frontend API function | Tauri command name | Rust module | Registered in builder | Backend implemented | Frontend wired | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | getBackendHealth | get_backend_health | system_services.rs | yes | yes | yes | working | P0 stabilization test |

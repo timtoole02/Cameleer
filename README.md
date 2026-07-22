@@ -23,12 +23,16 @@ reconciled against STATUS.md during the HARDPAN pass.
 - **Agent Directory:** Create, manage, and assign AI agents with specific roles and personas.
 - **Kanban & Backlog:** Task tracking system.
 - **Workspace Chat:** Chat directly with assigned agents.
-- **Runtime & Audit:** View live agent run logs, pending tool approvals, and complete audit history.
+- **Runtime & Audit:** View live agent run logs and pending tool approvals. (The Audit tab currently surfaces only mission-apply events — see the known gap in [STATUS.md](STATUS.md).)
 - **Models:** Configure external providers or manage local model artifacts.
+
+> For exactly what is **Supported** (wired + tested) vs merely **Runnable**, with
+> `file:line`/test/receipt citations, see **[STATUS.md](STATUS.md)** — the single
+> source of truth. This feature list is a high-level overview, not a support matrix.
 
 ## Architecture
 
-The system is strictly divided into domains. The frontend communicates with the Tauri backend exclusively via `invoke` commands wrapped in `src/api/`. State is managed by Zustand for UI layout, while all entity data is fetched dynamically from the `local_state.db` SQLite database managed by Rust.
+The system is strictly divided into domains. The frontend communicates with the Tauri backend exclusively via `invoke` commands wrapped in `control-center/src/api/`. State is managed by Zustand for UI layout, while all entity data is fetched dynamically from the SQLite database at `~/.cameleer/cameleer_workspace.db` (`control-center/src-tauri/src/storage.rs:9,18`), managed by Rust.
 
 ## Development
 
@@ -56,22 +60,36 @@ cd control-center
 npm run tauri build
 ```
 
-## Status
+## Status — v0.1.0-rc (macOS / Apple Silicon)
 
-**v0.1 production candidate — verified on macOS (Apple Silicon).**
+Every claim below links a receipt under
+[`control-center/receipts/`](control-center/receipts/) or a test. Full breakdown in
+**[STATUS.md](STATUS.md)**.
 
-* `cargo test -p control-center` — 44/44 backend tests pass, including an
-  end-to-end persistence test that closes and reopens the database and asserts
-  all state survives (`src-tauri/src/e2e_persistence.rs`).
-* Frontend `tsc` clean, `vitest` green, P0 smoke test passes.
-* `npm run tauri build` produces a working `Cameleer.app` + `.dmg` with the
-  Camelid inference runtime bundled in `Contents/Resources/`.
-* Agent task runs drive a real bounded ReAct loop (plan → act → observe) with
-  persisted run steps, tool invocations, and a work-receipt approval gate.
-* Durable state lives in `~/.cameleer/cameleer_workspace.db` (same path every
-  launch); migrations are idempotent.
+* **Backend: 88 tests pass** (`cargo test -p control-center`) —
+  [backend](control-center/receipts/backend-baseline.check-receipt.json) +
+  [G3 safety](control-center/receipts/g3-safety-tests.check-receipt.json) receipts.
+  The safety-critical core (command sandbox, tool controller, ReAct loop, validation
+  engine, model adapter) is covered by adversarial tests.
+* **Frontend:** `tsc` clean, `vitest` green (3/3), real ESLint, P0 smoke passes —
+  [frontend receipt](control-center/receipts/frontend-baseline.check-receipt.json).
+* **Packaging:** `npm run tauri build` produces `Cameleer.app` + `.dmg` with the
+  camelid runtime bundled in `Contents/Resources/` and verified executable —
+  [packaging receipt](control-center/receipts/packaging-local.check-receipt.json).
+* **End-to-end (Definition of Done):** the real ReAct loop runs against **live
+  camelid inference** (Llama-3.2-1B), producing real run steps + a real tool-invocation
+  record, with all state surviving a database close/reopen —
+  [e2e receipt](control-center/receipts/g4-live-e2e.e2e-receipt.json).
+* Durable state lives in `~/.cameleer/cameleer_workspace.db`; migrations are idempotent.
+* **CI** (`.github/workflows/ci.yml`): frontend checks on Linux, backend
+  fmt/clippy(`-D warnings`)/test + a full package build on macOS.
 
-See `docs/AUDIT_REAL_VS_FAKE.md` for the evidence-based real-vs-fake audit.
+**Known gaps** (see STATUS.md): the Audit tab surfaces only mission-apply events; several
+backend subsystems are **Runnable** (callable) but not surfaced in the UI and are labeled as
+such, not shipped.
+
+See [`docs/AUDIT_REAL_VS_FAKE.md`](docs/AUDIT_REAL_VS_FAKE.md) for the original evidence-based
+audit that this pass built on.
 
 ## License
 

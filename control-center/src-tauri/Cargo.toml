@@ -1,8 +1,8 @@
 [package]
 name = "control-center"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Cameleer Control Center — the local-first agent workspace backend (Tauri + SQLite)"
+authors = ["timtoole02"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
